@@ -20,6 +20,7 @@ using Loyc.SyncLib.Impl;
 
 namespace Loyc.SyncLib
 {
+	// Here we generate SOME code; the rest of SyncJson is in .cs files.
 	public static partial class SyncJson
 	{
 		internal static readonly byte[] _true = new byte[] { 

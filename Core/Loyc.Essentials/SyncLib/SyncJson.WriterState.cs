@@ -58,7 +58,8 @@ namespace Loyc.SyncLib
 			{
 				if (_pendingComma != 0) {
 					var buf = base.GetOutBuf(requiredBytes + 1 + NewlineSize);
-					buf[_i++] = _pendingComma;
+					if (_pendingComma != '\n')
+						buf[_i++] = _pendingComma;
 					MaybeNewlineWithIndent(buf);
 					_pendingComma = 0;
 					return buf;
@@ -137,7 +138,8 @@ namespace Loyc.SyncLib
 
 				var buf = GetNextBuf(1 + NewlineSize);
 				buf[_i++] = (byte) (_isInsideList ? '[' : '{');
-				MaybeNewlineWithIndent(buf);
+
+				_pendingComma = (byte) '\n'; // specially recognized by GetNextBuf
 			}
 
 			void CloseBraceOrBrack()
@@ -146,10 +148,11 @@ namespace Loyc.SyncLib
 					_compactMode--;
 				_stack.Pop();
 
-				_pendingComma = 0; // cancel comma at end of list/object
+				// Cancel ',' at end of list/object; just make a newline. If _pendingComma
+				// is '\n', the object/list is empty and we don't even need a newline.
+				_pendingComma = (byte) (_pendingComma == '\n' ? 0 : '\n');
 
 				var buf = GetNextBuf(NewlineSize + 1);
-				MaybeNewlineWithIndent(buf);
 				buf[_i++] = (byte) (_isInsideList ? ']' : '}');
 				
 				// Ensure that 
@@ -347,8 +350,8 @@ namespace Loyc.SyncLib
 			{
 				buf[_i++] = (byte)'u';
 				buf[_i++] = (byte)PrintHelpers.HexDigitChar(c >> 12);
-				buf[_i++] = (byte)(PrintHelpers.HexDigitChar(c >> 8) & 0xF);
-				buf[_i++] = (byte)(PrintHelpers.HexDigitChar(c >> 4) & 0xF);
+				buf[_i++] = (byte)(PrintHelpers.HexDigitChar((c >> 8) & 0xF));
+				buf[_i++] = (byte)(PrintHelpers.HexDigitChar((c >> 4) & 0xF));
 				buf[_i++] = (byte)PrintHelpers.HexDigitChar(c & 0xF);
 			}
 

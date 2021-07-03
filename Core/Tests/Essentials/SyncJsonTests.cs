@@ -20,9 +20,10 @@ namespace Loyc.Essentials.Tests
 				using (var jtw = new JsonTextWriter(sw))
 					jsonSerializer.Serialize(jtw, obj);
 
-			// Newtonsoft adds .0 on floating-point; we don't.
+			// Newtonsoft adds .0 on float and double; we don't.
 			// Use Replace() so this string can equal ours.
-			return newtonSB.ToString().Replace(".0,", ",");
+			return newtonSB.ToString().Replace(".0,", ",")
+				.Replace(".0\r", "\r").Replace(".0\n", "\n").Replace(".0]", "]");
 		}
 
 		[Test]
@@ -58,6 +59,45 @@ namespace Loyc.Essentials.Tests
 				RootMode = 0,
 			};
 			syncJson = SyncJson.WriteString(obj, BigStandardModelSync<SyncJson.Writer>.SyncBasics, options);
+			Assert.AreEqual(json, syncJson);
+		}
+
+		[Test]
+		public void NewtonsoftBigStandardModelInterop()
+		{
+			var obj = new BigStandardModelNoMem(10);
+
+			// We should produce the same output as Newtonsoft except for minor formatting
+			// differences. ToNewtonString already deletes Newton's ".0" suffix on floats;
+			// also, Newtonsoft uses lowercase unicode escapes while we use uppercase.
+			var jsonSerializer = new JsonSerializer {
+				PreserveReferencesHandling = PreserveReferencesHandling.None,
+				Formatting = Formatting.Indented,
+			};
+			var json = ToNewtonString(jsonSerializer, obj).Replace(@"\u001a", @"\u001A");;
+			Console.WriteLine(json);
+
+			var options = new SyncJson.Options { Indent = "  ", SpaceAfterColon = true, RootMode = 0 };
+			var syncJson = SyncJson.WriteString(obj, BigStandardModelSync<SyncJson.Writer>.SyncBigModelNoMem, options);
+			var syncJson2 = SyncJson.WriteString(obj, BigStandardModelSync<ISyncManager>.SyncBigModelNoMem, options);
+
+			Assert.AreEqual(syncJson, syncJson2);
+			Assert.AreEqual(json, syncJson);
+
+			jsonSerializer = new JsonSerializer
+			{
+				ContractResolver = new DefaultContractResolver {
+					NamingStrategy = new CamelCaseNamingStrategy()
+				},
+				Formatting = Formatting.None,
+			};
+			json = ToNewtonString(jsonSerializer, obj).Replace(@"\u001a", @"\u001A");
+
+			options = new SyncJson.Options(compactMode: true) {
+				NameConverter = SyncJson.ToCamelCase,
+				RootMode = 0,
+			};
+			syncJson = SyncJson.WriteString(obj, BigStandardModelSync<SyncJson.Writer>.SyncBigModelNoMem, options);
 			Assert.AreEqual(json, syncJson);
 		}
 

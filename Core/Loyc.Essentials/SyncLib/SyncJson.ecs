@@ -16,15 +16,16 @@ macro stringToBytes($str) {
 using Loyc.Collections.Impl;
 using Loyc.SyncLib.Impl;
 
+[Passive]
+define (#type<$T>) { $T; }
+
 define isUnsigned($T) {
 	$T `staticMatches` uint || $T `staticMatches` ulong;
 }
 
-[Passive]
-define (#type<$T>) { $T; }
-
 namespace Loyc.SyncLib
 {
+	// Here we generate SOME code; the rest of SyncJson is in .cs files.
 	public static partial class SyncJson
 	{
 		internal static readonly byte[] _true = stringToBytes("true");

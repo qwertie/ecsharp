@@ -63,9 +63,11 @@ namespace Loyc.Essentials.Tests
 	}
 
 	/// This class uses all standard types, their nullable variants,
-	/// and most of the supported collections of standard types. 
-	/// But there are no custom types.
-	internal class BigStandardModel : StandardFields
+	/// and most of the supported collections of standard types, 
+	/// notably excluding Memory<T> which is not supported by Newtonsoft
+	/// (and so interferes with the Newtonsoft compatibility tests).
+	/// There are no custom types here, just natively-supported types.
+	internal class BigStandardModelNoMem : StandardFields
 	{
 		public bool[] BoolArray;
 		public int[] Int32Array;
@@ -77,16 +79,6 @@ namespace Loyc.Essentials.Tests
 		public BigInteger[] BigIntegerArray;
 		public char[] CharArray;
 		public string[] StringArray;
-		public Memory<bool> BoolMemory;
-		public Memory<int> Int32Memory;
-		public Memory<uint> Uint32Memory;
-		public Memory<long> Int64Memory;
-		public Memory<ulong> Uint64Memory;
-		public Memory<float> SingleMemory;
-		public Memory<double> DoubleMemory;
-		public Memory<BigInteger> BigIntegerMemory;
-		public Memory<char> CharMemory;
-		public Memory<string> StringMemory;
 		public List<bool> BoolList;
 		public List<int> Int32List;
 		public List<uint> Uint32List;
@@ -108,7 +100,7 @@ namespace Loyc.Essentials.Tests
 		public IReadOnlyCollection<char> CharColl;
 		public IReadOnlyCollection<string> StringColl;
 
-		public BigStandardModel(int seed) : base(seed)
+		public BigStandardModelNoMem(int seed) : base(seed)
 		{
 			BoolArray = new bool[0];
 			BoolList = new List<bool> { 
@@ -133,7 +125,6 @@ namespace Loyc.Essentials.Tests
 				(int) seed++, (int) seed++, (int) seed++
 				
 			};
-			Int32Memory = Int32Array.AsMemory();
 			Uint32 = (uint) seed++;
 			Uint32Coll = Uint32List = new List<uint> { 
 				
@@ -145,7 +136,6 @@ namespace Loyc.Essentials.Tests
 				(uint) seed++, (uint) seed++, (uint) seed++
 				
 			};
-			Uint32Memory = Uint32Array.AsMemory();
 			Int64 = (long) seed++;
 			Int64Coll = Int64List = new List<long> { 
 				
@@ -157,7 +147,6 @@ namespace Loyc.Essentials.Tests
 				(long) seed++, (long) seed++, (long) seed++
 				
 			};
-			Int64Memory = Int64Array.AsMemory();
 			Uint64 = (ulong) seed++;
 			Uint64Coll = Uint64List = new List<ulong> { 
 				
@@ -169,7 +158,6 @@ namespace Loyc.Essentials.Tests
 				(ulong) seed++, (ulong) seed++, (ulong) seed++
 				
 			};
-			Uint64Memory = Uint64Array.AsMemory();
 			Single = (float) seed++;
 			SingleColl = SingleList = new List<float> { 
 				
@@ -181,7 +169,6 @@ namespace Loyc.Essentials.Tests
 				(float) seed++, (float) seed++, (float) seed++
 				
 			};
-			SingleMemory = SingleArray.AsMemory();
 			Double = (double) seed++;
 			DoubleColl = DoubleList = new List<double> { 
 				
@@ -193,7 +180,6 @@ namespace Loyc.Essentials.Tests
 				(double) seed++, (double) seed++, (double) seed++
 				
 			};
-			DoubleMemory = DoubleArray.AsMemory();
 			BigInteger = (BigInteger) seed++;
 			BigIntegerColl = BigIntegerList = new List<BigInteger> { 
 				
@@ -205,7 +191,6 @@ namespace Loyc.Essentials.Tests
 				(BigInteger) seed++, (BigInteger) seed++, (BigInteger) seed++
 				
 			};
-			BigIntegerMemory = BigIntegerArray.AsMemory();
 			Char = (char) seed++;
 			CharColl = CharList = new List<char> { 
 				
@@ -217,17 +202,61 @@ namespace Loyc.Essentials.Tests
 				(char) seed++, (char) seed++, (char) seed++
 				
 			};
-			CharMemory = CharArray.AsMemory();
 		}
 	}
 
+	/// This class uses all standard types, their nullable variants,
+	/// and most of the supported collections of standard types. 
+	/// But there are no custom types.
+	internal class BigStandardModel : BigStandardModelNoMem
+	{
+		public Memory<bool> BoolMemory;
+		public Memory<int> Int32Memory;
+		public Memory<uint> Uint32Memory;
+		public Memory<long> Int64Memory;
+		public Memory<ulong> Uint64Memory;
+		public Memory<float> SingleMemory;
+		public Memory<double> DoubleMemory;
+		public Memory<BigInteger> BigIntegerMemory;
+		public Memory<char> CharMemory;
+		public Memory<string> StringMemory;
+
+		public BigStandardModel(int seed) : base(seed)
+		{
+
+			Int32Memory = Int32Array.AsMemory();
+
+			Uint32Memory = Uint32Array.AsMemory();
+
+			Int64Memory = Int64Array.AsMemory();
+
+			Uint64Memory = Uint64Array.AsMemory();
+
+			SingleMemory = SingleArray.AsMemory();
+
+			DoubleMemory = DoubleArray.AsMemory();
+
+			BigIntegerMemory = BigIntegerArray.AsMemory();
+
+			CharMemory = CharArray.AsMemory();
+		}
+	}
+	
+	
 	class BigStandardModelSync<S> where S: ISyncManager
 	{
 		public static readonly SyncObjectFunc<S, BigStandardModel> SyncBigModel = (sync, obj) => 
 		{
+			obj = (BigStandardModel) SyncBigModelNoMem(sync, obj);
+			SyncMem(sync, obj);
+			return obj;
+		};
+
+		public static readonly SyncObjectFunc<S, BigStandardModelNoMem> SyncBigModelNoMem = (sync, obj) => 
+		{
 			obj = obj ?? new BigStandardModel(0);
-			SyncBasics(sync, obj);
 			SyncLists(sync, obj);
+			SyncBasics(sync, obj);
 			return obj;
 		};
 
@@ -259,7 +288,7 @@ namespace Loyc.Essentials.Tests
 			return obj;
 		}
 
-		public static BigStandardModel SyncLists(S sync, BigStandardModel obj)
+		public static BigStandardModelNoMem SyncLists(S sync, BigStandardModelNoMem obj)
 		{
 			obj = obj ?? new BigStandardModel(0);
 			obj.BoolArray = sync.SyncList("BoolArray", obj.BoolArray);
@@ -272,16 +301,6 @@ namespace Loyc.Essentials.Tests
 			obj.BigIntegerArray = sync.SyncList("BigIntegerArray", obj.BigIntegerArray);
 			obj.CharArray = sync.SyncList("CharArray", obj.CharArray);
 			obj.StringArray = sync.SyncList("StringArray", obj.StringArray);
-			obj.BoolMemory = sync.SyncList("BoolMemory", obj.BoolMemory);
-			obj.Int32Memory = sync.SyncList("Int32Memory", obj.Int32Memory);
-			obj.Uint32Memory = sync.SyncList("Uint32Memory", obj.Uint32Memory);
-			obj.Int64Memory = sync.SyncList("Int64Memory", obj.Int64Memory);
-			obj.Uint64Memory = sync.SyncList("Uint64Memory", obj.Uint64Memory);
-			obj.SingleMemory = sync.SyncList("SingleMemory", obj.SingleMemory);
-			obj.DoubleMemory = sync.SyncList("DoubleMemory", obj.DoubleMemory);
-			obj.BigIntegerMemory = sync.SyncList("BigIntegerMemory", obj.BigIntegerMemory);
-			obj.CharMemory = sync.SyncList("CharMemory", obj.CharMemory);
-			obj.StringMemory = sync.SyncList("StringMemory", obj.StringMemory);
 			obj.BoolList = sync.SyncList("BoolList", obj.BoolList);
 			obj.Int32List = sync.SyncList("Int32List", obj.Int32List);
 			obj.Uint32List = sync.SyncList("Uint32List", obj.Uint32List);
@@ -302,6 +321,23 @@ namespace Loyc.Essentials.Tests
 			obj.BigIntegerColl = sync.SyncList("BigIntegerColl", obj.BigIntegerColl);
 			obj.CharColl = sync.SyncList("CharColl", obj.CharColl);
 			obj.StringColl = sync.SyncList("StringColl", obj.StringColl);
+
+			return obj;
+		}
+
+		public static BigStandardModel SyncMem(S sync, BigStandardModel obj)
+		{
+			obj = obj ?? new BigStandardModel(0);
+			obj.BoolMemory = sync.SyncList("BoolMemory", obj.BoolMemory);
+			obj.Int32Memory = sync.SyncList("Int32Memory", obj.Int32Memory);
+			obj.Uint32Memory = sync.SyncList("Uint32Memory", obj.Uint32Memory);
+			obj.Int64Memory = sync.SyncList("Int64Memory", obj.Int64Memory);
+			obj.Uint64Memory = sync.SyncList("Uint64Memory", obj.Uint64Memory);
+			obj.SingleMemory = sync.SyncList("SingleMemory", obj.SingleMemory);
+			obj.DoubleMemory = sync.SyncList("DoubleMemory", obj.DoubleMemory);
+			obj.BigIntegerMemory = sync.SyncList("BigIntegerMemory", obj.BigIntegerMemory);
+			obj.CharMemory = sync.SyncList("CharMemory", obj.CharMemory);
+			obj.StringMemory = sync.SyncList("StringMemory", obj.StringMemory);
 
 			return obj;
 		}

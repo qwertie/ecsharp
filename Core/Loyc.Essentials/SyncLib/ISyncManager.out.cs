@@ -20,8 +20,8 @@ using System.Reflection;
 
 namespace Loyc.SyncLib
 {
-	public delegate T SyncObjectFunc<in SyncManager, T>(SyncManager sync, T? value);
-	public delegate T SyncFieldFunc<T>(Symbol? name, T? value);
+	public delegate T SyncObjectFunc<in SyncManager, T>(SyncManager sync, [AllowNull] T value);
+	public delegate T SyncFieldFunc<T>(Symbol? name, [AllowNull] T value);
 
 	/// <summary>This is the central interface of Loyc.SyncLib. To learn more, please 
 	/// visit the web site: http://loyc.net/serialization </summary>

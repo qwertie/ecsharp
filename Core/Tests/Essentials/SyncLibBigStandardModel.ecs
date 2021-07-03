@@ -53,13 +53,14 @@ namespace Loyc.Essentials.Tests
 	}
 
 	/// This class uses all standard types, their nullable variants,
-	/// and most of the supported collections of standard types. 
-	/// But there are no custom types.
-	internal class BigStandardModel : StandardFields
+	/// and most of the supported collections of standard types, 
+	/// notably excluding Memory<T> which is not supported by Newtonsoft
+	/// (and so interferes with the Newtonsoft compatibility tests).
+	/// There are no custom types here, just natively-supported types.
+	internal class BigStandardModelNoMem : StandardFields
 	{
 		##unroll(($ListT, $Suffix) in (
 			(#type<$T[]>, "Array"),
-			(Memory<$T>, "Memory"),
 			(List<$T>, "List"),
 			//(IList< $T? >, "NList"),
 			(IReadOnlyCollection< $T >, "Coll"),
@@ -67,10 +68,8 @@ namespace Loyc.Essentials.Tests
 		{
 			##unroll($T in standardTypes)
 			{
-				replace (varname => concatId(standardTypeToName($T), $Suffix))
-				{
-					public $ListT varname;
-				}
+				#snippet varname = concatId(standardTypeToName($T), $Suffix);
+				public $ListT $varname;
 			}
 		}
 
@@ -93,19 +92,54 @@ namespace Loyc.Essentials.Tests
 					concatId($varstem, "Array") = new $T[] { 
 						($T) seed++, ($T) seed++, ($T) seed++
 					};
+				}
+			}
+		}
+	}
+
+	/// This class uses all standard types, their nullable variants,
+	/// and most of the supported collections of standard types. 
+	/// But there are no custom types.
+	internal class BigStandardModel : BigStandardModelNoMem
+	{
+		##unroll(($ListT, $Suffix) in (
+			(Memory<$T>, "Memory"),
+		))
+		{
+			##unroll($T in standardTypes)
+			{
+				#snippet varname = concatId(standardTypeToName($T), $Suffix);
+				public $ListT $varname;
+			}
+		}
+
+		public this(int seed) : base(seed)
+		{
+			##unroll($T in basicTypes) {
+				static if (!($T `staticMatches` bool)) {
+					#snippet varstem = standardTypeToName($T);
+					
 					concatId($varstem, "Memory") = concatId($varstem, "Array").AsMemory();
 				}
 			}
 		}
 	}
 
+
 	class BigStandardModelSync<S> where S: ISyncManager
 	{
 		public static readonly SyncObjectFunc<S, BigStandardModel> SyncBigModel = (sync, obj) =>
 		{
+			obj = (BigStandardModel) SyncBigModelNoMem(sync, obj);
+			SyncMem(sync, obj);
+			return obj;
+		};
+
+		public static readonly SyncObjectFunc<S, BigStandardModelNoMem> SyncBigModelNoMem = (sync, obj) =>
+		{
 			obj ??= new BigStandardModel(0);
-			SyncBasics(sync, obj);
 			SyncLists(sync, obj);
+			SyncBasics(sync, obj);
 			return obj;
 		};
 
@@ -129,16 +163,33 @@ namespace Loyc.Essentials.Tests
 			return obj;
 		}
 
-		public static BigStandardModel SyncLists(S sync, BigStandardModel obj)
+		public static BigStandardModelNoMem SyncLists(S sync, BigStandardModelNoMem obj)
 		{
 			obj ??= new BigStandardModel(0);
 
 			##unroll(($ListT, $Suffix, $Sync) in (
 				(#type<$T[]>, "Array", SyncList),
-				(Memory<$T>, "Memory", SyncList),
 				(List<$T>, "List", SyncList),
 				//(IList< $T? >, "NList", SyncList),
 				(IReadOnlyCollection<$T>, "Coll", SyncList),
+			))
+			{
+				##unroll($T in standardTypes)
+				{
+					#snippet varname = concatId(standardTypeToName($T), $Suffix);
+					obj.$varname = sync.$Sync(concat($varname), obj.$varname);
+				}
+			}
+			
+			return obj;
+		}
+
+		public static BigStandardModel SyncMem(S sync, BigStandardModel obj)
+		{
+			obj ??= new BigStandardModel(0);
+
+			##unroll(($ListT, $Suffix, $Sync) in (
+				(Memory<$T>, "Memory", SyncList),
 			))
 			{
 				##unroll($T in standardTypes)
