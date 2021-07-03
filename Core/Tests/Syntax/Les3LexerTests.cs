@@ -201,9 +201,11 @@ namespace Loyc.Syntax.Les
 			// would not round-trip faithfully back to bytes. Instead, the second
 			// surrogate is transliterated to 3 invalid UTF16 low surrogates.
 			Case(@"""\xED\xA0\xBD\xED\xB2\xA9""", A(TT.Literal), "\uD83D\uDCED\uDCB2\uDCA9");
-			
-			// All low surrogates are coded as invalid UTF8 converted to UTF16
-			Case(@"""\uDC00\uDFFF""", A(TT.Literal), "\uDCED\uDCB0\uDC80\uDCED\uDCBF\uDCBF");
+
+			// Low surrogates 0xDC80..0xDCFF are recoded as invalid UTF8 treated as raw bytes
+			// 0xDC80 == 0b1101_1100_1000_0000 => UTF-8 11101101 10110010 10000000 = ED B2 80;
+			// 0xDCFF == 0b1101_1100_1111_1111 => UTF-8 11101101 10110011 10111111 = ED B3 BF;
+			Case(@"""\uDC80\uDCFF""", A(TT.Literal), "\uDCED\uDCB2\uDC80\uDCED\uDCB3\uDCBF");
 		}
 
 		[Test]

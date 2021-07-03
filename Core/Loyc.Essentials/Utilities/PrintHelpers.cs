@@ -74,9 +74,10 @@ namespace Loyc.Syntax
 		/// <param name="quoteType">Specifies a character that should always be 
 		/// escaped (typically one of <c>' " `</c>)</param>
 		/// <returns>true if an escape sequence was emitted, false if not.</returns>
-		/// <remarks><see cref="EscapeC.HasLongEscape"/> can be used to force a 6-digit 
-		/// unicode escape; this may be needed if the next character after this one 
-		/// is a digit.</remarks>
+		/// <remarks><see cref="EscapeC.HasLongEscape"/> can be used to output a 
+		/// 6-digit unicode escape. <see cref="EscapeC.UnicodeNonCharacters"/> causes
+		/// individual surrogate code units to be escaped, but a combined character 
+		/// like U+1F300 is not escaped.</remarks>
 		public static bool EscapeCStyle(int c, StringBuilder @out, EscapeC flags = EscapeC.Default, char quoteType = '\0')
 		{
 			for(;;) {
@@ -87,7 +88,7 @@ namespace Loyc.Syntax
 						if ((flags & EscapeC.UnicodeNonCharacters) != 0 && (
 							c >= 0xFDD0 && c <= 0xFDEF || // 0xFDD0...0xFDEF 
 							(c & 0xFFFE) == 0xFFFE) || // 0xFFFE, 0xFFFF, 0x1FFFE, 0x1FFFF, etc.
-							(c & 0xFC00) == 0xDC00) { // 0xDC00...0xDCFF 
+							(c & 0xF800) == 0xD800) { // 0xD800...0xDFFF 
 							EscapeU(c, @out, flags);
 						} else if ((flags & EscapeC.UnicodePrivateUse) != 0 && (
 							c >= 0xE000 && c <= 0xF8FF ||

@@ -189,7 +189,7 @@ namespace Loyc.Syntax.Les
 					sb.AppendCodePoint(c);
 					if ((category & EscapeC.BackslashX) != 0 && c >= 0x80)
 						DetectUtf8(sb);
-					else if (c.IsInRange(0xDC00, 0xDFFF))
+					else if (c.IsInRange(0xDC80, 0xDCFF))
 						RecodeSurrogate(sb);
 				}
 				else
@@ -323,12 +323,13 @@ namespace Loyc.Syntax.Les
 		}
 
 		// To prevent collisions between the single invalid UTF-8 byte 0xFF,
-		// which is coded as 0xDCFF and the three-byte sequence represented
-		// by \uDCFF, and also to allow round-tripping of UTF8 encodings of 
+		// which is coded as 0xDCFF, and the three-byte sequence represented
+		// by U+DCFF, and also to allow round-tripping of UTF8 encodings of 
 		// UTF16 surrogates, this function's job is to treat "low" surrogates 
-		// in range 0xDC00 to 0xDFFF as if they were three UTF-8 bytes 
+		// in range 0xDC80 to 0xDFFF as if they were three UTF-8 bytes 
 		// recoded individually:
 		//     \uDCFF => 0xED 0xB3 0xBF => 0xDCED 0xDCB3 0xDCBF
+		// 
 		// by avoiding collisions, the UTF-16 output from this lexer can be 
 		// used to reconstruct the byte stream it represents in all cases.
 		// If the final LESv3 spec disallows individual surrogate characters
@@ -336,7 +337,7 @@ namespace Loyc.Syntax.Les
 		static void RecodeSurrogate(StringBuilder sb)
 		{
 			int c = sb[sb.Length - 1];
-			Debug.Assert(c.IsInRange(0xDC00, 0xDFFF));
+			Debug.Assert(c.IsInRange(0xDC80, 0xDCFF));
 			int b1 = 0xE0 | (c >> 12);
 			int b2 = 0x80 | ((c >> 6) & 0x3F);
 			int b3 = 0x80 | (c & 0x3F);

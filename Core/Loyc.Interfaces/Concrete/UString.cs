@@ -235,6 +235,7 @@ namespace Loyc
 				int c1 = _str[_start + index + 1];
 				if (c1 >= 0xDC00 && c1 <= 0xDFFF)
 					return 0x10000 + ((c & 0x3FF) << 10) + (c1 & 0x3FF);
+				return c;
 			}
 			return -1;
 		}
