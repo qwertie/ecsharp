@@ -5,6 +5,7 @@
     <BaseIntermediateOutputPath>..\Bin\obj.netfx\LoycCore.Tests</BaseIntermediateOutputPath>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <LangVersion>9.0</LangVersion>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}</ProjectGuid>
@@ -95,6 +96,9 @@
     <AssemblyOriginatorKeyFile>OpenSourceKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -150,7 +154,16 @@
     <Compile Include="Essentials\HashTagsTests.cs" />
     <Compile Include="Essentials\ListExtTests.cs" />
     <Compile Include="Essentials\LocalizeTests.cs" />
+    <Compile Include="Essentials\ScannableTests.cs" />
     <Compile Include="Essentials\SliceTests.cs" />
+    <Compile Include="Essentials\SyncJsonTests.cs" />
+    <Compile Include="Essentials\SyncLibBigStandardModel.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SyncLibBigStandardModel.ecs</DependentUpon>
+    </Compile>
+    <Compile Include="Essentials\SyncLibTestModels.cs" />
+    <Compile Include="Essentials\SyncLibTests.cs" />
     <Compile Include="Math\MathExTests.cs" />
     <Compile Include="Essentials\PrintHelpersTests.cs" />
     <Compile Include="Essentials\SymbolTests.cs" />
@@ -243,6 +256,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Essentials\SyncLibBigStandardModel.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>SyncLibBigStandardModel.out.cs</LastGenOutput>
+    </None>
     <None Include="OpenSourceKey.snk" />
     <None Include="packages.config" />
     <None Include="Syntax\LexerSourceTest.ecs">

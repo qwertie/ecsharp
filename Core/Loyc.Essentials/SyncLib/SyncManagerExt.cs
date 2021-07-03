@@ -12,16 +12,14 @@ namespace Loyc.SyncLib
 	/// <summary>Standard extension methods for <see cref="ISyncManager"/>.</summary>
 	public static partial class SyncManagerExt
 	{
-		[return: MaybeNull]
-		public static T Sync<SyncManager, T>(this SyncManager sync,
-			string name, T? savable, SyncObjectFunc<SyncManager, T?> syncFunc,
+		public static T? Sync<SyncManager, T>(this SyncManager sync,
+			string name, T? savable, SyncObjectFunc<SyncManager, T> syncFunc,
 			SubObjectMode mode = SubObjectMode.Deduplicate)
 				where SyncManager : ISyncManager
 			=> Sync(sync, (Symbol)name, savable, syncFunc, mode);
 
-		[return: MaybeNull]
-		public static T Sync<SyncManager, T>(this SyncManager sync, 
-			Symbol? name, T? savable, SyncObjectFunc<SyncManager, T?> syncFunc, 
+		public static T? Sync<SyncManager, T>(this SyncManager sync, 
+			Symbol? name, T? savable, SyncObjectFunc<SyncManager, T> syncFunc, 
 			SubObjectMode mode = SubObjectMode.Deduplicate)
 				where SyncManager : ISyncManager
 		{

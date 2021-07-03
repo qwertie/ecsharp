@@ -16,8 +16,8 @@ namespace Loyc.SyncLib
 	{
 		internal partial class WriterStateBase
 		{
-			protected IBufferWriter<byte> _output = new ArrayBufferWriter<byte>(1024);
-			protected Memory<byte> _buf; // a sub-buffer returned from _output
+			protected IBufferWriter<byte> _output;
+			//protected Memory<byte> _buf; // a sub-buffer returned from _output
 			protected int _i = 0; // next index within _out to write
 
 			protected ObjectIDGenerator _idGen = new ObjectIDGenerator(); // IDs start at one
@@ -30,7 +30,7 @@ namespace Loyc.SyncLib
 				Flush();
 				return _output.GetMemory(requiredBytes).Span;
 			}
-			protected void Flush()
+			internal void Flush()
 			{
 				_output.Advance(_i);
 				_i = 0;
@@ -59,7 +59,7 @@ namespace Loyc.SyncLib
 				if (_pendingComma != 0) {
 					var buf = base.GetOutBuf(requiredBytes + 1 + NewlineSize);
 					buf[_i++] = _pendingComma;
-					MaybeNewlineWithIndent();
+					MaybeNewlineWithIndent(buf);
 					_pendingComma = 0;
 					return buf;
 				}
@@ -73,12 +73,12 @@ namespace Loyc.SyncLib
 					return (false, childKey);
 				}
 
-				BeginProp(name, 25); // Reserve extra bytes for refs: {"$ref":12345678901}
+				var buf = BeginProp(name, 25); // Reserve extra bytes for refs: {"$ref":12345678901}
 
 				if ((mode & SubObjectMode.Deduplicate) != 0) {
 					long id = _idGen.GetId(childKey, out bool firstTime);
 					if (!firstTime) {
-						WriteBackReference(_buf.Span, id);
+						WriteBackReference(buf, id);
 						return (false, childKey);
 					} else {
 						OpenBraceOrBrack(mode);
@@ -108,6 +108,8 @@ namespace Loyc.SyncLib
 					buf[_i++] = (byte) 'f';
 					buf[_i++] = (byte) '"';
 					buf[_i++] = (byte) ':';
+					if (_opt.SpaceAfterColon)
+						buf[_i++] = (byte) ' ';
 					buf[_i++] = (byte) '"';
 					WriteNumber(buf, id, true);
 					buf[_i++] = (byte) '"';
@@ -116,6 +118,8 @@ namespace Loyc.SyncLib
 					buf[_i++] = (byte) 'r';
 					buf[_i++] = (byte) '"';
 					buf[_i++] = (byte) ':';
+					if (_opt.SpaceAfterColon)
+						buf[_i++] = (byte) ' ';
 					WriteNumber(buf, id, true);
 				}
 				buf[_i++] = (byte) '}';
@@ -133,7 +137,7 @@ namespace Loyc.SyncLib
 
 				var buf = GetNextBuf(1 + NewlineSize);
 				buf[_i++] = (byte) (_isInsideList ? '[' : '{');
-				MaybeNewlineWithIndent();
+				MaybeNewlineWithIndent(buf);
 			}
 
 			void CloseBraceOrBrack()
@@ -141,10 +145,15 @@ namespace Loyc.SyncLib
 				if ((_stack.Last & SubObjectMode.Compact) != 0)
 					_compactMode--;
 				_stack.Pop();
-				
+
+				_pendingComma = 0; // cancel comma at end of list/object
+
 				var buf = GetNextBuf(NewlineSize + 1);
-				MaybeNewlineWithIndent();
+				MaybeNewlineWithIndent(buf);
 				buf[_i++] = (byte) (_isInsideList ? ']' : '}');
+				
+				// Ensure that 
+				Flush();
 
 				_isInsideList = _stack.IsEmpty ? true : (_stack.Last & SubObjectMode.Tuple) != 0;
 				_pendingComma = (byte) ',';
@@ -152,12 +161,12 @@ namespace Loyc.SyncLib
 
 			int NewlineSize => _newline.Length + _indent.Length * _stack.Count;
 
-			void MaybeNewlineWithIndent()
+			void MaybeNewlineWithIndent(Span<byte> buf)
 			{
 				if (_newline.Length != 0 && _compactMode == 0) {
-					Blurt(_newline);
+					Blurt(buf, _newline);
 					for (int i = 0, count = System.Math.Min(_stack.Count, _opt.MaxIndentDepth); i < count; i++)
-						Blurt(_indent);
+						Blurt(buf, _indent);
 				}
 			}
 
@@ -203,7 +212,7 @@ namespace Loyc.SyncLib
 			public void WriteLiteralProp(string? propName, byte[] literal)
 			{
 				Span<byte> buf = BeginProp(propName, literal.Length);
-				Blurt(literal);
+				Blurt(buf, literal);
 				_pendingComma = (byte) ',';
 			}
 			public void WriteLiteralProp(string? propName, string ascii)
@@ -223,6 +232,7 @@ namespace Loyc.SyncLib
 				} else {
 					WriteProp(propName, c.ToString());
 				}
+				_pendingComma = (byte) ',';
 				return c;
 			}
 
@@ -234,13 +244,21 @@ namespace Loyc.SyncLib
 				if (_isInsideList) {
 					buf = GetNextBuf(reserveExtra);
 				} else {
-					buf = WriteString(propName.AsSpan(), 1 + reserveExtra);
+					if (_opt.NameConverter != null)
+						propName = _opt.NameConverter(propName ?? "");
+					buf = WriteString(propName.AsSpan(), 2 + reserveExtra);
 					buf[_i++] = (byte) ':';
+					if (_opt.SpaceAfterColon)
+						buf[_i++] = (byte) ' ';
 				}
 				return buf;
 			}
 
-			void Blurt(byte[] bytes) => bytes.CopyTo(_buf.Slice(_i));
+			void Blurt(Span<byte> buf, byte[] bytes)
+			{
+				bytes.CopyTo(buf.Slice(_i));
+				_i += bytes.Length;
+			}
 
 			// Writes a number into buf at _i. 20 bytes should be available for arbitrary longs.
 			void WriteNumber(Span<byte> buf, long iNum, bool isSigned)

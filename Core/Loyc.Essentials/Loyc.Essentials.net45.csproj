@@ -134,6 +134,7 @@
     <Compile Include="Collections\Adapters\ListAsSink.cs" />
     <Compile Include="Collections\Adapters\ReadOnlyListAsListSource.cs" />
     <Compile Include="Collections\Adapters\ROLSlice.cs" />
+    <Compile Include="Collections\Adapters\ScannableEnumerable.cs" />
     <Compile Include="Collections\Adapters\SelectDictionaryFromKeys.cs" />
     <Compile Include="Collections\Adapters\SparseListSourceSlice.cs" />
     <Compile Include="Collections\BaseClasses\CollectionWrapper.cs" />
@@ -177,6 +178,7 @@
     <Compile Include="Collections\HelperClasses\CollectionWithChangeEvents.cs" />
     <Compile Include="Collections\BaseClasses\SetWrapper.cs" />
     <Compile Include="Collections\Implementations\MultiMap.cs" />
+    <Compile Include="Compatibility\ArrayBufferWriter.cs" />
     <Compile Include="MessageSinks\LogMessage.cs" />
     <Compile Include="MessageSinks\MessageHolder.cs" />
     <Compile Include="MessageSinks\LogException.cs" />
@@ -222,11 +224,40 @@
     <Compile Include="Collections\Implementations\InternalList.cs" />
     <Compile Include="Collections\Implementations\WeakKeyComparer.cs" />
     <Compile Include="Collections\Implementations\WeakKeyDictionary.cs" />
+    <Compile Include="SyncLib\ISyncField.cs" />
+    <Compile Include="SyncLib\ISyncManager.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ISyncManager.ecs</DependentUpon>
+    </Compile>
+    <Compile Include="SyncLib\ObjectTable.cs" />
+    <Compile Include="SyncLib\SubObjectMode.cs" />
+    <Compile Include="SyncLib\SyncJson.Helper.cs" />
+    <Compile Include="SyncLib\SyncJson.Options.cs" />
+    <Compile Include="SyncLib\SyncJson.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SyncJson.ecs</DependentUpon>
+    </Compile>
+    <Compile Include="SyncLib\SyncJson.Writer.cs" />
+    <Compile Include="SyncLib\SyncJson.WriterState.cs" />
+    <Compile Include="SyncLib\SyncManagerExt.cs" />
+    <Compile Include="SyncLib\SyncManagerHelper.cs" />
+    <Compile Include="SyncLib\SyncMode.cs" />
+    <Compile Include="SyncLib\TypeStuff.cs" />
     <Compile Include="Utilities\ByteArrayInString.cs" />
     <Compile Include="Utilities\G.cs" />
     <Compile Include="Utilities\EzStopwatch.cs" />
     <Compile Include="Utilities\Extensions.cs" />
     <None Include="packages.config" />
+    <None Include="SyncLib\ISyncManager.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>ISyncManager.out.cs</LastGenOutput>
+    </None>
+    <None Include="SyncLib\SyncJson.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>SyncJson.out.cs</LastGenOutput>
+    </None>
     <None Include="Utilities\GRange.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>GRange.out.cs</LastGenOutput>
@@ -310,7 +341,5 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="SyncLib\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>

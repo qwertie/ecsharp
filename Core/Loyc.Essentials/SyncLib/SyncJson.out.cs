@@ -32,9 +32,6 @@ namespace Loyc.SyncLib
 			(byte) 'n', (byte) 'u', (byte) 'l', (byte) 'l'
 		};
 
-		partial class WriterState
-		{ }
-
 		public partial struct Writer
 		{
 			public int Sync(Symbol? name, int savable) {
@@ -66,10 +63,6 @@ namespace Loyc.SyncLib
 				return savable;
 			}
 			public char Sync(Symbol? name, char savable) {
-				_s.WriteProp(name == null ? "" : name.Name, savable);
-				return savable;
-			}
-			public string Sync(Symbol? name, string savable) {
 				_s.WriteProp(name == null ? "" : name.Name, savable);
 				return savable;
 			}

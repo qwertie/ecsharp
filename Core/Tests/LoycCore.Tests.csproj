@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>9.0</LangVersion>
     <OutputPath>..\Bin\$(Configuration)\</OutputPath>
     <OutputType>Exe</OutputType>
     <NoWarn>1591, 1573, 0419</NoWarn>
@@ -19,19 +21,19 @@
     <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.csproj" />
     <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <Compile Update="Essentials\SyncLibBigModel.out.cs">
+    <Compile Update="Essentials\SyncLibBigStandardModel.out.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>SyncLibBigModel.ecs</DependentUpon>
+      <DependentUpon>SyncLibBigStandardModel.ecs</DependentUpon>
     </Compile>
     <Compile Update="Syntax\LexerSourceTest.out.cs">
       <DependentUpon>LexerSourceTest.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Update="Essentials\SyncLibBigModel.ecs">
+    <None Update="Essentials\SyncLibBigStandardModel.ecs">
       <Generator>LeMP</Generator>
-      <LastGenOutput>SyncLibBigModel.out.cs</LastGenOutput>
+      <LastGenOutput>SyncLibBigStandardModel.out.cs</LastGenOutput>
     </None>
     <None Update="Syntax\LexerSourceTest.ecs">
       <Generator>LeMP</Generator>

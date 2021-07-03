@@ -314,7 +314,7 @@ namespace Loyc.SyncLib
 
 	public static partial class SyncManagerExt
 	{
-		##unroll($T in basicTypes)
+		##unroll($T in standardTypes)
 		{
 			/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 			public static $T Sync<SyncManager>(this SyncManager sync, string name, $T savable) 
@@ -327,24 +327,18 @@ namespace Loyc.SyncLib
 				where SyncManager : ISyncManager => sync.Sync((Symbol)name, savable);
 		}
 
-		##unroll($T in basicTypes)
+		##unroll($T in standardTypes)
 		{
 			/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
 			public static $T? SyncNullable<SyncManager>(this SyncManager sync, string name, $T? savable)
 				where SyncManager : ISyncManager => sync.SyncNullable((Symbol)name, savable);
 		}
-		##unroll($T in basicTypes)
-		{
-			/// <summary>Reads or writes a list of values in the current object.</summary>
-			public static IReadOnlyCollection<$T> SyncList<SyncManager>(this SyncManager sync, string name, IReadOnlyCollection<$T> savable)
-				where SyncManager : ISyncManager => sync.SyncList((Symbol)name, savable);
-		}
 		
 		// SyncList methods
-		##unroll($T in basicTypes)
+		##unroll($T in standardItemTypes)
 		{
 
-			static FieldInfo? $(out concatId(_items_, $T)) = typeof(List<$T>).GetField("_items");
+			static FieldInfo? $(out concatId(_items_, stringify($T))) = typeof(List<$T>).GetField("_items");
 
 			/// <summary>Reads or writes a list of values in the current object.</summary>
 			public static List<$T> SyncList<SyncManager>(this SyncManager sync, Symbol? name, List<$T> savable) where SyncManager : ISyncManager {
@@ -396,6 +390,19 @@ namespace Loyc.SyncLib
 				var list = sync.SyncListImpl(name, savable.Span);
 				return list.InternalArray == null ? savable : list.AsArray();
 			}
+		}
+
+		##unroll($T in standardItemTypes)
+		{
+			##unroll($ListT in (List<$T>, IList<$T>, IReadOnlyCollection<$T>, #type<$T[]>, Memory<$T>, ReadOnlyMemory<$T>))
+			{
+				/// <summary>Reads or writes a list of values in the current object.</summary>
+				public static $ListT SyncList<SyncManager>(this SyncManager sync, string? name, $ListT savable) where SyncManager : ISyncManager
+					=> SyncList(sync, GSymbol.Get(name), savable);
+			}
+			/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
+			public static IList<$T> SyncList<SyncManager>(this SyncManager sync, string? name, IListAndReadOnly<$T> savable) where SyncManager : ISyncManager
+				=> SyncList(sync, GSymbol.Get(name), savable);
 		}
 	}
 }

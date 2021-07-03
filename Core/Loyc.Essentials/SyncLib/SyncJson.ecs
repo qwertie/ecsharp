@@ -31,10 +31,6 @@ namespace Loyc.SyncLib
 		internal static readonly byte[] _false = stringToBytes("false");
 		internal static readonly byte[] _null = stringToBytes("null");
 
-		partial class WriterState
-		{
-		}
-
 		public partial struct Writer
 		{
 			##unroll($T in (int, uint, long, ulong)) {
@@ -43,7 +39,7 @@ namespace Loyc.SyncLib
 					return savable;
 				}
 			}
-			##unroll($T in (BigInteger, float, double, char, string)) {
+			##unroll($T in (BigInteger, float, double, char)) {
 				public $T Sync(Symbol? name, $T savable) {
 					_s.WriteProp(name == null ? "" : name.Name, savable);
 					return savable;

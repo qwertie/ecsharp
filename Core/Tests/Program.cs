@@ -43,7 +43,7 @@ namespace Loyc.Tests
 				yield return k.KeyChar;
 		}
 
-		public static int RunMenu(IList<Pair<string, Func<int>>> menu, IEnumerator<char> input = null)
+		public static int RunMenu(IList<Pair<string, Func<int>>> menu, IEnumerator<char>? input = null)
 		{
 			var reader = input ?? ConsoleChars();
 			int errorCount = 0;
@@ -83,7 +83,7 @@ namespace Loyc.Tests
 		public static int Loyc_Essentials()
 		{
 			return MiniTest.RunTests.RunMany(
-				//new SyncJsonWriterTests(),
+				new SyncJsonWriterTests(),
 				new InternalListScannerTests(_seed),
 				new ScannableEnumerableTests(_seed),
 				new ScannableEnumerableTests(_seed, 200_000),

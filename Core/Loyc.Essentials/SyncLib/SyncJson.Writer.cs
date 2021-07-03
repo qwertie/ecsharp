@@ -20,10 +20,34 @@ namespace Loyc.SyncLib
 	{
 		static Options _defaultOptions = new Options();
 
-		public static SyncJson.Writer NewWriter(IBufferWriter<byte>? output = null, Options? options = null)
+		public static SyncJson.Writer NewWriter(IBufferWriter<byte> output, Options? options = null)
 			=> new Writer(new WriterState(output ?? new ArrayBufferWriter<byte>(), options ?? _defaultOptions));
-
-
+		public static ReadOnlyMemory<byte> Write<T>(T value, SyncObjectFunc<Writer, T> sync, Options? options = null)
+		{
+			var output = new ArrayBufferWriter<byte>(1024);
+			Writer w = NewWriter(output, options);
+			SyncManagerExt.Sync(w, (Symbol?) null, value, sync, (options ?? _defaultOptions).RootMode);
+			return output.WrittenMemory;
+		}
+		public static ReadOnlyMemory<byte> Write<T>(T value, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
+		{
+			var output = new ArrayBufferWriter<byte>(1024);
+			Writer w = NewWriter(output, options);
+			SyncManagerExt.Sync(w, (Symbol?) null, value, sync, (options ?? _defaultOptions).RootMode);
+			return output.WrittenMemory;
+		}
+		public static string WriteString<T>(T value, SyncObjectFunc<Writer, T> sync, Options? options = null)
+			#if NETSTANDARD2_0 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472
+			=> Encoding.UTF8.GetString(Write(value, sync, options).ToArray());
+			#else
+			=> Encoding.UTF8.GetString(Write(value, sync, options).Span);
+			#endif
+		public static string WriteString<T>(T value, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
+			#if NETSTANDARD2_0 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472
+			=> Encoding.UTF8.GetString(Write(value, sync, options).ToArray());
+			#else
+			=> Encoding.UTF8.GetString(Write(value, sync, options).Span);
+			#endif
 
 		public partial struct Writer : ISyncManager
 		{
@@ -98,10 +122,20 @@ namespace Loyc.SyncLib
 				return default;
 			}
 
-			public string? SyncNullable(Symbol? name, string? savable)
-			{
-				throw new NotImplementedException();
+			public string Sync(Symbol? name, string savable) => SyncNullable(name, savable)!;
+			public string? SyncNullable(Symbol? name, string? savable) {
+				_s.WriteProp(name == null ? "" : name.Name, savable);
+				return savable;
 			}
+
+			/// <summary>Ensures that all written output has been registered with the 
+			/// <see cref="IBufferWriter{byte}"/> object with which this writer was 
+			/// initialized, so that e.g. <see cref="ArrayBufferWriter{T}.WrittenMemory"/> 
+			/// returns complete JSON output. It is only necessary to call this method 
+			/// if you are writing a primitive (e.g. number or string), because flushing 
+			/// happens automatically when <see cref="ISyncManager.EndSubObject"/> is 
+			/// used to finish writing an object or list.</summary>
+			public void Flush() => _s.Flush();
 		}
 	}
 }

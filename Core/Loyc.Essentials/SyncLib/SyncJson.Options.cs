@@ -18,16 +18,27 @@ namespace Loyc.SyncLib
 	{
 		public class Options
 		{
+			public Options(bool compactMode = false)
+			{
+				if (compactMode) {
+					Newline = Indent = "";
+					SpaceAfterColon = false;
+				}
+			}
+
 			/// <summary>String that represents a newline. This string should be 
 			/// "\n" (Unix/Windows/Mac), "\r" (Mac only), or "\r\n" (Windows/DOS). 
 			/// Also, the empty string "" can be used to disable both newlines and 
-			/// indentation. Default: "\n"</summary>
-			public string Newline { get; set; } = "\n";
+			/// indentation. Default: <see cref="Environment.NewLine"/></summary>
+			public string Newline { get; set; } = Environment.NewLine;
 			
 			/// <summary>A string that is used to indent each line for each level of 
 			/// object nesting. This property, which has no effect if Newline == "",
 			/// should be either "\t" or zero or more spaces. Dafault: "\t"</summary>
 			public string Indent { get; set; } = "\t";
+
+			/// <summary>Whether to write a space after `:` in a key-value pair.</summary>
+			public bool SpaceAfterColon { get; set; } = false;
 
 			/// <summary>If this is true, Unicode characters above U+009F are written 
 			/// using JSON escapes (e.g. \u00A3 instead of £). Default: false.
@@ -52,15 +63,33 @@ namespace Loyc.SyncLib
 			/// 32 to 126 (because these are encoded verbatim). See Remarks regarding 
 			/// the effect of using null or false for this property.</summary>
 			/// <remarks>
-			/// When writing JSON, if this property set to null, BAIS is written when
-			/// NewtonsoftCompatibility is false and Sync() is called rather than 
-			/// SyncList(). If this property is false, then BAIS is not used.
+			/// When writing JSON, if this property set to null, BAIS is written only 
+			/// when NewtonsoftCompatibility is false. Null is the default value.
 			/// <para/>
 			/// When reading JSON, strings will be interpreted as BAIS in contexts where 
 			/// a byte array is expected, unless this property is false. If this is 
 			/// false, then the string will cause a type mismatch exception.
 			/// </remarks>
 			public bool? UseBais { get; set; } = null;
+
+			/// <summary>A function for altering names used in the first argument of 
+			/// ISyncManager.Sync. To use camelCase, set this to <see cref="SyncJson.ToCamelCase"/></summary>
+			public Func<string, string>? NameConverter { get; set; }
+
+			public SubObjectMode RootMode { get; set; } = SubObjectMode.DynamicType;
+		}
+
+		/// <summary>Gets a copy of a string with the first character changed to lowercase.
+		/// Assignable to <see cref="Options.NameConverter"/>.</summary>
+		public static string ToCamelCase(string name)
+		{
+			char c;
+			if (name.Length > 0 && (c = char.ToLowerInvariant(name[0])) != name[0]) {
+				var name2 = new StringBuilder(name);
+				name2[0] = c;
+				return name2.ToString();
+			}
+			return "";
 		}
 	}
 
