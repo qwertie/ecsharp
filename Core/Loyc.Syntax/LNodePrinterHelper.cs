@@ -116,17 +116,17 @@ namespace Loyc.Syntax.Impl
 			Newline = 1,
 			/// <summary>A delayed indent requested by Newline(deferIndent: true)</summary>
 			Indent = 2,
-			/// <summary>Flag set by <see cref="BeginNode"/>/
+			/// <summary>Flag set by <see cref="BeginNode"/></summary>
 			NodeStarted = 4,
 			/// <summary>Flag set by <see cref="EndNode"/></summary>
 			NodeEnded = 8,
 			NodeChanged = NodeStarted | NodeEnded,
 			/// <summary>A special flag that is needed to stop FlushIndent from interfering with newlines</summary>
 			CollapsableNewlineWasJustWritten = 16
-	}
+		}
 
-	/// <inheritdoc/>
-	public virtual LNodePrinterHelper Write(char c)
+		/// <inheritdoc/>
+		public virtual LNodePrinterHelper Write(char c)
 		{
 			if (_pendingAction != 0)
 				FlushPending(c);

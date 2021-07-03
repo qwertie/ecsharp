@@ -1,4 +1,4 @@
-// Generated from les3.to.ecs.Macros.ecs by LeMP custom tool. LeMP version: 2.9.1.0
+// Generated from les3.to.ecs.Macros.ecs by LeMP custom tool. LeMP version: 30.1.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -96,7 +96,7 @@ namespace LeMP.les3.to.ecs
 			return list;
 
 			MacroInfo MacroInfoFor(LexicalMacro f) => 
-			new MacroInfo(ns, f.Method.GetCustomAttributes(false).OfType<LexicalMacroAttribute>().Single(), f);
+			  new MacroInfo(ns, f.Method.GetCustomAttributes(false).OfType<LexicalMacroAttribute>().Single(), f);
 		}
 
 		[LexicalMacro("class Name { Members; }; class Name(Bases...) { Members... }", 
@@ -192,8 +192,7 @@ namespace LeMP.les3.to.ecs
 							{
 								LNode name_apos;
 								LNodeList args_apos;
-								if (name.CallsMin(CodeSymbols.IndexBracks, 1) && (name_apos = name.Args[0]) != null) {
-									args_apos = new LNodeList(name.Args.Slice(1));
+								if (name.CallsMin(CodeSymbols.IndexBracks, 1) && (name_apos = name.Args[0]) != null && (args_apos = new LNodeList(name.Args.Slice(1))).IsEmpty | true) {
 									name = name_apos;
 									args = LNode.Call(CodeSymbols.AltList, LNode.List(args_apos));
 								}

@@ -1,4 +1,4 @@
-// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 2.9.0.3
+// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 30.1.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -234,9 +234,7 @@ namespace LeMP.ecs
 							return LNode.Call(LNode.List(attrs), CodeSymbols.For, LNode.List(LNode.Call(CodeSymbols.AltList, LNode.List(LNode.Call(CodeSymbols.Var, LNode.List(LNode.Id(CodeSymbols.Bool), LNode.Call(CodeSymbols.Assign, LNode.List(continue_N, LNode.Literal(true))).SetStyle(NodeStyle.Operator))))), continue_N, LNode.Call(CodeSymbols.AltList), LNode.Call(CodeSymbols.Braces, LNode.List(bodyStmts)).SetStyle(NodeStyle.StatementBlock)));
 						} else
 							return stmt.WithArgs(block, cond);
-					} else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.For, 4) && stmt.Args[0].Calls(CodeSymbols.AltList) && (cond = stmt.Args[1]) != null && stmt.Args[2].Calls(CodeSymbols.AltList) && (block = stmt.Args[3]) != null) {
-						inits = stmt.Args[0].Args;
-						incs = stmt.Args[2].Args;
+					} else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.For, 4) && stmt.Args[0].Calls(CodeSymbols.AltList) && (inits = stmt.Args[0].Args).IsEmpty | true && (cond = stmt.Args[1]) != null && stmt.Args[2].Calls(CodeSymbols.AltList) && (incs = stmt.Args[2].Args).IsEmpty | true && (block = stmt.Args[3]) != null) {
 						return ESEInForLoop(stmt, attrs, inits, cond, incs, block);
 					} else if ((attrs = stmt.Attrs).IsEmpty | true && stmt.Calls(CodeSymbols.ForEach, 3) && (tmp_11 = stmt.Args[0]) != null && tmp_11.Calls(CodeSymbols.Var, 2) && (type = tmp_11.Args[0]) != null && (loopVar = tmp_11.Args[1]) != null && (collection = stmt.Args[1]) != null && (block = stmt.Args[2]) != null) {
 						Debug.Assert(collection.Equals(stmt[1]));
