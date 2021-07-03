@@ -231,10 +231,10 @@ namespace Loyc
 		/// generally doesn't matter, as Symbols are compared by reference, not by 
 		/// ID.
 		/// </remarks>
-		public Symbol Get(UString name)
+		public Symbol? Get(UString name)
 		{
 			Get(name, out Symbol? result);
-			return result ?? Get("");
+			return result;
 		}
 
 		/// <inheritdoc cref="Get(UString)"/>
@@ -269,23 +269,25 @@ namespace Loyc
 		protected virtual void Get(UString name, out Symbol? sym)
 		{
 			if ((sym = GetIfExists(name)!) == null) {
-				if (name.IsNull)
+				if (!name.IsNull)
+					GetOrCreate(name, out sym);
+			}
+		}
+		void GetOrCreate(UString name, out Symbol? sym)
+		{
+			lock (_map) {
+				if ((sym = GetIfExists(name)!) != null)
+					// It is possible for another thread to have added 'name' to
+					// '_map' while we were waiting to acquire the lock.
+					// If that has happened, then we want to return now.
 					return;
 
-				lock (_map) {
-					if ((sym = GetIfExists(name)!) != null)
-						// It is possible for another thread to have added 'name' to
-						// '_map' while we were waiting to acquire the lock.
-						// If that has happened, then we want to return now.
-						return;
+				if (_idMap != null)
+					while (_idMap.ContainsKey(_nextId))
+						_nextId++;
 
-					if (_idMap != null)
-						while (_idMap.ContainsKey(_nextId))
-							_nextId++;
-
-					sym = AddSymbol(NewSymbol(_nextId, name.ToString()!));
-					_nextId++;
-				}
+				sym = AddSymbol(NewSymbol(_nextId, name.ToString()!));
+				_nextId++;
 			}
 		}
 
