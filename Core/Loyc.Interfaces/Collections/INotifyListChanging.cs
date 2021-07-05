@@ -60,8 +60,8 @@ namespace Loyc.Collections
 	/// <see cref="INotifyListChanging{T, TSender}.ListChanging"/> event.</summary>
 	/// <param name="sender">The collection that changed.</param>
 	/// <param name="args">Information about the change.</param>
-	public delegate void ListChangingHandler<T, TSender>(TSender sender, ListChangeInfo<T> args);
+	public delegate void ListChangingHandler<T, TSender>(TSender sender, ListChangeInfo<T> info);
 
 	[Obsolete("Use ListChangingHandler<T, IListSource<T>> instead")]
-	public delegate void ListChangingHandler<T>(IListSource<T> sender, ListChangeInfo<T> args);
+	public delegate void ListChangingHandler<T>(IListSource<T> sender, ListChangeInfo<T> info);
 }

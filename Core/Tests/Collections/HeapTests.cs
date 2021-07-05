@@ -126,7 +126,7 @@ namespace Loyc.Collections.Tests
 				Check();
 			}
 			// Remove each item
-			Item prev = null;
+			Item? prev = null;
 			while (!heap.IsEmpty) {
 				var item = heap.Pop();
 				AreEqual(item.Index, -1);

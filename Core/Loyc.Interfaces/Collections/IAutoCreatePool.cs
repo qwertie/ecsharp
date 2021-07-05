@@ -13,16 +13,8 @@ namespace Loyc.Collections
 	/// <remarks>This design assumes that the values in the pool know their own 
 	/// key, so it implements IEnumerable{TValue} rather than 
 	/// IEnumerable{KeyValuePair{TKey,TValue}}.</remarks>
-	public interface IAutoCreatePool<in TKey, out TValue> : IReadOnlyCollection<TValue>
+	public interface IAutoCreatePool<in TKey, out TValue> : IReadOnlyCollection<TValue>, IIndexed<TKey, TValue>
 	{
-		/// <summary>Gets or creates the value associated with the specified key.</summary>
-		/// <exception cref="ArgumentOutOfRangeException">The key was not valid
-		/// for this list.</exception>
-		/// <param name="key">A key object.</param>
-		/// <returns>The associated value object, which is created automatically 
-		/// if it does not already exist.</returns>
-		TValue this[TKey key] { get; }
-
 		/// <summary>Gets the item with the specified key, if it was created earlier.</summary>
 		/// <returns>The value corresponding to the specified key, or 
 		/// <c>default(TValue)</c> if the value has not been created.</returns>

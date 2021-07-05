@@ -70,7 +70,7 @@ namespace Loyc.Syntax.Les
 		{
 			// true, false and null: the only keywords so far
 			Case("`foo`", A(TT.BQId), _("foo"));
-			Case("null", A(TT.Literal), new object[] { null });
+			Case("null", A(TT.Literal), new object?[] { null });
 			Case("`null`", A(TT.BQId), _("null"));
 			Case("true false", A(TT.Literal, TT.Literal), true, false);
 			Case("`true``false`", A(TT.BQId, TT.BQId), _("true"), _("false"));
@@ -442,7 +442,7 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void TestErrors()
 		{
-			Case("\0", A(TT.Unknown), (object)null);
+			Case("\0", A(TT.Unknown), (object?)null);
 			Case("x=\"Hello\n", A(TT.Id, TT.Assignment, TT.Literal, TT.Newline), _("x"), _("'="), new Error("Hello"), null);
 			Case("'\n'o'\"pq\n?", A(TT.SingleQuote, TT.Newline, TT.Literal, TT.Literal, TT.Newline, TT.NormalOp),
 			                      _("'"), null, L("o", "c"), new Error("pq"), null, _("'?"));
@@ -487,7 +487,7 @@ namespace Loyc.Syntax.Les
 			public Error(object value) { Value = value; }
 		}
 
-		void Case(UString input, TokenType[] tokenTypes, params object[] expected)
+		void Case(UString input, TokenType[] tokenTypes, params object?[] expected)
 		{
 			Debug.Assert(expected.Length <= tokenTypes.Length);
 			

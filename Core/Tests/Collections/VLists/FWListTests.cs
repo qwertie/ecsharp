@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Loyc.Collections.Impl;
@@ -93,17 +93,17 @@ namespace Loyc.Collections
 			Assert.Fail("Delegate did not throw '{0}' as expected.", typeof(Type).Name);
 		}
 
-		private static void ExpectList<T>(IList<T> list, params T[] expected)
+		private static void ExpectList<T>(IList<T?> list, params T?[] expected)
 		{
 			Assert.AreEqual(expected.Length, list.Count);
 			for (int i = 0; i < expected.Length; i++)
 				Assert.AreEqual(expected[i], list[i]);
 		}
-		private static void ExpectListByEnumerator<T>(IList<T> list, params T[] expected)
+		private static void ExpectListByEnumerator<T>(IList<T?> list, params T?[] expected)
 		{
 			Assert.AreEqual(expected.Length, list.Count);
 			int i = 0;
-			foreach (T item in list) {
+			foreach (T? item in list) {
 				Assert.AreEqual(expected[i], item);
 				i++;
 			}

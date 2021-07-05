@@ -7,13 +7,13 @@ using Loyc.MiniTest;
 namespace Loyc.Collections.Tests
 {
 	[TestFixture]
-	public class MapTests : DictionaryTests<MMap<object, object>>
+	public class MapTests : DictionaryTests<MMap<object, object?>>
 	{
 		public MapTests() : base(true) { }
 
-		public Map<object,object> Imm(params KeyValuePair<object, object>[] members)
+		public Map<object,object?> Imm(params KeyValuePair<object, object?>[] members)
 		{
-			return new Map<object, object>(members);
+			return new Map<object, object?>(members);
 		}
 
 		[Test]
@@ -47,7 +47,7 @@ namespace Loyc.Collections.Tests
 		public void TestExtraFunctions()
 		{
 			var imm = Imm(P(1, 1), P(2, 2), P(3, 3));
-			var map = (MMap<object, object>)imm;
+			var map = (MMap<object, object?>)imm;
 			Assert.That(imm.IsReadOnly);
 			Assert.That(!map.IsReadOnly);
 			Assert.AreEqual(1, map.TryGetValue(1, -1));

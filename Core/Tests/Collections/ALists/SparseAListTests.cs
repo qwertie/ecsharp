@@ -286,24 +286,24 @@ namespace Loyc.Collections.Tests
 			alist.InsertSpace(50, 1000000000);
 			i = null;
 			Assert.AreEqual(alist.NextHigherItem(ref i), 0);
-			Assert.AreEqual(i.Value, 0);
+			Assert.AreEqual(i!.Value, 0);
 			i = int.MinValue;
 			Assert.AreEqual(alist.NextHigherItem(ref i), 0);
-			Assert.AreEqual(i.Value, 0);
+			Assert.AreEqual(i!.Value, 0);
 			Assert.AreEqual(alist.NextHigherItem(ref i), 1);
-			Assert.AreEqual(i.Value, 1);
+			Assert.AreEqual(i!.Value, 1);
 			i = 49;
 			Assert.AreEqual(alist.NextHigherItem(ref i), 50);
-			Assert.AreEqual(i.Value, 1000000050);
+			Assert.AreEqual(i!.Value, 1000000050);
 			i = 50;
 			Assert.AreEqual(alist.NextHigherItem(ref i), 50);
-			Assert.AreEqual(i.Value, 1000000050);
+			Assert.AreEqual(i!.Value, 1000000050);
 			i = 1000000049;
 			Assert.AreEqual(alist.NextHigherItem(ref i), 50);
-			Assert.AreEqual(i.Value, 1000000050);
+			Assert.AreEqual(i!.Value, 1000000050);
 			i = 1000000098;
 			Assert.AreEqual(alist.NextHigherItem(ref i), 99);
-			Assert.AreEqual(i.Value, 1000000099);
+			Assert.AreEqual(i!.Value, 1000000099);
 			Assert.AreEqual(alist.NextHigherItem(ref i), default(int));
 			Assert.AreEqual(i.HasValue, false);
 			i = 1000000100;
@@ -319,7 +319,7 @@ namespace Loyc.Collections.Tests
 			alist.Add(777);
 			i = int.MinValue;
 			Assert.AreEqual(alist.NextHigherItem(ref i), 777);
-			Assert.AreEqual(i.Value, int.MaxValue - 1);
+			Assert.AreEqual(i!.Value, int.MaxValue - 1);
 			Assert.AreEqual(alist.NextLowerItem(ref i), default(int));
 			Assert.AreEqual(i.HasValue, false);
 		}
@@ -335,23 +335,23 @@ namespace Loyc.Collections.Tests
 			}
 			i = int.MaxValue;
 			Assert.AreEqual(alist.NextLowerItem(ref i), 99);
-			Assert.AreEqual(i.Value, 99099);
+			Assert.AreEqual(i!.Value, 99099);
 			i = 99100;
 			Assert.AreEqual(alist.NextLowerItem(ref i), 99);
-			Assert.AreEqual(i.Value, 99099);
+			Assert.AreEqual(i!.Value, 99099);
 			Assert.AreEqual(alist.NextLowerItem(ref i), 98);
-			Assert.AreEqual(i.Value, 98098);
+			Assert.AreEqual(i!.Value, 98098);
 			i = 55555;
 			Assert.AreEqual(alist.NextLowerItem(ref i), 55);
-			Assert.AreEqual(i.Value, 55055);
+			Assert.AreEqual(i!.Value, 55055);
 			i = 1002;
 			Assert.AreEqual(alist.NextLowerItem(ref i), 1);
-			Assert.AreEqual(i.Value, 1001);
+			Assert.AreEqual(i!.Value, 1001);
 			Assert.AreEqual(alist.NextLowerItem(ref i), 0);
-			Assert.AreEqual(i.Value, 0);
+			Assert.AreEqual(i!.Value, 0);
 			i = 1;
 			Assert.AreEqual(alist.NextLowerItem(ref i), 0);
-			Assert.AreEqual(i.Value, 0);
+			Assert.AreEqual(i!.Value, 0);
 			Assert.AreEqual(alist.NextLowerItem(ref i), default(int));
 			Assert.AreEqual(i.HasValue, false);
 			i = int.MinValue;
@@ -367,10 +367,10 @@ namespace Loyc.Collections.Tests
 			Assert.AreEqual(i.HasValue, false);
 			i = int.MaxValue;
 			Assert.AreEqual(alist.NextLowerItem(ref i), 777);
-			Assert.AreEqual(i.Value, int.MaxValue - 1);
+			Assert.AreEqual(i!.Value, int.MaxValue - 1);
 			i = null;
 			Assert.AreEqual(alist.NextLowerItem(ref i), 777);
-			Assert.AreEqual(i.Value, int.MaxValue - 1);
+			Assert.AreEqual(i!.Value, int.MaxValue - 1);
 		}
 
 		[Test]

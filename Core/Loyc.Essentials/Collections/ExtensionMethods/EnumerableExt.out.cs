@@ -330,7 +330,7 @@ namespace Loyc.Collections
 			return i > -1 ? value : new Maybe<T>();
 		}
 
-		public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T> list) where T: class
+		public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> list) where T: class
 		{
 			foreach (var item in list)
 				if (item != null)

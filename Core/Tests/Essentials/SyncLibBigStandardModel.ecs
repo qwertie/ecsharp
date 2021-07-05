@@ -144,7 +144,7 @@ namespace Loyc.Essentials.Tests
 		};
 
 		public static readonly SyncObjectFunc<S, StandardFields> SyncBasics = SyncBasics_;
-		public static StandardFields SyncBasics_(S sync, StandardFields obj)
+		public static StandardFields SyncBasics_(S sync, StandardFields? obj)
 		{
 			obj ??= new BigStandardModel(0);
 

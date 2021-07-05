@@ -75,8 +75,8 @@ namespace Loyc.Syntax.Tests
 			}
 		}
 
-		static LiteralNode CL(object value, string symbol) => 
-			LNode.Literal(SourceRange.Synthetic, new LiteralValue(value, (Symbol)symbol));
+		static LiteralNode CL(object? value, string? symbol) => 
+			LNode.Literal(SourceRange.Synthetic, new LiteralValue(value, (Symbol?)symbol));
 
 		[Test]
 		public void TestStandardPrinters()

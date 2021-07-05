@@ -189,9 +189,9 @@ namespace Loyc.Collections.Tests
 		[Test]
 		public void StressTest()
 		{
-			ListT list = _newList(0), clone = default(ListT);
+			ListT? list = _newList(0), clone = default(ListT);
 			List<int> list2 = new List<int>();
-			int[] clone2 = null;
+			int[]? clone2 = null;
 
 			// Do a series of Insert, Add, Remove and RemoveAt operations to both 
 			// lists, and ensure that we get the same results.

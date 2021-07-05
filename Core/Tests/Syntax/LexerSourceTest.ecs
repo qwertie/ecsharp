@@ -91,7 +91,7 @@ namespace Loyc.Syntax.Tests
 
 		TT _tokenType;
 		int _startIndex;
-		object _value;
+		object? _value;
 
 		extern token Newline() @{ '\n' | '\r' '\n'? };
 

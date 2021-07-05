@@ -31,7 +31,7 @@ namespace Loyc
 		public IDictionary<Symbol, ValueT> Tags { get { return this; } }
 
 		[return: MaybeNull]
-		public ValueT GetTag(string key) { return GetTag(GSymbol.GetIfExists(key)); }
+		public ValueT GetTag(string? key) { return GetTag(GSymbol.GetIfExists(key)); }
 		[return: MaybeNull]
 		public ValueT GetTag(Symbol? key)
 		{

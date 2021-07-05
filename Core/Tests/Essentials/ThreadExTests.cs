@@ -38,7 +38,7 @@ namespace Loyc.Essentials.Tests
 				started = false;
 			});
 
-			EventHandler<ThreadStartEventArgs> eh = null;
+			EventHandler<ThreadStartEventArgs> eh = null!;
 			ThreadEx.ThreadStarting += (eh = delegate(object o, ThreadStartEventArgs e)
 			{
 				eventOccurred = true;

@@ -22,7 +22,7 @@ namespace Loyc.Essentials.Tests
 		public DictionaryWrapperForTesting<K, V> Clone() => new DictionaryWrapperForTesting<K, V>(new Dictionary<K, V>(_obj));
 	}
 
-	class DictionaryWrapperTests : DictionaryTests<DictionaryWrapperForTesting<object, object>>
+	class DictionaryWrapperTests : DictionaryTests<DictionaryWrapperForTesting<object, object?>>
 	{
 	}
 }

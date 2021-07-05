@@ -448,12 +448,12 @@ namespace Loyc.MiniTest
 		/// Equals() is inherited from object; you probably want to call AreEqual instead.
 		/// </summary>
 		[Obsolete("Use AreEqual instead")]
-		public static new void Equals(object a, object b) { AreEqual(a, b); }
+		public static new void Equals(object? a, object? b) { AreEqual(a, b); }
 
 		/// <summary>
 		/// Verifies that two references are equal.
 		/// </summary>
-		public static new void ReferenceEquals(object a, object b)
+		public static new void ReferenceEquals(object? a, object? b)
 		{
 			That(a == b, "References are not equal: {0} != {1}.", a, b);
 		}
@@ -487,7 +487,7 @@ namespace Loyc.MiniTest
 
 
 		/// <summary>Calls Fail(message, args) if condition is false.</summary>
-		public static void That(bool condition, string message, params object[] args)
+		public static void That(bool condition, string message, params object?[] args)
 		{
 			if (!condition) Fail(message, args);
 		}
@@ -615,21 +615,21 @@ namespace Loyc.MiniTest
 		{
 			IsFalse(condition, null, null);
 		}
-		public static void IsNotNull(object anObject, string? message, params object?[]? args)
+		public static void IsNotNull(object? anObject, string? message, params object?[]? args)
 		{
 			if (anObject == null) 
 				Fail2(message, args, "IsNotNull: object is null");
 		}
-		public static void IsNotNull(object anObject)
+		public static void IsNotNull(object? anObject)
 		{
 			IsNotNull(anObject, null, null);
 		}
-		public static void IsNull(object anObject, string? message, params object?[]? args)
+		public static void IsNull(object? anObject, string? message, params object?[]? args)
 		{
 			if (anObject != null) 
 				Fail2(message, args, "IsNull: object is not null");
 		}
-		public static void IsNull(object anObject)
+		public static void IsNull(object? anObject)
 		{
 			IsNull(anObject, null, null);
 		}
@@ -730,12 +730,12 @@ namespace Loyc.MiniTest
 		{
 			AreEqual(expected, actual, 0, null, null);
 		}
-		public static void AreEqual(object expected, object actual, string? message, params object?[]? args)
+		public static void AreEqual(object? expected, object? actual, string? message, params object?[]? args)
 		{
 			if (!object.Equals(expected, actual))
 				Fail2(message, args, GetObjectMismatchMessage(expected, actual), (object?[]?)null);
 		}
-		public static void AreEqual(object expected, object actual)
+		public static void AreEqual(object? expected, object? actual)
 		{
 			AreEqual(expected, actual, null, null);
 		}

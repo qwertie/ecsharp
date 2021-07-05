@@ -17,7 +17,7 @@ namespace Loyc.Essentials.Tests
 			IEnumerator<KeyValuePair<Symbol, string>> e;
 
 			// Sanity checks
-			Assert.IsNull(a.GetTag((string)null));
+			Assert.IsNull(a.GetTag((string?) null));
 			Assert.IsFalse(a.RemoveTag("Nonexistant"));
 			Assert.IsFalse(a.HasTag("Nonexistant"));
 
@@ -35,7 +35,7 @@ namespace Loyc.Essentials.Tests
 			}
 
 			// Remove what we added
-			Assert.IsNull(a.GetTag((string)null));
+			Assert.IsNull(a.GetTag((string?) null));
 			Assert.IsFalse(a.RemoveTag(""));
 			Assert.IsTrue(a.RemoveTag("One"));
 			Assert.IsNull(a.GetTag("One"));
@@ -111,14 +111,14 @@ namespace Loyc.Essentials.Tests
 		public void TestSetNull1()
 		{
 			HashTags<string> a = new HashTags<string>();
-			a.SetTag((Symbol)null, "hello");
+			a.SetTag((Symbol?) null!, "hello");
 		}
 		[ExpectedException(typeof(ArgumentNullException))]
 		public void TestSetNull2()
 		{
 			HashTags<string> a = new HashTags<string>();
 			a.SetTag("SomethingElseFirst", "hello");
-			a.SetTag((string)null, "hi");
+			a.SetTag((string?) null!, "hi");
 		}
 	};
 }

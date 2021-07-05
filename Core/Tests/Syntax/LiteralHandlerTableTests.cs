@@ -24,7 +24,7 @@ namespace Loyc.Syntax.Tests
 			Func<UString, Symbol, Either<object, LogMessage>> trimmer = (text, marker) =>
 			{
 				Assert.AreEqual(marker.Name, "trimmed");
-				return text.ToString().Trim();
+				return text.ToString()!.Trim();
 			};
 			Assert.IsTrue(lht.AddParser(false, (Symbol)"trimmed", trimmer));
 			Assert.IsFalse(lht.AddParser(false, (Symbol)"trimmed", trimmer));
@@ -53,7 +53,7 @@ namespace Loyc.Syntax.Tests
 			s.Append(node.Value.ToString().Slice(0, 1).ToString());
 			return (Symbol)"eels";
 		}
-		Either<Symbol, LogMessage> PrintFirstElem(ILNode node, StringBuilder s)
+		Either<Symbol?, LogMessage> PrintFirstElem(ILNode node, StringBuilder s)
 		{
 			s.Append(((System.Collections.IEnumerable)node.Value).Cast<object>().First().ToString());
 			return null;
@@ -68,8 +68,8 @@ namespace Loyc.Syntax.Tests
 			var lht = new LiteralHandlerTable();
 
 			// Can't add printer for null
-			Assert.IsFalse(lht.AddPrinter(true, (Type)null, PrintTrim));
-			Assert.IsFalse(lht.AddPrinter(true, (Symbol)null, PrintTrim));
+			Assert.IsFalse(lht.AddPrinter(true, (Type?)null, PrintTrim));
+			Assert.IsFalse(lht.AddPrinter(true, (Symbol?)null, PrintTrim));
 
 			// Add printer for "trim" marker and string
 			Assert.IsTrue(lht.AddPrinter(false, (Symbol)"trim", PrintTrim));

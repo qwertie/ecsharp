@@ -1157,7 +1157,7 @@ namespace Loyc.Syntax.Les
 		/// <param name="parseErrors">Number of parser errors to expect. If this 
 		/// is not 0, no test will be done with the printer.</param>
 		protected MessageHolder Test(Mode mode, int parseErrors, string text, params LNode[] code) => Test(mode, parseErrors, null, text, code);
-		protected abstract MessageHolder Test(Mode mode, int parseErrors, LNodePrinterOptions printerOptions, string text, params LNode[] code);
+		protected abstract MessageHolder Test(Mode mode, int parseErrors, LNodePrinterOptions? printerOptions, string text, params LNode[] code);
 		
 		protected enum Mode
 		{
@@ -1171,7 +1171,7 @@ namespace Loyc.Syntax.Les
 			foreach (var msg in messages.List)
 				for (int i = 0; i < substrings.Length; i++)
 					if (msg.Formatted.IndexOf(substrings[i], StringComparison.InvariantCultureIgnoreCase) > -1)
-						substrings[i] = null;
+						substrings[i] = null!;
 			Assert.AreEqual(null, substrings.WhereNotNull().FirstOrDefault());
 		}
 	}

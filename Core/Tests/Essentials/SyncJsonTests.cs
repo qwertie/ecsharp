@@ -107,8 +107,8 @@ namespace Loyc.Essentials.Tests
 
 		public class Family
 		{
-			public IList<Parent> Parents;
-			public IList<Child> Children;
+			public IList<Parent>? Parents;
+			public IList<Child>? Children;
 
 			//public static Family Sync(ISyncManager sync, Family? obj)
 			//{
@@ -120,14 +120,14 @@ namespace Loyc.Essentials.Tests
 		}
 		public class Parent
 		{
-			public string Name { get; set; }
-			public IList<Child> Children { get; set; }
+			public string? Name { get; set; }
+			public IList<Child>? Children { get; set; }
 		}
 		public class Child
 		{
-			public string Name { get; set; }
-			public Parent Father { get; set; }
-			public Parent Mother { get; set; }
+			public string? Name { get; set; }
+			public Parent? Father { get; set; }
+			public Parent? Mother { get; set; }
 		}
 
 		public Family NewFamily()

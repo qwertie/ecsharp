@@ -124,9 +124,9 @@ namespace Loyc
 		#endregion
 
 		[return: NotNullIfNotNull("s")]
-		public static explicit operator Symbol?(string? s) => s == null ? null : GSymbol.Get(s);
+		public static explicit operator Symbol?(string? s) => GSymbol.Get((UString) s);
+		public static explicit operator Symbol?(UString s) => GSymbol.Get(s);
 		public static explicit operator string(Symbol s) => s.Name;
-		public static explicit operator Symbol(UString s) => GSymbol.Get(s);
 		public static explicit operator UString(Symbol s) => new UString(s.Name);
 		
 		/// <summary>Alias for <see cref="GSymbol.Get(string)"/>. This function was 
@@ -143,7 +143,9 @@ namespace Loyc
 	/// </remarks>
 	public class GSymbol
 	{
-		static public Symbol Get(UString name) => Pool.Get(name);
+		[return: NotNullIfNotNull("name")]
+		static public Symbol? Get(string? name) => Pool.Get(name);
+		static public Symbol? Get(UString name) => Pool.Get(name);
 		static public Symbol? GetIfExists(UString name) => Pool.GetIfExists(name);
 		static public Symbol? GetById(int id) { return Pool.GetById(id); }
 
@@ -153,7 +155,7 @@ namespace Loyc
 		static GSymbol()
 		{
 			Pool = new SymbolPool(0, false, 0);
-			Empty = Pool.Get("");
+			Empty = Pool.Get("")!;
 			Debug.Assert(Empty.Id == 0 && Empty.Name == "");
 			Debug.Assert(((Symbol)Empty).Pool == Pool);
 		}
@@ -236,10 +238,14 @@ namespace Loyc
 			Get(name, out Symbol? result);
 			return result;
 		}
+		[return: NotNullIfNotNull("name")]
+		public Symbol? Get(string? name) => Get((UString) name);
 
+		#pragma warning disable CS8766 // Nullability doesn't match interface
 		/// <inheritdoc cref="Get(UString)"/>
-		public Symbol this[UString name] { get { return Get(name); } }
-		
+		public Symbol? this[UString name] => Get(name);
+		#pragma warning restore CS8766
+
 		/// <summary>Creates a Symbol in this pool with a specific ID, or verifies 
 		/// that the requested Name-Id pair is present in the pool.</summary>
 		/// <param name="name">Name to find or create.</param>
@@ -354,7 +360,7 @@ namespace Loyc
 		public Symbol GetGlobalOrCreateHere(string name)
 		{
 			Symbol? sym = GSymbol.Pool.GetIfExists(name);
-			return sym ?? Get(name);
+			return sym ?? Get(name)!;
 		}
 
 		/// <summary>Gets a symbol by its ID, or null if there is no such symbol.</summary>
@@ -445,9 +451,13 @@ namespace Loyc
 		{
 			_factory = factory;
 		}
-		public new SymbolE Get(UString name)
+		public new SymbolE Get(string name)
 		{
-			return (SymbolE)base.Get(name);
+			return (SymbolE)base.Get(name)!;
+		}
+		public new SymbolE? Get(UString name)
+		{
+			return (SymbolE?)base.Get(name);
 		}
 		public new SymbolE Get(UString name, int id)
 		{

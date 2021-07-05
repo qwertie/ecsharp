@@ -6,8 +6,8 @@ namespace Loyc.Essentials.Tests
 {
 	public class Person
 	{
-		public string Name { get; set; }
+		public string? Name { get; set; }
 		public int Age;
-		public Person[] Siblings { get; set; }
+		public Person[]? Siblings { get; set; }
 	}
 }

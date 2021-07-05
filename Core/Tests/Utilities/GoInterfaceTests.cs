@@ -113,7 +113,7 @@ namespace Loyc
 			public sbyte CovariantReturn4() { return 1; }
 			public bool DroppedParam() { return true; }
 			public bool DroppedParam2(out int x) { x = 1; return true; }
-			public bool DroppedParam3(out object x) { x = null; return true; }
+			public bool DroppedParam3(out object? x) { x = null; return true; }
 			public bool DefaultParam([Optional, DefaultParameterValue(1.0)] double x) { return x == 1.0; }
 		}
 		public abstract class AdaptationTestBase
@@ -315,14 +315,14 @@ namespace Loyc
 			// works in reverse.
 			public bool Covariance(out short x) { x = 1; return true; }
 			public bool Covariance(out long x) { x = 1; return false; }
-			public bool Covariance2(out Stream x) { x = null; return true; }
-			public bool Covariance2(out MemoryStream x) { x = null; return false; }
+			public bool Covariance2(out Stream? x) { x = null; return true; }
+			public bool Covariance2(out MemoryStream? x) { x = null; return false; }
 
 			// Return-type covariance works very much like 'out' covariance, with 
 			// the added caveat that the in interface, the return value can be 
 			// 'void'. Covariance is 'better' than a missing parameter.
 			public int ReturnCovariance() { return 1; } // preferred
-			public object ReturnCovariance(int x) { return null; }
+			public object? ReturnCovariance(int x) { return null; }
 			public byte ReturnCovariance2() { return 1; } // preferred
 			public int ReturnCovariance2(int x) { return 0; }
 			public int ReturnCovariance3(out bool correct) { correct = true; return 1; } // preferred
@@ -330,7 +330,7 @@ namespace Loyc
 
 			// GoInterface can disambiguate based on return type alone.
 			public bool ChooseTheMatchingReturn(int x, out int y) { y = 2; return x == 1; }
-			public string ChooseTheMatchingReturn(int x) { return null; }
+			public string? ChooseTheMatchingReturn(int x) { return null; }
 
 			protected bool IgnoreNonPublic(int x) { return false; }
 			public bool IgnoreNonPublic(object x) { return x is int && (int)x == 1; }
@@ -476,7 +476,7 @@ namespace Loyc
 
 		public class FooA
 		{
-			public virtual string Foo() { return null; }
+			public virtual string? Foo() { return null; }
 			public virtual string Bar() { return "Bar"; }
 			public virtual string Baz() { return "Baz"; }
 		}
@@ -619,7 +619,7 @@ namespace Loyc
 		public abstract class ReverseView<T> : IList<T>
 		{
 			[GoDecoratorField]
-			protected IList<T> _list;
+			protected IList<T> _list = null!; // initialized by GoInterface
 
 			protected ReverseView() { Debug.Assert(_list != null); }
 

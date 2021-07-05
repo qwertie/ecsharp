@@ -138,7 +138,7 @@ namespace Loyc.Tests
 				new DequeTests<DList<int>>(delegate() { return new DList<int>(); }),
 				new DequeTests<AList<int>>(delegate() { return new AList<int>(); }),
 				new DequeTests<SparseAList<int>>(delegate() { return new SparseAList<int>(); }),
-				new DictionaryTests<BDictionary<object, object>>(true, true),
+				new DictionaryTests<BDictionary<object, object?>>(true, true),
 				new ListTests<AList<int>>(false, delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }),
 				new ListRangeTests<AList<int>>(false, delegate() { return new AList<int>(); }, 12345),
 				new ListTests<SparseAList<int>>(false, delegate(int n) { var l = new SparseAList<int>(); l.Resize(n); return l; }, 12345),

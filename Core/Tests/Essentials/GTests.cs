@@ -129,5 +129,24 @@ namespace Loyc.Essentials.Tests
 			Assert.AreEqual(typeof(string).GetMethod("Copy", new[] { typeof(string) }), G.GetMethodInfo(() => string.Copy("")));
 			Assert.AreEqual(typeof(EqualityComparer<int>).GetProperty("Default").GetGetMethod(), G.GetMethodInfo(() => EqualityComparer<int>.Default));
 		}
+
+		//[Test]
+		//public void TestPerf()
+		//{
+		//	var field = typeof(List<double>).GetField("_items", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+		//	var list = new List<double> { 1, 2, 3, 4, 5 };
+		//	var timer = new EzStopwatch(true);
+		//	for (int it = 0; it < 10_000_000; it++) {
+		//		field.GetValue(list);
+		//	}
+		//	Console.WriteLine("************************* GetValue " + timer.Restart());
+		//	for (int it = 0; it < 10_000_000; it++) {
+		//		var x = new double[110 + (it & 1)];
+		//		for (int i = 0; i < x.Length; i++) {
+		//			x[i] = i;
+		//		}
+		//	}
+		//	Console.WriteLine("************************* init int[10] " + timer.Restart());
+		//}
 	}
 }

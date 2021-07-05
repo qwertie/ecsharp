@@ -1,4 +1,4 @@
-// Generated from LexerSourceTest.ecs by LeMP custom tool. LeMP version: 2.8.4.0
+// Generated from LexerSourceTest.ecs by LeMP custom tool. LeMP version: 30.1.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -23,7 +23,7 @@ namespace Loyc.Syntax.Tests
 	[TestFixture] 
 	public class LexerSourceTests_Calculator : TestHelpers
 	{
-		static Token T(TT type, object value = null) {
+		static Token T(TT type, object? value = null) {
 			return new Token((int) type, -1, 0, NodeStyle.Default, value);
 		}
 		static IListSource<Token> Lex(string str) {
@@ -31,7 +31,7 @@ namespace Loyc.Syntax.Tests
 			var _ = b.Count;	// force immediate lexing
 			return b;
 		}
-	
+
 		[Test] 
 		public void SimpleTests()
 		{
@@ -51,14 +51,13 @@ namespace Loyc.Syntax.Tests
 			ExpectList(Lex("  (the end)  "), T(TT.LParen), T(TT.Id, "the"), T(TT.Id, "end"), T(TT.RParen));
 		}
 	}
-
 	public enum CalcTokenType
 	{
 		EOF = TokenKind.Spaces	// If you use EOF = 0, default(Token) represents EOF
 		,
 		Id = TokenKind.Id,
 		Num = TokenKind.Literal,
-	
+		
 		Shr = TokenKind.Operator + 1	// inside 'unroll', must use ';' instead of ',' as separator
 		,
 		Shl = TokenKind.Operator + 2	// inside 'unroll', must use ';' instead of ',' as separator
@@ -93,22 +92,22 @@ namespace Loyc.Syntax.Tests
 		,
 		Unknown
 	}
-
+	
 	//--------------------------------------------------------------------------
 	//-- LEXER -----------------------------------------------------------------
 	//--------------------------------------------------------------------------
 	partial class CalculatorLexer : BaseILexer<ICharSource, Token>
 	{
+
 		public CalculatorLexer(UString text, string fileName = "")
 			 : base(text, fileName) { }
 		public CalculatorLexer(ICharSource text, string fileName = "")
 			 : base(text, fileName) { }
-	
+
 		TT _tokenType;
 		int _startIndex;
-		object _value;
-	
-	
+		object? _value;
+
 		public override Maybe<Token> NextToken()
 		{
 			int la0, la1;
@@ -298,9 +297,8 @@ namespace Loyc.Syntax.Tests
 			// line 112
 			return _current;
 		}
-	
 		static readonly HashSet<int> Id_set0 = NewSetOfRanges('0', '9', 'A', 'Z', '_', '_', 'a', 'z');
-	
+
 		private void Id()
 		{
 			int la0;
@@ -316,7 +314,7 @@ namespace Loyc.Syntax.Tests
 			// line 118
 			_value = this.CharSource.Slice(_startIndex, this.InputPosition - _startIndex).ToString();
 		}
-	
+
 		private void Num()
 		{
 			int la0, la1;
@@ -356,6 +354,5 @@ namespace Loyc.Syntax.Tests
 			// line 124
 			_value = double.Parse(this.CharSource.Slice(_startIndex, this.InputPosition - _startIndex).ToString(), CultureInfo.InvariantCulture);
 		}
-	
 	}
 }

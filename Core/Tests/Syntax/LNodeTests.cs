@@ -53,11 +53,11 @@ namespace Loyc.Syntax
 		[Test]
 		public void Test_NoNullChildrenAllowed()
 		{
-			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call((LNode)null, LNode.Missing));
-			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(CodeSymbols.Sub, LNode.List((LNode)null)));
-			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.Id(CodeSymbols.Sub), LNode.List((LNode)null)));
-			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.List((LNode)null), CodeSymbols.Sub, LNode.List(LNode.Id("x"))));
-			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.List((LNode)null), LNode.Id(CodeSymbols.Sub), LNode.List(LNode.Id("x"))));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call((LNode?) null, LNode.Missing));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(CodeSymbols.Sub, LNode.List((LNode?) null)));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.Id(CodeSymbols.Sub), LNode.List((LNode?) null)));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.List((LNode?) null), CodeSymbols.Sub, LNode.List(LNode.Id("x"))));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.List((LNode?) null), LNode.Id(CodeSymbols.Sub), LNode.List(LNode.Id("x"))));
 			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Id("x"))).PlusAttr(null));
 			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Id("x"))).PlusArg(null));
 			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.Id(CodeSymbols.Sub), LNode.List(LNode.Id("x"))).PlusAttr(null));

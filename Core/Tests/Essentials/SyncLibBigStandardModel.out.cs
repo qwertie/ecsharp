@@ -1,4 +1,4 @@
-// Generated from SyncLibBigStandardModel.ecs by LeMP custom tool. LeMP version: 30.0.5.0
+// Generated from SyncLibBigStandardModel.ecs by LeMP custom tool. LeMP version: 30.1.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -261,7 +261,7 @@ namespace Loyc.Essentials.Tests
 		};
 
 		public static readonly SyncObjectFunc<S, StandardFields> SyncBasics = SyncBasics_;
-		public static StandardFields SyncBasics_(S sync, StandardFields obj)
+		public static StandardFields SyncBasics_(S sync, StandardFields? obj)
 		{
 			obj = obj ?? new BigStandardModel(0);
 			obj.Bool = sync.Sync("Bool", obj.Bool);

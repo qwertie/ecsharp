@@ -86,7 +86,7 @@ namespace Loyc.Syntax.Les
 			Exact("x Foo 1 == a", F.Call(S.Eq, Op(F.Call("'Foo", x, one)), a));
 		}
 
-		protected override MessageHolder Test(Mode mode, int parseErrors, LNodePrinterOptions options, string expected, params LNode[] inputs)
+		protected override MessageHolder Test(Mode mode, int parseErrors, LNodePrinterOptions? options, string expected, params LNode[] inputs)
 		{
 			var messages = new MessageHolder();
 			options = options ?? new Les3PrinterOptions { IndentString = "  " };
