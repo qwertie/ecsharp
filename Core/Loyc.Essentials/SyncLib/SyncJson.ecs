@@ -20,7 +20,7 @@ using Loyc.SyncLib.Impl;
 define (#type<$T>) { $T; }
 
 define isUnsigned($T) {
-	$T `staticMatches` uint || $T `staticMatches` ulong;
+	$T `staticMatches` byte || $T `staticMatches` ushort || $T `staticMatches` uint || $T `staticMatches` ulong;
 }
 
 namespace Loyc.SyncLib
@@ -34,19 +34,19 @@ namespace Loyc.SyncLib
 
 		public partial struct Writer
 		{
-			##unroll($T in (int, uint, long, ulong)) {
+			##unroll($T in (sbyte, byte, short, ushort, int, uint, long, ulong)) {
 				public $T Sync(Symbol? name, $T savable) {
 					_s.WriteProp(name == null ? "" : name.Name, (long) savable, !isUnsigned($T));
 					return savable;
 				}
 			}
-			##unroll($T in (BigInteger, float, double, char)) {
+			##unroll($T in (BigInteger, float, double, decimal, char)) {
 				public $T Sync(Symbol? name, $T savable) {
 					_s.WriteProp(name == null ? "" : name.Name, savable);
 					return savable;
 				}
 			}
-			##unroll($T in (bool, int, uint, long, ulong, float, double, BigInteger, char)) {
+			##unroll($T in (bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char)) {
 				public $T? SyncNullable(Symbol? name, $T? savable) {
 					string nameS = name == null ? "" : name.Name;
 					if (savable == null)
@@ -66,13 +66,13 @@ namespace Loyc.SyncLib
 					return savable;
 				}
 			}
-			##unroll($T in (bool, sbyte, short, ushort, int, uint, long, ulong, float, double, BigInteger, char, #type<string? >)) {
-				public InternalList<$T> SyncListImpl(Symbol? name, ReadOnlySpan<$T> savable, SubObjectMode listMode = SubObjectMode.List)
-				{
-					SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-					return default;
-				}
-			}
+			//##unroll($T in (bool, byte, sbyte, short, ushort, int, uint, long, ulong, float, double, BigInteger, char, #type<string? >)) {
+			//	public InternalList<$T> SyncListImpl(Symbol? name, ReadOnlySpan<$T> savable, SubObjectMode listMode = SubObjectMode.List)
+			//	{
+			//		SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
+			//		return default;
+			//	}
+			//}
 		}
 	}
 }

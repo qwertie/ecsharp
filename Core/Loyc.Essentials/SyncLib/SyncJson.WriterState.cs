@@ -1,5 +1,6 @@
 using Loyc.Collections.Impl;
 using Loyc.Compatibility;
+using Loyc.SyncLib.Impl;
 using Loyc.Syntax;
 using System;
 using System.Buffers;
@@ -67,9 +68,9 @@ namespace Loyc.SyncLib
 				return base.GetOutBuf(requiredBytes);
 			}
 
-			public (bool Begun, object? Object) BeginSubObject(string name, object? childKey, SubObjectMode mode, int listLength)
+			public (bool Begun, object? Object) BeginSubObject(string name, object? childKey, SubObjectMode mode)
 			{
-				if (childKey == null && (mode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) != SubObjectMode.NotNull) {
+				if (childKey == null && MayBeNullable(mode)) {
 					WriteNull(name);
 					return (false, childKey);
 				}
@@ -189,6 +190,25 @@ namespace Loyc.SyncLib
 					_pendingComma = (byte)',';
 				}
 			}
+			public void WriteBytesAsString(string? propName, ReadOnlySpan<byte> value)
+			{
+				if (value == default)
+					WriteNull(propName);
+				else {
+					Debug.Assert(_opt.ByteArrayMode != JsonByteArrayMode.Array);
+					if (_opt.NewtonsoftCompatibility || _opt.ByteArrayMode == JsonByteArrayMode.Base64) {
+						#if NETSTANDARD2_0 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472
+						WriteProp(propName, System.Convert.ToBase64String(value.ToArray()));
+						#else
+						WriteProp(propName, System.Convert.ToBase64String(value));
+						#endif
+					} else {
+						var bais = ByteArrayInString.ConvertFromBytes(value, false, 
+						           _opt.ByteArrayMode == JsonByteArrayMode.PrefixedBais);
+						WriteProp(propName, bais);
+					}
+				}
+			}
 			public long WriteProp(string? propName, long num, bool isSigned = true)
 			{
 				Span<byte> buf = BeginProp(propName, 20);
@@ -207,6 +227,11 @@ namespace Loyc.SyncLib
 				return num;
 			}
 			public double WriteProp(string? propName, double num)
+			{
+				WriteLiteralProp(propName, num.ToString(CultureInfo.InvariantCulture));
+				return num;
+			}
+			public decimal WriteProp(string? propName, decimal num)
 			{
 				WriteLiteralProp(propName, num.ToString(CultureInfo.InvariantCulture));
 				return num;
@@ -251,7 +276,7 @@ namespace Loyc.SyncLib
 						propName = _opt.NameConverter(propName ?? "");
 					buf = WriteString(propName.AsSpan(), 2 + reserveExtra);
 					buf[_i++] = (byte) ':';
-					if (_opt.SpaceAfterColon)
+					if (_opt.SpaceAfterColon && _compactMode == 0)
 						buf[_i++] = (byte) ' ';
 				}
 				return buf;
@@ -322,6 +347,8 @@ namespace Loyc.SyncLib
 								default: FinishEscape(buf, c); break;
 							}
 						} else if (c < 127) {
+							if (c == '\\' || c == '"')
+								buf[_i++] = (byte)'\\';
 							buf[_i++] = (byte)c;
 						} else if (c <= 0x9F || _opt.EscapeUnicode) {
 							buf[_i++] = (byte)'\\';
@@ -372,6 +399,8 @@ namespace Loyc.SyncLib
 							len += 2;
 						else // valid surrogate pair
 							len += 3;
+					} else if (c == '\\' || c == '"') {
+						len += 1;
 					}
 				}
 				return len;

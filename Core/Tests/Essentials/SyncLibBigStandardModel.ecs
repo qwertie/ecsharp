@@ -17,9 +17,9 @@ using Loyc.SyncLib;
 
 namespace Loyc.Essentials.Tests
 {
-	define basicTypes => #splice(bool, int, uint, long, ulong, float, double, BigInteger, char);
-	define standardTypes => #splice(bool, int, uint, long, ulong, float, double, BigInteger, char, string);
-	define standardItemTypes => #splice(bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, BigInteger, char, #type<string? >);
+	define basicTypes => #splice(bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char);
+	define standardTypes => #splice(bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char, string);
+	define standardItemTypes => #splice(bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char, #type<string? >);
 
 	internal class StandardFields
 	{
@@ -63,7 +63,7 @@ namespace Loyc.Essentials.Tests
 			(#type<$T[]>, "Array"),
 			(List<$T>, "List"),
 			//(IList< $T? >, "NList"),
-			(IReadOnlyCollection< $T >, "Coll"),
+			//(IReadOnlyCollection< $T >, "Coll"),
 		))
 		{
 			##unroll($T in standardTypes)
@@ -77,16 +77,17 @@ namespace Loyc.Essentials.Tests
 		{
 			BoolArray = new bool[0];
 			BoolList = new List<bool> { false, true };
-			BoolColl = BoolList;
+			//BoolColl = BoolList;
 			StringArray = new string[] { "Yarn", "Twine" };
 			StringList = new List<string> { "Rope", "String" };
-			StringColl = StringList;
+			//StringColl = StringList;
 
 			##unroll($T in basicTypes) {
 				static if (!($T `staticMatches` bool)) {
 					#snippet varstem = standardTypeToName($T);
 					$varstem = ($T) seed++;
-					concatId($varstem, "Coll") = concatId($varstem, "List") = new List<$T> { 
+					//concatId($varstem, "Coll") = 
+					concatId($varstem, "List") = new List<$T> { 
 						($T) seed++, ($T) seed++
 					};
 					concatId($varstem, "Array") = new $T[] { 
@@ -171,7 +172,7 @@ namespace Loyc.Essentials.Tests
 				(#type<$T[]>, "Array", SyncList),
 				(List<$T>, "List", SyncList),
 				//(IList< $T? >, "NList", SyncList),
-				(IReadOnlyCollection<$T>, "Coll", SyncList),
+				//(IReadOnlyCollection<$T>, "Coll", SyncList),
 			))
 			{
 				##unroll($T in standardTypes)

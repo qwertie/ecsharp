@@ -35,20 +35,36 @@ namespace Loyc.SyncLib
 
 		public partial struct Writer
 		{
+			public sbyte Sync(Symbol? name, sbyte savable) {
+				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || false || false || false));
+				return savable;
+			}
+			public byte Sync(Symbol? name, byte savable) {
+				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(true || false || false || false));
+				return savable;
+			}
+			public short Sync(Symbol? name, short savable) {
+				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || false || false || false));
+				return savable;
+			}
+			public ushort Sync(Symbol? name, ushort savable) {
+				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || true || false || false));
+				return savable;
+			}
 			public int Sync(Symbol? name, int savable) {
-				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || false));
+				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || false || false || false));
 				return savable;
 			}
 			public uint Sync(Symbol? name, uint savable) {
-				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(true || false));
+				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || false || true || false));
 				return savable;
 			}
 			public long Sync(Symbol? name, long savable) {
-				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || false));
+				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || false || false || false));
 				return savable;
 			}
 			public ulong Sync(Symbol? name, ulong savable) {
-				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || true));
+				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || false || false || true));
 				return savable;
 			}
 			public BigInteger Sync(Symbol? name, BigInteger savable) {
@@ -63,6 +79,10 @@ namespace Loyc.SyncLib
 				_s.WriteProp(name == null ? "" : name.Name, savable);
 				return savable;
 			}
+			public decimal Sync(Symbol? name, decimal savable) {
+				_s.WriteProp(name == null ? "" : name.Name, savable);
+				return savable;
+			}
 			public char Sync(Symbol? name, char savable) {
 				_s.WriteProp(name == null ? "" : name.Name, savable);
 				return savable;
@@ -73,6 +93,38 @@ namespace Loyc.SyncLib
 					_s.WriteNull(nameS);
 				else
 					_s.WriteLiteralProp(nameS, savable.Value ? _true : _false);
+				return savable;
+			}
+			public sbyte? SyncNullable(Symbol? name, sbyte? savable) {
+				string nameS = name == null ? "" : name.Name;
+				if (savable == null)
+					_s.WriteNull(nameS);
+				else
+					_s.WriteProp(nameS, savable.Value);
+				return savable;
+			}
+			public byte? SyncNullable(Symbol? name, byte? savable) {
+				string nameS = name == null ? "" : name.Name;
+				if (savable == null)
+					_s.WriteNull(nameS);
+				else
+					_s.WriteProp(nameS, (long) savable.Value, false);
+				return savable;
+			}
+			public short? SyncNullable(Symbol? name, short? savable) {
+				string nameS = name == null ? "" : name.Name;
+				if (savable == null)
+					_s.WriteNull(nameS);
+				else
+					_s.WriteProp(nameS, savable.Value);
+				return savable;
+			}
+			public ushort? SyncNullable(Symbol? name, ushort? savable) {
+				string nameS = name == null ? "" : name.Name;
+				if (savable == null)
+					_s.WriteNull(nameS);
+				else
+					_s.WriteProp(nameS, (long) savable.Value, false);
 				return savable;
 			}
 			public int? SyncNullable(Symbol? name, int? savable) {
@@ -123,6 +175,14 @@ namespace Loyc.SyncLib
 					_s.WriteProp(nameS, savable.Value);
 				return savable;
 			}
+			public decimal? SyncNullable(Symbol? name, decimal? savable) {
+				string nameS = name == null ? "" : name.Name;
+				if (savable == null)
+					_s.WriteNull(nameS);
+				else
+					_s.WriteProp(nameS, savable.Value);
+				return savable;
+			}
 			public BigInteger? SyncNullable(Symbol? name, BigInteger? savable) {
 				string nameS = name == null ? "" : name.Name;
 				if (savable == null)
@@ -138,71 +198,6 @@ namespace Loyc.SyncLib
 				else
 					_s.WriteProp(nameS, savable.Value);
 				return savable;
-			}
-			public InternalList<bool> SyncListImpl(Symbol? name, ReadOnlySpan<bool> savable, SubObjectMode listMode = SubObjectMode.List)
-			{
-				SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-				return default;
-			}
-			public InternalList<sbyte> SyncListImpl(Symbol? name, ReadOnlySpan<sbyte> savable, SubObjectMode listMode = SubObjectMode.List)
-			{
-				SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-				return default;
-			}
-			public InternalList<short> SyncListImpl(Symbol? name, ReadOnlySpan<short> savable, SubObjectMode listMode = SubObjectMode.List)
-			{
-				SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-				return default;
-			}
-			public InternalList<ushort> SyncListImpl(Symbol? name, ReadOnlySpan<ushort> savable, SubObjectMode listMode = SubObjectMode.List)
-			{
-				SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-				return default;
-			}
-			public InternalList<int> SyncListImpl(Symbol? name, ReadOnlySpan<int> savable, SubObjectMode listMode = SubObjectMode.List)
-			{
-				SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-				return default;
-			}
-			public InternalList<uint> SyncListImpl(Symbol? name, ReadOnlySpan<uint> savable, SubObjectMode listMode = SubObjectMode.List)
-			{
-				SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-				return default;
-			}
-			public InternalList<long> SyncListImpl(Symbol? name, ReadOnlySpan<long> savable, SubObjectMode listMode = SubObjectMode.List)
-			{
-				SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-				return default;
-			}
-			public InternalList<ulong> SyncListImpl(Symbol? name, ReadOnlySpan<ulong> savable, SubObjectMode listMode = SubObjectMode.List)
-			{
-				SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-				return default;
-			}
-			public InternalList<float> SyncListImpl(Symbol? name, ReadOnlySpan<float> savable, SubObjectMode listMode = SubObjectMode.List)
-			{
-				SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-				return default;
-			}
-			public InternalList<double> SyncListImpl(Symbol? name, ReadOnlySpan<double> savable, SubObjectMode listMode = SubObjectMode.List)
-			{
-				SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-				return default;
-			}
-			public InternalList<BigInteger> SyncListImpl(Symbol? name, ReadOnlySpan<BigInteger> savable, SubObjectMode listMode = SubObjectMode.List)
-			{
-				SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-				return default;
-			}
-			public InternalList<char> SyncListImpl(Symbol? name, ReadOnlySpan<char> savable, SubObjectMode listMode = SubObjectMode.List)
-			{
-				SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-				return default;
-			}
-			public InternalList<string?> SyncListImpl(Symbol? name, ReadOnlySpan<string?> savable, SubObjectMode listMode = SubObjectMode.List)
-			{
-				SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-				return default;
 			}
 		}
 	}

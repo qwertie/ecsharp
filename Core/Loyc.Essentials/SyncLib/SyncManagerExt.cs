@@ -1,4 +1,5 @@
 using Loyc.Collections;
+using Loyc.SyncLib.Impl;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,244 +14,271 @@ namespace Loyc.SyncLib
 	public static partial class SyncManagerExt
 	{
 		public static T? Sync<SyncManager, T>(this SyncManager sync,
-			string name, T? savable, SyncObjectFunc<SyncManager, T> syncFunc,
-			SubObjectMode mode = SubObjectMode.Deduplicate)
-				where SyncManager : ISyncManager
-			=> Sync(sync, (Symbol)name, savable, syncFunc, mode);
-
-		public static T? Sync<SyncManager, T>(this SyncManager sync, 
-			Symbol? name, T? savable, SyncObjectFunc<SyncManager, T> syncFunc, 
+			Symbol? name, T? savable, SyncObjectFunc<SyncManager, T> syncFunc,
 			SubObjectMode mode = SubObjectMode.Deduplicate)
 				where SyncManager : ISyncManager
 		{
-			object? childKey = null;
-			if ((mode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) != SubObjectMode.NotNull)
-				childKey = savable;
-			var (started, obj) = sync.BeginSubObject(name, childKey, mode);
-			if (started) {
-				try {
-					return syncFunc(sync, savable);
-				} finally {
-					sync.EndSubObject();
-				}
-			} else {
-				var syncMode = sync.Mode;
-				if (syncMode == SyncMode.Saving || syncMode == SyncMode.Query)
-					return savable;
-				try {
-					return (T?) obj;
-				} catch (InvalidCastException) {
-					throw new InvalidCastException(
-						$"{sync.GetType().Name}: expected {typeof(T).Name}, got {obj?.GetType().Name}");
-				}
-			}
+			return ObjectSyncher.For(syncFunc, mode).Sync(ref sync, name, savable);
 		}
-		
-		[return: MaybeNull]
-		public static List SyncList<SyncManager, T, List>(this SyncManager sync, 
-			Symbol? name, [AllowNull] List list, 
-			SyncObjectFunc<SyncManager, T> syncItemObject, Func<int, List> allocate,
-			SubObjectMode itemMode = SubObjectMode.Normal | SubObjectMode.Deduplicate,
-			SubObjectMode listMode = SubObjectMode.List)
+
+		public static T? Sync<SyncManager, SyncObj, T>(this SyncManager sync,
+			Symbol? name, T? savable, SyncObj syncObj,
+			SubObjectMode mode = SubObjectMode.Deduplicate)
 				where SyncManager : ISyncManager
-				where List : ICollection<T>
+				where SyncObj : ISyncObject<SyncManager, T>
 		{
-			object? childKey = null;
-			int count = 0;
-			if (list != null) {
-				if ((listMode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) != SubObjectMode.NotNull)
-					childKey = list;
-				count = list.Count;
-			}
-
-			var syncMode = sync.Mode;
-			var (begunList, obj) = sync.BeginSubObject(name, childKey, listMode, count);
-			if (begunList)
-			{
-				Debug.Assert(sync.IsInsideList);
-				try {
-					if ((syncMode & SyncMode.Saving) != 0)
-					{
-						if (list == null) {
-							Debug.Assert((listMode & SubObjectMode.NotNull) == SubObjectMode.NotNull);
-							throw new ArgumentNullException(nameof(list));
-						}
-						if (syncMode == SyncMode.Saving) {
-							// Common cases (optimized)
-							if ((itemMode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) == SubObjectMode.NotNull) {
-								foreach (T item in list!)
-									SaveListItem(sync, item, null, itemMode, syncItemObject);
-							} else {
-								foreach (T item in list!)
-									SaveListItem(sync, item, item, itemMode, syncItemObject);
-							}
-						} else {
-							// Query or Merge mode
-							foreach (T item in list!) {
-								if (sync.ReachedEndOfList == true)
-									break;
-
-								object? itemKey = null;
-								if ((itemMode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) != SubObjectMode.NotNull)
-									itemKey = list;
-
-								SaveListItem(sync, item, itemKey, itemMode, syncItemObject);
-							}
-						}
-					}
-					else
-					{	// Loading or Schema mode
-						if (allocate != null)
-							list = allocate(sync.MinimumListLength ?? 4);
-						else if (list == null)
-							throw new ArgumentNullException(nameof(list));
-
-						for (int index = 0; sync.ReachedEndOfList != true; index++) {
-							var (begun, duplicateItem) = sync.BeginSubObject(null, null, itemMode);
-							if (begun) {
-								try {
-									var item = syncItemObject(sync, default(T));
-									list.Add(item);
-								} finally { sync.EndSubObject(); }
-							} else {
-								try {
-									list.Add((T) duplicateItem!); // it could be null, but that's OK
-								} catch (InvalidCastException) {
-									throw new InvalidCastException(
-									  $"{sync.GetType().Name}: expected {typeof(T).Name}, got {obj?.GetType().Name}");
-								}
-							}
-						}
-					}
-				}
-				finally
-				{
-					sync.EndSubObject();
-				}
-				return list;
-			}
-			else
-			{
-				if ((syncMode & SyncMode.Saving) != 0)
-					return list;
-				try {
-					return (List) obj!;
-				} catch (InvalidCastException) {
-					throw new InvalidCastException(
-					  $"{sync.GetType().Name}: expected {typeof(T).Name}, got {obj?.GetType().Name}");
-				}
-			}
+			return new ObjectSyncher<SyncManager, SyncObj, T>(syncObj, mode).Sync(ref sync, name, savable);
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static void SaveListItem<SyncManager, T>(SyncManager sync, T? item, object? itemKey, SubObjectMode itemMode, SyncObjectFunc<SyncManager, T> syncItemObject) where SyncManager : ISyncManager
-		{
-			var (begun, itemKey2) = sync.BeginSubObject(null, itemKey, itemMode);
-			if (begun) {
-				try {
-					syncItemObject(sync, item);
-				} finally {
-					sync.EndSubObject();
-				}
-			} else {
-				Debug.Assert(itemKey == itemKey2 || itemKey == null);
-			}
-		}
+		#region SyncList methods that accept SyncObjectFunc<SM, T>
 
-		[return: MaybeNull]
-		public static List SyncList<SyncManager, T, List>(this SyncManager sync, 
-			Symbol? name, [AllowNull] List list, 
-			SyncFieldFunc_Ref<SyncManager, T> syncItem, Func<int, List> allocate,
-			SubObjectMode listMode = SubObjectMode.List)
+		public static List<T>? SyncList<SyncManager, T>(this SyncManager sync,
+			Symbol? name, List<T>? savable,
+			SyncObjectFunc<SyncManager, T> syncFunc,
+			SubObjectMode itemMode = SubObjectMode.Deduplicate,
+			SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
 				where SyncManager : ISyncManager
-				where List : ICollection<T>
 		{
-			object? childKey = null;
-			int count = 0;
-			if (list != null) {
-				if ((listMode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) != SubObjectMode.NotNull)
-					childKey = list;
-				count = list.Count;
-			}
-
-			var syncMode = sync.Mode;
-			var (begunList, obj) = sync.BeginSubObject(name, childKey, listMode, count);
-			if (begunList)
-			{
-				Debug.Assert(sync.IsInsideList);
-				try {
-					if ((syncMode & SyncMode.Saving) != 0)
-					{
-						if (list == null) {
-							Debug.Assert((listMode & SubObjectMode.NotNull) == SubObjectMode.NotNull);
-							throw new ArgumentNullException(nameof(list));
-						}
-						if (syncMode == SyncMode.Saving) {
-							// Common case (optimized)
-							foreach (T item in list!) {
-								syncItem(ref sync, null, item);
-							}
-						} else {
-							// Query or Merge mode
-							foreach (T item in list!) {
-								if (sync.ReachedEndOfList == true)
-									break;
-
-								syncItem(ref sync, null, item);
-							}
-						}
-					}
-					else
-					{	// Loading or Schema mode
-						if (allocate != null)
-							list = allocate(sync.MinimumListLength ?? 4);
-						else if (list == null)
-							throw new ArgumentNullException(nameof(list));
-
-						for (int index = 0; sync.ReachedEndOfList != true; index++) {
-							var item = syncItem(ref sync, null, default(T));
-							list.Add(item);
-						}
-					}
-				}
-				finally
-				{
-					sync.EndSubObject();
-				}
-				return list;
-			}
-			else
-			{
-				if ((syncMode & SyncMode.Saving) != 0)
-					return list;
-				try {
-					return (List) obj!;
-				} catch (InvalidCastException) {
-					throw new InvalidCastException(
-					  $"{sync.GetType().Name}: expected {typeof(T).Name}, got {obj?.GetType().Name}");
-				}
+			var syncItem = ObjectSyncher.For(syncFunc, itemMode);
+			if ((sync.Mode & SyncMode.Loading) != 0) {
+				var loader = new ListLoader<SyncManager, List<T>, T, ListBuilder<T>, ObjectSyncher<SyncManager, AsISyncObject<SyncManager, T>, T>>
+					(syncItem, new ListBuilder<T>(), listMode, tupleLength);
+				return loader.Sync(ref sync, name, savable);
+			} else {
+				var saver = new ListSaver<SyncManager, List<T>, T, ObjectSyncher<SyncManager, AsISyncObject<SyncManager, T>, T>>
+					(syncItem, listMode);
+				return saver.Sync(ref sync, name, savable);
 			}
 		}
 
-		private static int GetCount<T>([MaybeNull] T value)
+		public static T[]? SyncList<SyncManager, T>(this SyncManager sync,
+			Symbol? name, T[]? savable,
+			SyncObjectFunc<SyncManager, T> syncFunc,
+			SubObjectMode itemMode = SubObjectMode.Deduplicate,
+			SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+				where SyncManager : ISyncManager
 		{
-			if (value == null)
-				return 0;
-			if (value is IReadOnlyCollection<T> roc)
-				return roc.Count;
-			if (value is ICollection<T> c)
-				return c.Count;
-			if (value is ICount icount)
-				return icount.Count;
-			if (value is IEnumerable e) {
-				int count = 0;
-				var enumerator = e.GetEnumerator();
-				while (enumerator.MoveNext())
-					count++;
-				return count;
+			var syncItem = ObjectSyncher.For(syncFunc, itemMode);
+			if ((sync.Mode & SyncMode.Loading) != 0) {
+				var loader = new ListLoader<SyncManager, T[], T, ArrayBuilder<T>, ObjectSyncher<SyncManager, AsISyncObject<SyncManager, T>, T>>
+					(syncItem, new ArrayBuilder<T>(), listMode, tupleLength);
+				return loader.Sync(ref sync, name, savable);
+			} else {
+				var saver = new ListSaver<SyncManager, T[], T, ObjectSyncher<SyncManager, AsISyncObject<SyncManager, T>, T>>
+					(syncItem, listMode);
+				return saver.Sync(ref sync, name, savable);
 			}
-			return -1; // Some implementations of ISyncManager may throw in this case
-			//throw new ArgumentException("SubObjectMode.List was used to serialize a non-collection", "itemMode");
 		}
+
+		public static Memory<T> SyncList<SyncManager, T>(this SyncManager sync,
+			Symbol? name, Memory<T> savable,
+			SyncObjectFunc<SyncManager, T> syncFunc,
+			SubObjectMode itemMode = SubObjectMode.Deduplicate,
+			SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+				where SyncManager : ISyncManager
+		{
+			var syncItem = ObjectSyncher.For(syncFunc, itemMode);
+			if ((sync.Mode & SyncMode.Loading) != 0) {
+				var loader = new ListLoader<SyncManager, Memory<T>, T, MemoryBuilder<T>, ObjectSyncher<SyncManager, AsISyncObject<SyncManager, T>, T>>
+					(syncItem, new MemoryBuilder<T>(), listMode, tupleLength);
+				return loader.Sync(ref sync, name, savable);
+			} else {
+				var saver = new ListSaver<SyncManager, ArraySlice<T>, T, ObjectSyncher<SyncManager, AsISyncObject<SyncManager, T>, T>>
+					(syncItem, listMode);
+				return saver.Sync(ref sync, name, savable);
+			}
+		}
+
+		public static List? SyncList<SyncManager, List, T>(this SyncManager sync,
+			Symbol? name, List? savable,
+			SyncObjectFunc<SyncManager, T> syncFunc, Func<int, List> alloc,
+			SubObjectMode itemMode = SubObjectMode.Deduplicate,
+			SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+				where SyncManager : ISyncManager
+				where List : ICollection<T>, IReadOnlyCollection<T>
+		{
+			var syncItem = ObjectSyncher.For(syncFunc, itemMode);
+			if ((sync.Mode & SyncMode.Loading) != 0) {
+				var loader = new ListLoader<SyncManager, List, T, CollectionBuilder<List, T>, ObjectSyncher<SyncManager, AsISyncObject<SyncManager, T>, T>>
+					(syncItem, new CollectionBuilder<List, T>(alloc), listMode, tupleLength);
+				return loader.Sync(ref sync, name, savable);
+			} else {
+				var saver = new ListSaver<SyncManager, List, T, ObjectSyncher<SyncManager, AsISyncObject<SyncManager, T>, T>>
+					(syncItem, listMode);
+				return saver.Sync(ref sync, name, savable);
+			}
+		}
+
+		public static List<T>? SyncList<SyncManager, T>(this SyncManager sync,
+			string name, List<T>? savable,
+			SyncObjectFunc<SyncManager, T> syncFunc,
+			SubObjectMode itemMode = SubObjectMode.Deduplicate,
+			SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+				where SyncManager : ISyncManager
+		{
+			return SyncList(sync, (Symbol)name, savable, syncFunc, itemMode, listMode, tupleLength);
+		}
+
+		public static T[]? SyncList<SyncManager, T>(this SyncManager sync,
+			string name, T[]? savable,
+			SyncObjectFunc<SyncManager, T> syncFunc,
+			SubObjectMode itemMode = SubObjectMode.Deduplicate,
+			SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+				where SyncManager : ISyncManager
+		{
+			return SyncList(sync, (Symbol)name, savable, syncFunc, itemMode, listMode, tupleLength);
+		}
+
+		public static Memory<T> SyncList<SyncManager, T>(this SyncManager sync,
+			string name, Memory<T> savable,
+			SyncObjectFunc<SyncManager, T> syncFunc,
+			SubObjectMode itemMode = SubObjectMode.Deduplicate,
+			SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+				where SyncManager : ISyncManager
+		{
+			return SyncList(sync, (Symbol)name, savable, syncFunc, itemMode, listMode, tupleLength);
+		}
+
+		public static List? SyncList<SyncManager, List, T>(this SyncManager sync,
+			string name, List? savable,
+			SyncObjectFunc<SyncManager, T> syncFunc, Func<int, List> alloc,
+			SubObjectMode itemMode = SubObjectMode.Deduplicate,
+			SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+				where SyncManager : ISyncManager
+				where List : ICollection<T>, IReadOnlyCollection<T>
+		{
+			return SyncList(sync, (Symbol)name, savable, syncFunc, alloc, itemMode, listMode, tupleLength);
+		}
+
+		#endregion
+
+		#region SyncList methods that accept ISyncField<SM, T>
+
+		public static List<T>? SyncList<SyncManager, T, SyncField>(this SyncManager sync,
+			Symbol? name, List<T>? savable,
+			SyncField syncItem,
+			SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+				where SyncManager : ISyncManager
+				where SyncField : ISyncField<SyncManager, T>
+		{
+			if ((sync.Mode & SyncMode.Loading) != 0) {
+				var loader = new ListLoader<SyncManager, List<T>, T, ListBuilder<T>, SyncField>
+					(syncItem, new ListBuilder<T>(), listMode, tupleLength);
+				return loader.Sync(ref sync, name, savable);
+			} else {
+				var saver = new ListSaver<SyncManager, List<T>, T, SyncField>
+					(syncItem, listMode);
+				return saver.Sync(ref sync, name, savable);
+			}
+		}
+
+		public static T[]? SyncList<SyncManager, T, SyncField>(this SyncManager sync,
+			Symbol? name, T[]? savable,
+			SyncField syncItem,
+			SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+				where SyncManager : ISyncManager
+				where SyncField : ISyncField<SyncManager, T>
+		{
+			if ((sync.Mode & SyncMode.Loading) != 0) {
+				var loader = new ListLoader<SyncManager, T[], T, ArrayBuilder<T>, SyncField>
+					(syncItem, new ArrayBuilder<T>(), listMode, tupleLength);
+				return loader.Sync(ref sync, name, savable);
+			} else {
+				var saver = new ListSaver<SyncManager, T[], T, SyncField>
+					(syncItem, listMode);
+				return saver.Sync(ref sync, name, savable);
+			}
+		}
+
+		public static Memory<T> SyncList<SyncManager, T, SyncField>(this SyncManager sync,
+			Symbol? name, Memory<T> savable,
+			SyncField syncItem,
+			SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+				where SyncManager : ISyncManager
+				where SyncField : ISyncField<SyncManager, T>
+		{
+			if ((sync.Mode & SyncMode.Loading) != 0) {
+				var loader = new ListLoader<SyncManager, Memory<T>, T, MemoryBuilder<T>, SyncField>
+					(syncItem, new MemoryBuilder<T>(), listMode, tupleLength);
+				return loader.Sync(ref sync, name, savable);
+			} else {
+				var saver = new ListSaver<SyncManager, ArraySlice<T>, T, SyncField>
+					(syncItem, listMode);
+				return saver.Sync(ref sync, name, savable);
+			}
+		}
+
+		public static List? SyncList<SyncManager, List, T, SyncField>(this SyncManager sync,
+			Symbol? name, List? savable,
+			SyncField syncItem, Func<int, List> alloc,
+			SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+				where SyncManager : ISyncManager
+				where List : ICollection<T>, IReadOnlyCollection<T>
+				where SyncField : ISyncField<SyncManager, T>
+		{
+			if ((sync.Mode & SyncMode.Loading) != 0) {
+				var loader = new ListLoader<SyncManager, List, T, CollectionBuilder<List, T>, SyncField>
+					(syncItem, new CollectionBuilder<List, T>(alloc), listMode, tupleLength);
+				return loader.Sync(ref sync, name, savable);
+			} else {
+				var saver = new ListSaver<SyncManager, List, T, SyncField>
+					(syncItem, listMode);
+				return saver.Sync(ref sync, name, savable);
+			}
+		}
+
+		// Ummmm supporting IList<T> doesn't quite work
+		//public static IList<T>? SyncList<SyncManager, T, SyncField>(this SyncManager sync,
+		//	Symbol? name, IList<T>? savable,
+		//	SyncField syncItem, 
+		//	SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//		where SyncManager : ISyncManager
+		//		where SyncField : ISyncField<SyncManager, T>
+		//{
+		//	return SyncList<SyncManager, IListAndReadOnly<T>, T, SyncField>(sync, name, savable, syncItem, cap => new DList<T>(cap), listMode, tupleLength);
+		//}
+
+		public static List<T>? SyncList<SyncManager, T, SyncField>(this SyncManager sync,
+			string name, List<T>? savable,
+			SyncField syncItem,
+			SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+				where SyncManager : ISyncManager
+				where SyncField : ISyncField<SyncManager, T>
+		{
+			return SyncList(sync, (Symbol)name, savable, syncItem, listMode, tupleLength);
+		}
+
+		public static T[]? SyncList<SyncManager, T, SyncField>(this SyncManager sync,
+			string name, T[]? savable,
+			SyncField syncItem,
+			SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+				where SyncManager : ISyncManager
+				where SyncField : ISyncField<SyncManager, T>
+		{
+			return SyncList(sync, (Symbol)name, savable, syncItem, listMode, tupleLength);
+		}
+
+		public static Memory<T> SyncList<SyncManager, T, SyncField>(this SyncManager sync,
+			string name, Memory<T> savable,
+			SyncField syncItem,
+			SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+				where SyncManager : ISyncManager
+				where SyncField : ISyncField<SyncManager, T>
+		{
+			return SyncList(sync, (Symbol)name, savable, syncItem, listMode, tupleLength);
+		}
+
+		public static List? SyncList<SyncManager, List, T, SyncField>(this SyncManager sync,
+			string name, List? savable,
+			SyncField syncItem, Func<int, List> alloc,
+			SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+				where SyncManager : ISyncManager
+				where List : ICollection<T>, IReadOnlyCollection<T>
+				where SyncField : ISyncField<SyncManager, T>
+		{
+			return SyncList<SyncManager, List, T, SyncField>(sync, (Symbol)name, savable, syncItem, alloc, listMode, tupleLength);
+		}
+
+		#endregion
 	}
 }

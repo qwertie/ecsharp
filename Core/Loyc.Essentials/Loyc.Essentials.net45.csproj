@@ -225,13 +225,19 @@
     <Compile Include="Collections\Implementations\InternalList.cs" />
     <Compile Include="Collections\Implementations\WeakKeyComparer.cs" />
     <Compile Include="Collections\Implementations\WeakKeyDictionary.cs" />
-    <Compile Include="SyncLib\ISyncField.cs" />
+    <Compile Include="SyncLib\Impl\IListBuilder.cs" />
+    <Compile Include="SyncLib\Impl\ISyncField.cs" />
+    <Compile Include="SyncLib\Impl\ISyncObject.cs" />
+    <Compile Include="SyncLib\Impl\ListLoader.cs" />
+    <Compile Include="SyncLib\Impl\ListSaver.cs" />
+    <Compile Include="SyncLib\Impl\ObjectSyncher.cs" />
+    <Compile Include="SyncLib\Impl\ObjectTable.cs" />
+    <Compile Include="SyncLib\Impl\SyncPrimitive.out.cs" />
     <Compile Include="SyncLib\ISyncManager.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ISyncManager.ecs</DependentUpon>
     </Compile>
-    <Compile Include="SyncLib\ObjectTable.cs" />
     <Compile Include="SyncLib\SubObjectMode.cs" />
     <Compile Include="SyncLib\SyncJson.Helper.cs" />
     <Compile Include="SyncLib\SyncJson.Options.cs" />
@@ -243,7 +249,6 @@
     <Compile Include="SyncLib\SyncJson.Writer.cs" />
     <Compile Include="SyncLib\SyncJson.WriterState.cs" />
     <Compile Include="SyncLib\SyncManagerExt.cs" />
-    <Compile Include="SyncLib\SyncManagerHelper.cs" />
     <Compile Include="SyncLib\SyncMode.cs" />
     <Compile Include="SyncLib\TypeStuff.cs" />
     <Compile Include="Utilities\ByteArrayInString.cs" />
@@ -251,6 +256,7 @@
     <Compile Include="Utilities\EzStopwatch.cs" />
     <Compile Include="Utilities\Extensions.cs" />
     <None Include="packages.config" />
+    <None Include="SyncLib\Impl\SyncPrimitive.ecs" />
     <None Include="SyncLib\ISyncManager.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>ISyncManager.out.cs</LastGenOutput>

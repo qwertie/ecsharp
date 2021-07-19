@@ -49,6 +49,9 @@ namespace Loyc.SyncLib
 			=> Encoding.UTF8.GetString(Write(value, sync, options).Span);
 			#endif
 
+		private static bool MayBeNullable(SubObjectMode mode)
+			=> (mode & (SubObjectMode.NotNull | SubObjectMode.Deduplicate)) != SubObjectMode.NotNull;
+
 		public partial struct Writer : ISyncManager
 		{
 			internal WriterState _s;
@@ -76,7 +79,7 @@ namespace Loyc.SyncLib
 
 			public (bool Begun, object? Object) BeginSubObject(Symbol? name, object? childKey, SubObjectMode mode, int listLength = -1)
 			{
-				return _s.BeginSubObject(name?.Name ?? "", childKey, mode, listLength);
+				return _s.BeginSubObject(name?.Name ?? "", childKey, mode);
 			}
 
 			public void EndSubObject() => _s.EndSubObject();
@@ -107,20 +110,20 @@ namespace Loyc.SyncLib
 
 			public BigInteger Sync(Symbol? name, BigInteger savable, int bits, bool signed = true) => Sync(name, savable);
 
-			public InternalList<byte> SyncListImpl(Symbol? name, ReadOnlySpan<byte> savable, SubObjectMode listMode = SubObjectMode.List)
-			{
-				var name2 = name == null ? "" : name.Name;
-				if (savable == default)
-					_s.WriteNull(name2);
-				else {
-					if (_s._opt.UseBais ?? !_s._opt.NewtonsoftCompatibility) {
-						_s.WriteProp(name2, ByteArrayInString.ConvertFromBytes(savable, allowControlChars: false));
-					} else {
-						SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-					}
-				}
-				return default;
-			}
+			//public InternalList<byte> SyncListImpl(Symbol? name, ReadOnlySpan<byte> savable, SubObjectMode listMode = SubObjectMode.List)
+			//{
+			//	var name2 = name == null ? "" : name.Name;
+			//	if (savable == default)
+			//		_s.WriteNull(name2);
+			//	else {
+			//		if (_s._opt.UseBais ?? !_s._opt.NewtonsoftCompatibility) {
+			//			_s.WriteProp(name2, ByteArrayInString.ConvertFromBytes(savable, allowControlChars: false));
+			//		} else {
+			//			SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
+			//		}
+			//	}
+			//	return default;
+			//}
 
 			public string Sync(Symbol? name, string savable) => SyncNullable(name, savable)!;
 			public string? SyncNullable(Symbol? name, string? savable) {
@@ -136,6 +139,70 @@ namespace Loyc.SyncLib
 			/// happens automatically when <see cref="ISyncManager.EndSubObject"/> is 
 			/// used to finish writing an object or list.</summary>
 			public void Flush() => _s.Flush();
+
+			public List? SyncListBoolImpl<Scanner, List, ListBuilder>(Symbol? name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+				where Scanner : IScanner<bool>
+				where ListBuilder : IListBuilder<List, bool>
+			{
+				if (MayBeNullable(mode) && saving == null) {
+					var status = BeginSubObject(name, null, mode, 0);
+					Debug.Assert(!status.Begun && status.Object == null);
+					return default;
+				} else {
+					var saver = new ScannerSaver<SyncJson.Writer, Scanner, bool, SyncPrimitive<SyncJson.Writer>>(new SyncPrimitive<SyncJson.Writer>(), mode);
+					saver.Write(ref this, name, scanner!, saving, tupleLength);
+					return saving;
+				}
+			}
+
+			public List? SyncListCharImpl<Scanner, List, ListBuilder>(Symbol? name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+				where Scanner : IScanner<char>
+				where ListBuilder : IListBuilder<List, char>
+			{
+				if (MayBeNullable(mode) && saving == null) {
+					var status = BeginSubObject(name, null, mode, 0);
+					Debug.Assert(!status.Begun && status.Object == null);
+					return default;
+				} else {
+					// TODO: support deduplication
+					if (_s._opt.WriteCharListAsString ?? !_s._opt.NewtonsoftCompatibility) {
+						// Write character list as string
+						var empty = default(Memory<char>);
+						var chars = scanner.Read(0, int.MaxValue, ref empty);
+						_s.WriteProp(name?.Name ?? "", chars.Span);
+					} else {
+						// Write character list as array
+						var saver = new ScannerSaver<SyncJson.Writer, Scanner, char, SyncPrimitive<SyncJson.Writer>>(new SyncPrimitive<SyncJson.Writer>(), mode);
+						saver.Write(ref this, name, scanner!, saving, tupleLength);
+					}
+					return saving;
+				}
+			}
+
+			public List? SyncListByteImpl<Scanner, List, ListBuilder>(Symbol? name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+				where Scanner : IScanner<byte>
+				where ListBuilder : IListBuilder<List, byte>
+			{
+				if (MayBeNullable(mode) && saving == null) {
+					var status = BeginSubObject(name, null, mode, 0);
+					Debug.Assert(!status.Begun && status.Object == null);
+					return default;
+				} else {
+					// TODO: support deduplication
+					if (_s._opt.NewtonsoftCompatibility && scanner is not InternalList.Scanner<byte> || 
+						_s._opt.ByteArrayMode == JsonByteArrayMode.Array) {
+						// Write bytes as list
+						var saver = new ScannerSaver<SyncJson.Writer, Scanner, byte, SyncPrimitive<SyncJson.Writer>>(new SyncPrimitive<SyncJson.Writer>(), mode);
+						saver.Write(ref this, name, scanner!, saving, tupleLength);
+					} else {
+						// Write bytes as string
+						var empty = default(Memory<byte>);
+						var bytes = scanner.Read(0, int.MaxValue, ref empty);
+						_s.WriteBytesAsString(name?.Name ?? "", bytes.Span);
+					}
+					return saving;
+				}
+			}
 		}
 	}
 }

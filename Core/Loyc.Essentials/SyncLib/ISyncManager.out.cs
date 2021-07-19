@@ -8,6 +8,8 @@
 using Loyc;
 using Loyc.Collections;
 using Loyc.Collections.Impl;
+using Loyc.SyncLib.Impl;
+using Loyc.Collections.MutableListExtensionMethods;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -133,6 +135,14 @@ namespace Loyc.SyncLib
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		bool Sync(Symbol? name, bool savable);
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
+		sbyte Sync(Symbol? name, sbyte savable);
+		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
+		byte Sync(Symbol? name, byte savable);
+		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
+		short Sync(Symbol? name, short savable);
+		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
+		ushort Sync(Symbol? name, ushort savable);
+		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		int Sync(Symbol? name, int savable);
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		uint Sync(Symbol? name, uint savable);
@@ -144,6 +154,8 @@ namespace Loyc.SyncLib
 		float Sync(Symbol? name, float savable);
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		double Sync(Symbol? name, double savable);
+		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
+		decimal Sync(Symbol? name, decimal savable);
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		BigInteger Sync(Symbol? name, BigInteger savable);
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
@@ -159,6 +171,14 @@ namespace Loyc.SyncLib
 		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
 		bool? SyncNullable(Symbol? name, bool? savable);
 		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
+		sbyte? SyncNullable(Symbol? name, sbyte? savable);
+		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
+		byte? SyncNullable(Symbol? name, byte? savable);
+		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
+		short? SyncNullable(Symbol? name, short? savable);
+		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
+		ushort? SyncNullable(Symbol? name, ushort? savable);
+		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
 		int? SyncNullable(Symbol? name, int? savable);
 		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
 		uint? SyncNullable(Symbol? name, uint? savable);
@@ -171,95 +191,34 @@ namespace Loyc.SyncLib
 		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
 		double? SyncNullable(Symbol? name, double? savable);
 		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
+		decimal? SyncNullable(Symbol? name, decimal? savable);
+		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
 		BigInteger? SyncNullable(Symbol? name, BigInteger? savable);
 		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
 		char? SyncNullable(Symbol? name, char? savable);
 		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
 		string? SyncNullable(Symbol? name, string? savable);
-		/// <summary>Reads or writes a list of values in the current object. Users need 
-		/// not call this; use one of the SyncList extension methods instead.</summary>
-		/// <returns>In Loading or Merge modes, a list of items is returned. In all 
-		/// other modes, default(<see cref="InternalList{T}"/>) is returned, even though
-		/// it is an invalid value for InternalList.</returns>
-		InternalList<bool> SyncListImpl(Symbol? name, ReadOnlySpan<bool> savable, SubObjectMode listMode = SubObjectMode.List);
-		/// <summary>Reads or writes a list of values in the current object. Users need 
-		/// not call this; use one of the SyncList extension methods instead.</summary>
-		/// <returns>In Loading or Merge modes, a list of items is returned. In all 
-		/// other modes, default(<see cref="InternalList{T}"/>) is returned, even though
-		/// it is an invalid value for InternalList.</returns>
-		InternalList<sbyte> SyncListImpl(Symbol? name, ReadOnlySpan<sbyte> savable, SubObjectMode listMode = SubObjectMode.List);
-		/// <summary>Reads or writes a list of values in the current object. Users need 
-		/// not call this; use one of the SyncList extension methods instead.</summary>
-		/// <returns>In Loading or Merge modes, a list of items is returned. In all 
-		/// other modes, default(<see cref="InternalList{T}"/>) is returned, even though
-		/// it is an invalid value for InternalList.</returns>
-		InternalList<byte> SyncListImpl(Symbol? name, ReadOnlySpan<byte> savable, SubObjectMode listMode = SubObjectMode.List);
-		/// <summary>Reads or writes a list of values in the current object. Users need 
-		/// not call this; use one of the SyncList extension methods instead.</summary>
-		/// <returns>In Loading or Merge modes, a list of items is returned. In all 
-		/// other modes, default(<see cref="InternalList{T}"/>) is returned, even though
-		/// it is an invalid value for InternalList.</returns>
-		InternalList<short> SyncListImpl(Symbol? name, ReadOnlySpan<short> savable, SubObjectMode listMode = SubObjectMode.List);
-		/// <summary>Reads or writes a list of values in the current object. Users need 
-		/// not call this; use one of the SyncList extension methods instead.</summary>
-		/// <returns>In Loading or Merge modes, a list of items is returned. In all 
-		/// other modes, default(<see cref="InternalList{T}"/>) is returned, even though
-		/// it is an invalid value for InternalList.</returns>
-		InternalList<ushort> SyncListImpl(Symbol? name, ReadOnlySpan<ushort> savable, SubObjectMode listMode = SubObjectMode.List);
-		/// <summary>Reads or writes a list of values in the current object. Users need 
-		/// not call this; use one of the SyncList extension methods instead.</summary>
-		/// <returns>In Loading or Merge modes, a list of items is returned. In all 
-		/// other modes, default(<see cref="InternalList{T}"/>) is returned, even though
-		/// it is an invalid value for InternalList.</returns>
-		InternalList<int> SyncListImpl(Symbol? name, ReadOnlySpan<int> savable, SubObjectMode listMode = SubObjectMode.List);
-		/// <summary>Reads or writes a list of values in the current object. Users need 
-		/// not call this; use one of the SyncList extension methods instead.</summary>
-		/// <returns>In Loading or Merge modes, a list of items is returned. In all 
-		/// other modes, default(<see cref="InternalList{T}"/>) is returned, even though
-		/// it is an invalid value for InternalList.</returns>
-		InternalList<uint> SyncListImpl(Symbol? name, ReadOnlySpan<uint> savable, SubObjectMode listMode = SubObjectMode.List);
-		/// <summary>Reads or writes a list of values in the current object. Users need 
-		/// not call this; use one of the SyncList extension methods instead.</summary>
-		/// <returns>In Loading or Merge modes, a list of items is returned. In all 
-		/// other modes, default(<see cref="InternalList{T}"/>) is returned, even though
-		/// it is an invalid value for InternalList.</returns>
-		InternalList<long> SyncListImpl(Symbol? name, ReadOnlySpan<long> savable, SubObjectMode listMode = SubObjectMode.List);
-		/// <summary>Reads or writes a list of values in the current object. Users need 
-		/// not call this; use one of the SyncList extension methods instead.</summary>
-		/// <returns>In Loading or Merge modes, a list of items is returned. In all 
-		/// other modes, default(<see cref="InternalList{T}"/>) is returned, even though
-		/// it is an invalid value for InternalList.</returns>
-		InternalList<ulong> SyncListImpl(Symbol? name, ReadOnlySpan<ulong> savable, SubObjectMode listMode = SubObjectMode.List);
-		/// <summary>Reads or writes a list of values in the current object. Users need 
-		/// not call this; use one of the SyncList extension methods instead.</summary>
-		/// <returns>In Loading or Merge modes, a list of items is returned. In all 
-		/// other modes, default(<see cref="InternalList{T}"/>) is returned, even though
-		/// it is an invalid value for InternalList.</returns>
-		InternalList<float> SyncListImpl(Symbol? name, ReadOnlySpan<float> savable, SubObjectMode listMode = SubObjectMode.List);
-		/// <summary>Reads or writes a list of values in the current object. Users need 
-		/// not call this; use one of the SyncList extension methods instead.</summary>
-		/// <returns>In Loading or Merge modes, a list of items is returned. In all 
-		/// other modes, default(<see cref="InternalList{T}"/>) is returned, even though
-		/// it is an invalid value for InternalList.</returns>
-		InternalList<double> SyncListImpl(Symbol? name, ReadOnlySpan<double> savable, SubObjectMode listMode = SubObjectMode.List);
-		/// <summary>Reads or writes a list of values in the current object. Users need 
-		/// not call this; use one of the SyncList extension methods instead.</summary>
-		/// <returns>In Loading or Merge modes, a list of items is returned. In all 
-		/// other modes, default(<see cref="InternalList{T}"/>) is returned, even though
-		/// it is an invalid value for InternalList.</returns>
-		InternalList<BigInteger> SyncListImpl(Symbol? name, ReadOnlySpan<BigInteger> savable, SubObjectMode listMode = SubObjectMode.List);
-		/// <summary>Reads or writes a list of values in the current object. Users need 
-		/// not call this; use one of the SyncList extension methods instead.</summary>
-		/// <returns>In Loading or Merge modes, a list of items is returned. In all 
-		/// other modes, default(<see cref="InternalList{T}"/>) is returned, even though
-		/// it is an invalid value for InternalList.</returns>
-		InternalList<char> SyncListImpl(Symbol? name, ReadOnlySpan<char> savable, SubObjectMode listMode = SubObjectMode.List);
-		/// <summary>Reads or writes a list of values in the current object. Users need 
-		/// not call this; use one of the SyncList extension methods instead.</summary>
-		/// <returns>In Loading or Merge modes, a list of items is returned. In all 
-		/// other modes, default(<see cref="InternalList{T}"/>) is returned, even though
-		/// it is an invalid value for InternalList.</returns>
-		InternalList<string?> SyncListImpl(Symbol? name, ReadOnlySpan<string?> savable, SubObjectMode listMode = SubObjectMode.List);
+		/// <summary>This method is used by Sync() extension methods to read 
+		///   or write an array. Users don't need to call it.</summary>
+		/// <remarks>Full documentation is located in source code (ISyncManager.ecs)</remarks>
+		List? SyncListBoolImpl<Scanner, List, ListBuilder>
+		(Symbol? name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+		
+		 where Scanner: IScanner<bool> where ListBuilder: IListBuilder<List, bool>;
+		/// <summary>This method is used by Sync() extension methods to read 
+		///   or write an array. Users don't need to call it.</summary>
+		/// <remarks>Full documentation is located in source code (ISyncManager.ecs)</remarks>
+		List? SyncListCharImpl<Scanner, List, ListBuilder>
+		(Symbol? name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+		
+		 where Scanner: IScanner<char> where ListBuilder: IListBuilder<List, char>;
+		/// <summary>This method is used by Sync() extension methods to read 
+		///   or write an array. Users don't need to call it.</summary>
+		/// <remarks>Full documentation is located in source code (ISyncManager.ecs)</remarks>
+		List? SyncListByteImpl<Scanner, List, ListBuilder>
+		(Symbol? name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+		
+		 where Scanner: IScanner<byte> where ListBuilder: IListBuilder<List, byte>;
 		/// <summary>Sets the "current object" reference. This method must be called 
 		///   when deserializing object graphs with cycles (see remarks).</summary>
 		/// <remarks>
@@ -383,17 +342,22 @@ namespace Loyc.SyncLib
 		//IQueryable<T>? QueryFilter(Symbol name, IQueryable<T> list);
 	}
 
-	public interface ISyncManager<out M> : ISyncManager where M: ISyncManager<M>
-	{
-		[return: MaybeNull]
-		T Sync<T>(string name, [AllowNull] T savable, SyncObjectFunc<M, T> syncFunc, 
-		  SubObjectMode mode = SubObjectMode.Deduplicate);
-	}
-
 	public static partial class SyncManagerExt
 	{
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		public static bool Sync<SyncManager>(this SyncManager sync, string name, bool savable) where SyncManager: ISyncManager => 
+		  sync.Sync((Symbol) name, savable);
+		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
+		public static sbyte Sync<SyncManager>(this SyncManager sync, string name, sbyte savable) where SyncManager: ISyncManager => 
+		  sync.Sync((Symbol) name, savable);
+		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
+		public static byte Sync<SyncManager>(this SyncManager sync, string name, byte savable) where SyncManager: ISyncManager => 
+		  sync.Sync((Symbol) name, savable);
+		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
+		public static short Sync<SyncManager>(this SyncManager sync, string name, short savable) where SyncManager: ISyncManager => 
+		  sync.Sync((Symbol) name, savable);
+		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
+		public static ushort Sync<SyncManager>(this SyncManager sync, string name, ushort savable) where SyncManager: ISyncManager => 
 		  sync.Sync((Symbol) name, savable);
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		public static int Sync<SyncManager>(this SyncManager sync, string name, int savable) where SyncManager: ISyncManager => 
@@ -412,6 +376,9 @@ namespace Loyc.SyncLib
 		  sync.Sync((Symbol) name, savable);
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		public static double Sync<SyncManager>(this SyncManager sync, string name, double savable) where SyncManager: ISyncManager => 
+		  sync.Sync((Symbol) name, savable);
+		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
+		public static decimal Sync<SyncManager>(this SyncManager sync, string name, decimal savable) where SyncManager: ISyncManager => 
 		  sync.Sync((Symbol) name, savable);
 		/// <summary>Reads or writes a value of a non-nullable field of the current object.</summary>
 		public static BigInteger Sync<SyncManager>(this SyncManager sync, string name, BigInteger savable) where SyncManager: ISyncManager => 
@@ -435,6 +402,18 @@ namespace Loyc.SyncLib
 		public static bool? SyncNullable<SyncManager>(this SyncManager sync, string name, bool? savable) where SyncManager: ISyncManager => 
 		  sync.SyncNullable((Symbol) name, savable);
 		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
+		public static sbyte? SyncNullable<SyncManager>(this SyncManager sync, string name, sbyte? savable) where SyncManager: ISyncManager => 
+		  sync.SyncNullable((Symbol) name, savable);
+		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
+		public static byte? SyncNullable<SyncManager>(this SyncManager sync, string name, byte? savable) where SyncManager: ISyncManager => 
+		  sync.SyncNullable((Symbol) name, savable);
+		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
+		public static short? SyncNullable<SyncManager>(this SyncManager sync, string name, short? savable) where SyncManager: ISyncManager => 
+		  sync.SyncNullable((Symbol) name, savable);
+		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
+		public static ushort? SyncNullable<SyncManager>(this SyncManager sync, string name, ushort? savable) where SyncManager: ISyncManager => 
+		  sync.SyncNullable((Symbol) name, savable);
+		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
 		public static int? SyncNullable<SyncManager>(this SyncManager sync, string name, int? savable) where SyncManager: ISyncManager => 
 		  sync.SyncNullable((Symbol) name, savable);
 		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
@@ -453,6 +432,9 @@ namespace Loyc.SyncLib
 		public static double? SyncNullable<SyncManager>(this SyncManager sync, string name, double? savable) where SyncManager: ISyncManager => 
 		  sync.SyncNullable((Symbol) name, savable);
 		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
+		public static decimal? SyncNullable<SyncManager>(this SyncManager sync, string name, decimal? savable) where SyncManager: ISyncManager => 
+		  sync.SyncNullable((Symbol) name, savable);
+		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
 		public static BigInteger? SyncNullable<SyncManager>(this SyncManager sync, string name, BigInteger? savable) where SyncManager: ISyncManager => 
 		  sync.SyncNullable((Symbol) name, savable);
 		/// <summary>Reads or writes a value of a nullable field of the current object.</summary>
@@ -462,1040 +444,622 @@ namespace Loyc.SyncLib
 		public static string? SyncNullable<SyncManager>(this SyncManager sync, string name, string? savable) where SyncManager: ISyncManager => 
 		  sync.SyncNullable((Symbol) name, savable);
 
-		static FieldInfo? _items_bool = typeof(List<bool>).GetField("_items");
-
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<bool> SyncList<SyncManager>(this SyncManager sync, Symbol? name, List<bool> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<bool> span = default;
-
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				// TODO: read private _items
-				span = savable.ToArray().AsMemory().Span;
-			}
-
-			var list = sync.SyncListImpl(name, span);
-
-			// TODO: set private _items
-			return list.InternalArray == null ? savable : list.ToList();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<bool> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IList<bool> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<bool> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as bool[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<bool>(new InternalDList<bool>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<bool> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IReadOnlyCollection<bool> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<bool> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as bool[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<bool>(new InternalDList<bool>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<bool> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IListAndReadOnly<bool> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, name, (IList<bool>) savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static bool[] SyncList<SyncManager>(this SyncManager sync, Symbol? name, bool[] savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<bool> SyncList<SyncManager>(this SyncManager sync, Symbol? name, Memory<bool> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsMemory();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<bool> SyncList<SyncManager>(this SyncManager sync, Symbol? name, ReadOnlyMemory<bool> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-
-		static FieldInfo? _items_sbyte = typeof(List<sbyte>).GetField("_items");
-
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<sbyte> SyncList<SyncManager>(this SyncManager sync, Symbol? name, List<sbyte> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<sbyte> span = default;
-
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				// TODO: read private _items
-				span = savable.ToArray().AsMemory().Span;
-			}
-
-			var list = sync.SyncListImpl(name, span);
-
-			// TODO: set private _items
-			return list.InternalArray == null ? savable : list.ToList();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<sbyte> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IList<sbyte> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<sbyte> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as sbyte[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<sbyte>(new InternalDList<sbyte>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<sbyte> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IReadOnlyCollection<sbyte> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<sbyte> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as sbyte[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<sbyte>(new InternalDList<sbyte>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<sbyte> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IListAndReadOnly<sbyte> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, name, (IList<sbyte>) savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static sbyte[] SyncList<SyncManager>(this SyncManager sync, Symbol? name, sbyte[] savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<sbyte> SyncList<SyncManager>(this SyncManager sync, Symbol? name, Memory<sbyte> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsMemory();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<sbyte> SyncList<SyncManager>(this SyncManager sync, Symbol? name, ReadOnlyMemory<sbyte> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-
-		static FieldInfo? _items_byte = typeof(List<byte>).GetField("_items");
-
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<byte> SyncList<SyncManager>(this SyncManager sync, Symbol? name, List<byte> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<byte> span = default;
-
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				// TODO: read private _items
-				span = savable.ToArray().AsMemory().Span;
-			}
-
-			var list = sync.SyncListImpl(name, span);
-
-			// TODO: set private _items
-			return list.InternalArray == null ? savable : list.ToList();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<byte> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IList<byte> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<byte> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as byte[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<byte>(new InternalDList<byte>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<byte> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IReadOnlyCollection<byte> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<byte> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as byte[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<byte>(new InternalDList<byte>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<byte> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IListAndReadOnly<byte> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, name, (IList<byte>) savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static byte[] SyncList<SyncManager>(this SyncManager sync, Symbol? name, byte[] savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<byte> SyncList<SyncManager>(this SyncManager sync, Symbol? name, Memory<byte> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsMemory();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<byte> SyncList<SyncManager>(this SyncManager sync, Symbol? name, ReadOnlyMemory<byte> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-
-		static FieldInfo? _items_short = typeof(List<short>).GetField("_items");
-
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<short> SyncList<SyncManager>(this SyncManager sync, Symbol? name, List<short> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<short> span = default;
-
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				// TODO: read private _items
-				span = savable.ToArray().AsMemory().Span;
-			}
-
-			var list = sync.SyncListImpl(name, span);
-
-			// TODO: set private _items
-			return list.InternalArray == null ? savable : list.ToList();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<short> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IList<short> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<short> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as short[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<short>(new InternalDList<short>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<short> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IReadOnlyCollection<short> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<short> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as short[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<short>(new InternalDList<short>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<short> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IListAndReadOnly<short> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, name, (IList<short>) savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static short[] SyncList<SyncManager>(this SyncManager sync, Symbol? name, short[] savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<short> SyncList<SyncManager>(this SyncManager sync, Symbol? name, Memory<short> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsMemory();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<short> SyncList<SyncManager>(this SyncManager sync, Symbol? name, ReadOnlyMemory<short> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-
-		static FieldInfo? _items_ushort = typeof(List<ushort>).GetField("_items");
-
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<ushort> SyncList<SyncManager>(this SyncManager sync, Symbol? name, List<ushort> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<ushort> span = default;
-
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				// TODO: read private _items
-				span = savable.ToArray().AsMemory().Span;
-			}
-
-			var list = sync.SyncListImpl(name, span);
-
-			// TODO: set private _items
-			return list.InternalArray == null ? savable : list.ToList();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<ushort> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IList<ushort> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<ushort> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as ushort[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<ushort>(new InternalDList<ushort>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<ushort> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IReadOnlyCollection<ushort> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<ushort> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as ushort[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<ushort>(new InternalDList<ushort>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<ushort> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IListAndReadOnly<ushort> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, name, (IList<ushort>) savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ushort[] SyncList<SyncManager>(this SyncManager sync, Symbol? name, ushort[] savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<ushort> SyncList<SyncManager>(this SyncManager sync, Symbol? name, Memory<ushort> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsMemory();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<ushort> SyncList<SyncManager>(this SyncManager sync, Symbol? name, ReadOnlyMemory<ushort> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-
-		static FieldInfo? _items_int = typeof(List<int>).GetField("_items");
-
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<int> SyncList<SyncManager>(this SyncManager sync, Symbol? name, List<int> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<int> span = default;
-
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				// TODO: read private _items
-				span = savable.ToArray().AsMemory().Span;
-			}
-
-			var list = sync.SyncListImpl(name, span);
-
-			// TODO: set private _items
-			return list.InternalArray == null ? savable : list.ToList();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<int> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IList<int> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<int> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as int[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<int>(new InternalDList<int>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<int> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IReadOnlyCollection<int> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<int> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as int[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<int>(new InternalDList<int>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<int> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IListAndReadOnly<int> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, name, (IList<int>) savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static int[] SyncList<SyncManager>(this SyncManager sync, Symbol? name, int[] savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<int> SyncList<SyncManager>(this SyncManager sync, Symbol? name, Memory<int> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsMemory();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<int> SyncList<SyncManager>(this SyncManager sync, Symbol? name, ReadOnlyMemory<int> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-
-		static FieldInfo? _items_uint = typeof(List<uint>).GetField("_items");
-
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<uint> SyncList<SyncManager>(this SyncManager sync, Symbol? name, List<uint> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<uint> span = default;
-
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				// TODO: read private _items
-				span = savable.ToArray().AsMemory().Span;
-			}
-
-			var list = sync.SyncListImpl(name, span);
-
-			// TODO: set private _items
-			return list.InternalArray == null ? savable : list.ToList();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<uint> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IList<uint> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<uint> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as uint[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<uint>(new InternalDList<uint>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<uint> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IReadOnlyCollection<uint> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<uint> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as uint[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<uint>(new InternalDList<uint>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<uint> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IListAndReadOnly<uint> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, name, (IList<uint>) savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static uint[] SyncList<SyncManager>(this SyncManager sync, Symbol? name, uint[] savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<uint> SyncList<SyncManager>(this SyncManager sync, Symbol? name, Memory<uint> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsMemory();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<uint> SyncList<SyncManager>(this SyncManager sync, Symbol? name, ReadOnlyMemory<uint> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-
-		static FieldInfo? _items_long = typeof(List<long>).GetField("_items");
-
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<long> SyncList<SyncManager>(this SyncManager sync, Symbol? name, List<long> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<long> span = default;
-
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				// TODO: read private _items
-				span = savable.ToArray().AsMemory().Span;
-			}
-
-			var list = sync.SyncListImpl(name, span);
-
-			// TODO: set private _items
-			return list.InternalArray == null ? savable : list.ToList();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<long> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IList<long> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<long> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as long[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<long>(new InternalDList<long>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<long> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IReadOnlyCollection<long> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<long> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as long[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<long>(new InternalDList<long>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<long> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IListAndReadOnly<long> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, name, (IList<long>) savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static long[] SyncList<SyncManager>(this SyncManager sync, Symbol? name, long[] savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<long> SyncList<SyncManager>(this SyncManager sync, Symbol? name, Memory<long> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsMemory();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<long> SyncList<SyncManager>(this SyncManager sync, Symbol? name, ReadOnlyMemory<long> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-
-		static FieldInfo? _items_ulong = typeof(List<ulong>).GetField("_items");
-
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<ulong> SyncList<SyncManager>(this SyncManager sync, Symbol? name, List<ulong> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<ulong> span = default;
-
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				// TODO: read private _items
-				span = savable.ToArray().AsMemory().Span;
-			}
-
-			var list = sync.SyncListImpl(name, span);
-
-			// TODO: set private _items
-			return list.InternalArray == null ? savable : list.ToList();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<ulong> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IList<ulong> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<ulong> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as ulong[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<ulong>(new InternalDList<ulong>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<ulong> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IReadOnlyCollection<ulong> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<ulong> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as ulong[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<ulong>(new InternalDList<ulong>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<ulong> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IListAndReadOnly<ulong> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, name, (IList<ulong>) savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ulong[] SyncList<SyncManager>(this SyncManager sync, Symbol? name, ulong[] savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<ulong> SyncList<SyncManager>(this SyncManager sync, Symbol? name, Memory<ulong> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsMemory();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<ulong> SyncList<SyncManager>(this SyncManager sync, Symbol? name, ReadOnlyMemory<ulong> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-
-		static FieldInfo? _items_float = typeof(List<float>).GetField("_items");
-
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<float> SyncList<SyncManager>(this SyncManager sync, Symbol? name, List<float> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<float> span = default;
-
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				// TODO: read private _items
-				span = savable.ToArray().AsMemory().Span;
-			}
-
-			var list = sync.SyncListImpl(name, span);
-
-			// TODO: set private _items
-			return list.InternalArray == null ? savable : list.ToList();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<float> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IList<float> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<float> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as float[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<float>(new InternalDList<float>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<float> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IReadOnlyCollection<float> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<float> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as float[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<float>(new InternalDList<float>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<float> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IListAndReadOnly<float> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, name, (IList<float>) savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static float[] SyncList<SyncManager>(this SyncManager sync, Symbol? name, float[] savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<float> SyncList<SyncManager>(this SyncManager sync, Symbol? name, Memory<float> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsMemory();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<float> SyncList<SyncManager>(this SyncManager sync, Symbol? name, ReadOnlyMemory<float> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-
-		static FieldInfo? _items_double = typeof(List<double>).GetField("_items");
-
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<double> SyncList<SyncManager>(this SyncManager sync, Symbol? name, List<double> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<double> span = default;
-
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				// TODO: read private _items
-				span = savable.ToArray().AsMemory().Span;
-			}
-
-			var list = sync.SyncListImpl(name, span);
-
-			// TODO: set private _items
-			return list.InternalArray == null ? savable : list.ToList();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<double> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IList<double> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<double> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as double[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<double>(new InternalDList<double>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<double> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IReadOnlyCollection<double> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<double> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as double[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<double>(new InternalDList<double>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<double> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IListAndReadOnly<double> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, name, (IList<double>) savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static double[] SyncList<SyncManager>(this SyncManager sync, Symbol? name, double[] savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<double> SyncList<SyncManager>(this SyncManager sync, Symbol? name, Memory<double> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsMemory();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<double> SyncList<SyncManager>(this SyncManager sync, Symbol? name, ReadOnlyMemory<double> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-
-		static FieldInfo? _items_BigInteger = typeof(List<BigInteger>).GetField("_items");
-
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<BigInteger> SyncList<SyncManager>(this SyncManager sync, Symbol? name, List<BigInteger> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<BigInteger> span = default;
-
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				// TODO: read private _items
-				span = savable.ToArray().AsMemory().Span;
-			}
-
-			var list = sync.SyncListImpl(name, span);
-
-			// TODO: set private _items
-			return list.InternalArray == null ? savable : list.ToList();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<BigInteger> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IList<BigInteger> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<BigInteger> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as BigInteger[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<BigInteger>(new InternalDList<BigInteger>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<BigInteger> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IReadOnlyCollection<BigInteger> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<BigInteger> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as BigInteger[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<BigInteger>(new InternalDList<BigInteger>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<BigInteger> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IListAndReadOnly<BigInteger> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, name, (IList<BigInteger>) savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static BigInteger[] SyncList<SyncManager>(this SyncManager sync, Symbol? name, BigInteger[] savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<BigInteger> SyncList<SyncManager>(this SyncManager sync, Symbol? name, Memory<BigInteger> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsMemory();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<BigInteger> SyncList<SyncManager>(this SyncManager sync, Symbol? name, ReadOnlyMemory<BigInteger> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-
-		static FieldInfo? _items_char = typeof(List<char>).GetField("_items");
-
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<char> SyncList<SyncManager>(this SyncManager sync, Symbol? name, List<char> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<char> span = default;
-
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				// TODO: read private _items
-				span = savable.ToArray().AsMemory().Span;
-			}
-
-			var list = sync.SyncListImpl(name, span);
-
-			// TODO: set private _items
-			return list.InternalArray == null ? savable : list.ToList();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<char> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IList<char> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<char> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as char[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<char>(new InternalDList<char>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<char> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IReadOnlyCollection<char> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<char> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as char[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<char>(new InternalDList<char>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<char> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IListAndReadOnly<char> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, name, (IList<char>) savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static char[] SyncList<SyncManager>(this SyncManager sync, Symbol? name, char[] savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<char> SyncList<SyncManager>(this SyncManager sync, Symbol? name, Memory<char> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsMemory();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<char> SyncList<SyncManager>(this SyncManager sync, Symbol? name, ReadOnlyMemory<char> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-
-		static FieldInfo? _items__commat_apos_quest_sp_ltstring_gt = typeof(List<string?>).GetField("_items");
-
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<string?> SyncList<SyncManager>(this SyncManager sync, Symbol? name, List<string?> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<string?> span = default;
-
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				// TODO: read private _items
-				span = savable.ToArray().AsMemory().Span;
-			}
-
-			var list = sync.SyncListImpl(name, span);
-
-			// TODO: set private _items
-			return list.InternalArray == null ? savable : list.ToList();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<string?> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IList<string?> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<string?> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as string?[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<string?>(new InternalDList<string?>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<string?> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IReadOnlyCollection<string?> savable) where SyncManager: ISyncManager {
-			ReadOnlySpan<string?> span = default;
-			if ((sync.Mode & SyncMode.Saving) != 0) {
-				span = ((savable as string?[]) ?? savable.ToArray()).AsMemory().Span;
-			}
-			var list = sync.SyncListImpl(name, span);
-			return list.InternalArray == null ? savable : new DList<string?>(new InternalDList<string?>(list.InternalArray, list.Count));
-		}
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<string?> SyncList<SyncManager>(this SyncManager sync, Symbol? name, IListAndReadOnly<string?> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, name, (IList<string?>) savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static string?[] SyncList<SyncManager>(this SyncManager sync, Symbol? name, string?[] savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<string?> SyncList<SyncManager>(this SyncManager sync, Symbol? name, Memory<string?> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsMemory();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<string?> SyncList<SyncManager>(this SyncManager sync, Symbol? name, ReadOnlyMemory<string?> savable) where SyncManager: ISyncManager {
-			var list = sync.SyncListImpl(name, savable.Span);
-			return list.InternalArray == null ? savable : list.AsArray();
-		}
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<bool> SyncList<SyncManager>(this SyncManager sync, string? name, List<bool> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<bool> SyncList<SyncManager>(this SyncManager sync, string? name, IList<bool> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<bool> SyncList<SyncManager>(this SyncManager sync, string? name, IReadOnlyCollection<bool> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static bool[] SyncList<SyncManager>(this SyncManager sync, string? name, bool[] savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<bool> SyncList<SyncManager>(this SyncManager sync, string? name, Memory<bool> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<bool> SyncList<SyncManager>(this SyncManager sync, string? name, ReadOnlyMemory<bool> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<bool> SyncList<SyncManager>(this SyncManager sync, string? name, IListAndReadOnly<bool> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<sbyte> SyncList<SyncManager>(this SyncManager sync, string? name, List<sbyte> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<sbyte> SyncList<SyncManager>(this SyncManager sync, string? name, IList<sbyte> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<sbyte> SyncList<SyncManager>(this SyncManager sync, string? name, IReadOnlyCollection<sbyte> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static sbyte[] SyncList<SyncManager>(this SyncManager sync, string? name, sbyte[] savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<sbyte> SyncList<SyncManager>(this SyncManager sync, string? name, Memory<sbyte> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<sbyte> SyncList<SyncManager>(this SyncManager sync, string? name, ReadOnlyMemory<sbyte> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<sbyte> SyncList<SyncManager>(this SyncManager sync, string? name, IListAndReadOnly<sbyte> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<byte> SyncList<SyncManager>(this SyncManager sync, string? name, List<byte> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<byte> SyncList<SyncManager>(this SyncManager sync, string? name, IList<byte> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<byte> SyncList<SyncManager>(this SyncManager sync, string? name, IReadOnlyCollection<byte> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static byte[] SyncList<SyncManager>(this SyncManager sync, string? name, byte[] savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<byte> SyncList<SyncManager>(this SyncManager sync, string? name, Memory<byte> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<byte> SyncList<SyncManager>(this SyncManager sync, string? name, ReadOnlyMemory<byte> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<byte> SyncList<SyncManager>(this SyncManager sync, string? name, IListAndReadOnly<byte> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<short> SyncList<SyncManager>(this SyncManager sync, string? name, List<short> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<short> SyncList<SyncManager>(this SyncManager sync, string? name, IList<short> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<short> SyncList<SyncManager>(this SyncManager sync, string? name, IReadOnlyCollection<short> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static short[] SyncList<SyncManager>(this SyncManager sync, string? name, short[] savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<short> SyncList<SyncManager>(this SyncManager sync, string? name, Memory<short> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<short> SyncList<SyncManager>(this SyncManager sync, string? name, ReadOnlyMemory<short> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<short> SyncList<SyncManager>(this SyncManager sync, string? name, IListAndReadOnly<short> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<ushort> SyncList<SyncManager>(this SyncManager sync, string? name, List<ushort> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<ushort> SyncList<SyncManager>(this SyncManager sync, string? name, IList<ushort> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<ushort> SyncList<SyncManager>(this SyncManager sync, string? name, IReadOnlyCollection<ushort> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ushort[] SyncList<SyncManager>(this SyncManager sync, string? name, ushort[] savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<ushort> SyncList<SyncManager>(this SyncManager sync, string? name, Memory<ushort> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<ushort> SyncList<SyncManager>(this SyncManager sync, string? name, ReadOnlyMemory<ushort> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<ushort> SyncList<SyncManager>(this SyncManager sync, string? name, IListAndReadOnly<ushort> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<int> SyncList<SyncManager>(this SyncManager sync, string? name, List<int> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<int> SyncList<SyncManager>(this SyncManager sync, string? name, IList<int> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<int> SyncList<SyncManager>(this SyncManager sync, string? name, IReadOnlyCollection<int> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static int[] SyncList<SyncManager>(this SyncManager sync, string? name, int[] savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<int> SyncList<SyncManager>(this SyncManager sync, string? name, Memory<int> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<int> SyncList<SyncManager>(this SyncManager sync, string? name, ReadOnlyMemory<int> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<int> SyncList<SyncManager>(this SyncManager sync, string? name, IListAndReadOnly<int> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<uint> SyncList<SyncManager>(this SyncManager sync, string? name, List<uint> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<uint> SyncList<SyncManager>(this SyncManager sync, string? name, IList<uint> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<uint> SyncList<SyncManager>(this SyncManager sync, string? name, IReadOnlyCollection<uint> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static uint[] SyncList<SyncManager>(this SyncManager sync, string? name, uint[] savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<uint> SyncList<SyncManager>(this SyncManager sync, string? name, Memory<uint> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<uint> SyncList<SyncManager>(this SyncManager sync, string? name, ReadOnlyMemory<uint> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<uint> SyncList<SyncManager>(this SyncManager sync, string? name, IListAndReadOnly<uint> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<long> SyncList<SyncManager>(this SyncManager sync, string? name, List<long> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<long> SyncList<SyncManager>(this SyncManager sync, string? name, IList<long> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<long> SyncList<SyncManager>(this SyncManager sync, string? name, IReadOnlyCollection<long> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static long[] SyncList<SyncManager>(this SyncManager sync, string? name, long[] savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<long> SyncList<SyncManager>(this SyncManager sync, string? name, Memory<long> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<long> SyncList<SyncManager>(this SyncManager sync, string? name, ReadOnlyMemory<long> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<long> SyncList<SyncManager>(this SyncManager sync, string? name, IListAndReadOnly<long> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<ulong> SyncList<SyncManager>(this SyncManager sync, string? name, List<ulong> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<ulong> SyncList<SyncManager>(this SyncManager sync, string? name, IList<ulong> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<ulong> SyncList<SyncManager>(this SyncManager sync, string? name, IReadOnlyCollection<ulong> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ulong[] SyncList<SyncManager>(this SyncManager sync, string? name, ulong[] savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<ulong> SyncList<SyncManager>(this SyncManager sync, string? name, Memory<ulong> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<ulong> SyncList<SyncManager>(this SyncManager sync, string? name, ReadOnlyMemory<ulong> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<ulong> SyncList<SyncManager>(this SyncManager sync, string? name, IListAndReadOnly<ulong> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<float> SyncList<SyncManager>(this SyncManager sync, string? name, List<float> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<float> SyncList<SyncManager>(this SyncManager sync, string? name, IList<float> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<float> SyncList<SyncManager>(this SyncManager sync, string? name, IReadOnlyCollection<float> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static float[] SyncList<SyncManager>(this SyncManager sync, string? name, float[] savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<float> SyncList<SyncManager>(this SyncManager sync, string? name, Memory<float> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<float> SyncList<SyncManager>(this SyncManager sync, string? name, ReadOnlyMemory<float> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<float> SyncList<SyncManager>(this SyncManager sync, string? name, IListAndReadOnly<float> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<double> SyncList<SyncManager>(this SyncManager sync, string? name, List<double> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<double> SyncList<SyncManager>(this SyncManager sync, string? name, IList<double> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<double> SyncList<SyncManager>(this SyncManager sync, string? name, IReadOnlyCollection<double> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static double[] SyncList<SyncManager>(this SyncManager sync, string? name, double[] savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<double> SyncList<SyncManager>(this SyncManager sync, string? name, Memory<double> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<double> SyncList<SyncManager>(this SyncManager sync, string? name, ReadOnlyMemory<double> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<double> SyncList<SyncManager>(this SyncManager sync, string? name, IListAndReadOnly<double> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<BigInteger> SyncList<SyncManager>(this SyncManager sync, string? name, List<BigInteger> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<BigInteger> SyncList<SyncManager>(this SyncManager sync, string? name, IList<BigInteger> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<BigInteger> SyncList<SyncManager>(this SyncManager sync, string? name, IReadOnlyCollection<BigInteger> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static BigInteger[] SyncList<SyncManager>(this SyncManager sync, string? name, BigInteger[] savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<BigInteger> SyncList<SyncManager>(this SyncManager sync, string? name, Memory<BigInteger> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<BigInteger> SyncList<SyncManager>(this SyncManager sync, string? name, ReadOnlyMemory<BigInteger> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<BigInteger> SyncList<SyncManager>(this SyncManager sync, string? name, IListAndReadOnly<BigInteger> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<char> SyncList<SyncManager>(this SyncManager sync, string? name, List<char> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<char> SyncList<SyncManager>(this SyncManager sync, string? name, IList<char> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<char> SyncList<SyncManager>(this SyncManager sync, string? name, IReadOnlyCollection<char> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static char[] SyncList<SyncManager>(this SyncManager sync, string? name, char[] savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<char> SyncList<SyncManager>(this SyncManager sync, string? name, Memory<char> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<char> SyncList<SyncManager>(this SyncManager sync, string? name, ReadOnlyMemory<char> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<char> SyncList<SyncManager>(this SyncManager sync, string? name, IListAndReadOnly<char> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static List<string?> SyncList<SyncManager>(this SyncManager sync, string? name, List<string?> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IList<string?> SyncList<SyncManager>(this SyncManager sync, string? name, IList<string?> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static IReadOnlyCollection<string?> SyncList<SyncManager>(this SyncManager sync, string? name, IReadOnlyCollection<string?> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static string?[] SyncList<SyncManager>(this SyncManager sync, string? name, string?[] savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static Memory<string?> SyncList<SyncManager>(this SyncManager sync, string? name, Memory<string?> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object.</summary>
-		public static ReadOnlyMemory<string?> SyncList<SyncManager>(this SyncManager sync, string? name, ReadOnlyMemory<string?> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
-		/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		public static IList<string?> SyncList<SyncManager>(this SyncManager sync, string? name, IListAndReadOnly<string?> savable) where SyncManager: ISyncManager => 
-		  SyncList(sync, GSymbol.Get(name), savable);
+		// SyncList methods for Bool
+		public static List<bool>? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, List<bool>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		
+		{
+			ScannableEnumerable<bool>.Scanner<List<bool>.Enumerator> scanner = default;
+			if (savable != null)
+				scanner = new ScannableEnumerable<bool>.Scanner<List<bool>.Enumerator>(savable.GetEnumerator());
+			return sync.SyncListBoolImpl<ScannableEnumerable<bool>.Scanner<List<bool>.Enumerator>, List<bool>, ListBuilder<bool>>(
+			name, scanner, savable, new ListBuilder<bool>(), listMode, tupleLength);
+		}
+		public static bool[]? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, bool[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		
+		{
+			var scanner = new InternalList.Scanner<bool>(savable.AsMemory());
+			return sync.SyncListBoolImpl<InternalList.Scanner<bool>, bool[], ArrayBuilder<bool>>(
+			name, scanner, savable, new ArrayBuilder<bool>(), listMode, tupleLength);
+		}
+		public static Memory<bool> SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, Memory<bool> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		
+		{
+			if ((listMode & SubObjectMode.Deduplicate) != 0)
+				throw new ArgumentException("SubObjectMode.Deduplicate is incompatible with Memory<T>");
+			var scanner = new InternalList.Scanner<bool>(savable);
+			return sync.SyncListBoolImpl<InternalList.Scanner<bool>, Memory<bool>, MemoryBuilder<bool>>(
+			name, scanner, null, new MemoryBuilder<bool>(), listMode | SubObjectMode.NotNull, tupleLength);
+		}
+		// Produces an error: CS0111: Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	Symbol? name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//{
+		//	object? listRef = (listMode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) == SubObjectMode.NotNull ? null : savable;
+		//	var scanner = (savable == null ? Empty<$T>.Array : Loyc.Collections.MutableListExtensionMethods.LinqToLists.ToArray(savable)).Slice().Scan();
+		//	return sync.$(out NameWithType(Sync, $T, ListImpl))<List, InternalList.Scanner<$T>, CollectionBuilder<List, $T>>
+		//		(name, scanner, new CollectionBuilder<List, $T>(alloc), listMode, listRef, tupleLength);
+		//}
+		public static List<bool>? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, List<bool>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, listMode, tupleLength);
+		public static bool[]? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, bool[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, listMode, tupleLength);
+		public static Memory<bool> SyncList<SyncManager>(this SyncManager sync, 
+		  string name, Memory<bool> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	string name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList(sync, (Symbol)name, savable, listMode, tupleLength);
+
+		// SyncList methods for #int8
+		public static List<sbyte>? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, List<sbyte>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static sbyte[]? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, sbyte[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<sbyte> SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, Memory<sbyte> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	Symbol? name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList<SyncManager, List, $T, SyncPrimitive<SyncManager>>(
+		//		sync, name, savable, new SyncPrimitive<SyncManager>(), alloc, listMode, tupleLength);
+		public static List<sbyte>? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, List<sbyte>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static sbyte[]? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, sbyte[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<sbyte> SyncList<SyncManager>(this SyncManager sync, 
+		  string name, Memory<sbyte> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	string name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList(sync, (Symbol)name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+
+		// SyncList methods for Byte
+		public static List<byte>? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, List<byte>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		
+		{
+			ScannableEnumerable<byte>.Scanner<List<byte>.Enumerator> scanner = default;
+			if (savable != null)
+				scanner = new ScannableEnumerable<byte>.Scanner<List<byte>.Enumerator>(savable.GetEnumerator());
+			return sync.SyncListByteImpl<ScannableEnumerable<byte>.Scanner<List<byte>.Enumerator>, List<byte>, ListBuilder<byte>>(
+			name, scanner, savable, new ListBuilder<byte>(), listMode, tupleLength);
+		}
+		public static byte[]? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, byte[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		
+		{
+			var scanner = new InternalList.Scanner<byte>(savable.AsMemory());
+			return sync.SyncListByteImpl<InternalList.Scanner<byte>, byte[], ArrayBuilder<byte>>(
+			name, scanner, savable, new ArrayBuilder<byte>(), listMode, tupleLength);
+		}
+		public static Memory<byte> SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, Memory<byte> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		
+		{
+			if ((listMode & SubObjectMode.Deduplicate) != 0)
+				throw new ArgumentException("SubObjectMode.Deduplicate is incompatible with Memory<T>");
+			var scanner = new InternalList.Scanner<byte>(savable);
+			return sync.SyncListByteImpl<InternalList.Scanner<byte>, Memory<byte>, MemoryBuilder<byte>>(
+			name, scanner, null, new MemoryBuilder<byte>(), listMode | SubObjectMode.NotNull, tupleLength);
+		}
+		// Produces an error: CS0111: Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	Symbol? name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//{
+		//	object? listRef = (listMode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) == SubObjectMode.NotNull ? null : savable;
+		//	var scanner = (savable == null ? Empty<$T>.Array : Loyc.Collections.MutableListExtensionMethods.LinqToLists.ToArray(savable)).Slice().Scan();
+		//	return sync.$(out NameWithType(Sync, $T, ListImpl))<List, InternalList.Scanner<$T>, CollectionBuilder<List, $T>>
+		//		(name, scanner, new CollectionBuilder<List, $T>(alloc), listMode, listRef, tupleLength);
+		//}
+		public static List<byte>? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, List<byte>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, listMode, tupleLength);
+		public static byte[]? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, byte[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, listMode, tupleLength);
+		public static Memory<byte> SyncList<SyncManager>(this SyncManager sync, 
+		  string name, Memory<byte> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	string name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList(sync, (Symbol)name, savable, listMode, tupleLength);
+
+		// SyncList methods for #int16
+		public static List<short>? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, List<short>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static short[]? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, short[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<short> SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, Memory<short> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	Symbol? name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList<SyncManager, List, $T, SyncPrimitive<SyncManager>>(
+		//		sync, name, savable, new SyncPrimitive<SyncManager>(), alloc, listMode, tupleLength);
+		public static List<short>? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, List<short>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static short[]? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, short[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<short> SyncList<SyncManager>(this SyncManager sync, 
+		  string name, Memory<short> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	string name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList(sync, (Symbol)name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+
+		// SyncList methods for #uint16
+		public static List<ushort>? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, List<ushort>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static ushort[]? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, ushort[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<ushort> SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, Memory<ushort> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	Symbol? name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList<SyncManager, List, $T, SyncPrimitive<SyncManager>>(
+		//		sync, name, savable, new SyncPrimitive<SyncManager>(), alloc, listMode, tupleLength);
+		public static List<ushort>? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, List<ushort>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static ushort[]? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, ushort[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<ushort> SyncList<SyncManager>(this SyncManager sync, 
+		  string name, Memory<ushort> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	string name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList(sync, (Symbol)name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+
+		// SyncList methods for #int32
+		public static List<int>? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, List<int>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static int[]? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, int[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<int> SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, Memory<int> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	Symbol? name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList<SyncManager, List, $T, SyncPrimitive<SyncManager>>(
+		//		sync, name, savable, new SyncPrimitive<SyncManager>(), alloc, listMode, tupleLength);
+		public static List<int>? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, List<int>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static int[]? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, int[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<int> SyncList<SyncManager>(this SyncManager sync, 
+		  string name, Memory<int> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	string name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList(sync, (Symbol)name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+
+		// SyncList methods for #uint32
+		public static List<uint>? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, List<uint>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static uint[]? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, uint[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<uint> SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, Memory<uint> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	Symbol? name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList<SyncManager, List, $T, SyncPrimitive<SyncManager>>(
+		//		sync, name, savable, new SyncPrimitive<SyncManager>(), alloc, listMode, tupleLength);
+		public static List<uint>? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, List<uint>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static uint[]? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, uint[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<uint> SyncList<SyncManager>(this SyncManager sync, 
+		  string name, Memory<uint> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	string name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList(sync, (Symbol)name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+
+		// SyncList methods for #int64
+		public static List<long>? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, List<long>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static long[]? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, long[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<long> SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, Memory<long> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	Symbol? name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList<SyncManager, List, $T, SyncPrimitive<SyncManager>>(
+		//		sync, name, savable, new SyncPrimitive<SyncManager>(), alloc, listMode, tupleLength);
+		public static List<long>? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, List<long>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static long[]? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, long[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<long> SyncList<SyncManager>(this SyncManager sync, 
+		  string name, Memory<long> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	string name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList(sync, (Symbol)name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+
+		// SyncList methods for #uint64
+		public static List<ulong>? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, List<ulong>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static ulong[]? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, ulong[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<ulong> SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, Memory<ulong> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	Symbol? name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList<SyncManager, List, $T, SyncPrimitive<SyncManager>>(
+		//		sync, name, savable, new SyncPrimitive<SyncManager>(), alloc, listMode, tupleLength);
+		public static List<ulong>? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, List<ulong>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static ulong[]? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, ulong[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<ulong> SyncList<SyncManager>(this SyncManager sync, 
+		  string name, Memory<ulong> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	string name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList(sync, (Symbol)name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+
+		// SyncList methods for #single
+		public static List<float>? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, List<float>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static float[]? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, float[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<float> SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, Memory<float> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	Symbol? name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList<SyncManager, List, $T, SyncPrimitive<SyncManager>>(
+		//		sync, name, savable, new SyncPrimitive<SyncManager>(), alloc, listMode, tupleLength);
+		public static List<float>? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, List<float>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static float[]? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, float[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<float> SyncList<SyncManager>(this SyncManager sync, 
+		  string name, Memory<float> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	string name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList(sync, (Symbol)name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+
+		// SyncList methods for #double
+		public static List<double>? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, List<double>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static double[]? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, double[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<double> SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, Memory<double> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	Symbol? name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList<SyncManager, List, $T, SyncPrimitive<SyncManager>>(
+		//		sync, name, savable, new SyncPrimitive<SyncManager>(), alloc, listMode, tupleLength);
+		public static List<double>? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, List<double>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static double[]? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, double[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<double> SyncList<SyncManager>(this SyncManager sync, 
+		  string name, Memory<double> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	string name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList(sync, (Symbol)name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+
+		// SyncList methods for #decimal
+		public static List<decimal>? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, List<decimal>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static decimal[]? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, decimal[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<decimal> SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, Memory<decimal> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	Symbol? name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList<SyncManager, List, $T, SyncPrimitive<SyncManager>>(
+		//		sync, name, savable, new SyncPrimitive<SyncManager>(), alloc, listMode, tupleLength);
+		public static List<decimal>? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, List<decimal>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static decimal[]? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, decimal[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<decimal> SyncList<SyncManager>(this SyncManager sync, 
+		  string name, Memory<decimal> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	string name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList(sync, (Symbol)name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+
+		// SyncList methods for BigInteger
+		public static List<BigInteger>? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, List<BigInteger>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static BigInteger[]? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, BigInteger[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<BigInteger> SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, Memory<BigInteger> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	Symbol? name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList<SyncManager, List, $T, SyncPrimitive<SyncManager>>(
+		//		sync, name, savable, new SyncPrimitive<SyncManager>(), alloc, listMode, tupleLength);
+		public static List<BigInteger>? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, List<BigInteger>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static BigInteger[]? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, BigInteger[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<BigInteger> SyncList<SyncManager>(this SyncManager sync, 
+		  string name, Memory<BigInteger> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	string name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList(sync, (Symbol)name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+
+		// SyncList methods for Char
+		public static List<char>? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, List<char>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		
+		{
+			ScannableEnumerable<char>.Scanner<List<char>.Enumerator> scanner = default;
+			if (savable != null)
+				scanner = new ScannableEnumerable<char>.Scanner<List<char>.Enumerator>(savable.GetEnumerator());
+			return sync.SyncListCharImpl<ScannableEnumerable<char>.Scanner<List<char>.Enumerator>, List<char>, ListBuilder<char>>(
+			name, scanner, savable, new ListBuilder<char>(), listMode, tupleLength);
+		}
+		public static char[]? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, char[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		
+		{
+			var scanner = new InternalList.Scanner<char>(savable.AsMemory());
+			return sync.SyncListCharImpl<InternalList.Scanner<char>, char[], ArrayBuilder<char>>(
+			name, scanner, savable, new ArrayBuilder<char>(), listMode, tupleLength);
+		}
+		public static Memory<char> SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, Memory<char> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		
+		{
+			if ((listMode & SubObjectMode.Deduplicate) != 0)
+				throw new ArgumentException("SubObjectMode.Deduplicate is incompatible with Memory<T>");
+			var scanner = new InternalList.Scanner<char>(savable);
+			return sync.SyncListCharImpl<InternalList.Scanner<char>, Memory<char>, MemoryBuilder<char>>(
+			name, scanner, null, new MemoryBuilder<char>(), listMode | SubObjectMode.NotNull, tupleLength);
+		}
+		// Produces an error: CS0111: Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	Symbol? name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//{
+		//	object? listRef = (listMode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) == SubObjectMode.NotNull ? null : savable;
+		//	var scanner = (savable == null ? Empty<$T>.Array : Loyc.Collections.MutableListExtensionMethods.LinqToLists.ToArray(savable)).Slice().Scan();
+		//	return sync.$(out NameWithType(Sync, $T, ListImpl))<List, InternalList.Scanner<$T>, CollectionBuilder<List, $T>>
+		//		(name, scanner, new CollectionBuilder<List, $T>(alloc), listMode, listRef, tupleLength);
+		//}
+		public static List<char>? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, List<char>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, listMode, tupleLength);
+		public static char[]? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, char[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, listMode, tupleLength);
+		public static Memory<char> SyncList<SyncManager>(this SyncManager sync, 
+		  string name, Memory<char> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	string name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList(sync, (Symbol)name, savable, listMode, tupleLength);
+
+		// SyncList methods for 'of
+		public static List<string?>? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, List<string?>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static string?[]? SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, string?[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<string?> SyncList<SyncManager>(this SyncManager sync, 
+		  Symbol? name, Memory<string?> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	Symbol? name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList<SyncManager, List, $T, SyncPrimitive<SyncManager>>(
+		//		sync, name, savable, new SyncPrimitive<SyncManager>(), alloc, listMode, tupleLength);
+		public static List<string?>? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, List<string?>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static string?[]? SyncList<SyncManager>(this SyncManager sync, 
+		  string name, string?[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		public static Memory<string?> SyncList<SyncManager>(this SyncManager sync, 
+		  string name, Memory<string?> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager => 
+		  
+		  SyncManagerExt.SyncList(sync, (Symbol) name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
+		//public static List? SyncList<SyncManager, List>(this SyncManager sync,
+		//	string name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//	where SyncManager : ISyncManager
+		//	where List : ICollection<$T>, IReadOnlyCollection<$T>
+		//	=> SyncManagerExt.SyncList(sync, (Symbol)name, savable, new SyncPrimitive<SyncManager>(), listMode, tupleLength);
 	}
 }

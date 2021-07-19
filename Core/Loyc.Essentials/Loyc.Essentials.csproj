@@ -38,6 +38,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>LinqToLists.ecs</DependentUpon>
     </Compile>
+    <Compile Update="SyncLib\Impl\SyncPrimitive.out.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SyncPrimitive.ecs</DependentUpon>
+    </Compile>
     <Compile Update="SyncLib\ISyncManager.out.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -79,6 +84,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>GRange.ecs</DependentUpon>
     </Compile>
+    <None Update="SyncLib\Impl\SyncPrimitive.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>SyncPrimitive.out.cs</LastGenOutput>
+    </None>
     <None Update="SyncLib\ISyncManager.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>ISyncManager.out.cs</LastGenOutput>

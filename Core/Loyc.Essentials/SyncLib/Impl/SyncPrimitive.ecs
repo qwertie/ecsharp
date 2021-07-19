@@ -1,0 +1,26 @@
+using System;
+using System.Collections.Generic;
+using System.Numerics;
+using System.Text;
+
+namespace Loyc.SyncLib.Impl
+{
+	define basicTypes => #splice(bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char);
+
+	public struct SyncPrimitive<SyncManager> : 
+		$(out #splice(
+			##map(basicTypes, $T => ([@`%newline`] ISyncField<SyncManager, $T>)),
+			##map(basicTypes, $T => ([@`%newline`] ISyncField<SyncManager, $T? >)),
+			[@`%newline`] ISyncField<SyncManager, string? >
+		))
+		where SyncManager : ISyncManager
+	{
+		##unroll($T in basicTypes) {
+			public $T Sync(ref SyncManager sync, Symbol? name, $T x) => sync.Sync(name, x);
+		}
+		##unroll($T in basicTypes) {
+			public $T? Sync(ref SyncManager sync, Symbol? name, $T? x) => sync.SyncNullable(name, x);
+		}
+		public string? Sync(ref SyncManager sync, Symbol? name, string? x) => sync.Sync(name, x);
+	}
+}

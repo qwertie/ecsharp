@@ -51,26 +51,49 @@ namespace Loyc.SyncLib
 			public int MaxIndentDepth { get; set; } = 255;
 			
 			/// <summary>If true, Newtonsoft-style special fields "$id" and "$ref" will
-			/// be used for deduplication and resolution of circular references.
-			/// If false, more compact SyncLib-style references are used instead. When
-			/// reading JSON, this setting is ignored and both formats are supported.</summary>
+			/// be used for deduplication and resolution of circular references,
+			/// and byte arrays are encoded in Base64. If false, more compact 
+			/// SyncLib-style references and BAIS encoding is used instead. When
+			/// reading </summary>
 			public bool NewtonsoftCompatibility { get; set; } = true;
 
-			/// <summary>When set to true, <see cref="SyncJson.Writer"/> uses BAIS 
-			/// encoding when Sync() is called on a byte array. BAIS uses about 37% as 
-			/// many bytes (73% less) as a standard whitespace-free array encoding, or 
-			/// less if the bytes contain long runs of ASCII characters in the range 
-			/// 32 to 126 (because these are encoded verbatim). See Remarks regarding 
-			/// the effect of using null or false for this property.</summary>
+			/// <summary>When NewtonsoftCompatibility is off, this property controls 
+			/// the way byte arrays and byte lists are written. In special cases it
+			/// can also affect the way reading happens (see Remarks). When writing 
+			/// with NewtonsoftCompatibility enabled, Base64 is written instead of BAIS.</summary>
 			/// <remarks>
-			/// When writing JSON, if this property set to null, BAIS is written only 
-			/// when NewtonsoftCompatibility is false. Null is the default value.
+			/// The documentation of <see cref="ByteArrayMode"/> explains each mode.
+			/// Generally, ByteArrayMode.PrefixedBais mode is recommended for the
+			/// most compact output and best debugging experience (since BIAS preserves 
+			/// long runs of ASCII characters in the output), but Base64 is required
+			/// for Newtonsoft compatibility.
 			/// <para/>
-			/// When reading JSON, strings will be interpreted as BAIS in contexts where 
-			/// a byte array is expected, unless this property is false. If this is 
-			/// false, then the string will cause a type mismatch exception.
+			/// Therefore, when <see cref="NewtonsoftCompatibility"/> is on, the BAIS
+			/// modes are treated as Base64. In addition, Newtonsoft writes byte lists
+			/// (List&lt;byte>) as JSON arrays, so SyncJson.Writer replicates this
+			/// behavior too.
+			/// <para/>
+			/// When reading a byte array, the encoding is normally autodetected
+			/// and the value of this property is not important. However, if the JSON
+			/// contains a string, and NewtonsoftCompatibility is off, and the string 
+			/// does not start with '!' or '\b' (both of which indicate BAIS encoding),
+			/// it is unclear whether the string is BAIS or Base64. In this case, the 
+			/// string is interpreted as BAIS in <see cref="JsonByteArrayMode.Bais"/> 
+			/// mode, and Base64 otherwise.
+			/// <para/>
+			/// Therefore, from a backward compatibility standpoint, switching from 
+			/// <see cref="JsonByteArrayMode.Bais"/> to <see cref="JsonByteArrayMode.PrefixedBais"/>
+			/// mode is a backward compatibility hazard as <see cref="SyncJson.Reader"/>
+			/// may try to interpret an unprefixed BAIS string as Base64. However, any
+			/// other mode change is safe, because data previously written will 
+			/// contain enough information to detect the data format.
 			/// </remarks>
-			public bool? UseBais { get; set; } = null;
+			public JsonByteArrayMode ByteArrayMode { get; set; } = JsonByteArrayMode.PrefixedBais;
+
+			/// <summary>If this property is true, or if this property is null and 
+			/// NewtonsoftCompatibility is off, character lists and character arrays 
+			/// are written as strings.</summary>
+			public bool? WriteCharListAsString { get; set; } = null;
 
 			/// <summary>A function for altering names used in the first argument of 
 			/// ISyncManager.Sync. To use camelCase, set this to <see cref="SyncJson.ToCamelCase"/></summary>
@@ -128,4 +151,29 @@ namespace Loyc.SyncLib
     //    {
     //    }
     //}
+
+	/// <summary>Used to control how byte arrays are encoded by <see cref="SyncJson.Writer"/>.</summary>
+	[Flags]
+	public enum JsonByteArrayMode
+	{
+		/// <summary>Requests byte arrays be written as JSON arrays of numbers.</summary>
+		Array = 0,
+		/// <summary>Requests byte arrays be written as Base64.</summary>
+		Base64 = 1,
+		/// <summary>Requests byte arrays be written as unprefixed BAIS 
+		/// (<see cref="ByteArrayInString"/>), so that byte arrays in the 
+		/// ASCII range are simply written as ASCII strings. This mode is
+		/// useful if your byte arrays often contain ASCII and you suspect 
+		/// that you might want to change the data type of your byte arrays 
+		/// into strings at some point, but usually PrefixedBais is 
+		/// recommended instead, because the prefix makes it clear that the 
+		/// string is not Base64-encoded.</summary>
+		Bais = 2,
+		/// <summary>Requests byte arrays be written as BAIS 
+		/// (<see cref="ByteArrayInString"/>) with a prefix of '!' or '\b'
+		/// to indicate that BAIS encoding is being used. Note: in
+		/// <see cref="SyncJson.Options.NewtonsoftCompatibility"/> mode,
+		/// BAIS is unavailable; Base64 is used instead.</summary>
+		PrefixedBais = 6,
+	}
 }

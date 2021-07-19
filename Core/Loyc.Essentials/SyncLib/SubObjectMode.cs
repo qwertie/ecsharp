@@ -13,18 +13,29 @@ namespace Loyc.SyncLib
 		/// <summary>A normal object, in which fields may have names.</summary>
 		Normal = 0,
 		
-		/// <summary>A tuple object, in which there are a fixed number of unnamed 
-		/// fields (and the number of fields is known before starting to load the
-		/// tuple). <see cref="ISyncManager.IsInsideList"/> will be true inside 
-		/// this kind of subobject.</summary>
-		Tuple = 1,
-		
 		/// <summary>A list object, in which there are a variable number of unnamed 
 		/// fields. <see cref="ISyncManager.IsInsideList"/> will be true inside 
 		/// this kind of subobject, and <see cref="ISyncManager.ReachedEndOfList"/>
 		/// will be non-null in the Loading and Schema modes.</summary>
-		List = 3,
+		/// <remarks>When calling one of the <see cref="ISyncManager.SyncList"/> 
+		///   methods, this mode will be used implicitly if both the List and Tuple
+		///   flags are missing.</remarks>
+		List = 1,
 		
+		/// <summary>A tuple object, in which there are a fixed number of unnamed 
+		/// fields (and the number of fields is known before starting to load the
+		/// tuple). <see cref="ISyncManager.IsInsideList"/> will be true inside 
+		/// this kind of subobject.</summary>
+		/// <remarks>Some implementations of <see cref="ISyncManager"/> treat this
+		///   mode identically to <see cref="List"/> mode, but Tuple mode gives 
+		///   permission not to store the list length in the data stream, in order 
+		///   to make the output more compact. When loading data that was saved in 
+		///   Tuple mode (without a list length), Tuple mode must be specified by
+		///   the loading code, and it must already know the list length, as 
+		///   <see cref="ISyncManager.MinimumListLength"/> and 
+		///   <see cref="ISyncManager.ReachedEndOfList"/> will be null.</remarks>
+		Tuple = 3,
+
 		/// <summary>Deduplication is performed on the subobject, allowing object graphs 
 		/// that contain cycles. If <see cref="ISyncManager.SupportsReordering"/> is 
 		/// true, it's possible in Loading Mode that it is already known whether the 

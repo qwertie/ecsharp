@@ -19,9 +19,8 @@ namespace Loyc.SyncLib
 		///   sync function should call the same methods it would call if it were 
 		///   loading an object, in order to teach the synchronizer about the 
 		///   schema of the current type. However, the Sync methods of a schema 
-		///   saver will return null in situations where the Loading mode would 
-		///   have returned an object, and it will skip subobjects whose schema 
-		///   is already known.</summary>
+		///   saver have no actual data and tend to return default/null values 
+		///   instead, and it will skip subobjects whose schema is already known.</summary>
 		Schema = 4 | Loading,
 		/// <summary>A variation of the "saving" mode in which not all the data 
 		///   will be saved because some kind of query is being used to select which
