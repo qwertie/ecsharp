@@ -367,6 +367,13 @@ namespace Loyc.Collections
 		{
 			return new ListSlice<T>(this, start, count);
 		}
+
+		/// <summary>Rearranges the collection if necessary so that all elements
+		/// are in a single contiguous block of memory, then returns that block.</summary>
+		/// <remarks>Caution: the memory block is shared with the DList. If
+		/// you add or remove items in the DList, it may or may not allocate 
+		/// a new memory block that will be independent of the memory block.</remarks>
+		public Memory<T> AsContiguousMemory() => _dlist.AsContiguousMemory();
 	}
 
 	/// <summary>

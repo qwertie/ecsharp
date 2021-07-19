@@ -972,6 +972,14 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
+		/// <summary>Rearranges the collection if necessary so that all elements
+		/// are in a single contiguous block of memory, then returns that block.</summary>
+		public Memory<T> AsContiguousMemory()
+		{
+			RearrangeToContiguous();
+			return _array.AsMemory().Slice(_start, _count);
+		}
+
 		public void Sort(int index, int count, Comparison<T> comp)
 		{
 			Debug.Assert((uint)index <= (uint)_count);
