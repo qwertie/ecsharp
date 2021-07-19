@@ -12,6 +12,10 @@ namespace Loyc.Collections
 		/// <summary>Converts an <see cref="IEnumerable{T}"/> to <see cref="IScannable{T}"/>.</summary>
 		public static ScannableEnumerable<T> AsScannable<T>(this IEnumerable<T> sequence) 
 			=> new ScannableEnumerable<T>(sequence);
+
+		public static ScannableEnumerable<T>.Scanner<TEnumerator> 
+			AsScanner<TEnumerator, T>(this TEnumerator enumerator) where TEnumerator : IEnumerator<T>
+			=> new ScannableEnumerable<T>.Scanner<TEnumerator>(enumerator);
 		
 		/// <summary>A no-op.</summary>
 		[Obsolete("The object is already IScannable; this method is a no-op.")]
@@ -26,21 +30,21 @@ namespace Loyc.Collections
 		public ScannableEnumerable(IEnumerable<T> sequence) => _seq = sequence;
 
 		IScanner<T> IScan<T>.Scan() => Scan();
-		public IScanner<T> Scan() => new Scanner(_seq.GetEnumerator());
+		public IScanner<T> Scan() => new Scanner<IEnumerator<T>>(_seq.GetEnumerator());
 
 		public IEnumerator<T> GetEnumerator() => _seq.GetEnumerator();
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-		public struct Scanner : IScanner<T>
+		public struct Scanner<TEnumerator> : IScanner<T> where TEnumerator : IEnumerator<T>
 		{
-			IEnumerator<T> _rest;
+			TEnumerator _rest;
 			Memory<T> _buffer;
 			int _offset; // Current position as offset from beginning of _buffer (<= _count)
 			int _count; // Number of valid elements in _buffer (starting from index 0)
 			
 			const int MinAllocatedBufferSize = 16;
 
-			public Scanner(IEnumerator<T> seq)
+			public Scanner(TEnumerator seq)
 			{
 				_rest = seq;
 				_buffer = default(Memory<T>);

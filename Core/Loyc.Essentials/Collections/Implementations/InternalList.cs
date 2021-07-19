@@ -896,6 +896,7 @@ namespace Loyc.Collections.Impl
 			public void Reset() => _index = -1;
 		}
 
+		/// <summary>Implements <see cref="IScanner{T}"/> for <see cref="Memory{T}"/>.</summary>
 		public struct Scanner<T> : IScanner<T>
 		{
 			private Memory<T> _array;
