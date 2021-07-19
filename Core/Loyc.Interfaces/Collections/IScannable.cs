@@ -84,7 +84,7 @@ namespace Loyc.Collections
 	{
 	}
 	
-	public static partial class LCExt
+	public static partial class LCInterfaces
 	{
 		/// <inheritdoc cref="IScanner{T}.Read(int, int, ref Memory{T})"/>
 		public static ReadOnlyMemory<T> Read<Scanner, T>(this Scanner self, int skip, int minLength) where Scanner : IScanner<T>

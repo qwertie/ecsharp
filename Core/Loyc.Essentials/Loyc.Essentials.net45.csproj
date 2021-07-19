@@ -145,6 +145,7 @@
     </Compile>
     <Compile Include="Collections\HelperClasses\DictionaryWithChangeEvents.cs" />
     <Compile Include="Collections\BaseClasses\DictionaryWrapper.cs" />
+    <Compile Include="Collections\HelperClasses\Empty.cs" />
     <Compile Include="Collections\HelperClasses\ListWithChangeEvents.cs" />
     <Compile Include="Collections\BaseClasses\ListWrapper.cs" />
     <Compile Include="Collections\ExtensionMethods\IPush, IPop.cs" />
