@@ -44,9 +44,6 @@ namespace Loyc
 	///   Encoded: 01100000 01110000 01101001  01000101 01111111 01110000
 	///            ---96--- --112--- --105---  ---69--- --127--- --112---
 	///               `        p        i         E        ~        p
-	
-	///            01100000 01111000 01001100 
-	
 	/// </pre>
 	/// <para/>
 	/// An interesting property of this base-64 encoding is that when it encodes
@@ -60,7 +57,24 @@ namespace Loyc
 	/// in the base 64 encoding, although a single zero is not always enough 
 	/// to make a `@` appear. Runs of 255 will tend to appear as runs of `?`.
 	/// <para/>
-	/// There are many ways to encode a given byte array as BAIS.
+	/// Since a BAIS string starts in ASCII mode by default, a sequence of
+	/// bytes is normally represented as itself if it happens to be ASCII, 
+	/// e.g. the byte form of "Hello!" is encoded as the string "Hello!".
+	/// However, in order to unambiguously distinguish BAIS from conventional
+	/// base64 encoding, the first character of any BAIS string can be set to
+	/// '!'. For example, "!Hello!" is also a valid BAIS encoding of "Hello!".
+	/// Consequently, if the first byte encoded is '!' (33), the BAIS encoding 
+	/// will start with two '!' characters.
+	/// <para/>
+	/// There are many ways to encode a given byte array as BAIS. It is 
+	/// possible to guarantee that a BAIS encoding is never more than one 
+	/// character larger than conventional base64, but the easiest way to 
+	/// guarantee this is to avoid switching to ASCII mode unless there are
+	/// at least 6 ASCII characters in a row. This implementation requires 
+	/// only 4 ASCII characters in a row instead, so in pathological cases 
+	/// the result can be 7% longer than conventional base64, but this 
+	/// should be very rare. When the string is encoded to JSON, this
+	/// pathological worst case is 15% longer than base64.
 	/// </remarks>
 	public static class ByteArrayInString
 	{
@@ -72,6 +86,9 @@ namespace Loyc
 		///   officially allow control characters in strings, so if this is true, a
 		///   standard JSON encoder will lengthen control characters to 6-character 
 		///   escape sequences.</param>
+		/// <param name="forceInitialEscape">If true, the first output character will always
+		///   be '!' or '\n' to indicate that BAIS encoding is being used rather than
+		///   conventional base64 encoding.</param>
 		/// <returns>The encoded string.</returns>
 		/// <remarks>
 		/// If the byte array can be interpreted as ASCII, it is returned as characters,
@@ -81,14 +98,26 @@ namespace Loyc
 		/// <para/>
 		/// For simplicity, this method's base-64 encoding always encodes groups of 
 		/// three bytes if possible (as four characters). This decision may, 
-		/// unfortunately, cut off the beginning of some ASCII runs.
+		/// unfortunately, cut off the beginning of some ASCII runs. Also, to ensure
+		/// that the encoding is never significantly larger than base64, a switch to
+		/// ASCII mode only happens if there are at least 4 ASCII characters in a row.
+		/// Because of these two facts combined, there are cases in which a string of
+		/// 5 ASCII characters will be encoded as base64. But if there are at least 6
+		/// ASCII characters in a row, at least 4 of them will appear as ASCII in the 
+		/// output.
 		/// </remarks>
-		public static string ConvertFromBytes(ReadOnlySpan<byte> span, bool allowControlChars)
+		public static string ConvertFromBytes(ReadOnlySpan<byte> span, bool allowControlChars, bool forceInitialEscape = false)
 		{
+			if (span.Length == 0)
+				return forceInitialEscape ? "!" : "";
+
+			byte b = span[0];
 			var sb = new StringBuilder();
-			for (int i = 0; i < span.Length;)
+			if ((forceInitialEscape && IsAscii(b, allowControlChars)) || b == '!')
+				sb.Append('!');
+
+			for (int i = 1;;)
 			{
-				byte b = span[i++];
 				if (IsAscii(b, allowControlChars))
 					sb.Append((char)b);
 				else {
@@ -119,14 +148,19 @@ namespace Loyc
 						}
 						if (i < span.Length && IsAscii(span[i], allowControlChars) &&
 							(i + 1 >= span.Length || IsAscii(span[i + 1], allowControlChars)) &&
-							(i + 2 >= span.Length || IsAscii(span[i + 2], allowControlChars))) {
-							sb.Append('!'); // return to ASCII mode
-							break;
+							(i + 2 >= span.Length || IsAscii(span[i + 2], allowControlChars)) &&
+							(i + 3 >= span.Length || IsAscii(span[i + 3], allowControlChars))) {
+							sb.Append('!');
+							break; // return to ASCII mode
 						}
 						if (i >= span.Length)
 							break;
 					}
 				}
+
+				if ((uint)i >= (uint)span.Length)
+					break;
+				b = span[i++];
 			}
 			return sb.ToString();
 		}
@@ -135,7 +169,7 @@ namespace Loyc
 			=> b < 127 && (b >= 32 || (allowControlChars && b != '\b'));
 
 		/// <inheritdoc cref="ConvertFromBytes(Memory{byte}, bool)"/>
-		public static string ConvertFromBytes(byte[] bytes, bool allowControlChars)
+		public static string ConvertFromBytes(byte[] bytes, bool allowControlChars, bool forceInitialEscape = false)
 			=> ConvertFromBytes(bytes.AsSpan(), allowControlChars);
 
 
@@ -175,7 +209,11 @@ namespace Loyc
 
 		private static ArraySlice<byte>? ConvertToBytes(byte[] b)
 		{
-			for (int i = 0; i < b.Length - 1; ++i)
+			if (b.Length == 0)
+				return b;
+
+			int iStart = b[0] == '!' ? 1 : 0;
+			for (int i = iStart; i < b.Length - 1; ++i)
 			{
 				if (b[i] == '\b')
 				{
@@ -217,12 +255,12 @@ namespace Loyc
 								b[iOut++] = b[i++];
 						}
 						if (i >= b.Length)
-							return b.Slice(0, iOut);
+							return b.Slice(iStart, iOut - iStart);
 						i++;
 					}
 				}
 			}
-			return b;
+			return b.Slice(iStart);
 		}
 
 		public static char EncodeBase64Digit(int digit)

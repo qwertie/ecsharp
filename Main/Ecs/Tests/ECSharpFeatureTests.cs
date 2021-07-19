@@ -35,8 +35,8 @@ namespace Loyc.Ecs.Tests
 			// expressions by a LeMP.ecs macro. However, it's still useful to test byte arrays
 			// without LeMP, which will use the custom literal system with type marker "bais".
 			var bytes = new byte[] { 33, 66, 132, 200 };
-			Expr("x = bais\"!B\\baL`\"", F.Assign(x, F.Literal(bytes)), Mode.PrinterTest);
-			Expr("x = bais\"!B\\baL`\"", F.Assign(x, F.Literal(bytes, "bais")), Mode.CompareAsLes);
+			Expr("x = bais\"!!B\\baL`\"", F.Assign(x, F.Literal(bytes)), Mode.PrinterTest);
+			Expr("x = bais\"!!B\\baL`\"", F.Assign(x, F.Literal(bytes, "bais")), Mode.CompareAsLes);
 
 			Expr("insult\"You suck, loser!\"", F.Literal((UString)"You suck, loser!", (Symbol)"insult"));
 			Expr(@"swoon@""I """"♥"""" you!""", F.Literal((UString)@"I ""♥"" you!", (Symbol)"swoon").SetBaseStyle(NodeStyle.VerbatimStringLiteral));

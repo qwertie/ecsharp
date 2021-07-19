@@ -20,6 +20,33 @@ namespace Loyc.Essentials.Tests
 			var arr2 = ByteArrayInString.ConvertToBytes(str);
 			Assert.AreEqual(str, str2);
 			ExpectList(arr, arr2);
+
+			str = "!" + str;
+			var arr3 = ByteArrayInString.ConvertToBytes(str);
+			ExpectList(arr3, arr2);
+		}
+
+		[Test]
+		public void BasicTest2()
+		{
+			// If we start with non-ASCII, it'll have to start in base64 mode
+			var arr = new byte[] { 192, 255, 32, 67, 97, 116, 115, 131, 10, 69, 255, 65, 66, 67 };
+			var str = "\b\u0070\u004F\u007C\u0060!Cats\b`piE?tEB!C";
+			var str2 = ByteArrayInString.ConvertFromBytes(arr, false, true);
+			var arr2 = ByteArrayInString.ConvertToBytes(str);
+			Assert.AreEqual(str, str2);
+			ExpectList(arr, arr2);
+		}
+
+		[Test]
+		public void BasicTest33()
+		{
+			var arr = new byte[] { 33 };
+			var str = "!!";
+			var str2 = ByteArrayInString.ConvertFromBytes(arr, false, true);
+			var arr2 = ByteArrayInString.ConvertToBytes(str);
+			Assert.AreEqual(str, str2);
+			ExpectList(arr, arr2);
 		}
 
 		Random _r = new Random();
