@@ -239,13 +239,14 @@
       <DependentUpon>ISyncManager.ecs</DependentUpon>
     </Compile>
     <Compile Include="SyncLib\SubObjectMode.cs" />
-    <Compile Include="SyncLib\SyncJson.Helper.cs" />
     <Compile Include="SyncLib\SyncJson.Options.cs" />
     <Compile Include="SyncLib\SyncJson.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>SyncJson.ecs</DependentUpon>
     </Compile>
+    <Compile Include="SyncLib\SyncJson.Reader.cs" />
+    <Compile Include="SyncLib\SyncJson.ReaderState.cs" />
     <Compile Include="SyncLib\SyncJson.Writer.cs" />
     <Compile Include="SyncLib\SyncJson.WriterState.cs" />
     <Compile Include="SyncLib\SyncManagerExt.cs" />

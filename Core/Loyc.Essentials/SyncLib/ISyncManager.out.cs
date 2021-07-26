@@ -309,22 +309,28 @@ namespace Loyc.SyncLib
 		///   of elements you are expected to read or write. 
 		/// </returns>
 		/// <remarks>
-		///   This method has four possible outcomes:
+		///   This method has six possible outcomes:
 		///   (1) The request to read/write is approved. In this case, this method
 		///       returns (true, childKey) and <see cref="Depth"/> increases by one.
 		///       childKey is the same reference you passed to this method.
 		///   (2) You set childKey = null and <see cref="Mode"/> is not Loading.
 		///       This indicates that no child object exists, so this method returns 
 		///       (false, null).
-		///   (3) The list/tuple being read/write has already been read/written 
+		///   (3) The <see cref="Mode"/> is Loading and the input stream contains a 
+		///       representation of null, so this method returns (false, null).
+		///   (4) The list/tuple being read/write has already been read/written 
 		///       earlier (and you enabled deduplication), so the request to 
 		///       read/write is declined. In this case, this method returns false 
 		///       with a reference to the object that was loaded or saved earlier.
-		///   (4) The <see cref="Mode"/> is Query, Schema or Merge and the current 
+		///   (5) The <see cref="Mode"/> is Loading or Merge and the input stream
+		///       is invalid or does not contain an object or list by the specified 
+		///       name, so it is impossible to fulfill the request. In this case, 
+		///       an exception is thrown, such as <see cref="FormatException"/>.
+		///   (6) The <see cref="Mode"/> is Query, Schema or Merge and the current 
 		///       <see cref="ISyncManager"/> has decided not to traverse into the 
 		///       current field. In this case, this method returns (false, childKey).
 		///   <para/>
-		///   In Saving mode, and in every case except (3), the returned Object is 
+		///   In Saving mode, and in every case except 4, the returned Object is 
 		///   the same as childKey.
 		/// </remarks>
 		(bool Begun, object? Object) BeginSubObject(Symbol? name, object? childKey, SubObjectMode mode, int listLength = -1);

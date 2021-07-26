@@ -40,12 +40,12 @@ namespace Loyc.SyncLib
 
 		internal partial class WriterState : WriterStateBase
 		{
+			internal Options _opt;
 			internal bool _isInsideList = true;
 			internal InternalList<SubObjectMode> _stack = InternalList<SubObjectMode>.Empty;
 			internal byte[] _indent;
 			internal byte[] _newline;
 			internal byte _pendingComma;
-			internal Options _opt;
 			internal int _compactMode;
 			
 			public WriterState(IBufferWriter<byte> output, Options options) : base(output) {
@@ -87,7 +87,7 @@ namespace Loyc.SyncLib
 						if (_opt.NewtonsoftCompatibility)
 							WriteProp("$id", id.ToString());
 						else
-							WriteProp("\r", id);
+							WriteProp("\f", id);
 						return (true, childKey);
 					}
 				} else {
@@ -184,9 +184,9 @@ namespace Loyc.SyncLib
 				if (value == default)
 					WriteNull(propName);
 				else {
-					int valueLen = GetLengthAsBytes(value);
+					int valueLen = GetLengthAsBytes(value, _opt.EscapeUnicode);
 					Span<byte> buf = BeginProp(propName, valueLen);
-					WriteStringCore(buf, value, valueLen);
+					WriteStringCore(buf, value, valueLen, ref _i, _opt.EscapeUnicode);
 					_pendingComma = (byte)',';
 				}
 			}
@@ -321,13 +321,14 @@ namespace Loyc.SyncLib
 			// calls GetNextBuf and writes a quoted string into the returned buffer
 			Span<byte> WriteString(ReadOnlySpan<char> s, int reserveExtra = 0)
 			{
-				int s_len = GetLengthAsBytes(s);
+				int s_len = GetLengthAsBytes(s, _opt.EscapeUnicode);
 				Span<byte> buf = GetNextBuf(s_len + reserveExtra);
-				return WriteStringCore(buf, s, s_len);
+				WriteStringCore(buf, s, s_len, ref _i, _opt.EscapeUnicode);
+				return buf;
 			}
 
 			// writes a quoted string into buf at _i
-			Span<byte> WriteStringCore(Span<byte> buf, ReadOnlySpan<char> s, int s_len)
+			internal static void WriteStringCore(Span<byte> buf, ReadOnlySpan<char> s, int s_len, ref int _i, bool escapeUnicode)
 			{
 				buf[_i++] = (byte) '"';
 				if (s_len == s.Length) {
@@ -344,15 +345,15 @@ namespace Loyc.SyncLib
 								case '\r': buf[_i++] = (byte)'r'; break;
 								case '\b': buf[_i++] = (byte)'b'; break;
 								case '\f': buf[_i++] = (byte)'f'; break;
-								default: FinishEscape(buf, c); break;
+								default: FinishEscape(buf, c, ref _i); break;
 							}
 						} else if (c < 127) {
 							if (c == '\\' || c == '"')
 								buf[_i++] = (byte)'\\';
 							buf[_i++] = (byte)c;
-						} else if (c <= 0x9F || _opt.EscapeUnicode) {
+						} else if (c <= 0x9F || escapeUnicode) {
 							buf[_i++] = (byte)'\\';
-							FinishEscape(buf, c);
+							FinishEscape(buf, c, ref _i);
 						} else if (c <= 0x07FF) {
 							buf[_i++] = (byte)(0xC0 | (c >> 6));
 							buf[_i++] = (byte)(0x80 | (c & 0x3F));
@@ -370,10 +371,9 @@ namespace Loyc.SyncLib
 					}
 				}
 				buf[_i++] = (byte) '"';
-				return buf;
 			}
 
-			void FinishEscape(Span<byte> buf, int c)
+			static void FinishEscape(Span<byte> buf, int c, ref int _i)
 			{
 				buf[_i++] = (byte)'u';
 				buf[_i++] = (byte)PrintHelpers.HexDigitChar(c >> 12);
@@ -382,7 +382,7 @@ namespace Loyc.SyncLib
 				buf[_i++] = (byte)PrintHelpers.HexDigitChar(c & 0xF);
 			}
 
-			int GetLengthAsBytes(ReadOnlySpan<char> s)
+			internal static int GetLengthAsBytes(ReadOnlySpan<char> s, bool escapeUnicode)
 			{
 				int len = s.Length;
 				for (int i = 0; i < s.Length; i++) {
@@ -391,7 +391,7 @@ namespace Loyc.SyncLib
 						// Amazingly, \0 is not supported in JSON. Facepalm.
 						len += (c == '\t' || c == '\n' || c == '\r' || c == '\b' || c == '\f' ? 1 : 5);
 					} else if (c >= 127) {
-						if (c <= 0x9F || _opt.EscapeUnicode)
+						if (c <= 0x9F || escapeUnicode)
 							len += 5;
 						else if (c <= 0x07FF)
 							len += 1;

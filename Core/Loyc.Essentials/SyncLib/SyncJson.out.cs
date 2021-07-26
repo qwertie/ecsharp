@@ -33,6 +33,23 @@ namespace Loyc.SyncLib
 			(byte) 'n', (byte) 'u', (byte) 'l', (byte) 'l'
 		};
 
+		internal static readonly byte[] _ref = new byte[] { 
+			(byte) '$', (byte) 'r', (byte) 'e', (byte) 'f'
+		};	// Newtonsoft-style backreference
+		internal static readonly byte[] _id = new byte[] { 
+			(byte) '$', (byte) 'i', (byte) 'd'
+		};	// Newtonsoft-style id
+		internal static readonly byte[] _values = new byte[] { 
+			(byte) '$', (byte) 'v', (byte) 'a', (byte) 'l', (byte) 'u', (byte) 'e', (byte) 's'
+		};	// Newtonsoft-style array prop
+		internal static readonly byte[] _f = new byte[] { 
+			(byte) '\f'
+		};	// SyncJson-style id
+		internal static readonly byte[] _r = new byte[] { 
+			(byte) '\r'
+		};	// SyncJson-style backreference
+		static Options _defaultOptions = new Options();
+
 		public partial struct Writer
 		{
 			public sbyte Sync(Symbol? name, sbyte savable) {

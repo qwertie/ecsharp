@@ -18,8 +18,6 @@ namespace Loyc.SyncLib
 {
 	partial class SyncJson
 	{
-		static Options _defaultOptions = new Options();
-
 		public static SyncJson.Writer NewWriter(IBufferWriter<byte> output, Options? options = null)
 			=> new Writer(new WriterState(output ?? new ArrayBufferWriter<byte>(), options ?? _defaultOptions));
 		public static ReadOnlyMemory<byte> Write<T>(T value, SyncObjectFunc<Writer, T> sync, Options? options = null)
@@ -58,16 +56,14 @@ namespace Loyc.SyncLib
 			internal Writer(WriterState s) => _s = s;
 
 			public SyncMode Mode => SyncMode.Saving;
-
 			public bool IsSaving => true;
 
 			public bool SupportsReordering => true;
-
 			public bool SupportsDeduplication => true;
+			public bool NeedsIntegerIds => false;
 
 			public bool IsInsideList => _s._isInsideList;
 
-			public bool NeedsIntegerIds => false;
 
 			public bool? ReachedEndOfList => null;
 
@@ -79,7 +75,7 @@ namespace Loyc.SyncLib
 
 			public (bool Begun, object? Object) BeginSubObject(Symbol? name, object? childKey, SubObjectMode mode, int listLength = -1)
 			{
-				return _s.BeginSubObject(name?.Name ?? "", childKey, mode);
+				return _s.BeginSubObject(name?.Name, childKey, mode);
 			}
 
 			public void EndSubObject() => _s.EndSubObject();
