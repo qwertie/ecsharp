@@ -443,6 +443,7 @@ namespace Loyc.Collections.Impl
 			return new InternalList<T>(copy, subcount);
 		}
 
+		public Span<T> AsSpan() => _array.AsSpan(0, _count);
 		public Memory<T> AsMemory() => _array.AsMemory(0, _count);
 		public T[] AsArray() => _count == _array.Length ? _array : ToArray();
 

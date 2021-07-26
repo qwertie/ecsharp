@@ -641,6 +641,32 @@ namespace Loyc.Collections
 			for (int i = c - 1; i >= index; i--)
 				list[i + spaceNeeded] = list[i];
 		}
+
+		/// <summary>A companion to <see cref="MemoryExtensions.SequenceEqual{T}"/> that 
+		/// computes a hashcode for a list.</summary>
+		public static int SequenceHashCode<T>(this ReadOnlyMemory<T> list) => SequenceHashCode(list.Span);
+
+		/// <summary>A companion to <see cref="MemoryExtensions.SequenceEqual{T}"/> that 
+		/// computes a hashcode for a list.</summary>
+		public static int SequenceHashCode<T>(this ReadOnlySpan<T> span)
+		{
+			// I am no expert in hash functions.
+			int hc = 517617279; // a random number
+			for (int i = 0; i < span.Length; i++) {
+				var item = span[i];
+				hc = hc * 257 ^ (item != null ? item.GetHashCode() : 0);
+			}
+			return hc;
+		}
+
+		public static int SequenceHashCode(this ReadOnlySpan<byte> span)
+		{
+			int hc = 517617279; // a random number
+			for (int i = 0; i < span.Length; i++) {
+				hc = hc * 257 ^ span[i].GetHashCode();
+			}
+			return hc;
+		}
 	}
 }
 
