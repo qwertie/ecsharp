@@ -27,6 +27,17 @@ namespace Loyc.SyncLib
 
 	/// <summary>This is the central interface of Loyc.SyncLib. To learn more, please 
 	/// visit the web site: http://loyc.net/serialization </summary>
+	/// <remarks>
+	/// Note: it is recommended (but not required) that Sync() methods in reader 
+	/// implementations support the following implicit type conversions:
+	/// <ul>
+	/// <li>Boolean to byte (false => 0, true => 1)</li>
+	/// <li>Byte to integer</li>
+	/// <li>Integer to Float</li>
+	/// <li>Float to String</li>
+	/// <li>Char to String</li>
+	/// </ul>
+	/// </remarks>
 	public interface ISyncManager
 	{
 		/// <summary>Indicates what kind of synchronizer this is: one that saves
@@ -108,25 +119,72 @@ namespace Loyc.SyncLib
 		int? MinimumListLength { get; }
 
 		/// <summary>Some serializers do not support this method (see remarks).
-		/// If `Mode == SyncMode.Loading`, this method returns true if the current 
-		/// object contains the specified field and false otherwise. If 
-		/// `Mode == SyncMode.Saving`, this method always returns null.
-		/// If `Mode == SyncMode.Schema`, this method always returns null and, in
-		/// addition, causes the synchronizer to assume that the field you asked 
-		/// about is optional.</summary>
+		/// If the method is supported, it determines whether a field with a specific
+		/// name exists, and if so, what type it has.</summary>
+		/// <param name="name">Name to search for in the current stream.
+		///   If <see cref="NeedsIntegerIds"/> is true then the Symbol must be in a
+		///   private <see cref="SymbolPool"/> and it needs to have had an ID number
+		///   manually assigned to it. If the name does not meet this requirement,
+		///   the method will return SyncType.Unknown.</param>
+		/// <param name="expectedType">The type that the caller expects to encounter,
+		///   or SyncType.Unknown if the caller has no preference.</param>
+		/// <returns>
+		///   Returns <see cref="SyncType.Missing"/> if the field does not exist, or
+		///   if the field exists but the field's type is not implicitly convertible
+		///   to the expected type.
+		///   <para/>
+		///   Returns <see cref="SyncType.Unknown"/> if it cannot be determined whether
+		///   the field exists, or if this ISyncManager is not a reader (Mode != 
+		///   SyncMode.Loading), or if <see cref="IsInsideList"/> is true.
+		///   <para/>
+		///   Otherwise, an appropriate value of <see cref="SyncType"/> is returned 
+		///   according to the data in the data stream.
+		/// </returns>
 		/// <remarks>
-		/// Generally, this method can provide useful information only if 
-		/// <see cref="SupportsReordering"/> is true, `Mode == SyncMode.Loading`, and
-		/// <see cref="IsInsideList"/> is false. If <see cref="SupportsReordering"/> 
-		/// is false, this method generally cannot know whether a field exists, and 
-		/// it returns null unless it can determine that the next field is definitely 
-		/// not the one you asked about (e.g. if the end of the current object or 
-		/// list has been reached.)
-		/// <para/>
-		/// In addition, if <see cref="NeedsIntegerIds"/> is true then the Symbol must
-		/// be in a private <see cref="SymbolPool"/> and it needs to have had an ID 
-		/// number manually assigned to it.</remarks>
-		bool? HasField(Symbol name);
+		///   Generally, this method can provide useful information only if 
+		///   <see cref="SupportsReordering"/> is true, `Mode == SyncMode.Loading`, and
+		///   <see cref="IsInsideList"/> is false. If any of these conditions is not 
+		///   met, the method normally returns SyncType.Unknown. Conceptually,
+		///   a list or tuple is treated as an object in which field names are unknown,
+		///   rather than as an object in which the fields have no names.
+		///   <para/>
+		///   The SyncType enumeration has a collection of common types that are supported
+		///   by most data formats. However, some formats may not support all types, or
+		///   may store data in a different form than you might reasonably expect. For
+		///   example, when a byte array is stored in JSON, it is stored as a string by
+		///   default. When reading a byte array from JSON, HasField will report that the 
+		///   type is SyncType.String because even though the reader is capable of 
+		///   decoding the string as a byte array, it cannot know that the string 
+		///   represents a byte array. For this reason, the expectedType parameter exists
+		///   as a filtering technique. You can set this parameter to SyncType.ByteList 
+		///   to indicate that you expect to read a byte array. If the JSON data type is 
+		///   boolean, which cannot be interpreted as a byte array, HasField() returns 
+		///   SyncType.Missing. But if the JSON data type is string, HasField() returns 
+		///   SyncType.String. This indicates that the data tream contains a String that 
+		///   is potentially convertible to SyncType.ByteList, although the conversion is 
+		///   not guaranteed to work. If you then read this field by calling
+		///   Sync(name, (byte[]) null) and it turns out that the string cannot be 
+		///   interpreted as a byte array, an exception will be thrown.
+		///   <para/>
+		///   If a value is not implicitly convertible to the expectedType, HasField
+		///   should return SyncType.Missing even if the conversion is supported.
+		///   For example, if the actual type is Char but a Byte was expected, the
+		///   ISyncManager implementation may support this conversion by masking off 
+		///   the lowest 8 bits, but it should return SyncType.Missing because this 
+		///   kind of conversion loses information and may not be what the user 
+		///   intended. (It may seem like this is somewhat in contradiction with the
+		///   previous paragraph, because JSON pretends String matches ByteList even 
+		///   though the conversion may fail. However, the fact that a ByteList is 
+		///   stored as a String is an implementation detail that your code should
+		///   not explicitly deal with, so HasField must report that the conversion
+		///   is supported in order not to confuse code that is unaware of the 
+		///   implementation detail.)
+		///   <para/>
+		///   It is recommended that implementations of ISyncManager support an 
+		///   implicit conversion from boolean to number, as well as conversions from 
+		///   "smaller" to "bigger" number types.
+		/// </remarks>
+		SyncType HasField(Symbol name, SyncType expectedType = SyncType.Unknown);
 
 		/// <summary>Returns the number of parent objects of the current object being
 		/// loaded or saved. This property is zero if the root object is being loaded

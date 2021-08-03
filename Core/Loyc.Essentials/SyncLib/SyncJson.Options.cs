@@ -31,7 +31,7 @@ namespace Loyc.SyncLib
 			/// Also, the empty string "" can be used to disable both newlines and 
 			/// indentation. Default: <see cref="Environment.NewLine"/></summary>
 			public string Newline { get; set; } = Environment.NewLine;
-			
+
 			/// <summary>A string that is used to indent each line for each level of 
 			/// object nesting. This property, which has no effect if Newline == "",
 			/// should be either "\t" or zero or more spaces. Dafault: "\t"</summary>
@@ -49,7 +49,7 @@ namespace Loyc.SyncLib
 			/// <summary>If the recursion depth exceeds this number when writing JSON, 
 			/// the number of indents stops increasing.</summary>
 			public int MaxIndentDepth { get; set; } = 255;
-			
+
 			/// <summary>If true, Newtonsoft-style special fields "$id" and "$ref" will
 			/// be used for deduplication and resolution of circular references,
 			/// and byte arrays are encoded in Base64. If false, more compact 
@@ -100,6 +100,62 @@ namespace Loyc.SyncLib
 			public Func<string, string>? NameConverter { get; set; }
 
 			public SubObjectMode RootMode { get; set; } = SubObjectMode.DynamicType;
+
+			/// <summary>Whether to accept <c>//</c> and <c>/* */</c> comments when reading JSON.</summary>
+			public bool AllowComments { get; set; } = true;
+			
+			/// <summary>Whether to follow JSON rules strictly when reading JSON, by 
+			///   (1) prohibiting a comma before a closing ']' or '}', and 
+			///   (2) prohibiting numbers with a leading '.' or '0'.</summary>
+			public bool ReadStrictly { get; set; } = false;
+
+			/// <summary>When you attempt to read a primitive (such as a string or double),
+			///   but an object or a list is encountered instead, this property controls 
+			///   how that object is converted to the primitive type. If this property is 
+			///   left with its default value of null, an object or list cannot be 
+			///   converted to any primitive type, so FormatException is thrown instead. 
+			///   If you provide a delegate, it is given the property name and raw bytes 
+			///   of a UTF-8 JSON object or list, and whatever value it returns is the 
+			///   conversion result.</summary>
+			/// <remarks>
+			/// The first byte of the Memory buffer is '{' if the input is an object,
+			/// or '[' if the input is a list.
+			/// <para/>
+			/// One way of starting to handle the conversion request would be to call 
+			/// <see cref="NewReader"/> to begin parsing the memory buffer.
+			/// <para/>
+			/// If the target type is a string, the simplest implementation is to return the 
+			/// JSON itself, which can be accomplished as follows:
+			/// <code>
+			/// 	// This code requires .NET Core 3+ (use json.ToArray() otherwise)
+			/// 	var options = new SyncJson.Options {
+			/// 		ReadObjectAsPrimitive = (name, json, t) => Encoding.UTF8.GetString(json.Span)
+			/// 	};
+			/// </code>
+			/// </remarks>
+			public Func<string, Memory<byte>, Type, IConvertible>? ReadObjectAsPrimitive { get; set; } = null;
+
+			/// <summary>When you attempt to read an object or a list, but a primitive
+			///   type is encountered instead, this property controls how that primitive
+			///   is converted to an object or list (see remarks)</summary>
+			/// <remarks>
+			/// If this property is left with its default value of null, 
+			/// (1) If the JSON value is a string, ReadStringAsObject is used instead
+			/// (2) If the JSON value is a number, ReadNumberAsObject is used instead
+			/// (3) Otherwise, the value cannot be converted to an object or list, so
+			///     FormatException is thrown.
+			/// </remarks>
+			public Func<string, Memory<byte>, bool, Memory<byte>>? ReadPrimitiveAsObject { get; set; } = null;
+
+			/// <summary>When you attempt to read an object, but a string is encountered 
+			///   instead, this property controls how that string is converted to an object.
+			///   If this property is left with its default value of null, a string cannot
+			///   be converted to an object and FormatException is thrown instead.
+			///   If you provide a delegate, it is given the property name and string,
+			///   and it must return valid JSON that will be read instead.</summary>
+			public Func<string, string, bool, Memory<byte>>? ReadStringAsObject { get; set; } = null;
+
+			public Func<string, Memory<byte>, IConvertible>? ReadObjectAsNumber { get; set; } = null;
 		}
 
 		/// <summary>Gets a copy of a string with the first character changed to lowercase.

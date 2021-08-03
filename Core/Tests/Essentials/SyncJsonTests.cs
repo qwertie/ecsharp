@@ -36,7 +36,7 @@ namespace Loyc.Essentials.Tests
 				Formatting = Formatting.Indented,
 			};
 			var json = ToNewtonString(jsonSerializer, obj);
-			Console.WriteLine(json);
+			//Console.WriteLine(json);
 
 			var options = new SyncJson.Options { Indent = "  ", SpaceAfterColon = true, RootMode = 0 };
 			var syncJson = SyncJson.WriteString(obj, BigStandardModelSync<SyncJson.Writer>.SyncBasics, options);
@@ -77,7 +77,7 @@ namespace Loyc.Essentials.Tests
 				Formatting = Formatting.Indented,
 			};
 			var json = ToNewtonString(jsonSerializer, obj).Replace(@"\u001a", @"\u001A");;
-			Console.WriteLine(json);
+			//Console.WriteLine(json);
 
 			var options = new SyncJson.Options { Indent = "  ", SpaceAfterColon = true, RootMode = 0 };
 			var syncJson = SyncJson.WriteString(obj, BigStandardModelSync<SyncJson.Writer>.SyncBigModelNoMem, options);

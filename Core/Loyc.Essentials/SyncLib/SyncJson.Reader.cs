@@ -45,9 +45,28 @@ namespace Loyc.SyncLib
 				throw new NotImplementedException();
 			}
 
-			public bool? HasField(Symbol name)
+			public SyncType HasField(Symbol name, SyncType expectedType = SyncType.Unknown)
 			{
-				throw new NotImplementedException();
+				if (name == null)
+					return SyncType.Unknown;
+
+				var type = _s.HasField(name.Name);
+				
+				// Check whether the type matches the expected type
+				if (expectedType <= SyncType.Exists || expectedType == type || 
+					type == SyncType.String && expectedType == SyncType.ByteList || // Can convert string => byte[]
+					type ==	SyncType.List && (expectedType & SyncType.List) != 0 || // Assume any list matches any specific list type
+					type == SyncType.Null && (expectedType & (SyncType.Null | SyncType.List)) != 0) // Null matches all nullables
+					return type;
+
+				// Check if there's an implicit type conversion to expectedType
+				var expectedPrim = expectedType & ~SyncType.Null;
+				if ((expectedPrim & SyncType.List) == 0 &&
+					type >= SyncType.Boolean && type <= SyncType.Float &&
+					expectedPrim >= type)
+					return type;
+
+				return SyncType.Missing;
 			}
 
 			public bool Sync(Symbol? name, bool savable)

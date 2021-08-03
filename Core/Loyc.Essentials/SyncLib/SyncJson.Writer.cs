@@ -80,7 +80,7 @@ namespace Loyc.SyncLib
 
 			public void EndSubObject() => _s.EndSubObject();
 
-			public bool? HasField(Symbol name) => null;
+			public SyncType HasField(Symbol name, SyncType expectedType = SyncType.Unknown) => SyncType.Unknown;
 
 			public bool Sync(Symbol? name, bool savable)
 			{
