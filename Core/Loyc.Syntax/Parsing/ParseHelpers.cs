@@ -31,7 +31,7 @@ namespace Loyc.Syntax
 			int len = 0;
 			for(;; len++, s = s.Slice(1))
 			{
-				int digit = HexDigitValue(s[0, '\0']);
+				int digit = G.HexDigitValue(s[0, '\0']);
 				if (digit == -1)
 					return len;
 				else
@@ -41,17 +41,8 @@ namespace Loyc.Syntax
 
 		/// <summary>Gets the integer value for the specified hex digit, or -1 if 
 		/// the character is not a hex digit.</summary>
-		public static int HexDigitValue(char c)
-		{
-			if (c >= '0' && c <= '9')
-				return c - '0';
-			if (c >= 'A' && c <= 'F')
-				return c - 'A' + 10;
-			if (c >= 'a' && c <= 'f')
-				return c - 'a' + 10;
-			else
-				return -1;
-		}
+		public static int HexDigitValue(char c) => G.HexDigitValue(c);
+
 		/// <summary>Gets the integer value for the specified digit, where 'A' maps 
 		/// to 10 and 'Z' maps to 35, or -1 if the character is not a digit or
 		/// letter.</summary>
@@ -67,6 +58,9 @@ namespace Loyc.Syntax
 				return -1;
 		}
 
+		/// <inheritdoc cref="G.DecodeUTF8Char"/>
+		public static int DecodeUTF8Char(ReadOnlySpan<byte> span, ref int index)
+			=> G.DecodeUTF8Char(span, ref index);
 
 		/// <summary>Unescapes a string that uses C-style escape sequences, e.g. 
 		/// "\\\n\\\r" becomes "\n\r".</summary>
