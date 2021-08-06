@@ -251,6 +251,7 @@
     <Compile Include="SyncLib\SyncJson.WriterState.cs" />
     <Compile Include="SyncLib\SyncManagerExt.cs" />
     <Compile Include="SyncLib\SyncMode.cs" />
+    <Compile Include="SyncLib\SyncType.cs" />
     <Compile Include="SyncLib\TypeStuff.cs" />
     <Compile Include="Utilities\ByteArrayInString.cs" />
     <Compile Include="Utilities\G.cs" />

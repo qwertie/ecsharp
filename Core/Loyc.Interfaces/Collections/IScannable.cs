@@ -40,7 +40,8 @@ namespace Loyc.Collections
 		///   if the end of collection is reached.</returns>
 		/// <remarks>The caller can force the entire sequence to be read into a single 
 		///   contiguous buffer by using minLength = int.MaxValue. On the other hand,
-		///   if the caller wants the scanner to use the optimal size</remarks>
+		///   if you want the scanner to use the size it deems optimal, set 
+		///   minLength = -1.</remarks>
 		ReadOnlyMemory<T> Read(int skip, int minLength, ref Memory<T> buffer);
 
 		/// <summary>Returns true if the skip parameter is (ever) allowed to be negative 
