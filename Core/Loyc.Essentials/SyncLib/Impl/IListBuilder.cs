@@ -79,10 +79,11 @@ namespace Loyc.SyncLib.Impl
 		//}
 	}
 
-	public struct MemoryBuilder<T> : IListBuilder<Memory<T>, T>
+	public struct MemoryBuilder<T> : IListBuilder<Memory<T>, T>, IListBuilder<ReadOnlyMemory<T>, T>
 	{
 		InternalList<T> _list;
 		public Memory<T> List => _list.AsMemory();
+		ReadOnlyMemory<T> IListBuilder<ReadOnlyMemory<T>, T>.List => _list.AsMemory();
 
 		public void Alloc(int minLength) => _list = new InternalList<T>(minLength <= 1 ? 4 : minLength);
 
@@ -90,6 +91,18 @@ namespace Loyc.SyncLib.Impl
 		{
 			if (value is Memory<T> mem)
 				return mem;
+			else {
+				var list = InternalList<T>.Empty;
+				list.AddRange((IEnumerable<T>)value);
+				return list.AsMemory();
+			}
+		}
+		ReadOnlyMemory<T> IListBuilder<ReadOnlyMemory<T>, T>.CastList(object value)
+		{
+			if (value is Memory<T> mem)
+				return mem;
+			else if (value is ReadOnlyMemory<T> romem)
+				return romem;
 			else {
 				var list = InternalList<T>.Empty;
 				list.AddRange((IEnumerable<T>)value);
@@ -131,5 +144,4 @@ namespace Loyc.SyncLib.Impl
 		//	return result.AsSpan();
 		//}
 	}
-
 }

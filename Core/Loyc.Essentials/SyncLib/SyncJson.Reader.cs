@@ -35,7 +35,7 @@ namespace Loyc.SyncLib
 
 			public object CurrentObject { set => throw new NotImplementedException(); }
 
-			public (bool Begun, object? Object) BeginSubObject(Symbol? name, object? childKey, SubObjectMode mode, int listLength = -1)
+			public (bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, SubObjectMode mode, int listLength = -1)
 			{
 				return _s.BeginSubObject(name != null ? name.Name : "", mode);
 			}
@@ -45,7 +45,7 @@ namespace Loyc.SyncLib
 				throw new NotImplementedException();
 			}
 
-			public SyncType HasField(Symbol name, SyncType expectedType = SyncType.Unknown)
+			public SyncType HasField(FieldId name, SyncType expectedType = SyncType.Unknown)
 			{
 				if (name == null)
 					return SyncType.Unknown;
@@ -69,188 +69,183 @@ namespace Loyc.SyncLib
 				return SyncType.Missing;
 			}
 
-			public bool Sync(Symbol? name, bool savable)
+			public bool Sync(FieldId name, bool savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public sbyte Sync(Symbol? name, sbyte savable)
+			public sbyte Sync(FieldId name, sbyte savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public byte Sync(Symbol? name, byte savable)
+			public byte Sync(FieldId name, byte savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public short Sync(Symbol? name, short savable)
+			public short Sync(FieldId name, short savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public ushort Sync(Symbol? name, ushort savable)
+			public ushort Sync(FieldId name, ushort savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public int Sync(Symbol? name, int savable)
+			public int Sync(FieldId name, int savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public uint Sync(Symbol? name, uint savable)
+			public uint Sync(FieldId name, uint savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public long Sync(Symbol? name, long savable)
+			public long Sync(FieldId name, long savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public ulong Sync(Symbol? name, ulong savable)
+			public ulong Sync(FieldId name, ulong savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public float Sync(Symbol? name, float savable)
+			public float Sync(FieldId name, float savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public double Sync(Symbol? name, double savable)
+			public double Sync(FieldId name, double savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public decimal Sync(Symbol? name, decimal savable)
+			public decimal Sync(FieldId name, decimal savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public BigInteger Sync(Symbol? name, BigInteger savable)
+			public BigInteger Sync(FieldId name, BigInteger savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public char Sync(Symbol? name, char savable)
+			public char Sync(FieldId name, char savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public string Sync(Symbol? name, string savable)
+			public int Sync(FieldId name, int savable, int bits, bool signed = true)
 			{
 				throw new NotImplementedException();
 			}
 
-			public int Sync(Symbol? name, int savable, int bits, bool signed = true)
+			public long Sync(FieldId name, long savable, int bits, bool signed = true)
 			{
 				throw new NotImplementedException();
 			}
 
-			public long Sync(Symbol? name, long savable, int bits, bool signed = true)
+			public BigInteger Sync(FieldId name, BigInteger savable, int bits, bool signed = true)
 			{
 				throw new NotImplementedException();
 			}
 
-			public BigInteger Sync(Symbol? name, BigInteger savable, int bits, bool signed = true)
-			{
-				throw new NotImplementedException();
-			}
-
-			public List? SyncListBoolImpl<Scanner, List, ListBuilder>(Symbol? name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+			public List? SyncListBoolImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<bool>
 				where ListBuilder : IListBuilder<List, bool>
 			{
 				throw new NotImplementedException();
 			}
 
-			public List? SyncListByteImpl<Scanner, List, ListBuilder>(Symbol? name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+			public List? SyncListByteImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<byte>
 				where ListBuilder : IListBuilder<List, byte>
 			{
 				throw new NotImplementedException();
 			}
 
-			public List? SyncListCharImpl<Scanner, List, ListBuilder>(Symbol? name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+			public List? SyncListCharImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<char>
 				where ListBuilder : IListBuilder<List, char>
 			{
 				throw new NotImplementedException();
 			}
 
-			public bool? SyncNullable(Symbol? name, bool? savable)
+			public bool? Sync(FieldId name, bool? savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public sbyte? SyncNullable(Symbol? name, sbyte? savable)
+			public sbyte? Sync(FieldId name, sbyte? savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public byte? SyncNullable(Symbol? name, byte? savable)
+			public byte? Sync(FieldId name, byte? savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public short? SyncNullable(Symbol? name, short? savable)
+			public short? Sync(FieldId name, short? savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public ushort? SyncNullable(Symbol? name, ushort? savable)
+			public ushort? Sync(FieldId name, ushort? savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public int? SyncNullable(Symbol? name, int? savable)
+			public int? Sync(FieldId name, int? savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public uint? SyncNullable(Symbol? name, uint? savable)
+			public uint? Sync(FieldId name, uint? savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public long? SyncNullable(Symbol? name, long? savable)
+			public long? Sync(FieldId name, long? savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public ulong? SyncNullable(Symbol? name, ulong? savable)
+			public ulong? Sync(FieldId name, ulong? savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public float? SyncNullable(Symbol? name, float? savable)
+			public float? Sync(FieldId name, float? savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public double? SyncNullable(Symbol? name, double? savable)
+			public double? Sync(FieldId name, double? savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public decimal? SyncNullable(Symbol? name, decimal? savable)
+			public decimal? Sync(FieldId name, decimal? savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public BigInteger? SyncNullable(Symbol? name, BigInteger? savable)
+			public BigInteger? Sync(FieldId name, BigInteger? savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public char? SyncNullable(Symbol? name, char? savable)
+			public char? Sync(FieldId name, char? savable)
 			{
 				throw new NotImplementedException();
 			}
 
-			public string? SyncNullable(Symbol? name, string? savable)
+			public string? Sync(FieldId name, string? savable)
 			{
 				throw new NotImplementedException();
 			}

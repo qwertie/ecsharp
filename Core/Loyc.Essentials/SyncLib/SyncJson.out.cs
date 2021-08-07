@@ -52,59 +52,59 @@ namespace Loyc.SyncLib
 
 		public partial struct Writer
 		{
-			public sbyte Sync(Symbol? name, sbyte savable) {
+			public sbyte Sync(FieldId name, sbyte savable) {
 				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || false || false || false));
 				return savable;
 			}
-			public byte Sync(Symbol? name, byte savable) {
+			public byte Sync(FieldId name, byte savable) {
 				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(true || false || false || false));
 				return savable;
 			}
-			public short Sync(Symbol? name, short savable) {
+			public short Sync(FieldId name, short savable) {
 				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || false || false || false));
 				return savable;
 			}
-			public ushort Sync(Symbol? name, ushort savable) {
+			public ushort Sync(FieldId name, ushort savable) {
 				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || true || false || false));
 				return savable;
 			}
-			public int Sync(Symbol? name, int savable) {
+			public int Sync(FieldId name, int savable) {
 				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || false || false || false));
 				return savable;
 			}
-			public uint Sync(Symbol? name, uint savable) {
+			public uint Sync(FieldId name, uint savable) {
 				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || false || true || false));
 				return savable;
 			}
-			public long Sync(Symbol? name, long savable) {
+			public long Sync(FieldId name, long savable) {
 				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || false || false || false));
 				return savable;
 			}
-			public ulong Sync(Symbol? name, ulong savable) {
+			public ulong Sync(FieldId name, ulong savable) {
 				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !(false || false || false || true));
 				return savable;
 			}
-			public BigInteger Sync(Symbol? name, BigInteger savable) {
+			public BigInteger Sync(FieldId name, BigInteger savable) {
 				_s.WriteProp(name == null ? "" : name.Name, savable);
 				return savable;
 			}
-			public float Sync(Symbol? name, float savable) {
+			public float Sync(FieldId name, float savable) {
 				_s.WriteProp(name == null ? "" : name.Name, savable);
 				return savable;
 			}
-			public double Sync(Symbol? name, double savable) {
+			public double Sync(FieldId name, double savable) {
 				_s.WriteProp(name == null ? "" : name.Name, savable);
 				return savable;
 			}
-			public decimal Sync(Symbol? name, decimal savable) {
+			public decimal Sync(FieldId name, decimal savable) {
 				_s.WriteProp(name == null ? "" : name.Name, savable);
 				return savable;
 			}
-			public char Sync(Symbol? name, char savable) {
+			public char Sync(FieldId name, char savable) {
 				_s.WriteProp(name == null ? "" : name.Name, savable);
 				return savable;
 			}
-			public bool? SyncNullable(Symbol? name, bool? savable) {
+			public bool? Sync(FieldId name, bool? savable) {
 				string nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
@@ -112,7 +112,7 @@ namespace Loyc.SyncLib
 					_s.WriteLiteralProp(nameS, savable.Value ? _true : _false);
 				return savable;
 			}
-			public sbyte? SyncNullable(Symbol? name, sbyte? savable) {
+			public sbyte? Sync(FieldId name, sbyte? savable) {
 				string nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
@@ -120,7 +120,7 @@ namespace Loyc.SyncLib
 					_s.WriteProp(nameS, savable.Value);
 				return savable;
 			}
-			public byte? SyncNullable(Symbol? name, byte? savable) {
+			public byte? Sync(FieldId name, byte? savable) {
 				string nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
@@ -128,7 +128,7 @@ namespace Loyc.SyncLib
 					_s.WriteProp(nameS, (long) savable.Value, false);
 				return savable;
 			}
-			public short? SyncNullable(Symbol? name, short? savable) {
+			public short? Sync(FieldId name, short? savable) {
 				string nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
@@ -136,7 +136,7 @@ namespace Loyc.SyncLib
 					_s.WriteProp(nameS, savable.Value);
 				return savable;
 			}
-			public ushort? SyncNullable(Symbol? name, ushort? savable) {
+			public ushort? Sync(FieldId name, ushort? savable) {
 				string nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
@@ -144,7 +144,7 @@ namespace Loyc.SyncLib
 					_s.WriteProp(nameS, (long) savable.Value, false);
 				return savable;
 			}
-			public int? SyncNullable(Symbol? name, int? savable) {
+			public int? Sync(FieldId name, int? savable) {
 				string nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
@@ -152,7 +152,7 @@ namespace Loyc.SyncLib
 					_s.WriteProp(nameS, savable.Value);
 				return savable;
 			}
-			public uint? SyncNullable(Symbol? name, uint? savable) {
+			public uint? Sync(FieldId name, uint? savable) {
 				string nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
@@ -160,7 +160,7 @@ namespace Loyc.SyncLib
 					_s.WriteProp(nameS, (long) savable.Value, false);
 				return savable;
 			}
-			public long? SyncNullable(Symbol? name, long? savable) {
+			public long? Sync(FieldId name, long? savable) {
 				string nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
@@ -168,7 +168,7 @@ namespace Loyc.SyncLib
 					_s.WriteProp(nameS, savable.Value);
 				return savable;
 			}
-			public ulong? SyncNullable(Symbol? name, ulong? savable) {
+			public ulong? Sync(FieldId name, ulong? savable) {
 				string nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
@@ -176,7 +176,7 @@ namespace Loyc.SyncLib
 					_s.WriteProp(nameS, (long) savable.Value, false);
 				return savable;
 			}
-			public float? SyncNullable(Symbol? name, float? savable) {
+			public float? Sync(FieldId name, float? savable) {
 				string nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
@@ -184,7 +184,7 @@ namespace Loyc.SyncLib
 					_s.WriteProp(nameS, savable.Value);
 				return savable;
 			}
-			public double? SyncNullable(Symbol? name, double? savable) {
+			public double? Sync(FieldId name, double? savable) {
 				string nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
@@ -192,7 +192,7 @@ namespace Loyc.SyncLib
 					_s.WriteProp(nameS, savable.Value);
 				return savable;
 			}
-			public decimal? SyncNullable(Symbol? name, decimal? savable) {
+			public decimal? Sync(FieldId name, decimal? savable) {
 				string nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
@@ -200,7 +200,7 @@ namespace Loyc.SyncLib
 					_s.WriteProp(nameS, savable.Value);
 				return savable;
 			}
-			public BigInteger? SyncNullable(Symbol? name, BigInteger? savable) {
+			public BigInteger? Sync(FieldId name, BigInteger? savable) {
 				string nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
@@ -208,7 +208,7 @@ namespace Loyc.SyncLib
 					_s.WriteProp(nameS, savable.Value);
 				return savable;
 			}
-			public char? SyncNullable(Symbol? name, char? savable) {
+			public char? Sync(FieldId name, char? savable) {
 				string nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);

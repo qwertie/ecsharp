@@ -21,19 +21,19 @@
     <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.csproj" />
     <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <Compile Update="Essentials\SyncLibBigStandardModel.out.cs">
+    <Compile Update="SyncLib\BigStandardModel.out.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>SyncLibBigStandardModel.ecs</DependentUpon>
+      <DependentUpon>BigStandardModel.ecs</DependentUpon>
     </Compile>
     <Compile Update="Syntax\LexerSourceTest.out.cs">
       <DependentUpon>LexerSourceTest.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Update="Essentials\SyncLibBigStandardModel.ecs">
+    <None Update="SyncLib\BigStandardModel.ecs">
       <Generator>LeMP</Generator>
-      <LastGenOutput>SyncLibBigStandardModel.out.cs</LastGenOutput>
+      <LastGenOutput>BigStandardModel.out.cs</LastGenOutput>
     </None>
     <None Update="Syntax\LexerSourceTest.ecs">
       <Generator>LeMP</Generator>

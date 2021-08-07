@@ -20,31 +20,45 @@ namespace Loyc.SyncLib
 	{
 		public static SyncJson.Writer NewWriter(IBufferWriter<byte> output, Options? options = null)
 			=> new Writer(new WriterState(output ?? new ArrayBufferWriter<byte>(), options ?? _defaultOptions));
+
 		public static ReadOnlyMemory<byte> Write<T>(T value, SyncObjectFunc<Writer, T> sync, Options? options = null)
 		{
-			var output = new ArrayBufferWriter<byte>(1024);
+			options ??= _defaultOptions;
+			var output = new ArrayBufferWriter<byte>(options.InitialWriteBufferSize);
 			Writer w = NewWriter(output, options);
-			SyncManagerExt.Sync(w, (Symbol?) null, value, sync, (options ?? _defaultOptions).RootMode);
+			SyncManagerExt.Sync(w, null, value, sync, options.RootMode);
 			return output.WrittenMemory;
 		}
 		public static ReadOnlyMemory<byte> Write<T>(T value, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 		{
-			var output = new ArrayBufferWriter<byte>(1024);
+			options ??= _defaultOptions;
+			var output = new ArrayBufferWriter<byte>(options.InitialWriteBufferSize);
 			Writer w = NewWriter(output, options);
-			SyncManagerExt.Sync(w, (Symbol?) null, value, sync, (options ?? _defaultOptions).RootMode);
+			SyncManagerExt.Sync(w, null, value, sync, options.RootMode);
+			return output.WrittenMemory;
+		}
+		public static ReadOnlyMemory<byte> Write<T, SyncObject>(T value, SyncObject sync, Options? options = null)
+			where SyncObject : ISyncObject<SyncJson.Writer, T>
+		{
+			options ??= _defaultOptions;
+			var output = new ArrayBufferWriter<byte>(options.InitialWriteBufferSize);
+			Writer w = NewWriter(output, options);
+			SyncManagerExt.Sync(w, null, value, sync, options.RootMode);
 			return output.WrittenMemory;
 		}
 		public static string WriteString<T>(T value, SyncObjectFunc<Writer, T> sync, Options? options = null)
-			#if NETSTANDARD2_0 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472
-			=> Encoding.UTF8.GetString(Write(value, sync, options).ToArray());
-			#else
-			=> Encoding.UTF8.GetString(Write(value, sync, options).Span);
-			#endif
+			=> Utf8ToString(Write(value, sync, options));
 		public static string WriteString<T>(T value, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
+			=> Utf8ToString(Write(value, sync, options));
+		public static string WriteString<T, SyncObject>(T value, SyncObject sync, Options? options = null)
+			where SyncObject : ISyncObject<SyncJson.Writer, T>
+			=> Utf8ToString(Write(value, sync, options));
+
+		static string Utf8ToString(ReadOnlyMemory<byte> text)
 			#if NETSTANDARD2_0 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472
-			=> Encoding.UTF8.GetString(Write(value, sync, options).ToArray());
+			=> Encoding.UTF8.GetString(text.ToArray());
 			#else
-			=> Encoding.UTF8.GetString(Write(value, sync, options).Span);
+			=> Encoding.UTF8.GetString(text.Span);
 			#endif
 
 		private static bool MayBeNullable(SubObjectMode mode)
@@ -73,22 +87,22 @@ namespace Loyc.SyncLib
 
 			public object CurrentObject { set { } }
 
-			public (bool Begun, object? Object) BeginSubObject(Symbol? name, object? childKey, SubObjectMode mode, int listLength = -1)
+			public (bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, SubObjectMode mode, int listLength = -1)
 			{
-				return _s.BeginSubObject(name?.Name, childKey, mode);
+				return _s.BeginSubObject(name.Name, childKey, mode);
 			}
 
 			public void EndSubObject() => _s.EndSubObject();
 
-			public SyncType HasField(Symbol name, SyncType expectedType = SyncType.Unknown) => SyncType.Unknown;
+			public SyncType HasField(FieldId name, SyncType expectedType = SyncType.Unknown) => SyncType.Unknown;
 
-			public bool Sync(Symbol? name, bool savable)
+			public bool Sync(FieldId name, bool savable)
 			{
-				_s.WriteLiteralProp(name?.Name ?? "", savable ? _true : _false);
+				_s.WriteLiteralProp(name.Name, savable ? _true : _false);
 				return savable;
 			}
 
-			public int Sync(Symbol? name, int savable, int bits, bool signed = true)
+			public int Sync(FieldId name, int savable, int bits, bool signed = true)
 			{
 				if (signed)
 					return Sync(name, savable);
@@ -96,7 +110,7 @@ namespace Loyc.SyncLib
 					return (int) _s.WriteProp(name == null ? "" : name.Name, (uint) savable, signed);
 			}
 
-			public long Sync(Symbol? name, long savable, int bits, bool signed = true)
+			public long Sync(FieldId name, long savable, int bits, bool signed = true)
 			{
 				if (signed)
 					return Sync(name, savable);
@@ -104,9 +118,9 @@ namespace Loyc.SyncLib
 					return _s.WriteProp(name == null ? "" : name.Name, savable, signed);
 			}
 
-			public BigInteger Sync(Symbol? name, BigInteger savable, int bits, bool signed = true) => Sync(name, savable);
+			public BigInteger Sync(FieldId name, BigInteger savable, int bits, bool signed = true) => Sync(name, savable);
 
-			//public InternalList<byte> SyncListImpl(Symbol? name, ReadOnlySpan<byte> savable, SubObjectMode listMode = SubObjectMode.List)
+			//public InternalList<byte> SyncListImpl(FieldId name, ReadOnlySpan<byte> savable, SubObjectMode listMode = SubObjectMode.List)
 			//{
 			//	var name2 = name == null ? "" : name.Name;
 			//	if (savable == default)
@@ -121,8 +135,7 @@ namespace Loyc.SyncLib
 			//	return default;
 			//}
 
-			public string Sync(Symbol? name, string savable) => SyncNullable(name, savable)!;
-			public string? SyncNullable(Symbol? name, string? savable) {
+			public string? Sync(FieldId name, string? savable) {
 				_s.WriteProp(name == null ? "" : name.Name, savable);
 				return savable;
 			}
@@ -136,7 +149,7 @@ namespace Loyc.SyncLib
 			/// used to finish writing an object or list.</summary>
 			public void Flush() => _s.Flush();
 
-			public List? SyncListBoolImpl<Scanner, List, ListBuilder>(Symbol? name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+			public List? SyncListBoolImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<bool>
 				where ListBuilder : IListBuilder<List, bool>
 			{
@@ -151,7 +164,7 @@ namespace Loyc.SyncLib
 				}
 			}
 
-			public List? SyncListCharImpl<Scanner, List, ListBuilder>(Symbol? name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+			public List? SyncListCharImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<char>
 				where ListBuilder : IListBuilder<List, char>
 			{
@@ -165,7 +178,7 @@ namespace Loyc.SyncLib
 						// Write character list as string
 						var empty = default(Memory<char>);
 						var chars = scanner.Read(0, int.MaxValue, ref empty);
-						_s.WriteProp(name?.Name ?? "", chars.Span);
+						_s.WriteProp(name.Name ?? "", chars.Span);
 					} else {
 						// Write character list as array
 						var saver = new ScannerSaver<SyncJson.Writer, Scanner, char, SyncPrimitive<SyncJson.Writer>>(new SyncPrimitive<SyncJson.Writer>(), mode);
@@ -175,7 +188,7 @@ namespace Loyc.SyncLib
 				}
 			}
 
-			public List? SyncListByteImpl<Scanner, List, ListBuilder>(Symbol? name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+			public List? SyncListByteImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<byte>
 				where ListBuilder : IListBuilder<List, byte>
 			{
@@ -194,7 +207,7 @@ namespace Loyc.SyncLib
 						// Write bytes as string
 						var empty = default(Memory<byte>);
 						var bytes = scanner.Read(0, int.MaxValue, ref empty);
-						_s.WriteBytesAsString(name?.Name ?? "", bytes.Span);
+						_s.WriteBytesAsString(name.Name ?? "", bytes.Span);
 					}
 					return saving;
 				}

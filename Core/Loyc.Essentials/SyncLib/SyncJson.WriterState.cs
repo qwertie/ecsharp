@@ -38,6 +38,7 @@ namespace Loyc.SyncLib
 			}
 		}
 
+		/// <summary>The core logic for writing JSON data in UTF-8 format</summary>
 		internal partial class WriterState : WriterStateBase
 		{
 			internal Options _opt;
@@ -75,7 +76,7 @@ namespace Loyc.SyncLib
 					return (false, childKey);
 				}
 
-				var buf = BeginProp(name, 25); // Reserve extra bytes for refs: {"$ref":12345678901}
+				var buf = BeginProp(name, 25); // Reserve extra bytes for refs: {"$ref":"12345678901"}
 
 				if ((mode & SubObjectMode.Deduplicate) != 0) {
 					long id = _idGen.GetId(childKey, out bool firstTime);
@@ -83,11 +84,16 @@ namespace Loyc.SyncLib
 						WriteBackReference(buf, id);
 						return (false, childKey);
 					} else {
-						OpenBraceOrBrack(mode);
+						OpenBraceOrBrack(mode & ~SubObjectMode.List);
 						if (_opt.NewtonsoftCompatibility)
 							WriteProp("$id", id.ToString());
 						else
 							WriteProp("\f", id);
+						if ((mode & SubObjectMode.List) != 0) {
+							string valuesProp = _opt.NewtonsoftCompatibility ? "$values" : "";
+							BeginProp(valuesProp, 10);
+							OpenBraceOrBrack(mode);
+						}
 						return (true, childKey);
 					}
 				} else {
@@ -125,6 +131,7 @@ namespace Loyc.SyncLib
 					WriteNumber(buf, id, true);
 				}
 				buf[_i++] = (byte) '}';
+				_pendingComma = (byte) ',';
 			}
 
 			public void EndSubObject()
@@ -135,32 +142,67 @@ namespace Loyc.SyncLib
 			void OpenBraceOrBrack(SubObjectMode mode)
 			{
 				_stack.Add(mode);
-				_isInsideList = (mode & SubObjectMode.Tuple) != 0;
 
 				var buf = GetNextBuf(1 + NewlineSize);
+
+				_isInsideList = (mode & SubObjectMode.List) != 0;
+
 				buf[_i++] = (byte) (_isInsideList ? '[' : '{');
 
-				_pendingComma = (byte) '\n'; // specially recognized by GetNextBuf
+				// GetNextBuf() understands this as a request for a newline + indentation
+				_pendingComma = (byte) '\n';
 			}
 
 			void CloseBraceOrBrack()
 			{
-				if ((_stack.Last & SubObjectMode.Compact) != 0)
+				var mode = _stack.Last;
+				if ((mode & SubObjectMode.Compact) != 0)
 					_compactMode--;
+				
+				// This will cause an unindent, since it is done before GetNextBuf() which writes the newline/indent
 				_stack.Pop();
 
 				// Cancel ',' at end of list/object; just make a newline. If _pendingComma
 				// is '\n', the object/list is empty and we don't even need a newline.
 				_pendingComma = (byte) (_pendingComma == '\n' ? 0 : '\n');
 
-				var buf = GetNextBuf(NewlineSize + 1);
-				buf[_i++] = (byte) (_isInsideList ? ']' : '}');
-				
-				// Ensure that 
-				Flush();
+				bool isList = (mode & SubObjectMode.List) != 0;
+				if (isList && (mode & SubObjectMode.Deduplicate) != 0)
+				{
+					Debug.Assert(_stack.Last == (mode & ~SubObjectMode.List));
+					
+					// In this case, two JSON objects are used to represent a single list, e.g.
+					//     "List": { "$id": "7", "$values": [...] }
+					// Also, there are two entries on the stack for this single list
+					// (so that indentation works properly). Unlike OpenBraceOrBrack()
+					// which is called twice in this case, CloseBraceOrBrack() is called
+					// only once. Therefore we need to pop both stack entries and write
+					// ']' followed by '}'.
+					WriteBraceOrBrack(isList);
+					_stack.Pop();
+					_pendingComma = (byte) '\n';
+					WriteBraceOrBrack(false);
+				}
+				else
+				{
+					WriteBraceOrBrack(isList);
+				}
 
-				_isInsideList = _stack.IsEmpty ? true : (_stack.Last & SubObjectMode.Tuple) != 0;
 				_pendingComma = (byte) ',';
+
+				if (_stack.IsEmpty) {
+					Flush();
+					_isInsideList = true;
+				} else {
+					_isInsideList = (_stack.Last & SubObjectMode.Tuple) != 0;
+				}
+			}
+
+			// Helper function of CloseBraceOrBrack
+			void WriteBraceOrBrack(bool list)
+			{
+				var buf = GetNextBuf(1);
+				buf[_i++] = (byte) (list ? ']' : '}');
 			}
 
 			int NewlineSize => _newline.Length + _indent.Length * _stack.Count;

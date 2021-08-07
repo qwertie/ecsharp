@@ -50,34 +50,34 @@ namespace Loyc.SyncLib.Impl
 	
 	
 	{
-		public bool Sync(ref SyncManager sync, Symbol? name, bool x) => sync.Sync(name, x);
-		public sbyte Sync(ref SyncManager sync, Symbol? name, sbyte x) => sync.Sync(name, x);
-		public byte Sync(ref SyncManager sync, Symbol? name, byte x) => sync.Sync(name, x);
-		public short Sync(ref SyncManager sync, Symbol? name, short x) => sync.Sync(name, x);
-		public ushort Sync(ref SyncManager sync, Symbol? name, ushort x) => sync.Sync(name, x);
-		public int Sync(ref SyncManager sync, Symbol? name, int x) => sync.Sync(name, x);
-		public uint Sync(ref SyncManager sync, Symbol? name, uint x) => sync.Sync(name, x);
-		public long Sync(ref SyncManager sync, Symbol? name, long x) => sync.Sync(name, x);
-		public ulong Sync(ref SyncManager sync, Symbol? name, ulong x) => sync.Sync(name, x);
-		public float Sync(ref SyncManager sync, Symbol? name, float x) => sync.Sync(name, x);
-		public double Sync(ref SyncManager sync, Symbol? name, double x) => sync.Sync(name, x);
-		public decimal Sync(ref SyncManager sync, Symbol? name, decimal x) => sync.Sync(name, x);
-		public BigInteger Sync(ref SyncManager sync, Symbol? name, BigInteger x) => sync.Sync(name, x);
-		public char Sync(ref SyncManager sync, Symbol? name, char x) => sync.Sync(name, x);
-		public bool? Sync(ref SyncManager sync, Symbol? name, bool? x) => sync.SyncNullable(name, x);
-		public sbyte? Sync(ref SyncManager sync, Symbol? name, sbyte? x) => sync.SyncNullable(name, x);
-		public byte? Sync(ref SyncManager sync, Symbol? name, byte? x) => sync.SyncNullable(name, x);
-		public short? Sync(ref SyncManager sync, Symbol? name, short? x) => sync.SyncNullable(name, x);
-		public ushort? Sync(ref SyncManager sync, Symbol? name, ushort? x) => sync.SyncNullable(name, x);
-		public int? Sync(ref SyncManager sync, Symbol? name, int? x) => sync.SyncNullable(name, x);
-		public uint? Sync(ref SyncManager sync, Symbol? name, uint? x) => sync.SyncNullable(name, x);
-		public long? Sync(ref SyncManager sync, Symbol? name, long? x) => sync.SyncNullable(name, x);
-		public ulong? Sync(ref SyncManager sync, Symbol? name, ulong? x) => sync.SyncNullable(name, x);
-		public float? Sync(ref SyncManager sync, Symbol? name, float? x) => sync.SyncNullable(name, x);
-		public double? Sync(ref SyncManager sync, Symbol? name, double? x) => sync.SyncNullable(name, x);
-		public decimal? Sync(ref SyncManager sync, Symbol? name, decimal? x) => sync.SyncNullable(name, x);
-		public BigInteger? Sync(ref SyncManager sync, Symbol? name, BigInteger? x) => sync.SyncNullable(name, x);
-		public char? Sync(ref SyncManager sync, Symbol? name, char? x) => sync.SyncNullable(name, x);
-		public string? Sync(ref SyncManager sync, Symbol? name, string? x) => sync.Sync(name, x);
+		public bool Sync(ref SyncManager sync, FieldId name, bool x) => sync.Sync(name, x);
+		public sbyte Sync(ref SyncManager sync, FieldId name, sbyte x) => sync.Sync(name, x);
+		public byte Sync(ref SyncManager sync, FieldId name, byte x) => sync.Sync(name, x);
+		public short Sync(ref SyncManager sync, FieldId name, short x) => sync.Sync(name, x);
+		public ushort Sync(ref SyncManager sync, FieldId name, ushort x) => sync.Sync(name, x);
+		public int Sync(ref SyncManager sync, FieldId name, int x) => sync.Sync(name, x);
+		public uint Sync(ref SyncManager sync, FieldId name, uint x) => sync.Sync(name, x);
+		public long Sync(ref SyncManager sync, FieldId name, long x) => sync.Sync(name, x);
+		public ulong Sync(ref SyncManager sync, FieldId name, ulong x) => sync.Sync(name, x);
+		public float Sync(ref SyncManager sync, FieldId name, float x) => sync.Sync(name, x);
+		public double Sync(ref SyncManager sync, FieldId name, double x) => sync.Sync(name, x);
+		public decimal Sync(ref SyncManager sync, FieldId name, decimal x) => sync.Sync(name, x);
+		public BigInteger Sync(ref SyncManager sync, FieldId name, BigInteger x) => sync.Sync(name, x);
+		public char Sync(ref SyncManager sync, FieldId name, char x) => sync.Sync(name, x);
+		public bool? Sync(ref SyncManager sync, FieldId name, bool? x) => sync.Sync(name, x);
+		public sbyte? Sync(ref SyncManager sync, FieldId name, sbyte? x) => sync.Sync(name, x);
+		public byte? Sync(ref SyncManager sync, FieldId name, byte? x) => sync.Sync(name, x);
+		public short? Sync(ref SyncManager sync, FieldId name, short? x) => sync.Sync(name, x);
+		public ushort? Sync(ref SyncManager sync, FieldId name, ushort? x) => sync.Sync(name, x);
+		public int? Sync(ref SyncManager sync, FieldId name, int? x) => sync.Sync(name, x);
+		public uint? Sync(ref SyncManager sync, FieldId name, uint? x) => sync.Sync(name, x);
+		public long? Sync(ref SyncManager sync, FieldId name, long? x) => sync.Sync(name, x);
+		public ulong? Sync(ref SyncManager sync, FieldId name, ulong? x) => sync.Sync(name, x);
+		public float? Sync(ref SyncManager sync, FieldId name, float? x) => sync.Sync(name, x);
+		public double? Sync(ref SyncManager sync, FieldId name, double? x) => sync.Sync(name, x);
+		public decimal? Sync(ref SyncManager sync, FieldId name, decimal? x) => sync.Sync(name, x);
+		public BigInteger? Sync(ref SyncManager sync, FieldId name, BigInteger? x) => sync.Sync(name, x);
+		public char? Sync(ref SyncManager sync, FieldId name, char? x) => sync.Sync(name, x);
+		public string? Sync(ref SyncManager sync, FieldId name, string? x) => sync.Sync(name, x);
 	}
 }

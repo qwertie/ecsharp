@@ -13,6 +13,7 @@ using Loyc.Geometry;
 using Loyc.Syntax.Lexing;
 using Loyc.Syntax.Les;
 using Loyc.Syntax.Tests;
+using Loyc.SyncLib.Tests;
 
 namespace Loyc.Tests
 {

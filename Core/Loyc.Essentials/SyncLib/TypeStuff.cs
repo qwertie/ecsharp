@@ -12,7 +12,7 @@ using System.Text;
 namespace Loyc.SyncLib
 {
 	// If SyncManager is a struct, this is the type of most of its Sync methods
-	public delegate T SyncFieldFunc_Ref<SyncManager, T>(ref SyncManager sync, Symbol? name, [AllowNull] T value);
+	public delegate T SyncFieldFunc_Ref<SyncManager, T>(ref SyncManager sync, FieldId name, [AllowNull] T value);
 
 	public static class DefaultSynchronizer
 	{
@@ -23,7 +23,7 @@ namespace Loyc.SyncLib
 			return DefaultSynchronizer<SyncJson.Writer, T>.FindSynchronizer() != null;
 		}
 		
-		public static T Sync<SyncManager, T>(ref SyncManager sync, Symbol? name, [AllowNull] T value) where SyncManager: ISyncManager
+		public static T Sync<SyncManager, T>(ref SyncManager sync, FieldId name, [AllowNull] T value) where SyncManager: ISyncManager
 		{
 			return DefaultSynchronizer<SyncManager, T>.Default(ref sync, name, value);
 		}
@@ -56,7 +56,7 @@ namespace Loyc.SyncLib
 			return sync;
 		}
 
-		static T FallbackSync(ref SyncManager sync, Symbol? name, T? value)
+		static T FallbackSync(ref SyncManager sync, FieldId name, T? value)
 		{
 			var syncMethod = FindSynchronizer();
 			if (syncMethod != null) {
@@ -91,7 +91,7 @@ namespace Loyc.SyncLib
 			// contrast, int and int? are distinct types with different synchronizers.)
 			var dict = new Dictionary<Type, Delegate>();
 			dict.SetRange(GetSynchronizers(nameof(ISyncManager.Sync)));
-			dict.SetRange(GetSynchronizers(nameof(ISyncManager.SyncNullable)));
+			//dict.SetRange(GetSynchronizers(nameof(ISyncManager.SyncNullable)));
 			// TODO: support SyncList extension methods
 			//dict.SetRange(GetSynchronizers(nameof(ISyncManager.SyncList)));
 			return dict;
@@ -126,7 +126,7 @@ namespace Loyc.SyncLib
 				static SyncFieldFunc_Ref<SyncManager, T> HelpMakeOpenDelegate<T>(MethodInfo mi)
 				{
 					var sync = (SyncFieldFunc_Ref<SyncManager, T>)Delegate.CreateDelegate(typeof(SyncFieldFunc_Ref<SyncManager, T>), null, mi);
-					return (ref SyncManager syncMan, Symbol? name, T savable) => sync(ref syncMan, name, savable);
+					return (ref SyncManager syncMan, FieldId name, T savable) => sync(ref syncMan, name, savable);
 				}
 			}
 		}
@@ -158,7 +158,7 @@ namespace Loyc.SyncLib
 	{
 		// System.ValueTuple synchronizers
 
-		public static ValueTuple<Item1> Sync<Item1>(ref SyncManager sync, Symbol? name, ValueTuple<Item1> value)
+		public static ValueTuple<Item1> Sync<Item1>(ref SyncManager sync, FieldId name, ValueTuple<Item1> value)
 		{
 			sync.BeginSubObject(name, null, SubObjectMode.NotNull | SubObjectMode.Tuple, 8);
 			var item1 = DefaultSynchronizer.Sync(ref sync, null, value.Item1);
@@ -166,7 +166,7 @@ namespace Loyc.SyncLib
 			return new ValueTuple<Item1>(item1);
 		}
 
-		public static ValueTuple<Item1, Item2> Sync<Item1, Item2>(ref SyncManager sync, Symbol? name, ValueTuple<Item1, Item2> value)
+		public static ValueTuple<Item1, Item2> Sync<Item1, Item2>(ref SyncManager sync, FieldId name, ValueTuple<Item1, Item2> value)
 		{
 			sync.BeginSubObject(name, null, SubObjectMode.NotNull | SubObjectMode.Tuple, 8);
 			var item1 = DefaultSynchronizer.Sync(ref sync, null, value.Item1);
@@ -175,7 +175,7 @@ namespace Loyc.SyncLib
 			return new ValueTuple<Item1, Item2>(item1, item2);
 		}
 
-		public static ValueTuple<Item1, Item2, Item3> Sync<Item1, Item2, Item3>(ref SyncManager sync, Symbol? name, ValueTuple<Item1, Item2, Item3> value)
+		public static ValueTuple<Item1, Item2, Item3> Sync<Item1, Item2, Item3>(ref SyncManager sync, FieldId name, ValueTuple<Item1, Item2, Item3> value)
 		{
 			sync.BeginSubObject(name, null, SubObjectMode.NotNull | SubObjectMode.Tuple, 8);
 			var item1 = DefaultSynchronizer.Sync(ref sync, null, value.Item1);
@@ -185,7 +185,7 @@ namespace Loyc.SyncLib
 			return new ValueTuple<Item1, Item2, Item3>(item1, item2, item3);
 		}
 
-		public static ValueTuple<Item1, Item2, Item3, Item4> Sync<Item1, Item2, Item3, Item4>(ref SyncManager sync, Symbol? name, ValueTuple<Item1, Item2, Item3, Item4> value)
+		public static ValueTuple<Item1, Item2, Item3, Item4> Sync<Item1, Item2, Item3, Item4>(ref SyncManager sync, FieldId name, ValueTuple<Item1, Item2, Item3, Item4> value)
 		{
 			sync.BeginSubObject(name, null, SubObjectMode.NotNull | SubObjectMode.Tuple, 8);
 			var item1 = DefaultSynchronizer.Sync(ref sync, null, value.Item1);
@@ -196,7 +196,7 @@ namespace Loyc.SyncLib
 			return new ValueTuple<Item1, Item2, Item3, Item4>(item1, item2, item3, item4);
 		}
 
-		public static ValueTuple<Item1, Item2, Item3, Item4, Item5> Sync<Item1, Item2, Item3, Item4, Item5>(ref SyncManager sync, Symbol? name, ValueTuple<Item1, Item2, Item3, Item4, Item5> value)
+		public static ValueTuple<Item1, Item2, Item3, Item4, Item5> Sync<Item1, Item2, Item3, Item4, Item5>(ref SyncManager sync, FieldId name, ValueTuple<Item1, Item2, Item3, Item4, Item5> value)
 		{
 			sync.BeginSubObject(name, null, SubObjectMode.NotNull | SubObjectMode.Tuple, 8);
 			var item1 = DefaultSynchronizer.Sync(ref sync, null, value.Item1);
@@ -208,7 +208,7 @@ namespace Loyc.SyncLib
 			return new ValueTuple<Item1, Item2, Item3, Item4, Item5>(item1, item2, item3, item4, item5);
 		}
 
-		public static ValueTuple<Item1, Item2, Item3, Item4, Item5, Item6> Sync<Item1, Item2, Item3, Item4, Item5, Item6>(ref SyncManager sync, Symbol? name, ValueTuple<Item1, Item2, Item3, Item4, Item5, Item6> value)
+		public static ValueTuple<Item1, Item2, Item3, Item4, Item5, Item6> Sync<Item1, Item2, Item3, Item4, Item5, Item6>(ref SyncManager sync, FieldId name, ValueTuple<Item1, Item2, Item3, Item4, Item5, Item6> value)
 		{
 			sync.BeginSubObject(name, null, SubObjectMode.NotNull | SubObjectMode.Tuple, 8);
 			var item1 = DefaultSynchronizer.Sync(ref sync, null, value.Item1);
@@ -221,7 +221,7 @@ namespace Loyc.SyncLib
 			return new ValueTuple<Item1, Item2, Item3, Item4, Item5, Item6>(item1, item2, item3, item4, item5, item6);
 		}
 
-		public static ValueTuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7> Sync<Item1, Item2, Item3, Item4, Item5, Item6, Item7>(ref SyncManager sync, Symbol? name, ValueTuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7> value)
+		public static ValueTuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7> Sync<Item1, Item2, Item3, Item4, Item5, Item6, Item7>(ref SyncManager sync, FieldId name, ValueTuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7> value)
 		{
 			sync.BeginSubObject(name, null, SubObjectMode.NotNull | SubObjectMode.Tuple, 8);
 			var item1 = DefaultSynchronizer.Sync(ref sync, null, value.Item1);
@@ -235,7 +235,7 @@ namespace Loyc.SyncLib
 			return new ValueTuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7>(item1, item2, item3, item4, item5, item6, item7);
 		}
 
-		public static ValueTuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7, Rest> Sync<Item1, Item2, Item3, Item4, Item5, Item6, Item7, Rest>(ref SyncManager sync, Symbol? name, ValueTuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7, Rest> value)
+		public static ValueTuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7, Rest> Sync<Item1, Item2, Item3, Item4, Item5, Item6, Item7, Rest>(ref SyncManager sync, FieldId name, ValueTuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7, Rest> value)
 			where Rest: struct
 		{
 			sync.BeginSubObject(name, null, SubObjectMode.NotNull | SubObjectMode.Tuple, 8);
@@ -253,7 +253,7 @@ namespace Loyc.SyncLib
 
 		// System.Tuple synchronizers
 
-		public static Tuple<Item1> Sync<Item1>(ref SyncManager sync, Symbol? name, Tuple<Item1> value)
+		public static Tuple<Item1> Sync<Item1>(ref SyncManager sync, FieldId name, Tuple<Item1> value)
 		{
 			sync.BeginSubObject(name, value, SubObjectMode.Tuple, 8);
 			var item1 = DefaultSynchronizer.Sync(ref sync, null, value.Item1);
@@ -261,7 +261,7 @@ namespace Loyc.SyncLib
 			return new Tuple<Item1>(item1);
 		}
 
-		public static Tuple<Item1, Item2> Sync<Item1, Item2>(ref SyncManager sync, Symbol? name, Tuple<Item1, Item2> value)
+		public static Tuple<Item1, Item2> Sync<Item1, Item2>(ref SyncManager sync, FieldId name, Tuple<Item1, Item2> value)
 		{
 			sync.BeginSubObject(name, value, SubObjectMode.Tuple, 8);
 			var item1 = DefaultSynchronizer.Sync(ref sync, null, value.Item1);
@@ -270,7 +270,7 @@ namespace Loyc.SyncLib
 			return new Tuple<Item1, Item2>(item1, item2);
 		}
 
-		public static Tuple<Item1, Item2, Item3> Sync<Item1, Item2, Item3>(ref SyncManager sync, Symbol? name, Tuple<Item1, Item2, Item3> value)
+		public static Tuple<Item1, Item2, Item3> Sync<Item1, Item2, Item3>(ref SyncManager sync, FieldId name, Tuple<Item1, Item2, Item3> value)
 		{
 			sync.BeginSubObject(name, value, SubObjectMode.Tuple, 8);
 			var item1 = DefaultSynchronizer.Sync(ref sync, null, value.Item1);
@@ -280,7 +280,7 @@ namespace Loyc.SyncLib
 			return new Tuple<Item1, Item2, Item3>(item1, item2, item3);
 		}
 
-		public static Tuple<Item1, Item2, Item3, Item4> Sync<Item1, Item2, Item3, Item4>(ref SyncManager sync, Symbol? name, Tuple<Item1, Item2, Item3, Item4> value)
+		public static Tuple<Item1, Item2, Item3, Item4> Sync<Item1, Item2, Item3, Item4>(ref SyncManager sync, FieldId name, Tuple<Item1, Item2, Item3, Item4> value)
 		{
 			sync.BeginSubObject(name, value, SubObjectMode.Tuple, 8);
 			var item1 = DefaultSynchronizer.Sync(ref sync, null, value.Item1);
@@ -291,7 +291,7 @@ namespace Loyc.SyncLib
 			return new Tuple<Item1, Item2, Item3, Item4>(item1, item2, item3, item4);
 		}
 
-		public static Tuple<Item1, Item2, Item3, Item4, Item5> Sync<Item1, Item2, Item3, Item4, Item5>(ref SyncManager sync, Symbol? name, Tuple<Item1, Item2, Item3, Item4, Item5> value)
+		public static Tuple<Item1, Item2, Item3, Item4, Item5> Sync<Item1, Item2, Item3, Item4, Item5>(ref SyncManager sync, FieldId name, Tuple<Item1, Item2, Item3, Item4, Item5> value)
 		{
 			sync.BeginSubObject(name, value, SubObjectMode.Tuple, 8);
 			var item1 = DefaultSynchronizer.Sync(ref sync, null, value.Item1);
@@ -303,7 +303,7 @@ namespace Loyc.SyncLib
 			return new Tuple<Item1, Item2, Item3, Item4, Item5>(item1, item2, item3, item4, item5);
 		}
 
-		public static Tuple<Item1, Item2, Item3, Item4, Item5, Item6> Sync<Item1, Item2, Item3, Item4, Item5, Item6>(ref SyncManager sync, Symbol? name, Tuple<Item1, Item2, Item3, Item4, Item5, Item6> value)
+		public static Tuple<Item1, Item2, Item3, Item4, Item5, Item6> Sync<Item1, Item2, Item3, Item4, Item5, Item6>(ref SyncManager sync, FieldId name, Tuple<Item1, Item2, Item3, Item4, Item5, Item6> value)
 		{
 			sync.BeginSubObject(name, value, SubObjectMode.Tuple, 8);
 			var item1 = DefaultSynchronizer.Sync(ref sync, null, value.Item1);
@@ -316,7 +316,7 @@ namespace Loyc.SyncLib
 			return new Tuple<Item1, Item2, Item3, Item4, Item5, Item6>(item1, item2, item3, item4, item5, item6);
 		}
 
-		public static Tuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7> Sync<Item1, Item2, Item3, Item4, Item5, Item6, Item7>(ref SyncManager sync, Symbol? name, Tuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7> value)
+		public static Tuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7> Sync<Item1, Item2, Item3, Item4, Item5, Item6, Item7>(ref SyncManager sync, FieldId name, Tuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7> value)
 		{
 			sync.BeginSubObject(name, value, SubObjectMode.Tuple, 8);
 			var item1 = DefaultSynchronizer.Sync(ref sync, null, value.Item1);
@@ -330,7 +330,7 @@ namespace Loyc.SyncLib
 			return new Tuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7>(item1, item2, item3, item4, item5, item6, item7);
 		}
 
-		public static Tuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7, Rest> Sync<Item1, Item2, Item3, Item4, Item5, Item6, Item7, Rest>(ref SyncManager sync, Symbol? name, Tuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7, Rest> value)
+		public static Tuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7, Rest> Sync<Item1, Item2, Item3, Item4, Item5, Item6, Item7, Rest>(ref SyncManager sync, FieldId name, Tuple<Item1, Item2, Item3, Item4, Item5, Item6, Item7, Rest> value)
 			where Rest: struct
 		{
 			sync.BeginSubObject(name, value, SubObjectMode.Tuple, 8);

@@ -29,7 +29,7 @@ namespace Loyc.SyncLib.Impl
 			_mode = mode | SubObjectMode.NotNull;
 		}
 
-		public T? Sync(ref SyncManager sync, Symbol? propName, T? item)
+		public T? Sync(ref SyncManager sync, FieldId propName, T? item)
 		{
 			bool avoidBoxing = (_mode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) == SubObjectMode.NotNull;
 			var (begun, existingItem) = sync.BeginSubObject(propName, avoidBoxing ? null : item, _mode);
@@ -54,7 +54,7 @@ namespace Loyc.SyncLib.Impl
 			}
 		}
 
-		public void Write(ref SyncManager sync, Symbol? propName, T? item)
+		public void Write(ref SyncManager sync, FieldId propName, T? item)
 		{
 			bool avoidBoxing = (_mode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) == SubObjectMode.NotNull;
 			var (begun, existingItem) = sync.BeginSubObject(propName, avoidBoxing ? null : item, _mode);

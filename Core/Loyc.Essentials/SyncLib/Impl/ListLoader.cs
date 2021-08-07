@@ -26,7 +26,7 @@ namespace Loyc.SyncLib.Impl
 			_tupleLength = tupleLength;
 		}
 
-		public TList? Sync(ref SyncManager sync, Symbol? propName, TList? ignored)
+		public TList? Sync(ref SyncManager sync, FieldId propName, TList? ignored)
 		{
 			Debug.Assert((sync.Mode & SyncMode.Loading) != 0);
 

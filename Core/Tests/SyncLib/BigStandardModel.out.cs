@@ -1,4 +1,4 @@
-// Generated from SyncLibBigStandardModel.ecs by LeMP custom tool. LeMP version: 30.1.0.0
+// Generated from BigStandardModel.ecs by LeMP custom tool. LeMP version: 30.1.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -12,7 +12,7 @@ using System.Numerics;
 
 using Loyc.SyncLib;
 
-namespace Loyc.Essentials.Tests
+namespace Loyc.SyncLib.Tests
 {
 
 	internal class StandardFields
@@ -346,25 +346,24 @@ namespace Loyc.Essentials.Tests
 	}
 	
 	
-	class BigStandardModelSync<S> where S: ISyncManager
+	struct BigStandardModelSync<S> : ISyncObject<S, StandardFields>, ISyncObject<S, BigStandardModel>, ISyncObject<S, BigStandardModelNoMem> where S: ISyncManager
+	
 	{
-		public static readonly SyncObjectFunc<S, BigStandardModel> SyncBigModel = (sync, obj) => 
+		public BigStandardModel Sync(S sync, BigStandardModel? obj)
 		{
-			obj = (BigStandardModel) SyncBigModelNoMem(sync, obj);
-			SyncMem(sync, obj);
+			obj = SyncMemory(sync, obj);
+			Sync(sync, (BigStandardModelNoMem) obj);
 			return obj;
-		};
+		}
 
-		public static readonly SyncObjectFunc<S, BigStandardModelNoMem> SyncBigModelNoMem = (sync, obj) => 
+		public BigStandardModelNoMem Sync(S sync, BigStandardModelNoMem? obj)
 		{
-			obj = obj ?? new BigStandardModel(0);
-			SyncLists(sync, obj);
-			SyncBasics(sync, obj);
+			obj = SyncLists(sync, obj);
+			Sync(sync, (StandardFields) obj);
 			return obj;
-		};
+		}
 
-		public static readonly SyncObjectFunc<S, StandardFields> SyncBasics = SyncBasics_;
-		public static StandardFields SyncBasics_(S sync, StandardFields? obj)
+		public StandardFields Sync(S sync, StandardFields? obj)
 		{
 			obj = obj ?? new BigStandardModel(0);
 			obj.Bool = sync.Sync("Bool", obj.Bool);
@@ -382,28 +381,28 @@ namespace Loyc.Essentials.Tests
 			obj.BigInteger = sync.Sync("BigInteger", obj.BigInteger);
 			obj.Char = sync.Sync("Char", obj.Char);
 			obj.String = sync.Sync("String", obj.String);
-			obj.BoolNullable = sync.SyncNullable("BoolNullable", obj.BoolNullable);
-			obj.Int8Nullable = sync.SyncNullable("Int8Nullable", obj.Int8Nullable);
-			obj.Uint8Nullable = sync.SyncNullable("Uint8Nullable", obj.Uint8Nullable);
-			obj.Int16Nullable = sync.SyncNullable("Int16Nullable", obj.Int16Nullable);
-			obj.Uint16Nullable = sync.SyncNullable("Uint16Nullable", obj.Uint16Nullable);
-			obj.Int32Nullable = sync.SyncNullable("Int32Nullable", obj.Int32Nullable);
-			obj.Uint32Nullable = sync.SyncNullable("Uint32Nullable", obj.Uint32Nullable);
-			obj.Int64Nullable = sync.SyncNullable("Int64Nullable", obj.Int64Nullable);
-			obj.Uint64Nullable = sync.SyncNullable("Uint64Nullable", obj.Uint64Nullable);
-			obj.SingleNullable = sync.SyncNullable("SingleNullable", obj.SingleNullable);
-			obj.DoubleNullable = sync.SyncNullable("DoubleNullable", obj.DoubleNullable);
-			obj.DecimalNullable = sync.SyncNullable("DecimalNullable", obj.DecimalNullable);
-			obj.BigIntegerNullable = sync.SyncNullable("BigIntegerNullable", obj.BigIntegerNullable);
-			obj.CharNullable = sync.SyncNullable("CharNullable", obj.CharNullable);
-			obj.StringNullable = sync.SyncNullable("StringNullable", obj.StringNullable);
+			obj.BoolNullable = sync.Sync("BoolNullable", obj.BoolNullable);
+			obj.Int8Nullable = sync.Sync("Int8Nullable", obj.Int8Nullable);
+			obj.Uint8Nullable = sync.Sync("Uint8Nullable", obj.Uint8Nullable);
+			obj.Int16Nullable = sync.Sync("Int16Nullable", obj.Int16Nullable);
+			obj.Uint16Nullable = sync.Sync("Uint16Nullable", obj.Uint16Nullable);
+			obj.Int32Nullable = sync.Sync("Int32Nullable", obj.Int32Nullable);
+			obj.Uint32Nullable = sync.Sync("Uint32Nullable", obj.Uint32Nullable);
+			obj.Int64Nullable = sync.Sync("Int64Nullable", obj.Int64Nullable);
+			obj.Uint64Nullable = sync.Sync("Uint64Nullable", obj.Uint64Nullable);
+			obj.SingleNullable = sync.Sync("SingleNullable", obj.SingleNullable);
+			obj.DoubleNullable = sync.Sync("DoubleNullable", obj.DoubleNullable);
+			obj.DecimalNullable = sync.Sync("DecimalNullable", obj.DecimalNullable);
+			obj.BigIntegerNullable = sync.Sync("BigIntegerNullable", obj.BigIntegerNullable);
+			obj.CharNullable = sync.Sync("CharNullable", obj.CharNullable);
+			obj.StringNullable = sync.Sync("StringNullable", obj.StringNullable);
 
 			return obj;
 		}
 
-		public static BigStandardModelNoMem SyncLists(S sync, BigStandardModelNoMem obj)
+		public BigStandardModelNoMem SyncLists(S sync, BigStandardModelNoMem? obj)
 		{
-			obj = obj ?? new BigStandardModel(0);
+			obj = obj ?? new BigStandardModelNoMem(0);
 			obj.BoolArray = sync.SyncList("BoolArray", obj.BoolArray);
 			obj.Int8Array = sync.SyncList("Int8Array", obj.Int8Array);
 			obj.Uint8Array = sync.SyncList("Uint8Array", obj.Uint8Array);
@@ -438,7 +437,7 @@ namespace Loyc.Essentials.Tests
 			return obj;
 		}
 
-		public static BigStandardModel SyncMem(S sync, BigStandardModel obj)
+		public BigStandardModel SyncMemory(S sync, BigStandardModel? obj)
 		{
 			obj = obj ?? new BigStandardModel(0);
 			obj.BoolMemory = sync.SyncList("BoolMemory", obj.BoolMemory);

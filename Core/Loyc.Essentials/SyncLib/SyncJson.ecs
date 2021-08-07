@@ -43,19 +43,19 @@ namespace Loyc.SyncLib
 		public partial struct Writer
 		{
 			##unroll($T in (sbyte, byte, short, ushort, int, uint, long, ulong)) {
-				public $T Sync(Symbol? name, $T savable) {
+				public $T Sync(FieldId name, $T savable) {
 					_s.WriteProp(name == null ? "" : name.Name, (long) savable, !isUnsigned($T));
 					return savable;
 				}
 			}
 			##unroll($T in (BigInteger, float, double, decimal, char)) {
-				public $T Sync(Symbol? name, $T savable) {
+				public $T Sync(FieldId name, $T savable) {
 					_s.WriteProp(name == null ? "" : name.Name, savable);
 					return savable;
 				}
 			}
 			##unroll($T in (bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char)) {
-				public $T? SyncNullable(Symbol? name, $T? savable) {
+				public $T? Sync(FieldId name, $T? savable) {
 					string nameS = name == null ? "" : name.Name;
 					if (savable == null)
 						_s.WriteNull(nameS);
@@ -75,7 +75,7 @@ namespace Loyc.SyncLib
 				}
 			}
 			//##unroll($T in (bool, byte, sbyte, short, ushort, int, uint, long, ulong, float, double, BigInteger, char, #type<string? >)) {
-			//	public InternalList<$T> SyncListImpl(Symbol? name, ReadOnlySpan<$T> savable, SubObjectMode listMode = SubObjectMode.List)
+			//	public InternalList<$T> SyncListImpl(FieldId name, ReadOnlySpan<$T> savable, SubObjectMode listMode = SubObjectMode.List)
 			//	{
 			//		SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
 			//		return default;

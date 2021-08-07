@@ -15,7 +15,7 @@ macro standardTypeToName($type) {
 
 using Loyc.SyncLib;
 
-namespace Loyc.Essentials.Tests
+namespace Loyc.SyncLib.Tests
 {
 	define basicTypes => #splice(bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char);
 	define standardTypes => #splice(bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char, string);
@@ -127,31 +127,30 @@ namespace Loyc.Essentials.Tests
 	}
 
 
-	class BigStandardModelSync<S> where S: ISyncManager
+	struct BigStandardModelSync<S> : ISyncObject<S, StandardFields>, ISyncObject<S, BigStandardModel>, ISyncObject<S, BigStandardModelNoMem>
+		where S: ISyncManager
 	{
-		public static readonly SyncObjectFunc<S, BigStandardModel> SyncBigModel = (sync, obj) =>
+		public BigStandardModel Sync(S sync, BigStandardModel? obj)
 		{
-			obj = (BigStandardModel) SyncBigModelNoMem(sync, obj);
-			SyncMem(sync, obj);
+			obj = SyncMemory(sync, obj);
+			Sync(sync, (BigStandardModelNoMem) obj);
 			return obj;
-		};
+		}
 
-		public static readonly SyncObjectFunc<S, BigStandardModelNoMem> SyncBigModelNoMem = (sync, obj) =>
+		public BigStandardModelNoMem Sync(S sync, BigStandardModelNoMem? obj)
 		{
-			obj ??= new BigStandardModel(0);
-			SyncLists(sync, obj);
-			SyncBasics(sync, obj);
+			obj = SyncLists(sync, obj);
+			Sync(sync, (StandardFields) obj);
 			return obj;
-		};
+		}
 
-		public static readonly SyncObjectFunc<S, StandardFields> SyncBasics = SyncBasics_;
-		public static StandardFields SyncBasics_(S sync, StandardFields? obj)
+		public StandardFields Sync(S sync, StandardFields? obj)
 		{
 			obj ??= new BigStandardModel(0);
 
 			##unroll(($ListT, $Suffix, $Sync) in (
 				($T, "", Sync),
-				(#type<$T? >, "Nullable", SyncNullable),
+				(#type<$T? >, "Nullable", Sync),
 			))
 			{
 				##unroll($T in standardTypes)
@@ -164,9 +163,9 @@ namespace Loyc.Essentials.Tests
 			return obj;
 		}
 
-		public static BigStandardModelNoMem SyncLists(S sync, BigStandardModelNoMem obj)
+		public BigStandardModelNoMem SyncLists(S sync, BigStandardModelNoMem? obj)
 		{
-			obj ??= new BigStandardModel(0);
+			obj ??= new BigStandardModelNoMem(0);
 
 			##unroll(($ListT, $Suffix, $Sync) in (
 				(#type<$T[]>, "Array", SyncList),
@@ -185,7 +184,7 @@ namespace Loyc.Essentials.Tests
 			return obj;
 		}
 
-		public static BigStandardModel SyncMem(S sync, BigStandardModel obj)
+		public BigStandardModel SyncMemory(S sync, BigStandardModel? obj)
 		{
 			obj ??= new BigStandardModel(0);
 

@@ -7,9 +7,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.RegularExpressions;
 
-namespace Loyc.Essentials.Tests
+namespace Loyc.SyncLib.Tests
 {
+	/// <summary>
+	/// These tests check whether SyncJson.Writer produces output compatible with Newtonsoft.Json
+	/// </summary>
 	[TestFixture]
 	public class SyncJsonWriterTests : SyncLibWriterTests<SyncJson.Writer>
 	{
@@ -22,8 +26,14 @@ namespace Loyc.Essentials.Tests
 
 			// Newtonsoft adds .0 on float and double; we don't.
 			// Use Replace() so this string can equal ours.
-			return newtonSB.ToString().Replace(".0,", ",")
+			string json = newtonSB.ToString().Replace(".0,", ",")
 				.Replace(".0\r", "\r").Replace(".0\n", "\n").Replace(".0]", "]");
+
+			// Also, SyncJson has a nice compact representation of refs, and 
+			// we need to remove some whitespace from the Newton JSON (again,
+			// so that this string can equal the one from SyncJson).
+			json = Regex.Replace(json, @"{[ \r\n]+""\$ref"": ""([0-9]+)""[ \r\n]+}", @"{""$ref"": ""$1""}");
+			return json;
 		}
 
 		[Test]
@@ -39,8 +49,8 @@ namespace Loyc.Essentials.Tests
 			//Console.WriteLine(json);
 
 			var options = new SyncJson.Options { Indent = "  ", SpaceAfterColon = true, RootMode = 0 };
-			var syncJson = SyncJson.WriteString(obj, BigStandardModelSync<SyncJson.Writer>.SyncBasics, options);
-			var syncJson2 = SyncJson.WriteString(obj, BigStandardModelSync<ISyncManager>.SyncBasics, options);
+			var syncJson = SyncJson.WriteString(obj, new BigStandardModelSync<SyncJson.Writer>().Sync, options);
+			var syncJson2 = SyncJson.WriteString(obj, new BigStandardModelSync<SyncJson.Writer>(), options);
 
 			Assert.AreEqual(syncJson, syncJson2);
 			Assert.AreEqual(json, syncJson);
@@ -60,7 +70,7 @@ namespace Loyc.Essentials.Tests
 				RootMode = SubObjectMode.Deduplicate,
 				NewtonsoftCompatibility = true,
 			};
-			syncJson = SyncJson.WriteString(obj, BigStandardModelSync<SyncJson.Writer>.SyncBasics, options);
+			syncJson = SyncJson.WriteString(obj, new BigStandardModelSync<SyncJson.Writer>(), options);
 			Assert.AreEqual(json, syncJson);
 		}
 
@@ -80,8 +90,9 @@ namespace Loyc.Essentials.Tests
 			//Console.WriteLine(json);
 
 			var options = new SyncJson.Options { Indent = "  ", SpaceAfterColon = true, RootMode = 0 };
-			var syncJson = SyncJson.WriteString(obj, BigStandardModelSync<SyncJson.Writer>.SyncBigModelNoMem, options);
-			var syncJson2 = SyncJson.WriteString(obj, BigStandardModelSync<ISyncManager>.SyncBigModelNoMem, options);
+			var syncJson  = SyncJson.WriteString(obj, new BigStandardModelSync<SyncJson.Writer>(), options);
+			var syncJson2 = SyncJson.WriteString(obj, (SyncObjectFunc<ISyncManager, BigStandardModelNoMem>) 
+			                                          new BigStandardModelSync<ISyncManager>().Sync, options);
 
 			Assert.AreEqual(syncJson, syncJson2);
 			Assert.AreEqual(json, syncJson);
@@ -101,72 +112,40 @@ namespace Loyc.Essentials.Tests
 				RootMode = SubObjectMode.Deduplicate,
 				NewtonsoftCompatibility = true,
 			};
-			syncJson = SyncJson.WriteString(obj, BigStandardModelSync<SyncJson.Writer>.SyncBigModelNoMem, options);
+			syncJson = SyncJson.WriteString(obj, new BigStandardModelSync<SyncJson.Writer>().Sync, options);
 			Assert.AreEqual(json, syncJson);
 		}
 
-		public class Family
-		{
-			public IList<Parent>? Parents;
-			public IList<Child>? Children;
-
-			//public static Family Sync(ISyncManager sync, Family? obj)
-			//{
-			//	obj ??= new Family();
-			//	obj.Parents = sync.SyncList("Parents", obj.Parents);
-			//	obj.Children = sync.SyncList("Children", obj.Children);
-			//	return obj;
-			//}
-		}
-		public class Parent
-		{
-			public string? Name { get; set; }
-			public IList<Child>? Children { get; set; }
-		}
-		public class Child
-		{
-			public string? Name { get; set; }
-			public Parent? Father { get; set; }
-			public Parent? Mother { get; set; }
-		}
-
-		public Family NewFamily()
-		{
-			var dad = new Parent { Name = "John" };
-			var mum = new Parent { Name = "Mary" };
-
-			var kid1 = new Child { Name = "Ann", Mother = mum, Father = dad };
-			var kid2 = new Child { Name = "Barry", Mother = mum, Father = dad };
-			var kid3 = new Child { Name = "Charlie", Mother = mum, Father = dad };
-
-			var listOfKids = new List<Child> {kid1, kid2, kid3};
-			dad.Children = listOfKids;
-			mum.Children = listOfKids;
-
-			return new Family { Parents = new List<Parent> {mum, dad}, Children = listOfKids };
-		}
-
+	
 		[Test]
 		public void NewtonsoftFamilyInterop_Write()
 		{
-			var family = NewFamily();
+			var family = Family.DemoFamily();
 
-			var jsonSerializer = new JsonSerializer
-			{
-				ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-				PreserveReferencesHandling = PreserveReferencesHandling.All,
-				Formatting = Formatting.Indented,
-			};
+			for (int iteration = 1; iteration <= 2; iteration++) {
+				bool deduplicateLists = iteration == 2;
 
-			var newtonSB = new StringBuilder();
-			using (var sw = new StringWriter(newtonSB))
-				using (var jtw = new JsonTextWriter(sw))
-					jsonSerializer.Serialize(jtw, family);
+				var jsonSerializer = new JsonSerializer
+				{
+					ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+					PreserveReferencesHandling = deduplicateLists ? 
+						PreserveReferencesHandling.All : PreserveReferencesHandling.Objects,
+					Formatting = Formatting.Indented,
+				};
 
-			var result = newtonSB.ToString();
-			Console.WriteLine(result);
+				string json = ToNewtonString(jsonSerializer, family);
 
-			/* OUTPUT:
+				var options = new SyncJson.Options {
+					Indent = "  ",
+					SpaceAfterColon = true,
+					RootMode = SubObjectMode.Deduplicate
+				};
+				var syncHelper = new FamilyModel<SyncJson.Writer>((deduplicateLists ? SubObjectMode.Deduplicate : 0) | SubObjectMode.List);
+				var syncJson = SyncJson.WriteString(family, syncHelper, options);
+
+				Assert.AreEqual(json, syncJson);
+			}
+			/* Example Newtonsoft output from iteration 2:
 			{
 			  "$id": "1",
 			  "Parents": {

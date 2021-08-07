@@ -17,7 +17,7 @@ namespace Loyc.SyncLib
 	/// </remarks>
 	public interface ISyncObject<SyncManager, T>
 	{
-		T? Sync(SyncManager sync, T? x);
+		T Sync(SyncManager sync, T? value);
 	}
 }
 

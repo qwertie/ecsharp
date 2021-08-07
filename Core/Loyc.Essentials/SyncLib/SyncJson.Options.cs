@@ -99,6 +99,7 @@ namespace Loyc.SyncLib
 			/// ISyncManager.Sync. To use camelCase, set this to <see cref="SyncJson.ToCamelCase"/></summary>
 			public Func<string, string>? NameConverter { get; set; }
 
+			/// <summary>The <see cref="SubObjectMode"/> used to read/write the root object</summary>
 			public SubObjectMode RootMode { get; set; } = SubObjectMode.DynamicType;
 
 			/// <summary>Whether to accept <c>//</c> and <c>/* */</c> comments when reading JSON.</summary>
@@ -156,6 +157,10 @@ namespace Loyc.SyncLib
 			public Func<string, string, bool, Memory<byte>>? ReadStringAsObject { get; set; } = null;
 
 			public Func<string, Memory<byte>, IConvertible>? ReadObjectAsNumber { get; set; } = null;
+
+			/// <summary>Initial size of the output buffer when writing JSON (default: 1024).
+			/// This property is ignored if you provide your own buffer to <see cref="SyncJson.NewWriter"/></summary>
+			public int InitialWriteBufferSize { get; set; } = 1024;
 		}
 
 		/// <summary>Gets a copy of a string with the first character changed to lowercase.

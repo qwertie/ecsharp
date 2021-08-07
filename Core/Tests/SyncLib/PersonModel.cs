@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Loyc.Essentials.Tests
+namespace Loyc.SyncLib.Tests
 {
 	public class Person
 	{

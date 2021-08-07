@@ -15,7 +15,7 @@ namespace Loyc.SyncLib.Impl
 	/// performance by avoiding indirect calls and enabling inlining.</remarks>
 	public interface ISyncField<SyncManager, T>
 	{
-		T? Sync(ref SyncManager sync, Symbol? name, T? value);
+		T? Sync(ref SyncManager sync, FieldId name, T? value);
 	}
 	//public interface ISyncWrite<SyncManager, T>
 	//{
@@ -28,7 +28,7 @@ namespace Loyc.SyncLib.Impl
 		public SyncFieldFunc_Ref<SyncManager, T> Func { get; set; }
 		public AsISyncField(SyncFieldFunc_Ref<SyncManager, T> func) => Func = func;
 		
-		public T? Sync(ref SyncManager sync, Symbol? propName, T? x) => Func(ref sync, propName, x);
+		public T? Sync(ref SyncManager sync, FieldId name, T? x) => Func(ref sync, name, x);
 
 		public static implicit operator AsISyncField<SyncManager, T>(SyncFieldFunc_Ref<SyncManager, T> func)
 			=> new AsISyncField<SyncManager, T>(func);
