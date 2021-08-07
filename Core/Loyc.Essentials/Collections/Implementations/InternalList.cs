@@ -868,11 +868,11 @@ namespace Loyc.Collections.Impl
 
 		public struct Enumerator<T> : IEnumerator<T>
 		{
-			private Memory<T> _array;
+			private ReadOnlyMemory<T> _array;
 			private int _index;
 			private T? _current;
 
-			public Enumerator(Memory<T> array)
+			public Enumerator(ReadOnlyMemory<T> array)
 			{
 				_array = array;
 				_index = -1;
@@ -900,9 +900,9 @@ namespace Loyc.Collections.Impl
 		/// <summary>Implements <see cref="IScanner{T}"/> for <see cref="Memory{T}"/>.</summary>
 		public struct Scanner<T> : IScanner<T>
 		{
-			private Memory<T> _array;
+			private ReadOnlyMemory<T> _array;
 			private int _index;
-			public Scanner(Memory<T> array)
+			public Scanner(ReadOnlyMemory<T> array)
 			{
 				_array = array;
 				_index = 0;
