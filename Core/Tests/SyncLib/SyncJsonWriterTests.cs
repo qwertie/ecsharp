@@ -48,7 +48,7 @@ namespace Loyc.SyncLib.Tests
 			var json = ToNewtonString(jsonSerializer, obj);
 			//Console.WriteLine(json);
 
-			var options = new SyncJson.Options { Indent = "  ", SpaceAfterColon = true, RootMode = 0 };
+			var options = new SyncJson.Options { RootMode = 0, Write = { Indent = "  ", SpaceAfterColon = true } };
 			var syncJson = SyncJson.WriteString(obj, new BigStandardModelSync<SyncJson.Writer>().Sync, options);
 			var syncJson2 = SyncJson.WriteString(obj, new BigStandardModelSync<SyncJson.Writer>(), options);
 
@@ -89,7 +89,7 @@ namespace Loyc.SyncLib.Tests
 			var json = ToNewtonString(jsonSerializer, obj).Replace(@"\u001a", @"\u001A");;
 			//Console.WriteLine(json);
 
-			var options = new SyncJson.Options { Indent = "  ", SpaceAfterColon = true, RootMode = 0 };
+			var options = new SyncJson.Options { RootMode = 0, Write = { Indent = "  ", SpaceAfterColon = true } };
 			var syncJson  = SyncJson.WriteString(obj, new BigStandardModelSync<SyncJson.Writer>(), options);
 			var syncJson2 = SyncJson.WriteString(obj, (SyncObjectFunc<ISyncManager, BigStandardModelNoMem>) 
 			                                          new BigStandardModelSync<ISyncManager>().Sync, options);
@@ -136,9 +136,8 @@ namespace Loyc.SyncLib.Tests
 				string json = ToNewtonString(jsonSerializer, family);
 
 				var options = new SyncJson.Options {
-					Indent = "  ",
-					SpaceAfterColon = true,
-					RootMode = SubObjectMode.Deduplicate
+					RootMode = SubObjectMode.Deduplicate,
+					Write = { Indent = "  ", SpaceAfterColon = true }
 				};
 				var syncHelper = new FamilyModel<SyncJson.Writer>((deduplicateLists ? SubObjectMode.Deduplicate : 0) | SubObjectMode.List);
 				var syncJson = SyncJson.WriteString(family, syncHelper, options);

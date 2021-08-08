@@ -80,6 +80,41 @@ namespace Loyc.SyncLib.Tests
 			Char = (char) seed++;
 			CharNullable = (char) seed++;
 		}
+
+		public override bool Equals(object other) => other is StandardFields sf && Equals(sf);
+		public bool Equals(StandardFields other)
+		{
+			return other.Bool == Bool 
+			&& other.Int8 == Int8 
+			&& other.Uint8 == Uint8 
+			&& other.Int16 == Int16 
+			&& other.Uint16 == Uint16 
+			&& other.Int32 == Int32 
+			&& other.Uint32 == Uint32 
+			&& other.Int64 == Int64 
+			&& other.Uint64 == Uint64 
+			&& other.Single == Single 
+			&& other.Double == Double 
+			&& other.Decimal == Decimal 
+			&& other.BigInteger == BigInteger 
+			&& other.Char == Char 
+			&& other.String == String 
+			&& other.BoolNullable == BoolNullable 
+			&& other.Int8Nullable == Int8Nullable 
+			&& other.Uint8Nullable == Uint8Nullable 
+			&& other.Int16Nullable == Int16Nullable 
+			&& other.Uint16Nullable == Uint16Nullable 
+			&& other.Int32Nullable == Int32Nullable 
+			&& other.Uint32Nullable == Uint32Nullable 
+			&& other.Int64Nullable == Int64Nullable 
+			&& other.Uint64Nullable == Uint64Nullable 
+			&& other.SingleNullable == SingleNullable 
+			&& other.DoubleNullable == DoubleNullable 
+			&& other.DecimalNullable == DecimalNullable 
+			&& other.BigIntegerNullable == BigIntegerNullable 
+			&& other.CharNullable == CharNullable 
+			&& other.StringNullable == StringNullable;
+		}
 	}
 
 	/// This class uses all standard types, their nullable variants,

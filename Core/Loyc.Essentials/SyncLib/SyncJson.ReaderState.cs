@@ -113,6 +113,7 @@ namespace Loyc.SyncLib
 			{
 				_mainScanner = scanner;
 				_opt = options;
+				_optRead = options.Read;
 				TOS.IsInsideList = true;
 				TOS.ObjectStartIndex = int.MaxValue;
 			}
@@ -120,6 +121,7 @@ namespace Loyc.SyncLib
 			private IScanner<byte> _mainScanner;
 			private Memory<byte> _mainScannerBuf;
 			internal Options _opt;
+			internal Options.ForReader _optRead;
 			
 			// Top of stack (not stored in _stack)
 			private JsonFrame TOS;
@@ -136,7 +138,8 @@ namespace Loyc.SyncLib
 				if (_nameBuf.Length < len)
 					_nameBuf = new byte[Max((len | 7) + 1, 16)];
 				int i = 0;
-				WriterState.WriteStringCore(_nameBuf.AsSpan(), name, len, ref i, _opt.EscapeUnicode);
+				// TODO: don't use EscapeUnicode here
+				WriterState.WriteStringCore(_nameBuf.AsSpan(), name, len, ref i, _opt.Write.EscapeUnicode);
 				Debug.Assert(i == len);
 				return _nameBuf.AsMemory().Slice(0, len);
 			}
@@ -380,7 +383,7 @@ namespace Loyc.SyncLib
 					// Detect end-of-object
 					var cur = TOS.TokenStart;
 					if ((uint)cur.i < (uint)cur.span.Length && (cur.Byte == '}' || cur.Byte == ']')) {
-						if (expectComma && _opt.ReadStrictly)
+						if (expectComma && _optRead.Strict)
 							Error(cur.i, "Comma is not allowed before '{0}'".Localized(cur.Byte));
 						return false;
 					} else
@@ -389,7 +392,7 @@ namespace Loyc.SyncLib
 					Debug.Assert(key.Text.Length >= 2);
 					key.Text = key.Text.Slice(1, key.Text.Length - 2);
 				} else {
-					if (_opt.ReadStrictly)
+					if (_optRead.Strict)
 						Error(TOS.TokenIndex - key.Text.Length, "Expected a string");
 				}
 				TOS.CurPropKey = key;
@@ -445,7 +448,7 @@ namespace Loyc.SyncLib
 					return false;
 				} else {
 					if (type != JsonType.SimpleString) {
-						if (_opt.ReadStrictly)
+						if (_optRead.Strict)
 							Error(TOS.CurPropIndex, "String expected");
 						else if (type >= JsonType.FirstCompositeType)
 							return false;
@@ -474,7 +477,7 @@ namespace Loyc.SyncLib
 					case (byte) 'r':  ++cp_i; return '\r';
 					case (byte) 't':  ++cp_i; return '\t';
 					case (byte) '0':
-						if (_opt.ReadStrictly)
+						if (_optRead.Strict)
 							Error(stringStartIndex + cp_i, "JSON does not support the '\\0' escape sequence");
 						++cp_i;
 						return '\0';
@@ -490,7 +493,7 @@ namespace Loyc.SyncLib
 						int ch = (a << 12) | (b << 8) | (c << 4) | d;
 						return ch;
 				}
-				if (_opt.ReadStrictly)
+				if (_optRead.Strict)
 					Error(stringStartIndex + cp_i, "Invalid escape sequence '\\{0}'".Localized(curProp[cp_i]));
 				return '\\';
 			}
@@ -529,7 +532,7 @@ namespace Loyc.SyncLib
 				byte c = cur.Byte;
 				if (c == '/' && AutoRead(ref cur, 1)) {
 					if ((c = cur[1]) == '/') {
-						if (!_opt.AllowComments)
+						if (!_optRead.AllowComments)
 							Error(cur.i, "JSON does not support comments");
 							
 						// Skip single-line comment
@@ -540,7 +543,7 @@ namespace Loyc.SyncLib
 								break;
 						}
 					} else if (c == '*') {
-						if (!_opt.AllowComments)
+						if (!_optRead.AllowComments)
 							Error(cur.i, "JSON does not support comments");
 
 						// Skip multi-line comment
@@ -686,13 +689,13 @@ namespace Loyc.SyncLib
 							var type = JsonType.PlainInteger;
 							// Read initial digits
 							b = cur.Byte;
-							if (b == '0' && _opt.ReadStrictly) {
+							if (b == '0' && _optRead.Strict) {
 								cur.i++;
 							} else if (b >= '0' && b <= '9') {
 								do
 									cur.i++;
 								while (AutoRead(ref cur) && cur.Byte >= '0' && cur.Byte <= '9');
-							} else if (b != '.' || _opt.ReadStrictly) {
+							} else if (b != '.' || _optRead.Strict) {
 								Error(cur.i, "Expected '0.' instead of '.'");
 							}
 
@@ -703,7 +706,7 @@ namespace Loyc.SyncLib
 								int old_i = cur.i;
 								while (AutoRead(ref cur) && cur.Byte >= '0' && cur.Byte <= '9')
 									cur.i++;
-								if (old_i == cur.i && _opt.ReadStrictly)
+								if (old_i == cur.i && _optRead.Strict)
 									Error(cur.i, "Expected digits after '.'");
 							}
 

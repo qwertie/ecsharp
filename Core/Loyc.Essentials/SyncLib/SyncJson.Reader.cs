@@ -1,4 +1,5 @@
 using Loyc.Collections;
+using Loyc.Collections.Impl;
 using Loyc.SyncLib.Impl;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,13 @@ namespace Loyc.SyncLib
 	{
 		public static SyncJson.Reader NewReader(IScanner<byte> input, Options? options = null)
 			=> new Reader(new ReaderState(input ?? throw new ArgumentNullException(nameof(input)), options ?? _defaultOptions));
+
+		internal static T Read<T>(ReadOnlyMemory<byte> data, SyncObjectFunc<Reader, T> sync, Options? options = null)
+		{
+			options ??= _defaultOptions;
+			Reader reader = NewReader(new InternalList.Scanner<byte>(data), options);
+			return SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
+		}
 
 		public partial struct Reader : ISyncManager
 		{

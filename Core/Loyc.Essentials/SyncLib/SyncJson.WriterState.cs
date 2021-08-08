@@ -42,6 +42,7 @@ namespace Loyc.SyncLib
 		internal partial class WriterState : WriterStateBase
 		{
 			internal Options _opt;
+			internal Options.ForWriter _optWrite;
 			internal bool _isInsideList = true;
 			internal InternalList<SubObjectMode> _stack = InternalList<SubObjectMode>.Empty;
 			internal byte[] _indent;
@@ -51,8 +52,9 @@ namespace Loyc.SyncLib
 			
 			public WriterState(IBufferWriter<byte> output, Options options) : base(output) {
 				_opt = options;
-				_indent = Encoding.UTF8.GetBytes(_opt.Indent);
-				_newline = Encoding.UTF8.GetBytes(_opt.Newline);
+				_optWrite = _opt.Write;
+				_indent = Encoding.UTF8.GetBytes(_optWrite.Indent);
+				_newline = Encoding.UTF8.GetBytes(_optWrite.Newline);
 			}
 
 			// Writes the pending comma/newline, if any, and gets a Span for writing.
@@ -116,7 +118,7 @@ namespace Loyc.SyncLib
 					buf[_i++] = (byte) 'f';
 					buf[_i++] = (byte) '"';
 					buf[_i++] = (byte) ':';
-					if (_opt.SpaceAfterColon)
+					if (_optWrite.SpaceAfterColon)
 						buf[_i++] = (byte) ' ';
 					buf[_i++] = (byte) '"';
 					WriteNumber(buf, id, true);
@@ -126,7 +128,7 @@ namespace Loyc.SyncLib
 					buf[_i++] = (byte) 'r';
 					buf[_i++] = (byte) '"';
 					buf[_i++] = (byte) ':';
-					if (_opt.SpaceAfterColon)
+					if (_optWrite.SpaceAfterColon)
 						buf[_i++] = (byte) ' ';
 					WriteNumber(buf, id, true);
 				}
@@ -211,7 +213,7 @@ namespace Loyc.SyncLib
 			{
 				if (_newline.Length != 0 && _compactMode == 0) {
 					Blurt(buf, _newline);
-					for (int i = 0, count = System.Math.Min(_stack.Count, _opt.MaxIndentDepth); i < count; i++)
+					for (int i = 0, count = System.Math.Min(_stack.Count, _optWrite.MaxIndentDepth); i < count; i++)
 						Blurt(buf, _indent);
 				}
 			}
@@ -226,9 +228,9 @@ namespace Loyc.SyncLib
 				if (value == default)
 					WriteNull(propName);
 				else {
-					int valueLen = GetLengthAsBytes(value, _opt.EscapeUnicode);
+					int valueLen = GetLengthAsBytes(value, _optWrite.EscapeUnicode);
 					Span<byte> buf = BeginProp(propName, valueLen);
-					WriteStringCore(buf, value, valueLen, ref _i, _opt.EscapeUnicode);
+					WriteStringCore(buf, value, valueLen, ref _i, _optWrite.EscapeUnicode);
 					_pendingComma = (byte)',';
 				}
 			}
@@ -318,7 +320,7 @@ namespace Loyc.SyncLib
 						propName = _opt.NameConverter(propName ?? "");
 					buf = WriteString(propName.AsSpan(), 2 + reserveExtra);
 					buf[_i++] = (byte) ':';
-					if (_opt.SpaceAfterColon && _compactMode == 0)
+					if (_optWrite.SpaceAfterColon && _compactMode == 0)
 						buf[_i++] = (byte) ' ';
 				}
 				return buf;
@@ -363,9 +365,9 @@ namespace Loyc.SyncLib
 			// calls GetNextBuf and writes a quoted string into the returned buffer
 			Span<byte> WriteString(ReadOnlySpan<char> s, int reserveExtra = 0)
 			{
-				int s_len = GetLengthAsBytes(s, _opt.EscapeUnicode);
+				int s_len = GetLengthAsBytes(s, _optWrite.EscapeUnicode);
 				Span<byte> buf = GetNextBuf(s_len + reserveExtra);
-				WriteStringCore(buf, s, s_len, ref _i, _opt.EscapeUnicode);
+				WriteStringCore(buf, s, s_len, ref _i, _optWrite.EscapeUnicode);
 				return buf;
 			}
 

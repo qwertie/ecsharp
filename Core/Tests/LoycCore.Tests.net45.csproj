@@ -174,9 +174,14 @@
     <Compile Include="Collections\MapTests.cs" />
     <Compile Include="Collections\SetTests.cs" />
     <Compile Include="Collections\ALists\SparseAListTests.cs" />
-    <Compile Include="SyncLib\BigStandardModel.out.cs" />
+    <Compile Include="SyncLib\BigStandardModel.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>BigStandardModel.ecs</DependentUpon>
+    </Compile>
     <Compile Include="SyncLib\FamilyModel.cs" />
     <Compile Include="SyncLib\PersonModel.cs" />
+    <Compile Include="SyncLib\SyncJsonTests.cs" />
     <Compile Include="SyncLib\SyncJsonWriterTests.cs" />
     <Compile Include="SyncLib\SyncLibTests.cs" />
     <Compile Include="Syntax\StandardLiteralHandlersTests.cs" />
@@ -255,7 +260,10 @@
     <None Include="app.config" />
     <None Include="OpenSourceKey.snk" />
     <None Include="packages.config" />
-    <None Include="SyncLib\BigStandardModel.ecs" />
+    <None Include="SyncLib\BigStandardModel.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>BigStandardModel.out.cs</LastGenOutput>
+    </None>
     <None Include="Syntax\LexerSourceTest.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>LexerSourceTest.out.cs</LastGenOutput>

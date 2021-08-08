@@ -24,26 +24,26 @@ namespace Loyc.SyncLib
 		public static ReadOnlyMemory<byte> Write<T>(T value, SyncObjectFunc<Writer, T> sync, Options? options = null)
 		{
 			options ??= _defaultOptions;
-			var output = new ArrayBufferWriter<byte>(options.InitialWriteBufferSize);
-			Writer w = NewWriter(output, options);
-			SyncManagerExt.Sync(w, null, value, sync, options.RootMode);
+			var output = new ArrayBufferWriter<byte>(options.Write.InitialBufferSize);
+			Writer writer = NewWriter(output, options);
+			SyncManagerExt.Sync(writer, null, value, sync, options.RootMode);
 			return output.WrittenMemory;
 		}
 		public static ReadOnlyMemory<byte> Write<T>(T value, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 		{
 			options ??= _defaultOptions;
-			var output = new ArrayBufferWriter<byte>(options.InitialWriteBufferSize);
-			Writer w = NewWriter(output, options);
-			SyncManagerExt.Sync(w, null, value, sync, options.RootMode);
+			var output = new ArrayBufferWriter<byte>(options.Write.InitialBufferSize);
+			Writer writer = NewWriter(output, options);
+			SyncManagerExt.Sync(writer, null, value, sync, options.RootMode);
 			return output.WrittenMemory;
 		}
 		public static ReadOnlyMemory<byte> Write<T, SyncObject>(T value, SyncObject sync, Options? options = null)
 			where SyncObject : ISyncObject<SyncJson.Writer, T>
 		{
 			options ??= _defaultOptions;
-			var output = new ArrayBufferWriter<byte>(options.InitialWriteBufferSize);
-			Writer w = NewWriter(output, options);
-			SyncManagerExt.Sync(w, null, value, sync, options.RootMode);
+			var output = new ArrayBufferWriter<byte>(options.Write.InitialBufferSize);
+			Writer writer = NewWriter(output, options);
+			SyncManagerExt.Sync(writer, null, value, sync, options.RootMode);
 			return output.WrittenMemory;
 		}
 		public static string WriteString<T>(T value, SyncObjectFunc<Writer, T> sync, Options? options = null)
@@ -174,7 +174,7 @@ namespace Loyc.SyncLib
 					return default;
 				} else {
 					// TODO: support deduplication
-					if (_s._opt.WriteCharListAsString ?? !_s._opt.NewtonsoftCompatibility) {
+					if (_s._opt.Write.CharListAsString ?? !_s._opt.NewtonsoftCompatibility) {
 						// Write character list as string
 						var empty = default(Memory<char>);
 						var chars = scanner.Read(0, int.MaxValue, ref empty);
