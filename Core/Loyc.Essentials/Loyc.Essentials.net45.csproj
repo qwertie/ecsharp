@@ -132,6 +132,7 @@
     </Compile>
     <Compile Include="Collections\Adapters\DictionaryAsSink.cs" />
     <Compile Include="Collections\Adapters\ListAsSink.cs" />
+    <Compile Include="Collections\Adapters\ReadOnlyArraySlice.cs" />
     <Compile Include="Collections\Adapters\ReadOnlyListAsListSource.cs" />
     <Compile Include="Collections\Adapters\ROLSlice.cs" />
     <Compile Include="Collections\Adapters\ScannableEnumerable.cs" />
@@ -225,6 +226,7 @@
     <Compile Include="Collections\Implementations\InternalList.cs" />
     <Compile Include="Collections\Implementations\WeakKeyComparer.cs" />
     <Compile Include="Collections\Implementations\WeakKeyDictionary.cs" />
+    <Compile Include="SyncLib\FieldId.cs" />
     <Compile Include="SyncLib\Impl\IListBuilder.cs" />
     <Compile Include="SyncLib\Impl\ISyncField.cs" />
     <Compile Include="SyncLib\Impl\ISyncObject.cs" />
@@ -232,6 +234,8 @@
     <Compile Include="SyncLib\Impl\ListSaver.cs" />
     <Compile Include="SyncLib\Impl\ObjectSyncher.cs" />
     <Compile Include="SyncLib\Impl\ObjectTable.cs" />
+    <Compile Include="SyncLib\Impl\SyncEnum.cs" />
+    <Compile Include="SyncLib\Impl\SyncList.cs" />
     <Compile Include="SyncLib\Impl\SyncPrimitive.out.cs" />
     <Compile Include="SyncLib\ISyncManager.out.cs">
       <AutoGen>True</AutoGen>
@@ -251,6 +255,7 @@
     <Compile Include="SyncLib\SyncJson.WriterState.cs" />
     <Compile Include="SyncLib\SyncManagerExt.cs" />
     <Compile Include="SyncLib\SyncMode.cs" />
+    <Compile Include="SyncLib\SyncObjectList.cs" />
     <Compile Include="SyncLib\SyncType.cs" />
     <Compile Include="SyncLib\TypeStuff.cs" />
     <Compile Include="Utilities\ByteArrayInString.cs" />

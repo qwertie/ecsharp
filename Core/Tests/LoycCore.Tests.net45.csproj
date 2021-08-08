@@ -156,14 +156,6 @@
     <Compile Include="Essentials\LocalizeTests.cs" />
     <Compile Include="Essentials\ScannableTests.cs" />
     <Compile Include="Essentials\SliceTests.cs" />
-    <Compile Include="Essentials\SyncJsonTests.cs" />
-    <Compile Include="Essentials\SyncLibBigStandardModel.out.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SyncLibBigStandardModel.ecs</DependentUpon>
-    </Compile>
-    <Compile Include="Essentials\SyncLibTestModels.cs" />
-    <Compile Include="Essentials\SyncLibTests.cs" />
     <Compile Include="Math\MathExTests.cs" />
     <Compile Include="Essentials\PrintHelpersTests.cs" />
     <Compile Include="Essentials\SymbolTests.cs" />
@@ -182,6 +174,11 @@
     <Compile Include="Collections\MapTests.cs" />
     <Compile Include="Collections\SetTests.cs" />
     <Compile Include="Collections\ALists\SparseAListTests.cs" />
+    <Compile Include="SyncLib\BigStandardModel.out.cs" />
+    <Compile Include="SyncLib\FamilyModel.cs" />
+    <Compile Include="SyncLib\PersonModel.cs" />
+    <Compile Include="SyncLib\SyncJsonWriterTests.cs" />
+    <Compile Include="SyncLib\SyncLibTests.cs" />
     <Compile Include="Syntax\StandardLiteralHandlersTests.cs" />
     <Compile Include="Syntax\IndentTokenGeneratorTests.cs" />
     <Compile Include="Syntax\IndexPositionMapperTests.cs" />
@@ -256,12 +253,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Essentials\SyncLibBigStandardModel.ecs">
-      <Generator>LeMP</Generator>
-      <LastGenOutput>SyncLibBigStandardModel.out.cs</LastGenOutput>
-    </None>
     <None Include="OpenSourceKey.snk" />
     <None Include="packages.config" />
+    <None Include="SyncLib\BigStandardModel.ecs" />
     <None Include="Syntax\LexerSourceTest.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>LexerSourceTest.out.cs</LastGenOutput>

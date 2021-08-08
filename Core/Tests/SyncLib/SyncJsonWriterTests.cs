@@ -15,7 +15,7 @@ namespace Loyc.SyncLib.Tests
 	/// These tests check whether SyncJson.Writer produces output compatible with Newtonsoft.Json
 	/// </summary>
 	[TestFixture]
-	public class SyncJsonWriterTests : SyncLibWriterTests<SyncJson.Writer>
+	public class SyncJsonWriterTests
 	{
 		static string ToNewtonString<T>(JsonSerializer jsonSerializer, T obj)
 		{

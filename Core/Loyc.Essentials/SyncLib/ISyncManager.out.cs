@@ -257,24 +257,24 @@ namespace Loyc.SyncLib
 		/// <summary>This method is used by Sync() extension methods to read 
 		///   or write an array. Users don't need to call it.</summary>
 		/// <remarks>Full documentation is located in source code (ISyncManager.ecs)</remarks>
-		_numfn(@_apos_quest <List>, @_aposof(NameWithType(SyncList, bool, Impl), Scanner, List, ListBuilder), 
-		_num(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+		List? SyncListBoolImpl<Scanner, List, ListBuilder>
+		(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
 		
-		);
+		 where Scanner: IScanner<bool> where ListBuilder: IListBuilder<List, bool>;
 		/// <summary>This method is used by Sync() extension methods to read 
 		///   or write an array. Users don't need to call it.</summary>
 		/// <remarks>Full documentation is located in source code (ISyncManager.ecs)</remarks>
-		_numfn(@_apos_quest <List>, @_aposof(NameWithType(SyncList, char, Impl), Scanner, List, ListBuilder), 
-		_num(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+		List? SyncListCharImpl<Scanner, List, ListBuilder>
+		(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
 		
-		);
+		 where Scanner: IScanner<char> where ListBuilder: IListBuilder<List, char>;
 		/// <summary>This method is used by Sync() extension methods to read 
 		///   or write an array. Users don't need to call it.</summary>
 		/// <remarks>Full documentation is located in source code (ISyncManager.ecs)</remarks>
-		_numfn(@_apos_quest <List>, @_aposof(NameWithType(SyncList, byte, Impl), Scanner, List, ListBuilder), 
-		_num(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+		List? SyncListByteImpl<Scanner, List, ListBuilder>
+		(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
 		
-		);
+		 where Scanner: IScanner<byte> where ListBuilder: IListBuilder<List, byte>;
 
 		/// <summary>Sets the "current object" reference. This method must be called 
 		///   when deserializing object graphs with cycles (see remarks).</summary>
@@ -410,7 +410,7 @@ namespace Loyc.SyncLib
 		//
 		// TODO: support other list types with byte/char/bool
 		//
-		//NameWithType
+		// SyncList methods for Bool
 		public static List<bool>? SyncList<SyncManager>(this SyncManager sync, 
 		  FieldId name, List<bool>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
@@ -418,7 +418,7 @@ namespace Loyc.SyncLib
 			ScannableEnumerable<bool>.Scanner<List<bool>.Enumerator> scanner = default;
 			if (savable != null)
 				scanner = new ScannableEnumerable<bool>.Scanner<List<bool>.Enumerator>(savable.GetEnumerator());
-			return sync.(@_aposof(NameWithType(SyncList, bool, Impl), ScannableEnumerable<bool>.Scanner<List<bool>.Enumerator>, List<bool>, ListBuilder<bool>))(
+			return sync.SyncListBoolImpl<ScannableEnumerable<bool>.Scanner<List<bool>.Enumerator>, List<bool>, ListBuilder<bool>>(
 			name, scanner, savable, new ListBuilder<bool>(), listMode, tupleLength);
 		}
 		public static bool[]? SyncList<SyncManager>(this SyncManager sync, 
@@ -426,7 +426,7 @@ namespace Loyc.SyncLib
 		
 		{
 			var scanner = new InternalList.Scanner<bool>(savable.AsMemory());
-			return sync.(@_aposof(NameWithType(SyncList, bool, Impl), InternalList.Scanner<bool>, @_apos_lsqb_rsqb <bool>, ArrayBuilder<bool>))(
+			return sync.SyncListBoolImpl<InternalList.Scanner<bool>, bool[], ArrayBuilder<bool>>(
 			name, scanner, savable, new ArrayBuilder<bool>(), listMode, tupleLength);
 		}
 		public static Memory<bool> SyncList<SyncManager>(this SyncManager sync, 
@@ -436,7 +436,7 @@ namespace Loyc.SyncLib
 			if ((listMode & SubObjectMode.Deduplicate) != 0)
 				throw new ArgumentException("SubObjectMode.Deduplicate is incompatible with Memory<T>");
 			var scanner = new InternalList.Scanner<bool>(savable);
-			return sync.(@_aposof(NameWithType(SyncList, bool, Impl), InternalList.Scanner<bool>, Memory<bool>, MemoryBuilder<bool>))(
+			return sync.SyncListBoolImpl<InternalList.Scanner<bool>, Memory<bool>, MemoryBuilder<bool>>(
 			name, scanner, null, new MemoryBuilder<bool>(), listMode | SubObjectMode.NotNull, tupleLength);
 		}
 		// Produces an error: CS0111: Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types
@@ -509,7 +509,7 @@ namespace Loyc.SyncLib
 		//
 		// TODO: support other list types with byte/char/bool
 		//
-		//NameWithType
+		// SyncList methods for Byte
 		public static List<byte>? SyncList<SyncManager>(this SyncManager sync, 
 		  FieldId name, List<byte>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
@@ -517,7 +517,7 @@ namespace Loyc.SyncLib
 			ScannableEnumerable<byte>.Scanner<List<byte>.Enumerator> scanner = default;
 			if (savable != null)
 				scanner = new ScannableEnumerable<byte>.Scanner<List<byte>.Enumerator>(savable.GetEnumerator());
-			return sync.(@_aposof(NameWithType(SyncList, byte, Impl), ScannableEnumerable<byte>.Scanner<List<byte>.Enumerator>, List<byte>, ListBuilder<byte>))(
+			return sync.SyncListByteImpl<ScannableEnumerable<byte>.Scanner<List<byte>.Enumerator>, List<byte>, ListBuilder<byte>>(
 			name, scanner, savable, new ListBuilder<byte>(), listMode, tupleLength);
 		}
 		public static byte[]? SyncList<SyncManager>(this SyncManager sync, 
@@ -525,7 +525,7 @@ namespace Loyc.SyncLib
 		
 		{
 			var scanner = new InternalList.Scanner<byte>(savable.AsMemory());
-			return sync.(@_aposof(NameWithType(SyncList, byte, Impl), InternalList.Scanner<byte>, @_apos_lsqb_rsqb <byte>, ArrayBuilder<byte>))(
+			return sync.SyncListByteImpl<InternalList.Scanner<byte>, byte[], ArrayBuilder<byte>>(
 			name, scanner, savable, new ArrayBuilder<byte>(), listMode, tupleLength);
 		}
 		public static Memory<byte> SyncList<SyncManager>(this SyncManager sync, 
@@ -535,7 +535,7 @@ namespace Loyc.SyncLib
 			if ((listMode & SubObjectMode.Deduplicate) != 0)
 				throw new ArgumentException("SubObjectMode.Deduplicate is incompatible with Memory<T>");
 			var scanner = new InternalList.Scanner<byte>(savable);
-			return sync.(@_aposof(NameWithType(SyncList, byte, Impl), InternalList.Scanner<byte>, Memory<byte>, MemoryBuilder<byte>))(
+			return sync.SyncListByteImpl<InternalList.Scanner<byte>, Memory<byte>, MemoryBuilder<byte>>(
 			name, scanner, null, new MemoryBuilder<byte>(), listMode | SubObjectMode.NotNull, tupleLength);
 		}
 		// Produces an error: CS0111: Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types
@@ -1112,7 +1112,7 @@ namespace Loyc.SyncLib
 		//
 		// TODO: support other list types with byte/char/bool
 		//
-		//NameWithType
+		// SyncList methods for Char
 		public static List<char>? SyncList<SyncManager>(this SyncManager sync, 
 		  FieldId name, List<char>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
@@ -1120,7 +1120,7 @@ namespace Loyc.SyncLib
 			ScannableEnumerable<char>.Scanner<List<char>.Enumerator> scanner = default;
 			if (savable != null)
 				scanner = new ScannableEnumerable<char>.Scanner<List<char>.Enumerator>(savable.GetEnumerator());
-			return sync.(@_aposof(NameWithType(SyncList, char, Impl), ScannableEnumerable<char>.Scanner<List<char>.Enumerator>, List<char>, ListBuilder<char>))(
+			return sync.SyncListCharImpl<ScannableEnumerable<char>.Scanner<List<char>.Enumerator>, List<char>, ListBuilder<char>>(
 			name, scanner, savable, new ListBuilder<char>(), listMode, tupleLength);
 		}
 		public static char[]? SyncList<SyncManager>(this SyncManager sync, 
@@ -1128,7 +1128,7 @@ namespace Loyc.SyncLib
 		
 		{
 			var scanner = new InternalList.Scanner<char>(savable.AsMemory());
-			return sync.(@_aposof(NameWithType(SyncList, char, Impl), InternalList.Scanner<char>, @_apos_lsqb_rsqb <char>, ArrayBuilder<char>))(
+			return sync.SyncListCharImpl<InternalList.Scanner<char>, char[], ArrayBuilder<char>>(
 			name, scanner, savable, new ArrayBuilder<char>(), listMode, tupleLength);
 		}
 		public static Memory<char> SyncList<SyncManager>(this SyncManager sync, 
@@ -1138,7 +1138,7 @@ namespace Loyc.SyncLib
 			if ((listMode & SubObjectMode.Deduplicate) != 0)
 				throw new ArgumentException("SubObjectMode.Deduplicate is incompatible with Memory<T>");
 			var scanner = new InternalList.Scanner<char>(savable);
-			return sync.(@_aposof(NameWithType(SyncList, char, Impl), InternalList.Scanner<char>, Memory<char>, MemoryBuilder<char>))(
+			return sync.SyncListCharImpl<InternalList.Scanner<char>, Memory<char>, MemoryBuilder<char>>(
 			name, scanner, null, new MemoryBuilder<char>(), listMode | SubObjectMode.NotNull, tupleLength);
 		}
 		// Produces an error: CS0111: Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types
@@ -1212,14 +1212,14 @@ namespace Loyc.SyncLib
 	/// <summary>The methods in this class belong in <see cref="SyncManagerExt"/> but they 
 	/// must be put in a different class to avoid C# compiler error CS0111, 
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
-	[_numpublic, _numstatic, _numpartial] _numclass(NameWithType(SyncManagerExt, bool), _num(), {
+	public static partial class SyncManagerExtBool {
 		public static List? SyncList<SyncManager, List>(this SyncManager sync, 
 		  FieldId name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
 		
 		 where SyncManager: ISyncManager where List: ICollection<bool>, IReadOnlyCollection<bool>
 		{
 			var scanner = savable == null ? Empty<bool>.Scanner : Loyc.Collections.MutableListExtensionMethods.LinqToLists.ToArray(savable).Slice(0).Scan();
-			return sync.(NameWithType(SyncList, bool, Impl))(name, scanner, savable, new CollectionBuilder<List, bool>(alloc), listMode, tupleLength);
+			return sync.SyncListBoolImpl(name, scanner, savable, new CollectionBuilder<List, bool>(alloc), listMode, tupleLength);
 		}
 
 		public static List? SyncList<SyncManager, List>(this SyncManager sync, 
@@ -1227,11 +1227,11 @@ namespace Loyc.SyncLib
 		
 		 where SyncManager: ISyncManager where List: ICollection<bool>, IReadOnlyCollection<bool> => 
 		  SyncList(sync, (FieldId) name, savable, alloc, listMode, tupleLength);
-	});
+	}
 	/// <summary>The methods in this class belong in <see cref="SyncManagerExt"/> but they 
 	/// must be put in a different class to avoid C# compiler error CS0111, 
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
-	[_numpublic, _numstatic, _numpartial] _numclass(NameWithType(SyncManagerExt, sbyte), _num(), {
+	public static partial class SyncManagerExtSByte {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
 		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
@@ -1239,18 +1239,18 @@ namespace Loyc.SyncLib
 		 where SM: ISyncManager where Coll: ICollection<sbyte> where SyncField: ISyncField<SM, sbyte> => 
 		  
 		  new SyncList<SM, sbyte, Coll, SyncField>(syncItem, listMode, tupleLength, alloc).Sync(ref sync, name, savable);
-	});
+	}
 	/// <summary>The methods in this class belong in <see cref="SyncManagerExt"/> but they 
 	/// must be put in a different class to avoid C# compiler error CS0111, 
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
-	[_numpublic, _numstatic, _numpartial] _numclass(NameWithType(SyncManagerExt, byte), _num(), {
+	public static partial class SyncManagerExtByte {
 		public static List? SyncList<SyncManager, List>(this SyncManager sync, 
 		  FieldId name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
 		
 		 where SyncManager: ISyncManager where List: ICollection<byte>, IReadOnlyCollection<byte>
 		{
 			var scanner = savable == null ? Empty<byte>.Scanner : Loyc.Collections.MutableListExtensionMethods.LinqToLists.ToArray(savable).Slice(0).Scan();
-			return sync.(NameWithType(SyncList, byte, Impl))(name, scanner, savable, new CollectionBuilder<List, byte>(alloc), listMode, tupleLength);
+			return sync.SyncListByteImpl(name, scanner, savable, new CollectionBuilder<List, byte>(alloc), listMode, tupleLength);
 		}
 
 		public static List? SyncList<SyncManager, List>(this SyncManager sync, 
@@ -1258,11 +1258,11 @@ namespace Loyc.SyncLib
 		
 		 where SyncManager: ISyncManager where List: ICollection<byte>, IReadOnlyCollection<byte> => 
 		  SyncList(sync, (FieldId) name, savable, alloc, listMode, tupleLength);
-	});
+	}
 	/// <summary>The methods in this class belong in <see cref="SyncManagerExt"/> but they 
 	/// must be put in a different class to avoid C# compiler error CS0111, 
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
-	[_numpublic, _numstatic, _numpartial] _numclass(NameWithType(SyncManagerExt, short), _num(), {
+	public static partial class SyncManagerExtShort {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
 		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
@@ -1270,11 +1270,11 @@ namespace Loyc.SyncLib
 		 where SM: ISyncManager where Coll: ICollection<short> where SyncField: ISyncField<SM, short> => 
 		  
 		  new SyncList<SM, short, Coll, SyncField>(syncItem, listMode, tupleLength, alloc).Sync(ref sync, name, savable);
-	});
+	}
 	/// <summary>The methods in this class belong in <see cref="SyncManagerExt"/> but they 
 	/// must be put in a different class to avoid C# compiler error CS0111, 
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
-	[_numpublic, _numstatic, _numpartial] _numclass(NameWithType(SyncManagerExt, ushort), _num(), {
+	public static partial class SyncManagerExtUShort {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
 		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
@@ -1282,11 +1282,11 @@ namespace Loyc.SyncLib
 		 where SM: ISyncManager where Coll: ICollection<ushort> where SyncField: ISyncField<SM, ushort> => 
 		  
 		  new SyncList<SM, ushort, Coll, SyncField>(syncItem, listMode, tupleLength, alloc).Sync(ref sync, name, savable);
-	});
+	}
 	/// <summary>The methods in this class belong in <see cref="SyncManagerExt"/> but they 
 	/// must be put in a different class to avoid C# compiler error CS0111, 
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
-	[_numpublic, _numstatic, _numpartial] _numclass(NameWithType(SyncManagerExt, int), _num(), {
+	public static partial class SyncManagerExtInt {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
 		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
@@ -1294,11 +1294,11 @@ namespace Loyc.SyncLib
 		 where SM: ISyncManager where Coll: ICollection<int> where SyncField: ISyncField<SM, int> => 
 		  
 		  new SyncList<SM, int, Coll, SyncField>(syncItem, listMode, tupleLength, alloc).Sync(ref sync, name, savable);
-	});
+	}
 	/// <summary>The methods in this class belong in <see cref="SyncManagerExt"/> but they 
 	/// must be put in a different class to avoid C# compiler error CS0111, 
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
-	[_numpublic, _numstatic, _numpartial] _numclass(NameWithType(SyncManagerExt, uint), _num(), {
+	public static partial class SyncManagerExtUInt {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
 		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
@@ -1306,11 +1306,11 @@ namespace Loyc.SyncLib
 		 where SM: ISyncManager where Coll: ICollection<uint> where SyncField: ISyncField<SM, uint> => 
 		  
 		  new SyncList<SM, uint, Coll, SyncField>(syncItem, listMode, tupleLength, alloc).Sync(ref sync, name, savable);
-	});
+	}
 	/// <summary>The methods in this class belong in <see cref="SyncManagerExt"/> but they 
 	/// must be put in a different class to avoid C# compiler error CS0111, 
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
-	[_numpublic, _numstatic, _numpartial] _numclass(NameWithType(SyncManagerExt, long), _num(), {
+	public static partial class SyncManagerExtLong {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
 		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
@@ -1318,11 +1318,11 @@ namespace Loyc.SyncLib
 		 where SM: ISyncManager where Coll: ICollection<long> where SyncField: ISyncField<SM, long> => 
 		  
 		  new SyncList<SM, long, Coll, SyncField>(syncItem, listMode, tupleLength, alloc).Sync(ref sync, name, savable);
-	});
+	}
 	/// <summary>The methods in this class belong in <see cref="SyncManagerExt"/> but they 
 	/// must be put in a different class to avoid C# compiler error CS0111, 
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
-	[_numpublic, _numstatic, _numpartial] _numclass(NameWithType(SyncManagerExt, ulong), _num(), {
+	public static partial class SyncManagerExtULong {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
 		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
@@ -1330,11 +1330,11 @@ namespace Loyc.SyncLib
 		 where SM: ISyncManager where Coll: ICollection<ulong> where SyncField: ISyncField<SM, ulong> => 
 		  
 		  new SyncList<SM, ulong, Coll, SyncField>(syncItem, listMode, tupleLength, alloc).Sync(ref sync, name, savable);
-	});
+	}
 	/// <summary>The methods in this class belong in <see cref="SyncManagerExt"/> but they 
 	/// must be put in a different class to avoid C# compiler error CS0111, 
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
-	[_numpublic, _numstatic, _numpartial] _numclass(NameWithType(SyncManagerExt, float), _num(), {
+	public static partial class SyncManagerExtFloat {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
 		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
@@ -1342,11 +1342,11 @@ namespace Loyc.SyncLib
 		 where SM: ISyncManager where Coll: ICollection<float> where SyncField: ISyncField<SM, float> => 
 		  
 		  new SyncList<SM, float, Coll, SyncField>(syncItem, listMode, tupleLength, alloc).Sync(ref sync, name, savable);
-	});
+	}
 	/// <summary>The methods in this class belong in <see cref="SyncManagerExt"/> but they 
 	/// must be put in a different class to avoid C# compiler error CS0111, 
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
-	[_numpublic, _numstatic, _numpartial] _numclass(NameWithType(SyncManagerExt, double), _num(), {
+	public static partial class SyncManagerExtDouble {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
 		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
@@ -1354,11 +1354,11 @@ namespace Loyc.SyncLib
 		 where SM: ISyncManager where Coll: ICollection<double> where SyncField: ISyncField<SM, double> => 
 		  
 		  new SyncList<SM, double, Coll, SyncField>(syncItem, listMode, tupleLength, alloc).Sync(ref sync, name, savable);
-	});
+	}
 	/// <summary>The methods in this class belong in <see cref="SyncManagerExt"/> but they 
 	/// must be put in a different class to avoid C# compiler error CS0111, 
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
-	[_numpublic, _numstatic, _numpartial] _numclass(NameWithType(SyncManagerExt, decimal), _num(), {
+	public static partial class SyncManagerExtDecimal {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
 		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
@@ -1366,11 +1366,11 @@ namespace Loyc.SyncLib
 		 where SM: ISyncManager where Coll: ICollection<decimal> where SyncField: ISyncField<SM, decimal> => 
 		  
 		  new SyncList<SM, decimal, Coll, SyncField>(syncItem, listMode, tupleLength, alloc).Sync(ref sync, name, savable);
-	});
+	}
 	/// <summary>The methods in this class belong in <see cref="SyncManagerExt"/> but they 
 	/// must be put in a different class to avoid C# compiler error CS0111, 
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
-	[_numpublic, _numstatic, _numpartial] _numclass(NameWithType(SyncManagerExt, BigInteger), _num(), {
+	public static partial class SyncManagerExtBigInteger {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
 		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
@@ -1378,18 +1378,18 @@ namespace Loyc.SyncLib
 		 where SM: ISyncManager where Coll: ICollection<BigInteger> where SyncField: ISyncField<SM, BigInteger> => 
 		  
 		  new SyncList<SM, BigInteger, Coll, SyncField>(syncItem, listMode, tupleLength, alloc).Sync(ref sync, name, savable);
-	});
+	}
 	/// <summary>The methods in this class belong in <see cref="SyncManagerExt"/> but they 
 	/// must be put in a different class to avoid C# compiler error CS0111, 
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
-	[_numpublic, _numstatic, _numpartial] _numclass(NameWithType(SyncManagerExt, char), _num(), {
+	public static partial class SyncManagerExtChar {
 		public static List? SyncList<SyncManager, List>(this SyncManager sync, 
 		  FieldId name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
 		
 		 where SyncManager: ISyncManager where List: ICollection<char>, IReadOnlyCollection<char>
 		{
 			var scanner = savable == null ? Empty<char>.Scanner : Loyc.Collections.MutableListExtensionMethods.LinqToLists.ToArray(savable).Slice(0).Scan();
-			return sync.(NameWithType(SyncList, char, Impl))(name, scanner, savable, new CollectionBuilder<List, char>(alloc), listMode, tupleLength);
+			return sync.SyncListCharImpl(name, scanner, savable, new CollectionBuilder<List, char>(alloc), listMode, tupleLength);
 		}
 
 		public static List? SyncList<SyncManager, List>(this SyncManager sync, 
@@ -1397,11 +1397,11 @@ namespace Loyc.SyncLib
 		
 		 where SyncManager: ISyncManager where List: ICollection<char>, IReadOnlyCollection<char> => 
 		  SyncList(sync, (FieldId) name, savable, alloc, listMode, tupleLength);
-	});
+	}
 	/// <summary>The methods in this class belong in <see cref="SyncManagerExt"/> but they 
 	/// must be put in a different class to avoid C# compiler error CS0111, 
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
-	[_numpublic, _numstatic, _numpartial] _numclass(NameWithType(SyncManagerExt, @_apos_quest <string>), _num(), {
+	public static partial class SyncManagerExtString {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
 		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
@@ -1409,5 +1409,5 @@ namespace Loyc.SyncLib
 		 where SM: ISyncManager where Coll: ICollection<string?> where SyncField: ISyncField<SM, string?> => 
 		  
 		  new SyncList<SM, string?, Coll, SyncField>(syncItem, listMode, tupleLength, alloc).Sync(ref sync, name, savable);
-	});
+	}
 }
