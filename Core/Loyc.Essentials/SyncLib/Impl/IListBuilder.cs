@@ -20,6 +20,8 @@ namespace Loyc.SyncLib.Impl
 		/// <see cref="ISyncManager.CurrentObject"/> in case the list contains
 		/// a cyclic reference to itself. If a cyclic reference is not possible,
 		/// this method can return null.
+		/// 
+		/// TODO: WHOA we totally forgot about our plan above to handle circular references
 		/// </returns>
 		void Alloc(int minLength);
 		/// <summary>When the list being loaded was already read from the data 

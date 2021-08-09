@@ -1,3 +1,4 @@
+using Loyc.MiniTest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +23,7 @@ namespace Loyc.SyncLib.Tests
 						CharListAsString = false,
 						SpaceAfterColon = false,
 						Indent = "  ",
+						Newline = "\n",
 						InitialBufferSize = 1,
 					},
 					Read = {

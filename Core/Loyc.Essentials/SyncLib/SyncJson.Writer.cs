@@ -29,7 +29,7 @@ namespace Loyc.SyncLib
 			SyncManagerExt.Sync(writer, null, value, sync, options.RootMode);
 			return output.WrittenMemory;
 		}
-		public static ReadOnlyMemory<byte> Write<T>(T value, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
+		public static ReadOnlyMemory<byte> WriteI<T>(T value, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 		{
 			options ??= _defaultOptions;
 			var output = new ArrayBufferWriter<byte>(options.Write.InitialBufferSize);
@@ -48,8 +48,8 @@ namespace Loyc.SyncLib
 		}
 		public static string WriteString<T>(T value, SyncObjectFunc<Writer, T> sync, Options? options = null)
 			=> Utf8ToString(Write(value, sync, options));
-		public static string WriteString<T>(T value, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
-			=> Utf8ToString(Write(value, sync, options));
+		public static string WriteStringI<T>(T value, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
+			=> Utf8ToString(WriteI(value, sync, options));
 		public static string WriteString<T, SyncObject>(T value, SyncObject sync, Options? options = null)
 			where SyncObject : ISyncObject<SyncJson.Writer, T>
 			=> Utf8ToString(Write(value, sync, options));

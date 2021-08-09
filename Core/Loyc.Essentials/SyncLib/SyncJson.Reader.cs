@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
+using static Loyc.SyncLib.SyncJson.ReaderState;
 
 namespace Loyc.SyncLib
 {
@@ -45,13 +46,10 @@ namespace Loyc.SyncLib
 
 			public (bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, SubObjectMode mode, int listLength = -1)
 			{
-				return _s.BeginSubObject(name != null ? name.Name : "", mode);
+				return _s.BeginSubObject(name.Name, mode);
 			}
 
-			public void EndSubObject()
-			{
-				throw new NotImplementedException();
-			}
+			public void EndSubObject() => _s.EndSubObject();
 
 			public SyncType HasField(FieldId name, SyncType expectedType = SyncType.Unknown)
 			{
@@ -180,7 +178,20 @@ namespace Loyc.SyncLib
 				where Scanner : IScanner<char>
 				where ListBuilder : IListBuilder<List, char>
 			{
-				throw new NotImplementedException();
+				var type = _s.HasFieldCore(name.Name);
+				if (type == JsonType.Null) {
+					return default(List);
+				} else if (type == JsonType.List) {
+					return new ListLoader<SyncJson.Reader, List, char, ListBuilder, SyncPrimitive<SyncJson.Reader>>
+						(new SyncPrimitive<SyncJson.Reader>(), builder, mode, tupleLength).Sync(ref this, name, saving);
+				} else {
+					var s = _s.ReadString(name.Name)!;
+
+					builder.Alloc(s.Length);
+					for (int i = 0; i < s.Length; i++)
+						builder.Add(s[i]);
+					return builder.List;
+				}
 			}
 
 			public bool? Sync(FieldId name, bool? savable)
@@ -253,10 +264,7 @@ namespace Loyc.SyncLib
 				throw new NotImplementedException();
 			}
 
-			public string? Sync(FieldId name, string? savable)
-			{
-				throw new NotImplementedException();
-			}
+			public string? Sync(FieldId name, string? savable) => _s.ReadString(name.Name);
 		}
 	}
 }

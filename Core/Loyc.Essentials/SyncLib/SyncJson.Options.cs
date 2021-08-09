@@ -134,7 +134,7 @@ namespace Loyc.SyncLib
 			{
 				/// <summary>Whether to accept <c>//</c> and <c>/* */</c> comments when reading JSON.</summary>
 				public bool AllowComments { get; set; } = true;
-			
+
 				/// <summary>Whether to follow JSON rules strictly when reading JSON. When 
 				///   this mode is disabled, the following syntax does not cause an exception:
 				///   (1) a comma before a closing ']' or '}',
@@ -145,6 +145,10 @@ namespace Loyc.SyncLib
 				/// </summary><remarks>
 				///   The legality of comments and EOF garbage is controlled independently 
 				///   via <see cref="AllowComments"/> and <see cref="VerifyEof"/>.
+				///   <para/>
+				///   Although JSON technically prohibits control characters, I felt it wasn't
+				///   worth the performance cost of detecting control characters when 
+				///   decoding strings, so Strict mode allow them.
 				/// </remarks>
 				public bool Strict { get; set; } = false;
 
@@ -172,19 +176,21 @@ namespace Loyc.SyncLib
 				/// 	};
 				/// </code>
 				/// </remarks>
-				public Func<string, Memory<byte>, Type, IConvertible>? ObjectToPrimitive { get; set; } = null;
+				public Func<string?, ReadOnlyMemory<byte>, long, Type, IConvertible>? ObjectToPrimitive { get; set; } = null;
 
 				/// <summary>When you attempt to read an object or a list, but a primitive
 				///   type is encountered instead, this property controls how that primitive
 				///   is converted to an object or list (see remarks)</summary>
 				/// <remarks>
+				/// The boolean parameter is true when a list is required.
+				/// <para/>
 				/// If this property is left with its default value of null, 
 				/// (1) If the JSON value is a string, ReadStringAsObject is used instead
 				/// (2) If the JSON value is a number, ReadNumberAsObject is used instead
 				/// (3) Otherwise, the value cannot be converted to an object or list, so
 				///     FormatException is thrown.
 				/// </remarks>
-				public Func<string, Memory<byte>, bool, Memory<byte>>? PrimitiveToObject { get; set; } = null;
+				public Func<string, ReadOnlyMemory<byte>, bool, Memory<byte>>? PrimitiveToObject { get; set; } = null;
 
 				/// <summary>When you attempt to read an object, but a string is encountered 
 				///   instead, this property controls how that string is converted to an object.
@@ -194,7 +200,10 @@ namespace Loyc.SyncLib
 				///   and it must return valid JSON that will be read instead.</summary>
 				public Func<string, string, bool, Memory<byte>>? StringToObject { get; set; } = null;
 
-				public Func<string, Memory<byte>, IConvertible>? ObjectToNumber { get; set; } = null;
+				public Func<string, ReadOnlyMemory<byte>, IConvertible>? ObjectToNumber { get; set; } = null;
+
+				public string TrueAsString { get; set; } = "true";
+				public string FalseAsString { get; set; } = "false";
 
 				/// <summary>When this property is true and the root object has been read successfully,
 				/// the reader checks whether there is additional non-whitespace text beyond the end 

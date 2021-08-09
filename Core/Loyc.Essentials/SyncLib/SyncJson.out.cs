@@ -43,10 +43,10 @@ namespace Loyc.SyncLib
 			(byte) '$', (byte) 'v', (byte) 'a', (byte) 'l', (byte) 'u', (byte) 'e', (byte) 's'
 		};	// Newtonsoft-style array prop
 		internal static readonly byte[] _f = new byte[] { 
-			(byte) '\f'
+			(byte) '\\', (byte) 'f'
 		};	// SyncJson-style id
 		internal static readonly byte[] _r = new byte[] { 
-			(byte) '\r'
+			(byte) '\\', (byte) 'r'
 		};	// SyncJson-style backreference
 		static Options _defaultOptions = new Options();
 

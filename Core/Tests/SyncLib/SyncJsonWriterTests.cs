@@ -91,8 +91,7 @@ namespace Loyc.SyncLib.Tests
 
 			var options = new SyncJson.Options { RootMode = 0, Write = { Indent = "  ", SpaceAfterColon = true } };
 			var syncJson  = SyncJson.WriteString(obj, new BigStandardModelSync<SyncJson.Writer>(), options);
-			var syncJson2 = SyncJson.WriteString(obj, (SyncObjectFunc<ISyncManager, BigStandardModelNoMem>) 
-			                                          new BigStandardModelSync<ISyncManager>().Sync, options);
+			var syncJson2 = SyncJson.WriteStringI(obj, new BigStandardModelSync<ISyncManager>().Sync, options);
 
 			Assert.AreEqual(syncJson, syncJson2);
 			Assert.AreEqual(json, syncJson);
