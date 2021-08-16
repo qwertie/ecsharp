@@ -155,13 +155,13 @@ namespace Loyc.SyncLib
 		/// <summary>If a variable-length list is being scanned in Loading mode, this 
 		/// property returns either the list length (if known) or the minimum list 
 		/// length (if the total length is not known before reading the list).
-		/// This property is null if the list length is unknown (e.g. Saving mode), 
-		/// or if a variable-length list is not being scanned.</summary>
+		/// This property is null in Saving mode, or when a variable-length list is not 
+		/// being scanned.</summary>
 		/// <remarks>
 		/// Some data formats use length-prefixed lists, in which case the list length 
 		/// is known from the begining. Other formats (such as JSON) use a delimiter to 
-		/// mark the end of the list, so the list length may not be known until the end
-		/// is reached. In that case, this property typically returns 0 or 1.
+		/// mark the end of the list, so the list length is not known until the end
+		/// is reached. In that case, this property should return 0.
 		/// </remarks>
 		int? MinimumListLength { get; }
 

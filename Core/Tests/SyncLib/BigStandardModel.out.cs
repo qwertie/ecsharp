@@ -115,6 +115,7 @@ namespace Loyc.SyncLib.Tests
 			&& other.CharNullable == CharNullable 
 			&& other.StringNullable == StringNullable;
 		}
+		public override int GetHashCode() => base.GetHashCode();	// suppress warning
 	}
 
 	/// This class uses all standard types, their nullable variants,

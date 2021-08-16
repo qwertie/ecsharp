@@ -13,8 +13,8 @@ namespace Loyc.SyncLib.Impl
 		where ListBuilder : IListBuilder<TList, T>
 		where SyncItem : ISyncField<SyncManager, T>
 	{
-		readonly SyncItem _syncItem;
-		readonly ListBuilder _builder;
+		SyncItem _syncItem;
+		ListBuilder _builder;
 		readonly SubObjectMode _listMode;
 		readonly int _tupleLength;
 

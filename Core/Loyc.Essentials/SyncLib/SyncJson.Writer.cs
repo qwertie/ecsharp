@@ -27,6 +27,7 @@ namespace Loyc.SyncLib
 			var output = new ArrayBufferWriter<byte>(options.Write.InitialBufferSize);
 			Writer writer = NewWriter(output, options);
 			SyncManagerExt.Sync(writer, null, value, sync, options.RootMode);
+			writer._s.Flush();
 			return output.WrittenMemory;
 		}
 		public static ReadOnlyMemory<byte> WriteI<T>(T value, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
@@ -35,7 +36,8 @@ namespace Loyc.SyncLib
 			var output = new ArrayBufferWriter<byte>(options.Write.InitialBufferSize);
 			Writer writer = NewWriter(output, options);
 			SyncManagerExt.Sync(writer, null, value, sync, options.RootMode);
-			return output.WrittenMemory;
+			writer._s.Flush();
+ 			return output.WrittenMemory;
 		}
 		public static ReadOnlyMemory<byte> Write<T, SyncObject>(T value, SyncObject sync, Options? options = null)
 			where SyncObject : ISyncObject<SyncJson.Writer, T>
@@ -44,6 +46,7 @@ namespace Loyc.SyncLib
 			var output = new ArrayBufferWriter<byte>(options.Write.InitialBufferSize);
 			Writer writer = NewWriter(output, options);
 			SyncManagerExt.Sync(writer, null, value, sync, options.RootMode);
+			writer._s.Flush();
 			return output.WrittenMemory;
 		}
 		public static string WriteString<T>(T value, SyncObjectFunc<Writer, T> sync, Options? options = null)

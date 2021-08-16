@@ -663,7 +663,7 @@ namespace Loyc.Collections
 		{
 			int hc = 517617279; // a random number
 			for (int i = 0; i < span.Length; i++) {
-				hc = hc * 257 ^ span[i].GetHashCode();
+				hc = ((hc << 8) + hc) ^ span[i];
 			}
 			return hc;
 		}

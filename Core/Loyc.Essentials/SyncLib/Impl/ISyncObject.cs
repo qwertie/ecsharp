@@ -29,7 +29,7 @@ namespace Loyc.SyncLib.Impl
 		public SyncObjectFunc<SyncManager, T> Func { get; set; }
 		public AsISyncObject(SyncObjectFunc<SyncManager, T> func) => Func = func;
 
-		public T? Sync(SyncManager sync, T? x) => Func(sync, x);
+		public T Sync(SyncManager sync, T? x) => Func(sync, x);
 		
 		public static implicit operator AsISyncObject<SyncManager, T>(SyncObjectFunc<SyncManager, T> func)
 			=> new AsISyncObject<SyncManager, T>(func);

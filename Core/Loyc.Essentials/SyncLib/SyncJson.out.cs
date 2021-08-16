@@ -34,19 +34,19 @@ namespace Loyc.SyncLib
 		};
 
 		internal static readonly byte[] _ref = new byte[] { 
-			(byte) '$', (byte) 'r', (byte) 'e', (byte) 'f'
+			(byte) '"', (byte) '$', (byte) 'r', (byte) 'e', (byte) 'f', (byte) '"'
 		};	// Newtonsoft-style backreference
 		internal static readonly byte[] _id = new byte[] { 
-			(byte) '$', (byte) 'i', (byte) 'd'
+			(byte) '"', (byte) '$', (byte) 'i', (byte) 'd', (byte) '"'
 		};	// Newtonsoft-style id
 		internal static readonly byte[] _values = new byte[] { 
-			(byte) '$', (byte) 'v', (byte) 'a', (byte) 'l', (byte) 'u', (byte) 'e', (byte) 's'
+			(byte) '"', (byte) '$', (byte) 'v', (byte) 'a', (byte) 'l', (byte) 'u', (byte) 'e', (byte) 's', (byte) '"'
 		};	// Newtonsoft-style array prop
 		internal static readonly byte[] _f = new byte[] { 
-			(byte) '\\', (byte) 'f'
+			(byte) '"', (byte) '\\', (byte) 'f', (byte) '"'
 		};	// SyncJson-style id
 		internal static readonly byte[] _r = new byte[] { 
-			(byte) '\\', (byte) 'r'
+			(byte) '"', (byte) '\\', (byte) 'r', (byte) '"'
 		};	// SyncJson-style backreference
 		static Options _defaultOptions = new Options();
 

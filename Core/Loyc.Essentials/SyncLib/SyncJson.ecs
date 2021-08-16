@@ -32,11 +32,11 @@ namespace Loyc.SyncLib
 		internal static readonly byte[] _false = stringToBytes("false");
 		internal static readonly byte[] _null = stringToBytes("null");
 
-		internal static readonly byte[] _ref = stringToBytes("$ref"); // Newtonsoft-style backreference
-		internal static readonly byte[] _id = stringToBytes("$id"); // Newtonsoft-style id
-		internal static readonly byte[] _values = stringToBytes("$values"); // Newtonsoft-style array prop
-		internal static readonly byte[] _f = stringToBytes(@"\f"); // SyncJson-style id
-		internal static readonly byte[] _r = stringToBytes(@"\r"); // SyncJson-style backreference
+		internal static readonly byte[] _ref = stringToBytes(@"""$ref"""); // Newtonsoft-style backreference
+		internal static readonly byte[] _id = stringToBytes(@"""$id"""); // Newtonsoft-style id
+		internal static readonly byte[] _values = stringToBytes(@"""$values"""); // Newtonsoft-style array prop
+		internal static readonly byte[] _f = stringToBytes(@"""\f"""); // SyncJson-style id
+		internal static readonly byte[] _r = stringToBytes(@"""\r"""); // SyncJson-style backreference
 
 		static Options _defaultOptions = new Options();
 

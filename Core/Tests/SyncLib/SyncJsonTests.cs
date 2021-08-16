@@ -1,6 +1,7 @@
 using Loyc.MiniTest;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,13 +11,13 @@ namespace Loyc.SyncLib.Tests
 	public class SyncJsonTests : SyncLibTests<SyncJson.Reader, SyncJson.Writer>
 	{
 		SyncJson.Options _options = new SyncJson.Options();
+		SubObjectMode _saveMode;
 
 		public SyncJsonTests(bool newtonCompat, bool nonDefaultSettings = false, bool minify = false)
 		{
-			if (nonDefaultSettings)
+			if (nonDefaultSettings) {
 				_options = new SyncJson.Options {
 					NameConverter = SyncJson.ToCamelCase,
-					RootMode = SubObjectMode.Deduplicate | SubObjectMode.FixedSize,
 					Write = {
 						EscapeUnicode = true,
 						MaxIndentDepth = 2,
@@ -32,14 +33,22 @@ namespace Loyc.SyncLib.Tests
 						VerifyEof = false,
 					}
 				};
+				_saveMode = SubObjectMode.Deduplicate | SubObjectMode.FixedSize;
+			}
 			_options.NewtonsoftCompatibility = newtonCompat;
 			_options.Write.Minify = minify;
 		}
 
 		protected override T Read<T>(byte[] data, SyncObjectFunc<SyncJson.Reader, T> sync)
-			=> SyncJson.Read<T>(data, sync, _options);
+		{
+			_options.RootMode = _saveMode;
+			// mysteriously, changing the return value to T? creates a compiler error, so use `!`
+			return SyncJson.Read<T>(data, sync, _options)!; 
+		}
 
-		protected override byte[] Write<T>(T value, SyncObjectFunc<SyncJson.Writer, T> sync)
-			=> SyncJson.Write(value, sync, _options).ToArray();
+		protected override byte[] Write<T>(T value, SyncObjectFunc<SyncJson.Writer, T> sync, SubObjectMode mode) {
+			_options.RootMode = mode;
+			return SyncJson.Write(value, sync, _options).ToArray();
+		}
 	}
 }

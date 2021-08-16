@@ -26,7 +26,7 @@ namespace Loyc.SyncLib.Impl
 		public ObjectSyncher(SyncObj sync, SubObjectMode mode)
 		{
 			_syncObj = sync;
-			_mode = mode | SubObjectMode.NotNull;
+			_mode = mode;
 		}
 
 		public T? Sync(ref SyncManager sync, FieldId propName, T? item)
@@ -35,14 +35,17 @@ namespace Loyc.SyncLib.Impl
 			var (begun, existingItem) = sync.BeginSubObject(propName, avoidBoxing ? null : item, _mode);
 			if (begun) {
 				try {
-					return _syncObj.Sync(sync, item);
+					var result = _syncObj.Sync(sync, item);
+					if (!avoidBoxing)
+						sync.CurrentObject = result!;
+					return result;
 				} finally {
 					sync.EndSubObject();
 				}
 			} else {
 				if (avoidBoxing) {
 					Debug.Assert(existingItem == null);
-					return item;
+					return item!;
 				}
 				try {
 					return (T?) existingItem;

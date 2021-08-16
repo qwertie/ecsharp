@@ -71,7 +71,7 @@ namespace Loyc.SyncLib
 				return base.GetOutBuf(requiredBytes);
 			}
 
-			public (bool Begun, object? Object) BeginSubObject(string name, object? childKey, SubObjectMode mode)
+			public (bool Begun, object? Object) BeginSubObject(string? name, object? childKey, SubObjectMode mode)
 			{
 				if (childKey == null && MayBeNullable(mode)) {
 					WriteNull(name);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Loyc.SyncLib
@@ -12,15 +13,18 @@ namespace Loyc.SyncLib
 	/// <see cref="ISyncManager"/> should choose an ID automatically based on the field 
 	/// order.
 	/// </summary>
+	[DebuggerDisplay(@"{Name} (Id={Id == int.MinValue ? ""none"" : (object) Id})")]
 	public struct FieldId
 	{
-		public FieldId(string? name, int id = -1) { Name = name; Id = id; }
+		public FieldId(string? name, int id) { Name = name; Id = id; }
 
+		/// <summary>Name chosen by the user, or null if unspecified.</summary>
 		public readonly string? Name;
+		/// <summary>Id code chosen by the user, or int.MinValue if unspecified.</summary>
 		public readonly int Id;
 
 		public static implicit operator string?(FieldId field) => field.Name;
-		public static implicit operator FieldId(string? name) => new FieldId(name);
+		public static implicit operator FieldId(string? name) => new FieldId(name, int.MinValue);
 		public static implicit operator FieldId((string?, int) p) => new FieldId(p.Item1, p.Item2);
 		/// <summary>
 		/// This conversion from <see cref="Symbol"/> to <see cref="FieldId"/> must only 
@@ -29,6 +33,6 @@ namespace Loyc.SyncLib
 		/// makes the ID useless for serialization or deserialization.
 		/// </summary>
 		public static explicit operator FieldId(Symbol? name) => 
-			name != null ? new FieldId(name.Name, name.Id) : new FieldId(null);
+			name != null ? new FieldId(name.Name, name.Id) : new FieldId(null, int.MinValue);
 	}
 }

@@ -44,9 +44,9 @@ namespace Loyc.SyncLib
 					Type = type;
 					Text = text;
 				}
-				public override int GetHashCode() => Text.GetHashCode();
+				public override int GetHashCode() => Text.Span.SequenceHashCode();
 				public override bool Equals(object? obj) => obj is JsonValue v && Equals(v);
-				public bool Equals(JsonValue v) => Type == v.Type && Text.Equals(v.Text);
+				public bool Equals(JsonValue v) => Type == v.Type && Text.Span.SequenceEqual(v.Text.Span);
 			}
 
 			ref struct CurrentByte {
@@ -91,8 +91,8 @@ namespace Loyc.SyncLib
 				public bool IsReplaying;
 				// Location within the JSON file of Buf.Span[0] (used for error reporting)
 				public long PositionOfBuf0;
-				// True iff the current object is a list
-				public bool IsInsideList;
+				// hmm do we need this?
+				public bool ReachedEndOfList;
 				// Location where the token most recently read by ScanValue() started in Buf
 				public int TokenIndex;
 				public CurrentByte TokenStart => new CurrentByte { span = Buf.Span, i = TokenIndex };
@@ -101,7 +101,7 @@ namespace Loyc.SyncLib
 				public int ObjectStartIndex; // = int.MaxValue;
 				// Location where current property key starts in Buf
 				public int CurPropIndex;
-				// Name of current property in the current object
+				// Name of current property in the current object (type JsonType.Invalid at end of object)
 				public JsonValue CurPropKey;
 				// List of properties that were skipped earlier (immediate children)
 				// Note: the keys here never use JsonType.SimpleString
@@ -115,7 +115,6 @@ namespace Loyc.SyncLib
 				_mainScanner = scanner;
 				_opt = options;
 				_optRead = options.Read;
-				TOS.IsInsideList = true;
 				TOS.ObjectStartIndex = int.MaxValue;
 			}
 
@@ -125,7 +124,7 @@ namespace Loyc.SyncLib
 			internal Options.ForReader _optRead;
 			
 			// A syntax error that left the reader in an invalid state
-			private Exception _fatalError;
+			private Exception? _fatalError;
 			
 			// Top of stack (not stored in _stack)
 			private JsonFrame TOS;
@@ -136,10 +135,22 @@ namespace Loyc.SyncLib
 			// a list of the form {"\f":id, "":[ ... ]} consumes only one stack entry)
 			private InternalList<(JsonValue id, JsonType type)> _miniStack = new InternalList<(JsonValue id, JsonType mode)>(4);
 			
+			public int Depth => _miniStack.Count;
+			// True iff the current object is a list
+			public bool IsInsideList { get; private set; } = true;
+			public bool ReachedEndOfList => TOS.ReachedEndOfList;
+
+			public void SetCurrentObject(object value) {
+				if (_miniStack.Count != 0 && _miniStack.Last.id.Text.Length != 0) {
+					_objects ??= new Dictionary<JsonValue, object>();
+					_objects[_miniStack.Last.id] = value;
+				}
+			}
+			
 			// Map from object IDs to objects
 			private Dictionary<JsonValue, object>? _objects;
 
-			StringBuilder _sb;
+			StringBuilder? _sb;
 
 			byte[] _nameBuf = Empty<byte>.Array;
 
@@ -160,7 +171,7 @@ namespace Loyc.SyncLib
 				ref JsonFrame tos = ref TOS;
 
 				v = (default(JsonValue), tos.PositionOfBuf0 + tos.TokenIndex);
-				if (tos.IsInsideList || name == null)
+				if (IsInsideList || name == null)
 					return true;
 
 				var originalName = name;
@@ -227,13 +238,15 @@ namespace Loyc.SyncLib
 					Debug.Assert(TOS.IsReplaying);
 				}
 
-				if (type >= JsonType.FirstCompositeType) {
+				if (type >= JsonType.FirstCompositeType)
+				{
 					// Check if it's an object containing a backreference
 					var propKey = TOS.CurPropKey;
 					var keySpan = propKey.Text.Span;
-					if (TOS.IsInsideList) {
+					if (type == JsonType.List) {
 						if (expectList) {
-							_miniStack.Add((default(JsonValue), JsonType.List));
+							Push(default(JsonValue), JsonType.List);
+							TOS.TokenIndex = cur.i;
 							return (true, null); // Success! List opened.
 						}
 					} else {
@@ -250,8 +263,10 @@ namespace Loyc.SyncLib
 								}
 
 								EndSubObjectCore(ref cur);
+								
+								BeginNext(ref cur);
+								
 								TOS.TokenIndex = cur.i;
-
 								return (false, existing);
 							} else {
 								// The prop cannot be a backreference. Back up to the beginning of the value
@@ -259,7 +274,7 @@ namespace Loyc.SyncLib
 							}
 						}
 
-						_miniStack.Add((default(JsonValue), JsonType.Object));
+						Push(default(JsonValue), JsonType.Object);
 
 						// Read object ID, if any ("$id" or "\f")
 						if (AreEqual(keySpan, _f) || AreEqual(keySpan, _id)) {
@@ -289,14 +304,24 @@ namespace Loyc.SyncLib
 							}
 						}
 
-						if (!expectList)
+						if (!expectList) {
+							TOS.TokenIndex = cur.i;
 							return (true, null); // success: object opened
+						}
 					}
 
 					// Data type was wrong. TODO: "Back out" of the object/list so that
 					// our state remains valid and the user can retry with another type
 					// if desired. For now, it's hard, don't bother.
-				} else {
+				}
+				else if (type == JsonType.Null)
+				{
+					if ((mode & SubObjectMode.NotNull) != 0)
+						Error(cur.i, "\"{0}\" is not nullable, but was null".Localized(name));
+					return (false, null);
+				}
+				else
+				{
 					Debug.Assert(!TOS.IsReplaying);
 				}
 
@@ -311,7 +336,6 @@ namespace Loyc.SyncLib
 
 				cur = TOS.TokenStart;
 
-				SkipWhitespace(ref cur);
 				Debug.Assert(TOS.ObjectStartIndex == int.MaxValue);
 				//TOS.ObjectStartIndex = TOS.TokenIndex;
 				
@@ -319,7 +343,6 @@ namespace Loyc.SyncLib
 				if (AutoRead(ref cur) && ((isList = cur.Byte == '[') || cur.Byte == '{')) {
 					cur.i++;
 					SkipWhitespace(ref cur);
-					TOS.IsInsideList = isList;
 					if (isList) {
 						return JsonType.List;
 					} else {
@@ -403,15 +426,7 @@ namespace Loyc.SyncLib
 
 			public string? ReadString(string? name)
 			{
-				if (FindProp(name, out var v)) {
-					if (v.value.Type == JsonType.NotParsed) {
-						var cur = TOS.TokenStart;
-						SkipWhitespace(ref cur);
-						v.value = ScanValue(ref cur);
-
-						BeginProp(true, ref cur);
-					}
-					
+				if (TryReadPrimitive(name, out var v)) {
 					var span = v.value.Text.Span;
 
 					switch (v.value.Type) {
@@ -445,6 +460,58 @@ namespace Loyc.SyncLib
 				return null;
 			}
 
+			internal BigInteger ReadInteger(string? name)
+			{
+				if (TryReadPrimitive(name, out var v)) {
+					var span = v.value.Text.Span;
+
+					switch (v.value.Type) {
+						case JsonType.SimpleString:
+						case JsonType.String:
+							return Convert.ToInt64(DecodeString(v.value));
+
+						case JsonType.PlainInteger:
+							return DecodeInteger(v.value.Text.Span);
+						
+						case JsonType.Number:
+							return (BigInteger) DecodeNumber(v.value.Text.Span);
+
+						case JsonType.Null:
+							Error((int)(v.position - TOS.PositionOfBuf0), "\"{0}\" is not nullable, but was null".Localized(name));
+							return 0; // unreachable
+						
+						case JsonType.True:
+							return 1;
+
+						case JsonType.False:
+							return 0;
+
+						case JsonType.Object:
+						case JsonType.List:
+							if (_optRead.ObjectToPrimitive == null)
+								Error((int)(v.position - TOS.PositionOfBuf0), "Expected integer, got " + v.value.Type, false);
+							
+							return (BigInteger) Convert.ToDouble(_optRead.ObjectToPrimitive!(name, v.value.Text, v.position, typeof(double)));
+					}
+					Debug.Fail("unreachable");
+				}
+				Error(TOS.TokenIndex, "Property not found: {0}".Localized(name), false);
+				return 0;
+			}
+
+			private bool TryReadPrimitive(string? name, out (JsonValue value, long position) v)
+			{
+				if (FindProp(name, out v)) {
+					if (v.value.Type == JsonType.NotParsed) {
+						var cur = TOS.TokenStart;
+						v.value = ScanValue(ref cur);
+
+						BeginNext(ref cur);
+					}
+					return true;
+				}
+				return false;
+			}
 
 			private bool TryOpenListValues(ref CurrentByte cur)
 			{
@@ -467,7 +534,18 @@ namespace Loyc.SyncLib
 					EndSubObjectCore(ref cur);
 				}
 
-				_miniStack.Pop();
+				Pop();
+
+				if (_miniStack.Count != 0 || !_optRead.VerifyEof) {
+					BeginNext(ref cur);
+				} else {
+					SkipWhitespace(ref cur);
+					if (AutoRead(ref cur)) {
+						Error(cur.i, "Expected EOF", false);
+					}
+				}
+
+				TOS.TokenIndex = cur.i;
 			}
 
 			private void EndSubObjectCore(ref CurrentByte cur)
@@ -501,7 +579,6 @@ namespace Loyc.SyncLib
 					Buf = v.value.Text,
 					IsReplaying = true,
 					PositionOfBuf0 = v.position,
-					IsInsideList = v.value.Type == JsonType.List,
 					TokenIndex = 1,
 					ObjectStartIndex = int.MaxValue,
 				};
@@ -520,13 +597,17 @@ namespace Loyc.SyncLib
 			}
 			private bool BeginProp(bool expectComma, ref CurrentByte cur)
 			{
-				Debug.Assert(!TOS.IsInsideList);
+				// This must not be called inside a list (but at the beginning of an
+				// object, IsInsideList hasn't been updated)
+				Debug.Assert(!IsInsideList || !expectComma);
+				
 				SkipWhitespace(ref cur);
 				if (expectComma) {
 					if (!SkipIf(',', ref cur)) {
 						TOS.TokenIndex = cur.i;
 						return false;
 					}
+					SkipWhitespace(ref cur);
 				}
 
 				TOS.CurPropIndex = cur.i;
@@ -535,10 +616,10 @@ namespace Loyc.SyncLib
 				Debug.Assert(TOS.TokenIndex == TOS.CurPropIndex);
 
 				if (key.Type == JsonType.Invalid) {
-					// There's no property here. Is it the end of an object?
+					// There's no property here. It's either the end of the object, or a syntax error
 					if ((uint)cur.i < (uint)cur.span.Length && (cur.Byte == '}' || cur.Byte == ']')) {
 						if (expectComma && _optRead.Strict)
-							Error(cur.i, "Comma is not allowed before '{0}'".Localized(cur.Byte));
+							Error(cur.i, "Comma is not allowed before '{0}'".Localized((char) cur.Byte));
 						
 						return false;
 					} else
@@ -556,8 +637,29 @@ namespace Loyc.SyncLib
 				if (!SkipWhitespaceAnd(':', ref cur))
 					Error(cur.i, "Expected ':'");
 				
+				// Skip whitespace again to reach the beginning of the value
+				SkipWhitespace(ref cur);
+
 				TOS.TokenIndex = cur.i;
 				return true;
+			}
+
+			// A method called to move to the next prop or list item after reading a prop/item.
+			// Its job is to skip the comma and either detect end-of-list or read the next key.
+			private void BeginNext(ref CurrentByte cur)
+			{
+				if (IsInsideList) {
+					if (SkipWhitespaceAnd(',', ref cur)) {
+						SkipWhitespace(ref cur);
+						if ((TOS.ReachedEndOfList = cur.Byte == ']') && _optRead.Strict)
+							Error(cur.i, "Comma is not allowed before '{0}'".Localized((char)cur.Byte));
+					} else {
+						if (!(TOS.ReachedEndOfList = !AutoRead(ref cur) || cur.Byte == ']'))
+							Error(cur.i, "Expected ']'");
+					}
+				} else {
+					BeginProp(true, ref cur);
+				}
 			}
 
 			private bool AreEqual(ReadOnlySpan<byte> curProp, byte[] name)
@@ -627,12 +729,6 @@ namespace Loyc.SyncLib
 				}
 			}
 
-			private void SkipWhitespace()
-			{
-				var cur = TOS.TokenStart;
-				SkipWhitespace(ref cur);
-			}
-			
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			private void SkipWhitespace(ref CurrentByte cur)
 			{
@@ -880,9 +976,15 @@ namespace Loyc.SyncLib
 				return false;
 			}
 
-			private object? DetectTokenType()
+			void Push(JsonValue id, JsonType objectType)
 			{
-				throw new NotImplementedException();
+				_miniStack.Add((id, objectType));
+				IsInsideList = objectType != JsonType.Object;
+			}
+			void Pop()
+			{
+				_miniStack.Pop();
+				IsInsideList = _miniStack.Count == 0 ? true : _miniStack.Last.type != JsonType.Object;
 			}
 
 			#region Decoders of primitive values

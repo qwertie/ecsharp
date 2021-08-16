@@ -57,7 +57,7 @@ namespace Loyc.SyncLib.Impl
 		InternalList<T> _list;
 		public T[]? List => _list.AsArray();
 
-		public void Alloc(int minLength) => _list = new InternalList<T>(minLength <= 1 ? 4 : minLength);
+		public void Alloc(int minLength) => _list = minLength == 0 ? InternalList<T>.Empty : new InternalList<T>(minLength);
 
 		public T[] CastList(object value)
 		{

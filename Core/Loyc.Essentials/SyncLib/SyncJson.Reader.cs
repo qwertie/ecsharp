@@ -3,6 +3,7 @@ using Loyc.Collections.Impl;
 using Loyc.SyncLib.Impl;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Text;
 using static Loyc.SyncLib.SyncJson.ReaderState;
@@ -14,7 +15,7 @@ namespace Loyc.SyncLib
 		public static SyncJson.Reader NewReader(IScanner<byte> input, Options? options = null)
 			=> new Reader(new ReaderState(input ?? throw new ArgumentNullException(nameof(input)), options ?? _defaultOptions));
 
-		internal static T Read<T>(ReadOnlyMemory<byte> data, SyncObjectFunc<Reader, T> sync, Options? options = null)
+		internal static T? Read<T>(ReadOnlyMemory<byte> data, SyncObjectFunc<Reader, T> sync, Options? options = null)
 		{
 			options ??= _defaultOptions;
 			Reader reader = NewReader(new InternalList.Scanner<byte>(data), options);
@@ -34,15 +35,15 @@ namespace Loyc.SyncLib
 			public bool SupportsDeduplication => true;
 			public bool NeedsIntegerIds => false;
 	
-			public bool IsInsideList => throw new NotImplementedException();
+			public bool IsInsideList => _s.IsInsideList;
 
-			public bool? ReachedEndOfList => throw new NotImplementedException();
+			public bool? ReachedEndOfList => _s.ReachedEndOfList;
 
-			public int? MinimumListLength => throw new NotImplementedException();
+			public int? MinimumListLength => 0;
 
-			public int Depth => throw new NotImplementedException();
+			public int Depth => _s.Depth;
 
-			public object CurrentObject { set => throw new NotImplementedException(); }
+			public object CurrentObject { set => _s.SetCurrentObject(value); }
 
 			public (bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, SubObjectMode mode, int listLength = -1)
 			{
@@ -80,45 +81,21 @@ namespace Loyc.SyncLib
 				throw new NotImplementedException();
 			}
 
-			public sbyte Sync(FieldId name, sbyte savable)
-			{
-				throw new NotImplementedException();
-			}
+			public sbyte Sync(FieldId name, sbyte savable) => (sbyte) _s.ReadInteger(name.Name);
 
-			public byte Sync(FieldId name, byte savable)
-			{
-				throw new NotImplementedException();
-			}
+			public byte Sync(FieldId name, byte savable) => (byte) _s.ReadInteger(name.Name);
 
-			public short Sync(FieldId name, short savable)
-			{
-				throw new NotImplementedException();
-			}
+			public short Sync(FieldId name, short savable) => (short) _s.ReadInteger(name.Name);
 
-			public ushort Sync(FieldId name, ushort savable)
-			{
-				throw new NotImplementedException();
-			}
+			public ushort Sync(FieldId name, ushort savable) => (ushort) _s.ReadInteger(name.Name);
 
-			public int Sync(FieldId name, int savable)
-			{
-				throw new NotImplementedException();
-			}
+			public int Sync(FieldId name, int savable) => (int) _s.ReadInteger(name.Name);
 
-			public uint Sync(FieldId name, uint savable)
-			{
-				throw new NotImplementedException();
-			}
+			public uint Sync(FieldId name, uint savable) => (uint) _s.ReadInteger(name.Name);
 
-			public long Sync(FieldId name, long savable)
-			{
-				throw new NotImplementedException();
-			}
+			public long Sync(FieldId name, long savable) => (long) _s.ReadInteger(name.Name);
 
-			public ulong Sync(FieldId name, ulong savable)
-			{
-				throw new NotImplementedException();
-			}
+			public ulong Sync(FieldId name, ulong savable) => (ulong) _s.ReadInteger(name.Name);
 
 			public float Sync(FieldId name, float savable)
 			{
