@@ -5,8 +5,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
+using static System.Math;
 
 // They want me to put a "where K: notnull" constraint on dictionaries, but I disagree:
 // some Loyc dictionaries have never had that requirement. The warning says:
@@ -35,6 +37,14 @@ namespace Loyc.SyncLib
 			return new ObjectSyncher<SM, SyncObj, T>(syncObj, mode).Sync(ref sync, name, savable);
 		}
 
+		public static T? Sync<SM, SyncField, T>(this SM sync,
+			FieldId name, T? savable, SyncField syncField)
+				where SM : ISyncManager
+				where SyncField : ISyncField<SM, T>
+		{
+			return syncField.Sync(ref sync, name, savable);
+		}
+
 		public static E SyncEnumAsString<SM, SyncObj, E>(this SM sync,
 			FieldId name, E savable, 
 			SubObjectMode mode = SubObjectMode.Deduplicate)
@@ -42,6 +52,49 @@ namespace Loyc.SyncLib
 				where SyncObj : ISyncObject<SM, E>
 				where E : struct, Enum
 			=> new SyncEnumAsString<SM, E>().Sync(ref sync, name, savable);
+
+		public static DateTime SyncDateAsString<SM>(this SM sync, FieldId name, DateTime value,
+			string? preferredFormat = null, DateTimeStyles parseMode = DateTimeStyles.AllowWhiteSpaces)
+			where SM : ISyncManager
+			=> new SyncDateAsString<SM>(preferredFormat, parseMode).Sync(ref sync, name, value);
+		public static DateTime SyncDateAsDayNumber<SM>(this SM sync, FieldId name, DateTime value, bool asInt32 = false)
+			where SM : ISyncManager
+			=> new SyncDateAsDayNumber<SM>(asInt32).Sync(ref sync, name, value);
+
+		public static DateTime? SyncDateAsString<SM>(this SM sync, FieldId name, DateTime? value,
+			string? preferredFormat = null, DateTimeStyles parseMode = DateTimeStyles.AllowWhiteSpaces)
+			where SM : ISyncManager
+			=> new SyncDateAsString<SM>(preferredFormat, parseMode).Sync(ref sync, name, value);
+		public static DateTime? SyncDateAsDayNumber<SM>(this SM sync, FieldId name, DateTime? value, bool asInt32 = false)
+			where SM : ISyncManager
+			=> new SyncDateAsDayNumber<SM>(asInt32).Sync(ref sync, name, value);
+
+		public static TimeSpan SyncTimeAsString<SM>(this SM sync, FieldId name, TimeSpan value)
+			where SM : ISyncManager
+			=> new SyncTimeSpanAsString<SM>().Sync(ref sync, name, value);
+		public static TimeSpan SyncTimeAsSeconds<SM>(this SM sync, FieldId name, TimeSpan value, bool asInt32 = false)
+			where SM : ISyncManager
+			=> new SyncTimeSpanAsSeconds<SM>(asInt32).Sync(ref sync, name, value);
+		public static TimeSpan SyncTimeAsMinutes<SM>(this SM sync, FieldId name, TimeSpan value, bool asInt32 = false)
+			where SM : ISyncManager
+			=> new SyncTimeSpanAsMinutes<SM>(asInt32).Sync(ref sync, name, value);
+		public static TimeSpan SyncTimeAsDays<SM>(this SM sync, FieldId name, TimeSpan value)
+			where SM : ISyncManager
+			=> new SyncTimeSpanAsDays<SM>().Sync(ref sync, name, value);
+
+		public static TimeSpan? SyncTimeAsString<SM>(this SM sync, FieldId name, TimeSpan? value)
+			where SM : ISyncManager
+			=> new SyncTimeSpanAsString<SM>().Sync(ref sync, name, value);
+		public static TimeSpan? SyncTimeAsSeconds<SM>(this SM sync, FieldId name, TimeSpan? value, bool asInt32 = false)
+			where SM : ISyncManager
+			=> new SyncTimeSpanAsSeconds<SM>(asInt32).Sync(ref sync, name, value);
+		public static TimeSpan? SyncTimeAsMinutes<SM>(this SM sync, FieldId name, TimeSpan? value, bool asInt32 = false)
+			where SM : ISyncManager
+			=> new SyncTimeSpanAsMinutes<SM>(asInt32).Sync(ref sync, name, value);
+		public static TimeSpan? SyncTimeAsDays<SM>(this SM sync, FieldId name, TimeSpan? value)
+			where SM : ISyncManager
+			=> new SyncTimeSpanAsDays<SM>().Sync(ref sync, name, value);
+
 
 		#region SyncList/SyncColl/SyncDict/SyncMemory methods that accept SyncObjectFunc<SM, T>
 

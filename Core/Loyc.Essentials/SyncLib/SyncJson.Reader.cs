@@ -15,12 +15,23 @@ namespace Loyc.SyncLib
 		public static SyncJson.Reader NewReader(IScanner<byte> input, Options? options = null)
 			=> new Reader(new ReaderState(input ?? throw new ArgumentNullException(nameof(input)), options ?? _defaultOptions));
 
-		internal static T? Read<T>(ReadOnlyMemory<byte> data, SyncObjectFunc<Reader, T> sync, Options? options = null)
+		internal static T? Read<T>(ReadOnlyMemory<byte> json, SyncObjectFunc<Reader, T> sync, Options? options = null)
 		{
 			options ??= _defaultOptions;
-			Reader reader = NewReader(new InternalList.Scanner<byte>(data), options);
+			Reader reader = NewReader(new InternalList.Scanner<byte>(json), options);
 			return SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
 		}
+		internal static T? ReadI<T>(ReadOnlyMemory<byte> json, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
+		{
+			options ??= _defaultOptions;
+			Reader reader = NewReader(new InternalList.Scanner<byte>(json), options);
+			return SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
+		}
+
+		internal static T? Read<T>(string json, SyncObjectFunc<Reader, T> sync, Options? options = null)
+			=> Read(Encoding.UTF8.GetBytes(json), sync, options);
+		internal static T? ReadI<T>(string json, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
+			=> ReadI(Encoding.UTF8.GetBytes(json), sync, options);
 
 		public partial struct Reader : ISyncManager
 		{

@@ -23,6 +23,8 @@ namespace Loyc.SyncLib
 		/// <summary>Id code chosen by the user, or int.MinValue if unspecified.</summary>
 		public readonly int Id;
 
+		public override string? ToString() => Name;
+
 		public static implicit operator string?(FieldId field) => field.Name;
 		public static implicit operator FieldId(string? name) => new FieldId(name, int.MinValue);
 		public static implicit operator FieldId((string?, int) p) => new FieldId(p.Item1, p.Item2);

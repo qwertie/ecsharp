@@ -234,9 +234,11 @@
     <Compile Include="SyncLib\Impl\ListSaver.cs" />
     <Compile Include="SyncLib\Impl\ObjectSyncher.cs" />
     <Compile Include="SyncLib\Impl\ObjectTable.cs" />
+    <Compile Include="SyncLib\Impl\SyncDateTime.cs" />
     <Compile Include="SyncLib\Impl\SyncEnum.cs" />
     <Compile Include="SyncLib\Impl\SyncList.cs" />
     <Compile Include="SyncLib\Impl\SyncPrimitive.out.cs" />
+    <Compile Include="SyncLib\Impl\SyncTimeSpan.cs" />
     <Compile Include="SyncLib\ISyncManager.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
