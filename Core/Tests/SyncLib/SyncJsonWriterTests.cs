@@ -24,16 +24,19 @@ namespace Loyc.SyncLib.Tests
 				using (var jtw = new JsonTextWriter(sw))
 					jsonSerializer.Serialize(jtw, obj);
 
+			return RestyleNewtonJson(newtonSB.ToString());
+		}
+		public static string RestyleNewtonJson(string json)
+		{
 			// Newtonsoft adds .0 on float and double; we don't.
 			// Use Replace() so this string can equal ours.
-			string json = newtonSB.ToString().Replace(".0,", ",")
+			json = json.Replace(".0,", ",")
 				.Replace(".0\r", "\r").Replace(".0\n", "\n").Replace(".0]", "]");
 
 			// Also, SyncJson has a nice compact representation of refs, and 
 			// we need to remove some whitespace from the Newton JSON (again,
 			// so that this string can equal the one from SyncJson).
-			json = Regex.Replace(json, @"{[ \r\n]+""\$ref"": ""([0-9]+)""[ \r\n]+}", @"{""$ref"": ""$1""}");
-			return json;
+			return Regex.Replace(json, @"{[ \r\n]+""\$ref"": ""([0-9]+)""[ \r\n]+}", @"{""$ref"": ""$1""}");
 		}
 
 		[Test]

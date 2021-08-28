@@ -50,7 +50,7 @@ namespace Loyc.SyncLib
 		/// <summary>The object can have multiple types or derived classes, so a
 		/// type identifier needs to be saved to make deserialization possible.
 		/// TODO: figure out how it will work and say something about that here</summary>
-		DynamicType = 16,
+		//DynamicType = 16,
 		
 		/// <summary>Requests a fixed-size representation, if available.
 		/// When using <see cref="SyncJson"/>, this has no effect.</summary>

@@ -638,52 +638,52 @@ namespace Loyc.MiniTest
 			if (!double.IsNaN(aDouble))
 				Fail("IsNaN: {0} is a number", aDouble);
 		}
-		public static void IsEmpty(string aString)
+		public static void IsEmpty(string? aString)
 		{
 			if ("" != aString)
 				Fail("IsEmpty: {0} != \"\"", aString);
 		}
-		public static void IsEmpty(System.Collections.IEnumerable collection)
+		public static void IsEmpty(System.Collections.IEnumerable? collection)
 		{
 			if (collection == null) 
 				Fail ("IsEmpty: collection is null");
 			else if (collection.GetEnumerator().MoveNext())
 				Fail("IsEmpty: collection is not empty");
 		}
-		public static void IsNotEmpty(System.Collections.IEnumerable collection)
+		public static void IsNotEmpty(System.Collections.IEnumerable? collection)
 		{
 			if (collection == null)
 				Fail("IsNotEmpty: collection is null");
 			else if (!collection.GetEnumerator().MoveNext())
 				Fail("IsNotEmpty: collection is empty");
 		}
-		public static void IsNullOrEmpty(string aString)
+		public static void IsNullOrEmpty(string? aString)
 		{
 			if (!string.IsNullOrEmpty(aString))
 				Fail("IsNullOrEmpty: unexpected string: {0}", aString);
 		}
-		public static void IsNotNullOrEmpty(string aString)
+		public static void IsNotNullOrEmpty(string? aString)
 		{
 			if (string.IsNullOrEmpty(aString))
 				Fail("IsNotNullOrEmpty: string is {0}", aString == null ? "null" : "\"\"");
 		}
-		public static void IsInstanceOf(Type expected, object actual)
+		public static void IsInstanceOf(Type expected, object? actual)
 		{
 			if (actual == null)
 				Fail("IsInstanceOf: value is null");
 			else if (!expected.IsAssignableFrom(actual.GetType()))
 				Fail("IsInstanceOf: expected {0}, got {1} ({2})", expected.Name, actual.GetType().Name, actual);
 		}
-		public static void IsNotInstanceOf(Type expected, object actual)
+		public static void IsNotInstanceOf(Type expected, object? actual)
 		{
 			if (actual != null && expected.IsAssignableFrom(actual.GetType()))
 				Fail("IsNotInstanceOf: got an instance of {0} ({1})", actual.GetType().Name, actual);
 		}
-		public static void IsInstanceOf<T>(object actual)
+		public static void IsInstanceOf<T>(object? actual)
 		{
 			IsInstanceOf(typeof(T), actual);
 		}
-		public static void IsNotInstanceOf<T>(object actual)
+		public static void IsNotInstanceOf<T>(object? actual)
 		{
 			IsNotInstanceOf(typeof(T), actual);
 		}
@@ -778,32 +778,32 @@ namespace Loyc.MiniTest
 		{
 			AreNotEqual(expected, actual, delta, null, null);
 		}
-		public static void AreNotEqual(object expected, object actual, string? message, params object?[]? args)
+		public static void AreNotEqual(object? expected, object? actual, string? message, params object?[]? args)
 		{
 			if (object.Equals(expected, actual))
 				Fail2(message, args, GetObjectMismatchMessage(expected, actual, true));
 		}
-		public static void AreNotEqual(object expected, object actual)
+		public static void AreNotEqual(object? expected, object? actual)
 		{
 			AreNotEqual(expected, actual, null, null);
 		}
 
 
-		public static void AreSame(object expected, object actual, string? message, params object?[]? args)
+		public static void AreSame(object? expected, object? actual, string? message, params object?[]? args)
 		{
 			if (!object.ReferenceEquals(expected, actual))
 				Fail2(message, args, "AreSame: references are not equal: {0} != {1}", expected, actual);
 		}
-		public static void AreSame(object expected, object actual)
+		public static void AreSame(object? expected, object? actual)
 		{
 			AreSame(expected, actual, null, null);
 		}
-		public static void AreNotSame(object expected, object actual, string? message, params object?[]? args)
+		public static void AreNotSame(object? expected, object? actual, string? message, params object?[]? args)
 		{
 			if (object.ReferenceEquals(expected, actual))
 				Fail2(message, args, "AreNotSame: references are equal: {0} == {1}", expected, actual);
 		}
-		public static void AreNotSame(object expected, object actual)
+		public static void AreNotSame(object? expected, object? actual)
 		{
 			AreNotSame(expected, actual, null, null);
 		}

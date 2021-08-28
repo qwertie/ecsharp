@@ -180,7 +180,7 @@
       <DependentUpon>BigStandardModel.ecs</DependentUpon>
     </Compile>
     <Compile Include="SyncLib\FamilyModel.cs" />
-    <Compile Include="SyncLib\HomePageExample.cs" />
+    <Compile Include="SyncLib\HomePageCalendarExample.cs" />
     <Compile Include="SyncLib\PersonModel.cs" />
     <Compile Include="SyncLib\SyncJsonTests.cs" />
     <Compile Include="SyncLib\SyncJsonWriterTests.cs" />

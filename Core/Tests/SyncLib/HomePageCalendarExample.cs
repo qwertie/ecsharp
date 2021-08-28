@@ -25,13 +25,21 @@ namespace Loyc.SyncLib.Tests
 
 	public class CalendarEntry
 	{
+		public CalendarEntry(Calendar? parent = null)
+		{
+			Calendar = parent;
+			CalendarId = parent?.Id ?? 0;
+		}
+
 		public int Id { get; set; }
 		public int CalendarId { get; set; }
-		public string Description { get; set; } = "";
 		public Calendar? Calendar { get; set; }
+
+		public string Description { get; set; } = "";
 		public DateTime StartTime { get; set; }
-		public TimeSpan Duration { get; set; }
+		public TimeSpan Duration { get; set; } = TimeSpan.FromMinutes(60);
 		public string Location { get; set; } = "";
+		public TimeSpan? AdvanceReminder { get; set; }
 		public Color Color { get; set; }
 	}
 
@@ -43,9 +51,11 @@ namespace Loyc.SyncLib.Tests
 		//       in the Web API's URL. The web controller will save that Calendar Id here.
 		public int CalendarId { get; set; }
 		public int ApiVersion { get; set; } = 2;
+		
+		public SyncJson.Options Options = new SyncJson.Options { NameConverter = SyncJson.ToCamelCase };
 
-		public string Serialize(Calendar calendar) => SyncJson.WriteStringI(calendar, Sync);
-		public Calendar? Deserialize(string json) => SyncJson.ReadI<Calendar>(json, Sync);
+		public string Serialize(Calendar calendar) => SyncJson.WriteStringI(calendar, Sync, Options);
+		public Calendar? Deserialize(string json) => SyncJson.ReadI<Calendar>(json, Sync, Options);
 
 		public Calendar Sync(ISyncManager sm, Calendar? calendar)
 		{
@@ -54,7 +64,7 @@ namespace Loyc.SyncLib.Tests
 			calendar.UserId = sm.Sync("UserId", calendar.UserId);
 
 			IReadOnlyCollection<CalendarEntry> entries = calendar.Entries.Select(p => p.Value);
-			var entriesOut = sm.SyncColl("Entries", entries, SyncEntry)!;
+			var entriesOut = sm.SyncColl("Entries", entries, SyncEntry, SubObjectMode.Normal)!;
 			if (!sm.IsSaving) {
 				calendar.Entries.Clear();
 				foreach (var entry in entriesOut)
@@ -80,6 +90,7 @@ namespace Loyc.SyncLib.Tests
 			entry.StartTime   = sm.SyncDateAsString("StartTime", entry.StartTime);
 			entry.Duration    = sm.SyncTimeAsString("Duration", entry.Duration);
 			entry.Location    = sm.Sync("Location", entry.Location) ?? "";
+			entry.AdvanceReminder = sm.SyncTimeAsString("AdvanceReminder", entry.AdvanceReminder);
 
 			if (ApiVersion >= 2)
 				entry.Color  = sm.Sync("Color", entry.Color, new SyncColor<ISyncManager>());
@@ -130,6 +141,7 @@ namespace Loyc.SyncLib.Tests
 		public DateTime StartTime { get; set; }
 		public TimeSpan Duration { get; set; }
 		public string? Location { get; set; }
+		public TimeSpan? AdvanceReminder { get; set; }
 	}
 
 	public class JsonCalendarEntryV2 : JsonCalendarEntry
@@ -144,7 +156,14 @@ namespace Loyc.SyncLib.Tests
 		public int CalendarId { get; set; }
 		public int ApiVersion { get; set; } = 2;
 
-		private JsonSerializer _serializer = new JsonSerializer { Formatting = Formatting.Indented };
+		private JsonSerializer _serializer = new JsonSerializer {
+			Formatting = Formatting.Indented,
+			PreserveReferencesHandling = PreserveReferencesHandling.None,
+			ContractResolver = new DefaultContractResolver()
+			{
+				NamingStrategy = new CamelCaseNamingStrategy()
+			}
+		};
 
 		public string Serialize(Calendar calendar)
 		{
@@ -199,6 +218,7 @@ namespace Loyc.SyncLib.Tests
 			jsonEntry.StartTime = entry.StartTime;
 			jsonEntry.Duration = entry.Duration;
 			jsonEntry.Location = entry.Location;
+			jsonEntry.AdvanceReminder = entry.AdvanceReminder;
 
 			return jsonEntry;
 		}
@@ -241,6 +261,7 @@ namespace Loyc.SyncLib.Tests
 			entry.StartTime = jsonEntry.StartTime;
 			entry.Duration = jsonEntry.Duration;
 			entry.Location = jsonEntry.Location ?? "";
+			entry.AdvanceReminder = jsonEntry.AdvanceReminder;
 
 			if (jsonEntry is JsonCalendarEntryV2 v2)
 				entry.Color = v2.Color;

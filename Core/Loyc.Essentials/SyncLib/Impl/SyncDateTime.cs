@@ -16,7 +16,8 @@ namespace Loyc.SyncLib.Impl
 			_parseMode = parseMode;
 		}
 
-		public string ToString(DateTime date) => date.ToString(_preferredFormat ?? "O");
+		public string ToString(DateTime date)
+			=> date.ToString(_preferredFormat ?? (date.Ticks % 10_000_000 == 0 ? "yyyy'-'MM'-'dd'T'HH':'mm':'ssK" : "O"));
 		public DateTime? ToDateTime(string? dateStr, string? propName)
 		{
 			if (dateStr == null)

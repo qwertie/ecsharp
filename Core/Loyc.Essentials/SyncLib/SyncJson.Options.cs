@@ -32,7 +32,7 @@ namespace Loyc.SyncLib
 			public Func<string, string>? NameConverter { get; set; }
 
 			/// <summary>The <see cref="SubObjectMode"/> used to read/write the root object</summary>
-			public SubObjectMode RootMode { get; set; } = SubObjectMode.DynamicType;
+			public SubObjectMode RootMode { get; set; } = SubObjectMode.Normal;
 
 			/// <summary>When NewtonsoftCompatibility is off, this property controls 
 			/// the way byte arrays and byte lists are written. In special cases it
