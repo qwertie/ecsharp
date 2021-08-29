@@ -86,9 +86,9 @@ namespace Loyc.Tests
 			return MiniTest.RunTests.RunMany(
 				new SyncJsonWriterTests(),
 				new SyncJsonTests(newtonCompat: true,  false, false),
-				//new SyncJsonTests(newtonCompat: true,  true,  false),
-				//new SyncJsonTests(newtonCompat: false, false, false),
-				//new SyncJsonTests(newtonCompat: false, true,  true),
+				new SyncJsonTests(newtonCompat: true,  true,  false),
+				new SyncJsonTests(newtonCompat: false, false, false),
+				new SyncJsonTests(newtonCompat: false, true,  true),
 				new InternalListScannerTests(_seed),
 				new ScannableEnumerableTests(_seed),
 				new ScannableEnumerableTests(_seed, 200_000),

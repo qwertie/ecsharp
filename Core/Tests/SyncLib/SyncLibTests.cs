@@ -32,6 +32,12 @@ namespace Loyc.SyncLib.Tests
 		{
 			RoundTripTest<Person?>(null, new PersonSync<Writer>().Sync, new PersonSync<Reader>().Sync);
 		}
+
+		[Test]
+		public void RoundTripStandardFields()
+		{
+			RoundTripTest(new StandardFields(50), new BigStandardModelSync<Writer>().Sync, new BigStandardModelSync<Reader>().Sync);
+		}
 		
 		[Test]
 		public void RoundTripJackAndJill()
@@ -44,12 +50,6 @@ namespace Loyc.SyncLib.Tests
 			var jill = new Person { Age = 9, Name = "Jill", Siblings = new[] { jack } };
 			jack.Siblings = new[] { jill };
 			return jack;
-		}
-
-		[Test(Fails = "Working on it...")]
-		public void RoundTripStandardFields()
-		{
-			RoundTripTest(new StandardFields(50), new BigStandardModelSync<Writer>().Sync, new BigStandardModelSync<Reader>().Sync);
 		}
 
 		protected void RoundTripTest<T>(T value, SyncObjectFunc<Writer, T> writer, SyncObjectFunc<Reader, T> reader, SubObjectMode saveMode = 0)

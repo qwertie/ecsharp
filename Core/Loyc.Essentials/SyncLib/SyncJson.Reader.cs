@@ -87,80 +87,74 @@ namespace Loyc.SyncLib
 				return SyncType.Missing;
 			}
 
-			public bool Sync(FieldId name, bool savable)
-			{
-				throw new NotImplementedException();
-			}
+			public bool Sync(FieldId name, bool savable) => _s.ReadBoolean(name.Name, false)!.Value;
 
-			public sbyte Sync(FieldId name, sbyte savable) => (sbyte) _s.ReadInteger(name.Name);
+			public sbyte Sync(FieldId name, sbyte savable)
+				=> checked((sbyte) _s.ReadInteger(name.Name, false)!.Value);
 
-			public byte Sync(FieldId name, byte savable) => (byte) _s.ReadInteger(name.Name);
+			public byte Sync(FieldId name, byte savable)
+				=> checked((byte) _s.ReadInteger(name.Name, false)!.Value);
 
-			public short Sync(FieldId name, short savable) => (short) _s.ReadInteger(name.Name);
+			public short Sync(FieldId name, short savable)
+				=> checked((short) _s.ReadInteger(name.Name, false)!.Value);
 
-			public ushort Sync(FieldId name, ushort savable) => (ushort) _s.ReadInteger(name.Name);
+			public ushort Sync(FieldId name, ushort savable)
+				=> checked((ushort) _s.ReadInteger(name.Name, false)!.Value);
 
-			public int Sync(FieldId name, int savable) => (int) _s.ReadInteger(name.Name);
+			public int Sync(FieldId name, int savable)
+				=> checked((int) _s.ReadInteger(name.Name, false)!.Value);
 
-			public uint Sync(FieldId name, uint savable) => (uint) _s.ReadInteger(name.Name);
+			public uint Sync(FieldId name, uint savable)
+				=> checked((uint) _s.ReadInteger(name.Name, false)!.Value);
 
-			public long Sync(FieldId name, long savable) => (long) _s.ReadInteger(name.Name);
+			public long Sync(FieldId name, long savable)
+				=> checked((long) _s.ReadInteger(name.Name, false)!.Value);
 
-			public ulong Sync(FieldId name, ulong savable) => (ulong) _s.ReadInteger(name.Name);
+			public ulong Sync(FieldId name, ulong savable)
+				=> checked((ulong) _s.ReadInteger(name.Name, false)!.Value);
 
 			public float Sync(FieldId name, float savable)
-			{
-				throw new NotImplementedException();
-			}
+				=> (float) _s.ReadDouble(name.Name, false)!.Value;
 
 			public double Sync(FieldId name, double savable)
-			{
-				throw new NotImplementedException();
-			}
+				=> _s.ReadDouble(name.Name, false)!.Value;
 
 			public decimal Sync(FieldId name, decimal savable)
-			{
-				throw new NotImplementedException();
-			}
+				=> _s.ReadDecimal(name.Name, false)!.Value;
 
 			public BigInteger Sync(FieldId name, BigInteger savable)
-			{
-				throw new NotImplementedException();
-			}
+				=> _s.ReadInteger(name.Name, false)!.Value;
 
 			public char Sync(FieldId name, char savable)
-			{
-				throw new NotImplementedException();
-			}
+				=> _s.ReadChar(name.Name, false)!.Value;
 
 			public int Sync(FieldId name, int savable, int bits, bool signed = true)
 			{
-				throw new NotImplementedException();
+				return (int) _s.ReadInteger(name.Name, false)!.Value;
 			}
 
 			public long Sync(FieldId name, long savable, int bits, bool signed = true)
 			{
-				throw new NotImplementedException();
+				return (long) _s.ReadInteger(name.Name, false)!.Value;
 			}
 
 			public BigInteger Sync(FieldId name, BigInteger savable, int bits, bool signed = true)
 			{
-				throw new NotImplementedException();
+				return _s.ReadInteger(name.Name, false)!.Value;
 			}
 
 			public List? SyncListBoolImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<bool>
 				where ListBuilder : IListBuilder<List, bool>
 			{
-				throw new NotImplementedException();
+				var loader = new ListLoader<Reader, List, bool, ListBuilder, SyncPrimitive<Reader>>(new SyncPrimitive<Reader>(), builder, mode, tupleLength);
+				return loader.Sync(ref this, name, saving);
 			}
 
 			public List? SyncListByteImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<byte>
 				where ListBuilder : IListBuilder<List, byte>
-			{
-				throw new NotImplementedException();
-			}
+				=> _s.ReadByteArray<ListBuilder, List>(name, builder, mode);
 
 			public List? SyncListCharImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<char>
@@ -182,75 +176,33 @@ namespace Loyc.SyncLib
 				}
 			}
 
-			public bool? Sync(FieldId name, bool? savable)
-			{
-				throw new NotImplementedException();
-			}
+			public bool? Sync(FieldId name, bool? savable) => _s.ReadBoolean(name, true);
 
-			public sbyte? Sync(FieldId name, sbyte? savable)
-			{
-				throw new NotImplementedException();
-			}
+			public sbyte? Sync(FieldId name, sbyte? savable) => checked((sbyte?) _s.ReadInteger(name, true));
 
-			public byte? Sync(FieldId name, byte? savable)
-			{
-				throw new NotImplementedException();
-			}
+			public byte? Sync(FieldId name, byte? savable) => checked((byte?) _s.ReadInteger(name, true));
 
-			public short? Sync(FieldId name, short? savable)
-			{
-				throw new NotImplementedException();
-			}
+			public short? Sync(FieldId name, short? savable) => checked((short?) _s.ReadInteger(name, true));
 
-			public ushort? Sync(FieldId name, ushort? savable)
-			{
-				throw new NotImplementedException();
-			}
+			public ushort? Sync(FieldId name, ushort? savable) => checked((ushort?) _s.ReadInteger(name, true));
 
-			public int? Sync(FieldId name, int? savable)
-			{
-				throw new NotImplementedException();
-			}
+			public int? Sync(FieldId name, int? savable) => checked((int?) _s.ReadInteger(name, true));
 
-			public uint? Sync(FieldId name, uint? savable)
-			{
-				throw new NotImplementedException();
-			}
+			public uint? Sync(FieldId name, uint? savable) => checked((uint?) _s.ReadInteger(name, true));
 
-			public long? Sync(FieldId name, long? savable)
-			{
-				throw new NotImplementedException();
-			}
+			public long? Sync(FieldId name, long? savable) => checked((long?) _s.ReadInteger(name, true));
 
-			public ulong? Sync(FieldId name, ulong? savable)
-			{
-				throw new NotImplementedException();
-			}
+			public ulong? Sync(FieldId name, ulong? savable) => checked((ulong?) _s.ReadInteger(name, true));
 
-			public float? Sync(FieldId name, float? savable)
-			{
-				throw new NotImplementedException();
-			}
+			public float? Sync(FieldId name, float? savable) => (float?) _s.ReadDouble(name, true);
 
-			public double? Sync(FieldId name, double? savable)
-			{
-				throw new NotImplementedException();
-			}
+			public double? Sync(FieldId name, double? savable) => _s.ReadDouble(name, true);
 
-			public decimal? Sync(FieldId name, decimal? savable)
-			{
-				throw new NotImplementedException();
-			}
+			public decimal? Sync(FieldId name, decimal? savable) => _s.ReadDecimal(name, true);
 
-			public BigInteger? Sync(FieldId name, BigInteger? savable)
-			{
-				throw new NotImplementedException();
-			}
+			public BigInteger? Sync(FieldId name, BigInteger? savable) => _s.ReadInteger(name, true);
 
-			public char? Sync(FieldId name, char? savable)
-			{
-				throw new NotImplementedException();
-			}
+			public char? Sync(FieldId name, char? savable) => _s.ReadChar(name, true);
 
 			public string? Sync(FieldId name, string? savable) => _s.ReadString(name.Name);
 		}

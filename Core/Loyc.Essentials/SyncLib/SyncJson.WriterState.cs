@@ -318,7 +318,7 @@ namespace Loyc.SyncLib
 				} else {
 					if (_opt.NameConverter != null)
 						propName = _opt.NameConverter(propName ?? "");
-					buf = WriteString(propName.AsSpan(), 2 + reserveExtra);
+					buf = WriteString(propName.AsSpan(), 3 + reserveExtra);
 					buf[_i++] = (byte) ':';
 					if (_optWrite.SpaceAfterColon && _compactMode == 0)
 						buf[_i++] = (byte) ' ';
@@ -366,7 +366,7 @@ namespace Loyc.SyncLib
 			Span<byte> WriteString(ReadOnlySpan<char> s, int reserveExtra = 0)
 			{
 				int s_len = GetLengthAsBytes(s, _optWrite.EscapeUnicode);
-				Span<byte> buf = GetNextBuf(s_len + reserveExtra);
+				Span<byte> buf = GetNextBuf(s_len + 2 + reserveExtra);
 				WriteStringCore(buf, s, s_len, ref _i, _optWrite.EscapeUnicode);
 				return buf;
 			}

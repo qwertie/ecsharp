@@ -4,6 +4,7 @@ using Loyc.SyncLib.Impl;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -49,7 +50,8 @@ namespace Loyc.SyncLib
 				public bool Equals(JsonValue v) => Type == v.Type && Text.Span.SequenceEqual(v.Text.Span);
 			}
 
-			ref struct CurrentByte {
+			ref struct CurrentByte
+			{
 				public ReadOnlySpan<byte> span;
 				public int i;
 				public byte Byte => span[i];
@@ -117,6 +119,7 @@ namespace Loyc.SyncLib
 				_optRead = options.Read;
 				TOS.ObjectStartIndex = int.MaxValue;
 			}
+
 
 			private IScanner<byte> _mainScanner;
 			private Memory<byte> _mainScannerBuf; // not used by ReaderState; it's passed to _mainScanner.Read()
@@ -281,7 +284,7 @@ namespace Loyc.SyncLib
 							var id = ScanValue(ref cur);
 
 							if (id.Type == JsonType.Invalid) {
-								Error(TOS.TokenIndex, "Syntax error; expected a value");
+								throw SyntaxError(TOS.TokenIndex, name ?? AsciiToString(keySpan));
 							} else if (id.Type < JsonType.FirstCompositeType) {
 								// The ID seems acceptable (though we haven't checked if it's a duplicate)
 								_miniStack.Last = (id, JsonType.Object);
@@ -424,87 +427,351 @@ namespace Loyc.SyncLib
 				return JsonType.Invalid;
 			}
 
+			internal List? ReadByteArray<ListBuilder, List>(string? name, ListBuilder builder, SubObjectMode mode) 
+				where ListBuilder : IListBuilder<List, byte>
+			{
+				if (FindProp(name, out (JsonValue value, long position) v)) {
+					var type = v.value.Type;
+					if (type == JsonType.NotParsed) {
+						var cur = TOS.TokenStart;
+						type = DetectTypeOfUnparsedValue(ref cur);
+					}
+
+					if (type == JsonType.List || type == JsonType.Object) {
+						// Read array in the standard way
+						// TODO: support { "$id":"...", "$values":"byte array as string" }
+						var reader = new Reader(this);
+						var loader = new ListLoader<Reader, List, byte, ListBuilder, SyncPrimitive<Reader>>(new SyncPrimitive<Reader>(), builder, mode);
+						return loader.Sync(ref reader, name, default);
+					} else if (type == JsonType.String || type == JsonType.SimpleString) {
+						v = ReadPrimitive(name);
+						Debug.Assert(v.value.Type == type);
+						Debug.Assert(v.value.Text.Length >= 2);
+
+						var text = v.value.Text;
+						if (text.Length == 2) {
+							// empty string
+							return builder.Empty;
+						} else if (text.Span[0] != '!' && text.Span[0] != '\b' &&
+							(_opt.NewtonsoftCompatibility || _opt.ByteArrayMode != JsonByteArrayMode.Bais))
+						{
+							// Interpret as Base64
+							// TODO: add ability to decode byte array directly from UTF-8 bytes
+							string str = DecodeString(v.value);
+							// TODO: make errors here properly nonfatal by saving skipped value
+							// (also, catch+rethrow; technically it's not even marked fatal right now
+							// but it malfunctions: the same field cannot necessarily be read again)
+							byte[] bytes = Convert.FromBase64String(str);
+							if (bytes is List list)
+								return list;
+
+							return BuildListFromSpan<ListBuilder, List>(bytes.AsSpan(), builder);
+						}
+						
+						// ***********************************************************
+						// TODO: THIS IS BROKEN. WE MUST DECODE ESCAPE SEQUENCES FIRST: \b => 8, \\ => \
+						// ***********************************************************
+						// Interpret as BAIS
+						var output = ByteArrayInString.TryConvertToBytes(text.Span);
+						if (output.HasValue) {
+							if (output.Value.AsMemory() is List memory)
+								return memory;
+
+							return BuildListFromSpan<ListBuilder, List>(output.Value.AsMemory().Span, builder);
+						}
+						// TODO: make this nonfatal by saving skipped value
+						throw SyntaxError((int)(v.position - TOS.PositionOfBuf0), name, "BAIS byte array");
+					}
+				}
+				return default;
+			}
+
+			private List? BuildListFromSpan<ListBuilder, List>(Span<byte> span, ListBuilder builder)
+				where ListBuilder : IListBuilder<List, byte>
+			{
+				builder.Alloc(span.Length);
+				for (int i = 0; i < span.Length; i++)
+					builder.Add(span[i]);
+								
+				return builder.List;
+			}
+
+			#region Primitive readers (String, Char, Integer, Double, Decimal, Boolean)
+
 			public string? ReadString(string? name)
 			{
-				if (TryReadPrimitive(name, out var v)) {
-					var span = v.value.Text.Span;
+				(JsonValue value, long position) v = ReadPrimitive(name);
 
-					switch (v.value.Type) {
-						case JsonType.SimpleString:
-						case JsonType.String:
-							return DecodeString(v.value);
+				switch (v.value.Type) {
+					case JsonType.SimpleString:
+					case JsonType.String:
+						return DecodeString(v.value);
 
-						case JsonType.PlainInteger:
-						case JsonType.Number:
-							return AsciiToString(v.value.Text.Span);
+					case JsonType.PlainInteger:
+					case JsonType.Number:
+						return AsciiToString(v.value.Text.Span);
 
-						case JsonType.Null:
-							return null;
+					case JsonType.Null:
+						return null;
 						
-						case JsonType.True:
-							return _optRead.TrueAsString;
+					case JsonType.True:
+						return _optRead.TrueAsString;
 
-						case JsonType.False:
-							return _optRead.FalseAsString;
+					case JsonType.False:
+						return _optRead.FalseAsString;
 
-						case JsonType.Object:
-						case JsonType.List:
-							if (_optRead.ObjectToPrimitive == null)
-								Error((int)(v.position - TOS.PositionOfBuf0), "Expected string, got " + v.value.Type, false);
+					case JsonType.Object:
+					case JsonType.List:
+						if (_optRead.ObjectToPrimitive == null)
+							throw UnexpectedTypeError(v.position, name, "string", v.value.Type);
 							
-							return _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, typeof(string))?.ToString();
-					}
-					Debug.Fail("unreachable");
+						return _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, typeof(string))?.ToString();
 				}
-				Error(TOS.TokenIndex, "Property not found: {0}".Localized(name), false);
-				return null;
+				Debug.Fail("unreachable");
+				return default;
 			}
 
-			internal BigInteger ReadInteger(string? name)
+			public char? ReadChar(string? name, bool nullable)
 			{
-				if (TryReadPrimitive(name, out var v)) {
-					var span = v.value.Text.Span;
+				(JsonValue value, long position) v = ReadPrimitive(name);
 
-					switch (v.value.Type) {
-						case JsonType.SimpleString:
-						case JsonType.String:
-							return Convert.ToInt64(DecodeString(v.value));
+				switch (v.value.Type) {
+					case JsonType.SimpleString:
+					case JsonType.String:
+						return DecodeString(v.value).TryGet(0, '\0');
 
-						case JsonType.PlainInteger:
-							return DecodeInteger(v.value.Text.Span);
+					case JsonType.PlainInteger:
+						return checked((char) DecodeInteger(v.value.Text.Span));
 						
-						case JsonType.Number:
-							return (BigInteger) DecodeNumber(v.value.Text.Span);
+					case JsonType.Number:
+						return checked((char) DecodeNumber(v.value.Text.Span));
 
-						case JsonType.Null:
-							Error((int)(v.position - TOS.PositionOfBuf0), "\"{0}\" is not nullable, but was null".Localized(name));
-							return 0; // unreachable
+					case JsonType.Null:
+						if (!nullable)
+							throw UnexpectedNullError(v.position, name);
+						return null;
 						
-						case JsonType.True:
-							return 1;
+					case JsonType.True:
+						return 't';
 
-						case JsonType.False:
-							return 0;
+					case JsonType.False:
+						return 'f';
 
-						case JsonType.Object:
-						case JsonType.List:
-							if (_optRead.ObjectToPrimitive == null)
-								Error((int)(v.position - TOS.PositionOfBuf0), "Expected integer, got " + v.value.Type, false);
+					case JsonType.Object:
+					case JsonType.List:
+						if (_optRead.ObjectToPrimitive == null)
+							throw UnexpectedTypeError(v.position, name, "char", v.value.Type);
 							
-							return (BigInteger) Convert.ToDouble(_optRead.ObjectToPrimitive!(name, v.value.Text, v.position, typeof(double)));
-					}
-					Debug.Fail("unreachable");
+						var result = _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, nullable ? typeof(char?) : typeof(char));
+						if (result == null) {
+							if (nullable)
+								return null;
+							throw UnexpectedNullError(v.position, name, true);
+						}
+						return result.ToChar(null);
 				}
-				Error(TOS.TokenIndex, "Property not found: {0}".Localized(name), false);
-				return 0;
+				Debug.Fail("unreachable");
+				return default;
 			}
 
+			public BigInteger? ReadInteger(string? name, bool nullable)
+			{
+				(JsonValue value, long position) v = ReadPrimitive(name);
+
+				switch (v.value.Type) {
+					case JsonType.SimpleString:
+					case JsonType.String:
+						var str = DecodeString(v.value);
+						if (BigInteger.TryParse(str, out var parsed))
+							return parsed;
+						return (BigInteger) double.Parse(str, NumberStyles.Float);
+
+					case JsonType.PlainInteger:
+						return DecodeInteger(v.value.Text.Span);
+						
+					case JsonType.Number:
+						return (BigInteger) DecodeNumber(v.value.Text.Span);
+
+					case JsonType.Null:
+						if (!nullable)
+							throw UnexpectedNullError(v.position, name);
+						return null;
+						
+					case JsonType.True:
+						return 1;
+
+					case JsonType.False:
+						return 0;
+
+					case JsonType.Object:
+					case JsonType.List:
+						if (_optRead.ObjectToPrimitive == null)
+							throw UnexpectedTypeError(v.position, name, "integer", v.value.Type);
+
+						var result = _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, nullable ? typeof(double?) : typeof(double));
+						if (result == null) {
+							if (nullable)
+								return null;
+							throw UnexpectedNullError(v.position, name, true);
+						}
+						return (BigInteger) result.ToDouble(null);
+				}
+				Debug.Fail("unreachable");
+				return default;
+			}
+
+			public double? ReadDouble(string? name, bool nullable)
+			{
+				(JsonValue value, long position) v = ReadPrimitive(name);
+
+				switch (v.value.Type) {
+					case JsonType.SimpleString:
+					case JsonType.String:
+						var str = DecodeString(v.value);
+						return double.Parse(str, NumberStyles.Float);
+
+					case JsonType.PlainInteger:
+						return (double) DecodeInteger(v.value.Text.Span);
+						
+					case JsonType.Number:
+						return (double) DecodeNumber(v.value.Text.Span);
+
+					case JsonType.Null:
+						if (!nullable)
+							throw UnexpectedNullError(v.position, name);
+						return null;
+						
+					case JsonType.True:
+						return 1;
+
+					case JsonType.False:
+						return 0;
+
+					case JsonType.Object:
+					case JsonType.List:
+						if (_optRead.ObjectToPrimitive == null)
+							throw UnexpectedTypeError(v.position, name, "double", v.value.Type);
+							
+						var result = _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, nullable ? typeof(double?) : typeof(double));
+						if (result == null) {
+							if (nullable)
+								return null;
+							throw UnexpectedNullError(v.position, name, true);
+						}
+						return result.ToDouble(null);
+				}
+				Debug.Fail("unreachable");
+				return default;
+			}
+
+			public decimal? ReadDecimal(string? name, bool nullable)
+			{
+				(JsonValue value, long position) v = ReadPrimitive(name);
+
+				switch (v.value.Type) {
+					case JsonType.SimpleString:
+					case JsonType.String:
+						var str = DecodeString(v.value);
+						return decimal.Parse(str, NumberStyles.Float);
+
+					case JsonType.PlainInteger:
+						return (decimal) DecodeInteger(v.value.Text.Span);
+						
+					case JsonType.Number:
+						return (decimal) DecodeDecimal(v.value.Text.Span);
+
+					case JsonType.Null:
+						if (!nullable)
+							throw UnexpectedNullError(v.position, name);
+						return null;
+						
+					case JsonType.True:
+						return 1;
+
+					case JsonType.False:
+						return 0;
+
+					case JsonType.Object:
+					case JsonType.List:
+						if (_optRead.ObjectToPrimitive == null)
+							throw UnexpectedTypeError(v.position, name, "decimal", v.value.Type);
+							
+						var result = _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, nullable ? typeof(decimal?) : typeof(decimal));
+						if (result == null) {
+							if (nullable)
+								return null;
+							throw UnexpectedNullError(v.position, name, true);
+						}
+						return result.ToDecimal(null);
+				}
+				Debug.Fail("unreachable");
+				return default;
+			}
+
+			public bool? ReadBoolean(string? name, bool nullable)
+			{
+				(JsonValue value, long position) v = ReadPrimitive(name);
+
+				switch (v.value.Type) {
+					case JsonType.SimpleString:
+					case JsonType.String:
+						var str = DecodeString(v.value);
+						if (bool.TryParse(str, out bool parsed))
+							return parsed;
+						return double.Parse(str) != 0;
+
+					case JsonType.PlainInteger:
+						return DecodeInteger(v.value.Text.Span) != 0;
+
+					case JsonType.Number:
+						return DecodeNumber(v.value.Text.Span) != 0;
+
+					case JsonType.Null:
+						if (!nullable)
+							Error((int)(v.position - TOS.PositionOfBuf0), "\"{0}\" is not nullable, but was null".Localized(name));
+						return null;
+
+					case JsonType.True:
+						return true;
+
+					case JsonType.False:
+						return false;
+
+					case JsonType.Object:
+					case JsonType.List:
+						if (_optRead.ObjectToPrimitive == null)
+							throw UnexpectedTypeError(v.position, name, "boolean", v.value.Type);
+
+						var result = _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, typeof(bool))?.ToBoolean(null);
+						if (result == null) {
+							if (nullable)
+								return null;
+							throw UnexpectedNullError(v.position, name, true);
+						}
+						return result.Value;
+				}
+				Debug.Fail("unreachable");
+				return default;
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			private (JsonValue value, long position) ReadPrimitive(string? name)
+			{
+				if (TryReadPrimitive(name, out (JsonValue value, long position) v))
+					return v;
+				throw NotFoundError(name);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			private bool TryReadPrimitive(string? name, out (JsonValue value, long position) v)
 			{
 				if (FindProp(name, out v)) {
 					if (v.value.Type == JsonType.NotParsed) {
 						var cur = TOS.TokenStart;
 						v.value = ScanValue(ref cur);
+						
+						if (v.value.Type == JsonType.Invalid)
+							throw SyntaxError(TOS.TokenIndex, name);
 
 						BeginNext(ref cur);
 					}
@@ -512,6 +779,8 @@ namespace Loyc.SyncLib
 				}
 				return false;
 			}
+
+			#endregion
 
 			private bool TryOpenListValues(ref CurrentByte cur)
 			{
@@ -776,10 +1045,48 @@ namespace Loyc.SyncLib
 				}
 			}
 
-			private void Error(int i, string msg, bool fatal = true)
+			[MethodImpl(MethodImplOptions.NoInlining)]
+			public Exception UnexpectedNullError(long position, string? name, bool nullFromConverter = false)
+			{
+				string msg;
+				if (nullFromConverter)
+					msg = "ObjectToPrimitive returned null for non-nullable JSON value";
+				else
+					msg = "null encountered in JSON at non-nullable location";
+				if (name != null)
+					msg += " \"" + name + '"';
+				return NewError((int)(position - TOS.PositionOfBuf0), msg, false);
+			}
+			
+			[MethodImpl(MethodImplOptions.NoInlining)]
+			public Exception NotFoundError(string? name)
+				=> NewError(TOS.TokenIndex, "Property not found: {0}".Localized(name), false);
+			
+			[MethodImpl(MethodImplOptions.NoInlining)]
+			private Exception UnexpectedTypeError(long position, string? name, string expected, JsonType type)
+			{
+				// TODO: localize all errors exactly once
+				var msg = "Expected {0}, got {1} in JSON".Localized(expected, type);
+				if (name != null)
+					msg += " \"" + name + '"';
+				return NewError((int)(position - TOS.PositionOfBuf0), msg, false);
+			}
+
+			[MethodImpl(MethodImplOptions.NoInlining)]
+			private Exception SyntaxError(int index, string? name, string context = "JSON value")
+			{
+				// TODO: localize all errors exactly once
+				var msg = "Syntax error in {0}".Localized(context.Localized());
+				if (name != null)
+					msg += " \"" + name + '"';
+				return NewError(index, msg);
+			}
+			
+			[MethodImpl(MethodImplOptions.NoInlining)]
+			private Exception NewError(int i, string msg, bool fatal = true)
 			{
 				if (_fatalError != null)
-					throw _fatalError; // New error is just a symptom of the old error; rethrow
+					return _fatalError; // New error is just a symptom of the old error; rethrow
 
 				long position = TOS.PositionOfBuf0 + i;
 				var exc = new FormatException(msg + " " + "(at byte {0})".Localized(position));
@@ -787,8 +1094,10 @@ namespace Loyc.SyncLib
 				
 				if (fatal)
 					_fatalError = exc;
-				throw exc;
+				return exc;
 			}
+
+			private void Error(int i, string msg, bool fatal = true) => throw NewError(i, msg, fatal);
 
 			// The scanner could choose a much larger size, but this is the minimum we'll tolerate
 			const int DefaultMinimumScanSize = 32;
@@ -854,17 +1163,17 @@ namespace Loyc.SyncLib
 						cur.i += 4;
 						return new JsonValue(JsonType.Null, TOS.Buf.Slice(i, 4));
 					}
-					else if (b == 'f' && AutoRead(ref cur, 5) && cur[1] == 'a' && cur[2] == 'l' && cur[3] == 's' && cur[2] == 'e')
+					else if (b == 'f' && AutoRead(ref cur, 5) && cur[1] == 'a' && cur[2] == 'l' && cur[3] == 's' && cur[4] == 'e')
 					{
 						int i = cur.i;
 						cur.i += 5;
-						return new JsonValue(JsonType.Null, TOS.Buf.Slice(i, 5));
+						return new JsonValue(JsonType.False, TOS.Buf.Slice(i, 5));
 					}
 					else if (b == 't' && AutoRead(ref cur, 4) && cur[1] == 'r' && cur[2] == 'u' && cur[3] == 'e')
 					{
 						int i = cur.i;
 						cur.i += 5;
-						return new JsonValue(JsonType.Null, TOS.Buf.Slice(i, 4));
+						return new JsonValue(JsonType.True, TOS.Buf.Slice(i, 4));
 					}
 					else if (b == '{' || b == '[')
 					{
@@ -1015,11 +1324,11 @@ namespace Loyc.SyncLib
 			}
 			static double DecodeNumber(ReadOnlySpan<byte> text)
 			{
-				return double.Parse(AsciiToString(text));
+				return double.Parse(AsciiToString(text), NumberStyles.Float);
 			}
 			static decimal DecodeDecimal(ReadOnlySpan<byte> text)
 			{
-				return decimal.Parse(AsciiToString(text));
+				return decimal.Parse(AsciiToString(text), NumberStyles.Float);
 			}
 
 			static string AsciiToString(ReadOnlySpan<byte> text)

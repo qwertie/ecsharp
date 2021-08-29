@@ -401,7 +401,7 @@ namespace Loyc.SyncLib.Tests
 
 		public StandardFields Sync(S sync, StandardFields? obj)
 		{
-			obj = obj ?? new BigStandardModel(0);
+			obj = obj ?? new StandardFields(0);
 			obj.Bool = sync.Sync("Bool", obj.Bool);
 			obj.Int8 = sync.Sync("Int8", obj.Int8);
 			obj.Uint8 = sync.Sync("Uint8", obj.Uint8);

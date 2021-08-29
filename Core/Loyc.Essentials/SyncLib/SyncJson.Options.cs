@@ -39,7 +39,7 @@ namespace Loyc.SyncLib
 			/// can also affect the way reading happens (see Remarks). When writing 
 			/// with NewtonsoftCompatibility enabled, Base64 is written instead of BAIS.</summary>
 			/// <remarks>
-			/// The documentation of <see cref="ByteArrayMode"/> explains each mode.
+			/// The documentation of <see cref="JsonByteArrayMode"/> explains each mode.
 			/// Generally, ByteArrayMode.PrefixedBais mode is recommended for the
 			/// most compact output and best debugging experience (since BIAS preserves 
 			/// long runs of ASCII characters in the output), but Base64 is required

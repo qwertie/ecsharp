@@ -204,14 +204,18 @@ namespace Loyc
 		public static ArraySlice<byte>? TryConvertToBytes(string s)
 		{
 			byte[] b = Encoding.UTF8.GetBytes(s);
-			return ConvertToBytes(b);
+			return TryConvertToBytesInPlace(b);
 		}
 
-		private static ArraySlice<byte>? ConvertToBytes(byte[] b)
-		{
-			if (b.Length == 0)
-				return b;
+		public static ArraySlice<byte>? TryConvertToBytes(ReadOnlySpan<byte> ascii)
+			=> TryConvertToBytesInPlace(ascii.ToArray());
 
+		public static ArraySlice<byte>? TryConvertToBytesInPlace(Memory<byte> ascii)
+		{
+			if (ascii.Length == 0)
+				return ascii;
+
+			Span<byte> b = ascii.Span;
 			int iStart = b[0] == '!' ? 1 : 0;
 			for (int i = iStart; i < b.Length - 1; ++i)
 			{
@@ -255,12 +259,12 @@ namespace Loyc
 								b[iOut++] = b[i++];
 						}
 						if (i >= b.Length)
-							return b.Slice(iStart, iOut - iStart);
+							return ascii.Slice(iStart, iOut - iStart);
 						i++;
 					}
 				}
 			}
-			return b.Slice(iStart);
+			return ascii.Slice(iStart);
 		}
 
 		public static char EncodeBase64Digit(int digit)

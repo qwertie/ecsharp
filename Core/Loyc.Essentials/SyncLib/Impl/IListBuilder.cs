@@ -31,6 +31,8 @@ namespace Loyc.SyncLib.Impl
 		TList CastList(object value);
 		/// <summary>Called once when done loading to retrieve the list.</summary>
 		TList? List { get; }
+		/// <summary>Returns an empty list, bypassing the normal building process</summary>
+		TList Empty { get; }
 	}
 
 	public struct ListBuilder<T> : IListBuilder<List<T>, T>
@@ -50,6 +52,8 @@ namespace Loyc.SyncLib.Impl
 		//		result[i] = List[_index++];
 		//	return result.AsSpan();
 		//}
+
+		public List<T> Empty => new List<T>();
 	}
 
 	public struct ArrayBuilder<T> : IListBuilder<T[], T>
@@ -79,6 +83,8 @@ namespace Loyc.SyncLib.Impl
 		//		result[i] = List[_index++];
 		//	return result.AsSpan();
 		//}
+		
+		public T[] Empty => Empty<T>.Array;
 	}
 
 	public struct MemoryBuilder<T> : IListBuilder<Memory<T>, T>, IListBuilder<ReadOnlyMemory<T>, T>
@@ -113,6 +119,9 @@ namespace Loyc.SyncLib.Impl
 		}
 
 		public void Add(T item) => _list.Add(item);
+
+		public Memory<T> Empty => default;
+		ReadOnlyMemory<T> IListBuilder<ReadOnlyMemory<T>, T>.Empty => default;
 	}
 
 	/// <summary>Helper type for reading <see cref="ICollection{T}"/> types.</summary>
@@ -145,5 +154,7 @@ namespace Loyc.SyncLib.Impl
 		//		result[i] = List[_index++];
 		//	return result.AsSpan();
 		//}
+
+		public TList Empty => _alloc(0);
 	}
 }

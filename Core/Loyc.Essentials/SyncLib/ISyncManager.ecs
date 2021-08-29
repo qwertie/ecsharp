@@ -293,8 +293,8 @@ namespace Loyc.SyncLib
 		//         public MyClass Sync(SyncManager sm, MyClass data) { ... }
 		//     }
 		//
-		// <summary>This method is used by Sync() extension methods to read 
-		//   or write an array. Users don't need to call it.</summary>
+		// <summary>This method is used by SyncList() extension methods to read 
+		//   or write a list. Users don't need to call it.</summary>
 		// <param name="list">The list that the caller wants to save.
 		//   This parameter is ignored when not saving.</param>
 		// <param name="saving">The object being saved. This parameter is used to 
