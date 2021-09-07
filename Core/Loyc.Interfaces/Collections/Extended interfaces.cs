@@ -78,7 +78,7 @@ namespace Loyc.Collections
 	{
 	}
 
-	/// <summary>Extension methods for Loyc collection interfaces</summary>
+	/// <summary>Core functionality for Loyc collection interfaces</summary>
 	public static partial class LCInterfaces
 	{
 		public static void Resize<T>(this IListRangeMethods<T> list, int newSize)

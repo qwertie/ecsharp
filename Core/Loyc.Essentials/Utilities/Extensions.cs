@@ -1,13 +1,12 @@
+using Loyc.Collections;
+using Loyc.Graphs;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-using Loyc.Math;
-using Loyc.Collections.Impl;
 using System.Diagnostics;
-using Loyc.Collections;
+using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace Loyc
 {
@@ -40,6 +39,60 @@ namespace Loyc
 		public static bool IsPrimitiveNumeric(this RuntimeTypeHandle h)
 		{
 			return IsPrimitiveFloat(h) || IsPrimitiveInteger(h) || h.Equals(typeof(decimal).TypeHandle);
+		}
+
+		/// <summary>Gets a list of the interfaces that the specified type implements,
+		/// sorted topologically so that the highest-level interfaces are listed first.
+		/// Note: <see cref="TypeTraits{T}.Interfaces"/> provides the same information
+		/// memoized, for fast repeated access.</summary>
+		/// <param name="type"></param>
+		public static IReadOnlyList<Type> GetInterfacesSortedTopologically(this Type type)
+		{
+			var results = new List<Type>();
+			
+			GraphMethodsBase<BasesAdapter, BasesAdapter, BasesAdapter[]>.TopoVisit(
+				new BasesAdapter(type),
+				new AddAdapter<BasesAdapter, List<Type>>((adapter, r) => r.Add(adapter.Type), results),
+				new Dictionary<BasesAdapter, bool>());
+
+			Debug.Assert(results[results.Count - 1] == type);
+			results.RemoveAt(results.Count - 1);
+			results.Reverse();
+			return results;
+		}
+
+		/// <summary>Gets the base interfaces of the specified types and sorts all the types
+		/// (including those provided) topologically, with the highest-level types first.
+		/// </summary>
+		public static IReadOnlyList<Type> SortWithBaseInterfacesTopologically(params Type[] startingTypes)
+		{
+			var results = new List<Type>();
+			
+			GraphMethodsBase<BasesAdapter, BasesAdapter, BasesAdapter[]>.TopologicalSort(
+				startingTypes.Select(t => new BasesAdapter(t)),
+				new AddAdapter<BasesAdapter, List<Type>>((adapter, r) => r.Add(adapter.Type), results));
+			
+			results.Reverse();
+			return results;
+		}
+
+		// A helper type used to do a topological sort of the base interfaces of a type
+		struct BasesAdapter : IOutbound<BasesAdapter[]>, ITo<BasesAdapter>
+		{
+			public readonly Type Type;
+			public BasesAdapter(Type type) { Type = type; _outbound = null; }
+
+			BasesAdapter[]? _outbound;
+			public BasesAdapter[] Outbound {
+				get {
+					if (_outbound == null) {
+						_outbound = Type.GetInterfaces().SelectArray(t => new BasesAdapter(t));
+					}
+					return _outbound;
+				}
+			}
+
+			public BasesAdapter To => this;
 		}
 	}
 

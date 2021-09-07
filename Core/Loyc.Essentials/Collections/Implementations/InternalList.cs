@@ -356,7 +356,7 @@ namespace Loyc.Collections.Impl
 			InternalList.Move(_array, from, to);
 		}
 
-		#region Boilerplate
+			#region Boilerplate
 
 		public int IndexOf(T item) { return IndexOf(item, 0); }
 		public int IndexOf(T item, int index)

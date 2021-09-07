@@ -130,6 +130,7 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="Collections\Adapters\AddAdapter.cs" />
     <Compile Include="Collections\Adapters\DictionaryAsSink.cs" />
     <Compile Include="Collections\Adapters\ListAsSink.cs" />
     <Compile Include="Collections\Adapters\ReadOnlyArraySlice.cs" />
@@ -181,6 +182,8 @@
     <Compile Include="Collections\BaseClasses\SetWrapper.cs" />
     <Compile Include="Collections\Implementations\MultiMap.cs" />
     <Compile Include="Compatibility\ArrayBufferWriter.cs" />
+    <Compile Include="Graphs\GraphMethods.cs" />
+    <Compile Include="Graphs\LGExt.cs" />
     <Compile Include="MessageSinks\LogMessage.cs" />
     <Compile Include="MessageSinks\MessageHolder.cs" />
     <Compile Include="MessageSinks\LogException.cs" />
@@ -302,6 +305,7 @@
     <Compile Include="Utilities\RunTests.cs" />
     <Compile Include="Strings\StringExt.cs" />
     <Compile Include="Utilities\ThreadEx.cs" />
+    <Compile Include="Utilities\Traits.cs" />
     <Compile Include="Utilities\Triplet.cs" />
     <Compile Include="Utilities\ValueComparer.cs" />
     <Compile Include="Compatibility\WeakReference.cs" />

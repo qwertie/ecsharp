@@ -6,6 +6,7 @@ using Loyc.Collections.Impl;
 using Loyc.Math;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Loyc.Graphs;
 
 namespace Loyc.Collections
 {
@@ -380,6 +381,46 @@ namespace Loyc.Collections
 			CheckParam.IsInRange("count", count, 0, list.Count - index);
 			SortCore(list, index, count, comp, indexes, quickSelectElems);
 		}
+
+		public static List<T> SortedTopologically<T>(this IEnumerable<T> startingItems, 
+			Func<T, IEnumerable<T>> getDependencies, Action<T>? onCycle = null)
+		{
+			var results = new List<T>();
+
+			GraphMethodsBase<TopoSortNode<T>, TopoSortNode<T>, List<TopoSortNode<T>>>.TopologicalSort(
+				startingItems.Select(t => new TopoSortNode<T>(t, getDependencies)),
+				new AddAdapter<TopoSortNode<T>, List<T>>((item, r) => r.Add(item.Item), results),
+				onCycle == null ? null : new Action<TopoSortNode<T>>(item => onCycle(item.Item)));
+
+			return results;
+		}
+
+		// A helper type for SortedTopologically()
+		struct TopoSortNode<T> : IOutbound<List<TopoSortNode<T>>>, ITo<TopoSortNode<T>>
+		{
+			public readonly T Item;
+			public Func<T, IEnumerable<T>> _getDependencies;
+			public TopoSortNode(T item, Func<T, IEnumerable<T>> getDependencies) { 
+				Item = item;
+				_getDependencies = getDependencies;
+				_outbound = null;
+			}
+
+			List<TopoSortNode<T>>? _outbound;
+			public List<TopoSortNode<T>> Outbound {
+				get {
+					if (_outbound == null) {
+						_outbound = new List<TopoSortNode<T>>();
+						foreach (var dep in _getDependencies(Item))
+							_outbound.Add(new TopoSortNode<T>(dep, _getDependencies));
+					}
+					return _outbound;
+				}
+			}
+
+			public TopoSortNode<T> To => this;
+		}
+
 
 		// Used by Sort, StableSort, SortLowestK, SortLowestKStable.
 		private static void SortCore<T>(this IList<T> list, int index, int count, Comparison<T> comp, 

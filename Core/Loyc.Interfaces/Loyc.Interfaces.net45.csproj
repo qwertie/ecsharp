@@ -153,6 +153,9 @@
     <Compile Include="Concrete\UString.cs" />
     <Compile Include="Concrete\ValueCollection.cs" />
     <Compile Include="Concrete\WeakValueDictionary.cs" />
+    <Compile Include="Graphs\IEdge.cs" />
+    <Compile Include="Graphs\IGraph.cs" />
+    <Compile Include="Graphs\INode.cs" />
     <Compile Include="ILocation.cs" />
     <Compile Include="Concrete\Localize.cs" />
     <Compile Include="Concrete\Maybe.cs" />

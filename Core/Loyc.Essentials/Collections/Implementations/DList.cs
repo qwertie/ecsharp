@@ -9,11 +9,11 @@ namespace Loyc.Collections
 	using System.Diagnostics.CodeAnalysis;
 
 	/// <summary>
-	/// A compact auto-enlarging list that efficiently supports supports insertions 
-	/// at the beginning or end of the list.
+	///   A compact auto-enlarging list, similar to <see cref="List{T}"/>, that efficiently 
+	///   supports supports insertions at the beginning or end of the list.
 	/// </summary><remarks>
-	/// An <a href="http://core.loyc.net/collections/dlist.html">article</a>
-	/// about this class is available.
+	///   An <a href="http://core.loyc.net/collections/dlist.html">article</a>
+	///   about this class is available.
 	/// </remarks>
 	/// <seealso cref="InternalDList{T}"/>
 	/// <seealso cref="DList"/>
