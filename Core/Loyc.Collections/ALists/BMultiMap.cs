@@ -89,7 +89,21 @@ namespace Loyc.Collections
 		#region Member variables and comparison functions
 
 		protected readonly static Func<K, K, int> DefaultKComparison = Comparer<K>.Default.Compare;
-		protected readonly static Func<V, V, int> DefaultVComparison = Comparer<V>.Default.Compare;
+		protected readonly static Func<V, V, int> DefaultVComparison = GetDefaultValueComparison();
+		static Func<V, V, int> GetDefaultValueComparison()
+		{
+			// Get Type of V (without Nullable<>)
+			Type v = typeof(V);
+			if (v.IsGenericType && v.GetGenericTypeDefinition() == typeof(Nullable<>))
+				v = v.GetGenericArguments()[0];
+
+			// Use default comparer if V implements IComparable or IComparable<V>.
+			// Otherwise, treat all values as equal, to avoid exceptions during comparisons.
+			if (typeof(IComparable).IsAssignableFrom(v) || typeof(IComparable<>).MakeGenericType(v).IsAssignableFrom(v))
+				return Comparer<V>.Default.Compare;
+			return PretendValuesAreEqual;
+		}
+
 		protected readonly static Func<V, V, int> PretendValuesAreEqual = (a, b) => 0;
 		protected readonly static Func<KeyValuePair<K, V>, KeyValuePair<K, V>, int> DefaultPairComparison = (a, b) =>
 		{
