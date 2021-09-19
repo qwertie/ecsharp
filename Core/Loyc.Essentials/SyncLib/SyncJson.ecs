@@ -56,7 +56,7 @@ namespace Loyc.SyncLib
 			}
 			##unroll($T in (bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char)) {
 				public $T? Sync(FieldId name, $T? savable) {
-					string nameS = name == null ? "" : name.Name;
+					string? nameS = name == null ? "" : name.Name;
 					if (savable == null)
 						_s.WriteNull(nameS);
 					else

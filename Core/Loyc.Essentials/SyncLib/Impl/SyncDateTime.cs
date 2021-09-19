@@ -31,10 +31,10 @@ namespace Loyc.SyncLib.Impl
 		{
 			var mode = sync.Mode;
 			string? loadedValue;
-			if ((mode & SyncMode.Saving) != 0)
+			if ((mode & SyncMode.Writing) != 0)
 			{
 				var dateStr = ToString(value);
-				if ((mode & SyncMode.Loading) != 0) {
+				if ((mode & SyncMode.Reading) != 0) {
 					loadedValue = sync.Sync(name, dateStr);
 				} else {
 					sync.Sync(name, dateStr);
@@ -53,10 +53,10 @@ namespace Loyc.SyncLib.Impl
 		{
 			var mode = sync.Mode;
 			string? loadedValue;
-			if ((mode & SyncMode.Saving) != 0)
+			if ((mode & SyncMode.Writing) != 0)
 			{
 				string? dateStr = value == null ? null : ToString(value.Value);
-				if ((mode & SyncMode.Loading) != 0)
+				if ((mode & SyncMode.Reading) != 0)
 				{
 					loadedValue = sync.Sync(name, dateStr);
 				}

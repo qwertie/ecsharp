@@ -105,7 +105,7 @@ namespace Loyc.SyncLib
 				return savable;
 			}
 			public bool? Sync(FieldId name, bool? savable) {
-				string nameS = name == null ? "" : name.Name;
+				string? nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
 				else
@@ -113,7 +113,7 @@ namespace Loyc.SyncLib
 				return savable;
 			}
 			public sbyte? Sync(FieldId name, sbyte? savable) {
-				string nameS = name == null ? "" : name.Name;
+				string? nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
 				else
@@ -121,7 +121,7 @@ namespace Loyc.SyncLib
 				return savable;
 			}
 			public byte? Sync(FieldId name, byte? savable) {
-				string nameS = name == null ? "" : name.Name;
+				string? nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
 				else
@@ -129,7 +129,7 @@ namespace Loyc.SyncLib
 				return savable;
 			}
 			public short? Sync(FieldId name, short? savable) {
-				string nameS = name == null ? "" : name.Name;
+				string? nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
 				else
@@ -137,7 +137,7 @@ namespace Loyc.SyncLib
 				return savable;
 			}
 			public ushort? Sync(FieldId name, ushort? savable) {
-				string nameS = name == null ? "" : name.Name;
+				string? nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
 				else
@@ -145,7 +145,7 @@ namespace Loyc.SyncLib
 				return savable;
 			}
 			public int? Sync(FieldId name, int? savable) {
-				string nameS = name == null ? "" : name.Name;
+				string? nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
 				else
@@ -153,7 +153,7 @@ namespace Loyc.SyncLib
 				return savable;
 			}
 			public uint? Sync(FieldId name, uint? savable) {
-				string nameS = name == null ? "" : name.Name;
+				string? nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
 				else
@@ -161,7 +161,7 @@ namespace Loyc.SyncLib
 				return savable;
 			}
 			public long? Sync(FieldId name, long? savable) {
-				string nameS = name == null ? "" : name.Name;
+				string? nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
 				else
@@ -169,7 +169,7 @@ namespace Loyc.SyncLib
 				return savable;
 			}
 			public ulong? Sync(FieldId name, ulong? savable) {
-				string nameS = name == null ? "" : name.Name;
+				string? nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
 				else
@@ -177,7 +177,7 @@ namespace Loyc.SyncLib
 				return savable;
 			}
 			public float? Sync(FieldId name, float? savable) {
-				string nameS = name == null ? "" : name.Name;
+				string? nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
 				else
@@ -185,7 +185,7 @@ namespace Loyc.SyncLib
 				return savable;
 			}
 			public double? Sync(FieldId name, double? savable) {
-				string nameS = name == null ? "" : name.Name;
+				string? nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
 				else
@@ -193,7 +193,7 @@ namespace Loyc.SyncLib
 				return savable;
 			}
 			public decimal? Sync(FieldId name, decimal? savable) {
-				string nameS = name == null ? "" : name.Name;
+				string? nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
 				else
@@ -201,7 +201,7 @@ namespace Loyc.SyncLib
 				return savable;
 			}
 			public BigInteger? Sync(FieldId name, BigInteger? savable) {
-				string nameS = name == null ? "" : name.Name;
+				string? nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
 				else
@@ -209,7 +209,7 @@ namespace Loyc.SyncLib
 				return savable;
 			}
 			public char? Sync(FieldId name, char? savable) {
-				string nameS = name == null ? "" : name.Name;
+				string? nameS = name == null ? "" : name.Name;
 				if (savable == null)
 					_s.WriteNull(nameS);
 				else

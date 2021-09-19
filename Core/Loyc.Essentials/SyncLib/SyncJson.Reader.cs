@@ -39,8 +39,9 @@ namespace Loyc.SyncLib
 
 			internal Reader(ReaderState state) => _s = state;
 
-			public SyncMode Mode => SyncMode.Loading;
-			public bool IsSaving => false;
+			public SyncMode Mode => SyncMode.Reading;
+			public bool IsReading => true;
+			public bool IsWriting => false;
 	
 			public bool SupportsReordering => true;
 			public bool SupportsDeduplication => true;

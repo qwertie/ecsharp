@@ -19,11 +19,8 @@ namespace Loyc.SyncLib.Impl
 		/// <returns>Returns the list object so that it can be assigned as the 
 		/// <see cref="ISyncManager.CurrentObject"/> in case the list contains
 		/// a cyclic reference to itself. If a cyclic reference is not possible,
-		/// this method can return null.
-		/// 
-		/// TODO: WHOA we totally forgot about our plan above to handle circular references
-		/// </returns>
-		void Alloc(int minLength);
+		/// this method can return null.</returns>
+		object? Alloc(int minLength);
 		/// <summary>When the list being loaded was already read from the data 
 		/// stream earlier, this property is called to convert that existing object 
 		/// to the target list type, skipping the usual calls to Alloc(), Add(T)
@@ -39,7 +36,7 @@ namespace Loyc.SyncLib.Impl
 	{
 		public List<T>? List { get; set; }
 
-		public void Alloc(int minLength) => List = minLength <= 1 ? new List<T>() : new List<T>(minLength);
+		public object Alloc(int minLength) => List = minLength <= 1 ? new List<T>() : new List<T>(minLength);
 
 		public List<T> CastList(object value) => List = value as List<T> ?? new List<T>((IEnumerable<T>)value);
 
@@ -61,7 +58,7 @@ namespace Loyc.SyncLib.Impl
 		InternalList<T> _list;
 		public T[]? List => _list.AsArray();
 
-		public void Alloc(int minLength) => _list = minLength == 0 ? InternalList<T>.Empty : new InternalList<T>(minLength);
+		public object Alloc(int minLength) => _list = minLength == 0 ? InternalList<T>.Empty : new InternalList<T>(minLength);
 
 		public T[] CastList(object value)
 		{
@@ -93,7 +90,11 @@ namespace Loyc.SyncLib.Impl
 		public Memory<T> List => _list.AsMemory();
 		ReadOnlyMemory<T> IListBuilder<ReadOnlyMemory<T>, T>.List => _list.AsMemory();
 
-		public void Alloc(int minLength) => _list = new InternalList<T>(minLength <= 1 ? 4 : minLength);
+		public object? Alloc(int minLength)
+		{
+			_list = new InternalList<T>(minLength <= 1 ? 4 : minLength);
+			return null;
+		}
 
 		public Memory<T> CastList(object value)
 		{
@@ -132,7 +133,11 @@ namespace Loyc.SyncLib.Impl
 		public TList? List { get; set; }
 		Func<int, TList> _alloc;
 
-		public void Alloc(int minLength) => List = _alloc(minLength);
+		public object? Alloc(int minLength)
+		{
+			List = _alloc(minLength);
+			return Traits<TList>.IsValueType ? null : List;
+		}
 
 		public TList CastList(object value)
 		{

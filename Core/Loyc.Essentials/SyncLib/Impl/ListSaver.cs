@@ -25,7 +25,7 @@ namespace Loyc.SyncLib.Impl
 
 		public List? Sync(ref SyncManager sync, FieldId name, List? list)
 		{
-			Debug.Assert(sync.IsSaving);
+			Debug.Assert(sync.IsWriting);
 			if (list == null) {
 				var status = sync.BeginSubObject(name, null, _listMode, 0);
 				Debug.Assert(!status.Begun && status.Object == null);
@@ -85,7 +85,7 @@ namespace Loyc.SyncLib.Impl
 
 		public void Write(ref SyncManager sync, FieldId name, Scanner scanner, object? list, int listCount)
 		{
-			Debug.Assert(sync.IsSaving);
+			Debug.Assert(!sync.IsReading);
 			Debug.Assert(list != null || (_listMode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) == SubObjectMode.NotNull);
 			
 			var (begunList, obj) = sync.BeginSubObject(name, list, _listMode, listCount);
@@ -95,7 +95,7 @@ namespace Loyc.SyncLib.Impl
 				try {
 					Memory<T> mem = default;
 					ReadOnlySpan<T> span = default;
-					if (sync.Mode == SyncMode.Saving) {
+					if (sync.Mode == SyncMode.Writing) {
 						while ((span = scanner.Read(span.Length, -1, ref mem).Span).Length != 0) {
 							for (int i = 0; i < span.Length; i++)
 								_syncItem.Sync(ref sync, null, span[i]);

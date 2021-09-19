@@ -45,14 +45,24 @@ namespace Loyc.SyncLib
 		SyncMode Mode { get; }
 
 		/// <summary>Returns true if the current <see cref="Mode"/> is 
-		/// <see cref="SyncMode.Saving"/>, <see cref="SyncMode.Query"/> or 
+		/// <see cref="SyncMode.Reading"/>, <see cref="SyncMode.Schema"/> or 
+		/// <see cref="SyncMode.Merge"/>. If your synchronizer method behaves 
+		/// differently when it is loading than when it is saving, it's often
+		/// more appropriate to get this property rather than testing whether 
+		/// <c>Mode == SyncMode.Loading</c>, because if the current mode is 
+		/// Schema or Merge, your synchronizer method should do most of its 
+		/// "loading" behavior.</summary>
+		bool IsReading { get; }
+
+		/// <summary>Returns true if the current <see cref="Mode"/> is 
+		/// <see cref="SyncMode.Writing"/>, <see cref="SyncMode.Query"/> or 
 		/// <see cref="SyncMode.Merge"/>. If your synchronizer method behaves 
 		/// differently when it is loading than when it is saving, you should
 		/// almost always get this property rather than testing whether 
 		/// <c>Mode == SyncMode.Saving</c>, because if the current mode is 
 		/// Query or Merge, your synchronizer method should usually do the same
 		/// thing it does when saving.</summary>
-		bool IsSaving { get; }
+		bool IsWriting { get; }
 
 		/// <summary>Indicates that the serialized format has some kind of schema that 
 		/// enables fields to be read in a different order than they were written

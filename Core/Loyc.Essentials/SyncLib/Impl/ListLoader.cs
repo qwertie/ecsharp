@@ -28,7 +28,7 @@ namespace Loyc.SyncLib.Impl
 
 		public TList? Sync(ref SyncManager sync, FieldId propName, TList? ignored)
 		{
-			Debug.Assert((sync.Mode & SyncMode.Loading) != 0);
+			Debug.Assert((sync.Mode & SyncMode.Reading) != 0);
 
 			var (begunList, obj) = sync.BeginSubObject(propName, null, _listMode);
 			if (begunList) {

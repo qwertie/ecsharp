@@ -15,9 +15,9 @@ namespace Loyc.SyncLib.Impl
 		{
 			var mode = sync.Mode;
 			string? loadedValue;
-			if ((mode & SyncMode.Saving) != 0) {
+			if ((mode & SyncMode.Writing) != 0) {
 				var timeStr = ToString(value);
-				if ((mode & SyncMode.Loading) != 0) {
+				if ((mode & SyncMode.Reading) != 0) {
 					loadedValue = sync.Sync(name, timeStr);
 				} else {
 					sync.Sync(name, timeStr);
@@ -34,9 +34,9 @@ namespace Loyc.SyncLib.Impl
 		{
 			var mode = sync.Mode;
 			string? loadedValue;
-			if ((mode & SyncMode.Saving) != 0) {
+			if ((mode & SyncMode.Writing) != 0) {
 				var timeStr = value == null ? null : ToString(value.Value);
-				if ((mode & SyncMode.Loading) != 0) {
+				if ((mode & SyncMode.Reading) != 0) {
 					loadedValue = sync.Sync(name, timeStr);
 				} else {
 					sync.Sync(name, timeStr);

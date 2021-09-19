@@ -80,8 +80,8 @@ namespace Loyc.SyncLib.Tests
 				calendar.Entries[entry.StartTime].Add(entry);
 			}
 
-			var newtonSync = new JsonCalendarSerialization { ApiVersion = 1, CalendarId = calendar.Id };
-			var synclibSync = new CalendarSync { ApiVersion = 1, CalendarId = calendar.Id };
+			var newtonSync = new JsonCalendarSerialization { ApiVersion = apiVersion, CalendarId = calendar.Id };
+			var synclibSync = new CalendarSync             { ApiVersion = apiVersion, CalendarId = calendar.Id };
 
 			// Adjust SyncLib's output formatting slightly to match Newtonsoft
 			synclibSync.Options.Write.Indent = "  ";
@@ -97,7 +97,7 @@ namespace Loyc.SyncLib.Tests
 			Calendar calendarS = synclibSync.Deserialize(newtonJson)!;
 
 			CheckEqual(calendarN, calendarS);
-
+			
 			static TimeSpan M(int minutes) 
 				=> TimeSpan.FromMinutes(minutes);
 			static DateTime T(int hour, int minute)

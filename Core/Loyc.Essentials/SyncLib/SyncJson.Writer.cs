@@ -72,8 +72,9 @@ namespace Loyc.SyncLib
 			internal WriterState _s;
 			internal Writer(WriterState s) => _s = s;
 
-			public SyncMode Mode => SyncMode.Saving;
-			public bool IsSaving => true;
+			public SyncMode Mode => SyncMode.Writing;
+			public bool IsReading => false;
+			public bool IsWriting => true;
 
 			public bool SupportsReordering => true;
 			public bool SupportsDeduplication => true;

@@ -37,7 +37,7 @@ namespace Loyc.SyncLib.Impl
 
 		public List<T>? Sync(ref SM sync, FieldId name, List<T>? savable)
 		{
-			if (!sync.IsSaving) {
+			if (sync.IsReading) {
 				var loader = new ListLoader<SM, List<T>, T, ListBuilder<T>, SyncItem>
 					(_syncItem, new ListBuilder<T>(), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, savable);
@@ -49,7 +49,7 @@ namespace Loyc.SyncLib.Impl
 
 		public IList<T>? Sync(ref SM sync, FieldId name, IList<T>? savable)
 		{
-			if (!sync.IsSaving) {
+			if (sync.IsReading) {
 				var loader = new ListLoader<SM, List<T>, T, CollectionBuilder<List<T>, T>, SyncItem>
 					(_syncItem, new CollectionBuilder<List<T>, T>(Alloc<T>.List), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, null);
@@ -61,7 +61,7 @@ namespace Loyc.SyncLib.Impl
 
 		public Memory<T> Sync(ref SM sync, FieldId name, Memory<T> savable)
 		{
-			if (!sync.IsSaving) {
+			if (sync.IsReading) {
 				var loader = new ListLoader<SM, Memory<T>, T, MemoryBuilder<T>, SyncItem>
 					(_syncItem, new MemoryBuilder<T>(), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, savable);
@@ -73,7 +73,7 @@ namespace Loyc.SyncLib.Impl
 
 		public ReadOnlyMemory<T> Sync(ref SM sync, FieldId name, ReadOnlyMemory<T> savable)
 		{
-			if (!sync.IsSaving) {
+			if (sync.IsReading) {
 				var loader = new ListLoader<SM, ReadOnlyMemory<T>, T, MemoryBuilder<T>, SyncItem>
 					(_syncItem, new MemoryBuilder<T>(), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, savable);
@@ -85,7 +85,7 @@ namespace Loyc.SyncLib.Impl
 
 		public T[]? Sync(ref SM sync, FieldId name, T[]? savable)
 		{
-			if (!sync.IsSaving) {
+			if (sync.IsReading) {
 				var loader = new ListLoader<SM, T[], T, ArrayBuilder<T>, SyncItem>
 					(_syncItem, new ArrayBuilder<T>(), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, savable);
@@ -97,7 +97,7 @@ namespace Loyc.SyncLib.Impl
 
 		public IReadOnlyList<T>? Sync(ref SM sync, FieldId name, IReadOnlyList<T>? savable)
 		{
-			if (!sync.IsSaving) {
+			if (sync.IsReading) {
 				var loader = new ListLoader<SM, List<T>, T, CollectionBuilder<List<T>, T>, SyncItem>
 					(_syncItem, new CollectionBuilder<List<T>, T>(Alloc<T>.List), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, null);
@@ -109,7 +109,7 @@ namespace Loyc.SyncLib.Impl
 
 		public IReadOnlyCollection<T>? Sync(ref SM sync, FieldId name, IReadOnlyCollection<T>? savable)
 		{
-			if (!sync.IsSaving) {
+			if (sync.IsReading) {
 				var loader = new ListLoader<SM, List<T>, T, CollectionBuilder<List<T>, T>, SyncItem>
 					(_syncItem, new CollectionBuilder<List<T>, T>(Alloc<T>.List), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, null);
@@ -121,7 +121,7 @@ namespace Loyc.SyncLib.Impl
 
 		public IListSource<T>? Sync(ref SM sync, FieldId name, IListSource<T>? savable)
 		{
-			if (!sync.IsSaving) {
+			if (sync.IsReading) {
 				var loader = new ListLoader<SM, DList<T>, T, CollectionBuilder<DList<T>, T>, SyncItem>
 					(_syncItem, new CollectionBuilder<DList<T>, T>(Alloc<T>.DList), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, null);
@@ -133,7 +133,7 @@ namespace Loyc.SyncLib.Impl
 
 		public ICollection<T>? Sync(ref SM sync, FieldId name, ICollection<T>? savable)
 		{
-			if (!sync.IsSaving) {
+			if (sync.IsReading) {
 				var loader = new ListLoader<SM, ICollection<T>, T, CollectionBuilder<ICollection<T>, T>, SyncItem>
 					(_syncItem, new CollectionBuilder<ICollection<T>, T>(Alloc<T>.List), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, null);
@@ -145,7 +145,7 @@ namespace Loyc.SyncLib.Impl
 
 		public HashSet<T>? Sync(ref SM sync, FieldId name, HashSet<T>? savable)
 		{
-			if (!sync.IsSaving) {
+			if (sync.IsReading) {
 				var loader = new ListLoader<SM, HashSet<T>, T, CollectionBuilder<HashSet<T>, T>, SyncItem>
 					(_syncItem, new CollectionBuilder<HashSet<T>, T>(Alloc<T>.HashSet), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, null);
@@ -179,7 +179,7 @@ namespace Loyc.SyncLib.Impl
 
 		public List? Sync(ref SM sync, FieldId name, List? savable)
 		{
-			if (!sync.IsSaving) {
+			if (sync.IsReading) {
 				return new ListLoader<SM, List, T, CollectionBuilder<List, T>, SyncItem>
 					(_syncItem, new CollectionBuilder<List, T>(_alloc), _listMode, _tupleLength).Sync(ref sync, name, savable);
 			} else {

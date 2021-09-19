@@ -18,7 +18,9 @@ namespace Loyc.SyncLib.Tests
 		public int UserId { get; set; }
 		public Color DefaultColor { get; set; } = Color.SeaGreen;
 
-		// Sorted table of calendar appointments (B+ tree from Loyc.Collections on NuGet)
+		// This is a sorted list of calendar appointments stored in a "multi-map",
+		// which is a dictionary that can have multiple values for a single key.
+		// However, our goal is to serialize it as a simple list of CalendarEntry.
 		public BMultiMap<DateTime, CalendarEntry> Entries { get; set; }
 		 = new BMultiMap<DateTime, CalendarEntry>();
 	}
@@ -36,8 +38,12 @@ namespace Loyc.SyncLib.Tests
 		public Calendar? Calendar { get; set; }
 
 		public string Description { get; set; } = "";
+		
+		// Date and time when the appointment starts
 		public DateTime StartTime { get; set; }
+		// Note: the first version of the API has EndTime instead of Duration
 		public TimeSpan Duration { get; set; } = TimeSpan.FromMinutes(60);
+		
 		public string Location { get; set; } = "";
 		public TimeSpan? AdvanceReminder { get; set; }
 		public Color Color { get; set; }
@@ -61,39 +67,49 @@ namespace Loyc.SyncLib.Tests
 		{
 			_calendar = calendar ??= new Calendar { Id = CalendarId };
 
-			calendar.UserId = sm.Sync("UserId", calendar.UserId);
+			if (ApiVersion >= 2)
+				calendar.DefaultColor = sm.Sync("DefColor", calendar.DefaultColor, new SyncColor<ISyncManager>());
 
+			// Serialize (save) or deserialize (load). It's saved as a simple list of
+			// entries, while in memory we have a more complex dictionary data structure.
 			IReadOnlyCollection<CalendarEntry> entries = calendar.Entries.Select(p => p.Value);
 			var entriesOut = sm.SyncColl("Entries", entries, SyncEntry, SubObjectMode.Normal)!;
-			if (!sm.IsSaving) {
+			if (sm.IsReading) {
 				calendar.Entries.Clear();
 				foreach (var entry in entriesOut)
 					calendar.Entries.Add(entry.StartTime, entry);
 			}
 
-			if (ApiVersion >= 2)
-				calendar.DefaultColor = sm.Sync("DefColor", calendar.DefaultColor, new SyncColor<ISyncManager>());
+			calendar.UserId = sm.Sync("UserId", calendar.UserId);
 
 			return calendar;
 		}
 
-		private Calendar _calendar;
+		private Calendar? _calendar;
 
 		private CalendarEntry SyncEntry(ISyncManager sm, CalendarEntry? entry)
 		{
 			entry ??= new CalendarEntry { Id = CalendarId };
 
+			if (ApiVersion >= 2) {
+				entry.Duration = sm.SyncTimeAsString("Duration", entry.Duration);
+				entry.Color    = sm.Sync("Color", entry.Color, new SyncColor<ISyncManager>());
+			}
+
 			entry.Calendar  ??= _calendar;
-			entry.CalendarId  = entry.Calendar.Id;
+			entry.CalendarId  = entry.Calendar!.Id;
 			entry.Id          = sm.Sync("Id", entry.Id);
 			entry.Description = sm.Sync("Description", entry.Description) ?? "";
 			entry.StartTime   = sm.SyncDateAsString("StartTime", entry.StartTime);
-			entry.Duration    = sm.SyncTimeAsString("Duration", entry.Duration);
 			entry.Location    = sm.Sync("Location", entry.Location) ?? "";
 			entry.AdvanceReminder = sm.SyncTimeAsString("AdvanceReminder", entry.AdvanceReminder);
 
-			if (ApiVersion >= 2)
-				entry.Color  = sm.Sync("Color", entry.Color, new SyncColor<ISyncManager>());
+			if (ApiVersion <= 1) {
+				// API version 1 has an EndTime field instead of a Duration field
+				var end = sm.SyncDateAsString("EndTime", entry.StartTime.Add(entry.Duration));
+				if (sm.IsReading)
+					entry.Duration = end.Subtract(entry.StartTime);
+			}
 
 			return entry;
 		}
@@ -111,11 +127,11 @@ namespace Loyc.SyncLib.Tests
 		}
 
 		public static string ToString(Color c) => "#" + (c.ToArgb() & 0xFFFFF).ToString("X6");
-		public static Color ToColor(string s)
+		public static Color ToColor(string? s)
 		{
-			if (!s.StartsWith("#"))
+			if (s == null || !s.StartsWith("#"))
 				throw new FormatException("Expected a color (starting with '#')");
-			return Color.FromArgb(Convert.ToInt32(s.Substring(1)));
+			return Color.FromArgb(Convert.ToInt32(s.Substring(1), 16));
 		}
 	}
 
@@ -125,13 +141,14 @@ namespace Loyc.SyncLib.Tests
 
 	public class JsonCalendar
 	{
-		public int UserId { get; set; }
 		public IEnumerable<JsonCalendarEntry?>? Entries { get; set; }
+		public int UserId { get; set; }
 	}
 
 	public class JsonCalendarV2 : JsonCalendar
 	{
-		public Color DefColor { get; set; }
+		public string? DefColor { get; set; }
+		public new IEnumerable<JsonCalendarEntryV2?>? Entries { get; set; }
 	}
 
 	public class JsonCalendarEntry
@@ -139,14 +156,17 @@ namespace Loyc.SyncLib.Tests
 		public int Id { get; set; }
 		public string? Description { get; set; }
 		public DateTime StartTime { get; set; }
-		public TimeSpan Duration { get; set; }
 		public string? Location { get; set; }
 		public TimeSpan? AdvanceReminder { get; set; }
+		public virtual DateTime EndTime { get; set; }
 	}
 
 	public class JsonCalendarEntryV2 : JsonCalendarEntry
 	{
-		public Color Color { get; set; }
+		[JsonIgnore]
+		public override DateTime EndTime { get; set; }
+		public TimeSpan Duration { get; set; }
+		public string? Color { get; set; }
 	}
 
 	public class JsonCalendarSerialization
@@ -196,8 +216,8 @@ namespace Loyc.SyncLib.Tests
 			} else {
 				return new JsonCalendarV2 {
 					UserId = calendar.UserId,
-					Entries = jsonEntries,
-					DefColor = calendar.DefaultColor,
+					Entries = jsonEntries.Cast<JsonCalendarEntryV2>(),
+					DefColor = ToString(calendar.DefaultColor),
 				};
 			}
 		}
@@ -206,17 +226,19 @@ namespace Loyc.SyncLib.Tests
 		{
 			JsonCalendarEntry jsonEntry;
 			if (ApiVersion <= 1) {
-				jsonEntry = new JsonCalendarEntry();
+				jsonEntry = new JsonCalendarEntry() {
+					EndTime = entry.StartTime.Add(entry.Duration)
+				};
 			} else {
 				jsonEntry = new JsonCalendarEntryV2 {
-					Color = entry.Color
+					Duration = entry.Duration,
+					Color = ToString(entry.Color)
 				};
 			}
 
 			jsonEntry.Id = entry.Id;
 			jsonEntry.Description = entry.Description;
 			jsonEntry.StartTime = entry.StartTime;
-			jsonEntry.Duration = entry.Duration;
 			jsonEntry.Location = entry.Location;
 			jsonEntry.AdvanceReminder = entry.AdvanceReminder;
 
@@ -234,15 +256,16 @@ namespace Loyc.SyncLib.Tests
 				UserId = jsonCalendar.UserId,
 				Entries = new BMultiMap<DateTime, CalendarEntry>()
 			};
-			
-			if (jsonCalendar.Entries == null)
+
+			var entries = jsonCalendar.Entries ?? (jsonCalendar as JsonCalendarV2)?.Entries;
+			if (entries == null)
 				throw new FormatException("Missing calendar entries");
 			
-			foreach (var entry in jsonCalendar.Entries)
+			foreach (var entry in entries)
 				_calendar.Entries[entry!.StartTime].Add(FromJsonCalendarEntry(entry!));
 			
 			if (jsonCalendar is JsonCalendarV2 v2) {
-				_calendar.DefaultColor = v2.DefColor;
+				_calendar.DefaultColor = ToColor(v2.DefColor);
 			}
 
 			return _calendar;
@@ -259,17 +282,28 @@ namespace Loyc.SyncLib.Tests
 			entry.Id = jsonEntry.Id;
 			entry.Description = jsonEntry.Description ?? "";
 			entry.StartTime = jsonEntry.StartTime;
-			entry.Duration = jsonEntry.Duration;
 			entry.Location = jsonEntry.Location ?? "";
 			entry.AdvanceReminder = jsonEntry.AdvanceReminder;
 
-			if (jsonEntry is JsonCalendarEntryV2 v2)
-				entry.Color = v2.Color;
+			if (jsonEntry is JsonCalendarEntryV2 v2) {
+				entry.Color = ToColor(v2.Color);
+				entry.Duration = v2.Duration;
+			} else {
+				entry.Duration = jsonEntry.EndTime.Subtract(jsonEntry.StartTime);
+			}
 
 			return entry;
 		}
 
 		#endregion
+
+		public static string ToString(Color c) => "#" + (c.ToArgb() & 0xFFFFF).ToString("X6");
+		public static Color ToColor(string? s)
+		{
+			if (s == null || !s.StartsWith("#"))
+				throw new FormatException("Expected a color (starting with '#')");
+			return Color.FromArgb(Convert.ToInt32(s.Substring(1), 16));
+		}
 	}
 
 	#endregion

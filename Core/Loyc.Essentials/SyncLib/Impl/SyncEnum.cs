@@ -10,15 +10,15 @@ namespace Loyc.SyncLib.Impl
 	{
 		public E Sync(ref SyncManager sync, FieldId name, E value)
 		{
-			if (sync.IsSaving) {
-				sync.Sync(name, value.ToString());
-				return value;
-			} else {
+			if (sync.IsReading) {
 				#if NETSTANDARD2_0 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472
 				return (E) Enum.Parse(typeof(E), sync.Sync(name, "")!);
 				#else
 				return Enum.Parse<E>(sync.Sync(name, "")!);
 				#endif
+			} else {
+				sync.Sync(name, value.ToString());
+				return value;
 			}
 		}
 	}
