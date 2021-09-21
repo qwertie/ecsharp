@@ -56,6 +56,8 @@ namespace Loyc.SyncLib
 				public int i;
 				public byte Byte => span[i];
 				public byte this[int offs] => span[i + offs];
+				[MethodImpl(MethodImplOptions.AggressiveInlining)]
+				public int ByteOr(int fallback) => (uint)i < (uint)span.Length ? span[i] : fallback;
 			}
 
 			/// <summary>Scanning of multiple JSON objects can be in progress 
@@ -94,7 +96,7 @@ namespace Loyc.SyncLib
 				// Location within the JSON file of Buf.Span[0] (used for error reporting)
 				public long PositionOfBuf0;
 				// hmm do we need this?
-				public bool ReachedEndOfList;
+				public bool? ReachedEndOfList;
 				// Location where the token most recently read by ScanValue() started in Buf
 				public int TokenIndex;
 				public CurrentByte TokenStart => new CurrentByte { span = Buf.Span, i = TokenIndex };
@@ -141,7 +143,7 @@ namespace Loyc.SyncLib
 			public int Depth => _miniStack.Count;
 			// True iff the current object is a list
 			public bool IsInsideList { get; private set; } = true;
-			public bool ReachedEndOfList => TOS.ReachedEndOfList;
+			public bool? ReachedEndOfList => TOS.ReachedEndOfList;
 
 			public void SetCurrentObject(object value) {
 				if (_miniStack.Count != 0 && _miniStack.Last.id.Text.Length != 0) {
@@ -347,8 +349,10 @@ namespace Loyc.SyncLib
 					cur.i++;
 					SkipWhitespace(ref cur);
 					if (isList) {
+						TOS.ReachedEndOfList = cur.ByteOr(']') == ']';
 						return JsonType.List;
 					} else {
+						TOS.ReachedEndOfList = null;
 						BeginProp(false, ref cur);
 						return JsonType.Object;
 					}
@@ -445,14 +449,14 @@ namespace Loyc.SyncLib
 						return loader.Sync(ref reader, name, default);
 					} else if (type == JsonType.String || type == JsonType.SimpleString) {
 						v = ReadPrimitive(name);
-						Debug.Assert(v.value.Type == type);
+						Debug.Assert(v.value.Type == JsonType.String || v.value.Type == JsonType.SimpleString);
 						Debug.Assert(v.value.Text.Length >= 2);
 
-						var text = v.value.Text;
+						var text = v.value.Text; // note: text begins and ends with '"'
 						if (text.Length == 2) {
 							// empty string
 							return builder.Empty;
-						} else if (text.Span[0] != '!' && text.Span[0] != '\b' &&
+						} else if (text.Span[1] != '!' && !(text.Span[1] == '\\' && text.Span[2] == 'b') &&
 							(_opt.NewtonsoftCompatibility || _opt.ByteArrayMode != JsonByteArrayMode.Bais))
 						{
 							// Interpret as Base64
@@ -852,10 +856,12 @@ namespace Loyc.SyncLib
 					ObjectStartIndex = int.MaxValue,
 				};
 				cur = TOS.TokenStart;
-				if (v.value.Type == JsonType.List)
+				if (v.value.Type == JsonType.List) {
 					SkipWhitespace(ref cur);
-				else
+					TOS.ReachedEndOfList = cur.ByteOr(']') == ']';
+				} else {
 					BeginProp(false, ref cur);
+				}
 			}
 
 
@@ -920,14 +926,19 @@ namespace Loyc.SyncLib
 				if (IsInsideList) {
 					if (SkipWhitespaceAnd(',', ref cur)) {
 						SkipWhitespace(ref cur);
-						if ((TOS.ReachedEndOfList = cur.Byte == ']') && _optRead.Strict)
+						bool reachedEnd = cur.ByteOr(']') == ']';
+						TOS.ReachedEndOfList = reachedEnd;
+						if (reachedEnd && _optRead.Strict)
 							Error(cur.i, "Comma is not allowed before '{0}'".Localized((char)cur.Byte));
 					} else {
-						if (!(TOS.ReachedEndOfList = !AutoRead(ref cur) || cur.Byte == ']'))
-							Error(cur.i, "Expected ']'");
+						bool reachedEnd = cur.ByteOr(']') == ']';
+						TOS.ReachedEndOfList = reachedEnd;
+						if (!reachedEnd)
+							Error(cur.i, "Expected ']'", fatal: true);
 					}
+					TOS.TokenIndex = cur.i;
 				} else {
-					BeginProp(true, ref cur);
+					BeginProp(expectComma: true, ref cur);
 				}
 			}
 
@@ -1172,7 +1183,7 @@ namespace Loyc.SyncLib
 					else if (b == 't' && AutoRead(ref cur, 4) && cur[1] == 'r' && cur[2] == 'u' && cur[3] == 'e')
 					{
 						int i = cur.i;
-						cur.i += 5;
+						cur.i += 4;
 						return new JsonValue(JsonType.True, TOS.Buf.Slice(i, 4));
 					}
 					else if (b == '{' || b == '[')
@@ -1393,8 +1404,10 @@ namespace Loyc.SyncLib
 				if (b < 0x80) {
 					if (b == '\\')
 						return DecodeEscape(curProp, ref cp_i, TOS.CurPropIndex);
-					else
+					else {
+						cp_i++;
 						return b;
+					}
 				} else {
 					return G.DecodeUTF8Char(curProp, ref cp_i);
 				}

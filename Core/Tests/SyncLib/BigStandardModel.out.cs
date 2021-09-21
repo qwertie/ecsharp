@@ -155,6 +155,21 @@ namespace Loyc.SyncLib.Tests
 		public List<BigInteger> BigIntegerList;
 		public List<char> CharList;
 		public List<string> StringList;
+		public IReadOnlyCollection<bool> BoolColl;
+		public IReadOnlyCollection<sbyte> Int8Coll;
+		public IReadOnlyCollection<byte> Uint8Coll;
+		public IReadOnlyCollection<short> Int16Coll;
+		public IReadOnlyCollection<ushort> Uint16Coll;
+		public IReadOnlyCollection<int> Int32Coll;
+		public IReadOnlyCollection<uint> Uint32Coll;
+		public IReadOnlyCollection<long> Int64Coll;
+		public IReadOnlyCollection<ulong> Uint64Coll;
+		public IReadOnlyCollection<float> SingleColl;
+		public IReadOnlyCollection<double> DoubleColl;
+		public IReadOnlyCollection<decimal> DecimalColl;
+		public IReadOnlyCollection<BigInteger> BigIntegerColl;
+		public IReadOnlyCollection<char> CharColl;
+		public IReadOnlyCollection<string> StringColl;
 
 		public BigStandardModelNoMem(int seed) : base(seed)
 		{
@@ -162,16 +177,23 @@ namespace Loyc.SyncLib.Tests
 			BoolList = new List<bool> { 
 				false, true
 			};
-			//BoolColl = BoolList;
+			BoolColl = BoolList;
 			StringArray = new string[] { 
-				"Yarn", "Twine"
+				"Yarn", "Twine\0", "\u0001\a\b\n\r\t\v•"
 			};
 			StringList = new List<string> { 
-				"Rope", "String"
+				"Rope", "String", "Thread🧵", "💩¡", "￭\uDCED\uDCB0\uDC80\uDCED\uDCB3\uDCBF\uDCED\uDCBF\uDCBF", "�"
 			};
-			//StringColl = StringList;
+			StringColl = StringList;
+			Uint8Array = new byte[] { 
+				(byte) seed, 0, 10, 20, 30, (byte) 'H', (byte) 'o', (byte) 'l', (byte) 'a', 33, 127, 128, 192, 255
+			};
+			Uint8List = new List<byte> { 
+				255, (byte) seed, 0
+			};
+			Uint8Coll = Uint8List;
 			Int8 = (sbyte) seed++;
-			//concatId($varstem, "Coll") = 
+			Int8Coll = 
 			Int8List = new List<sbyte> { 
 				
 				(sbyte) seed++, (sbyte) seed++
@@ -182,20 +204,8 @@ namespace Loyc.SyncLib.Tests
 				(sbyte) seed++, (sbyte) seed++, (sbyte) seed++
 				
 			};
-			Uint8 = (byte) seed++;
-			//concatId($varstem, "Coll") = 
-			Uint8List = new List<byte> { 
-				
-				(byte) seed++, (byte) seed++
-				
-			};
-			Uint8Array = new byte[] { 
-				
-				(byte) seed++, (byte) seed++, (byte) seed++
-				
-			};
 			Int16 = (short) seed++;
-			//concatId($varstem, "Coll") = 
+			Int16Coll = 
 			Int16List = new List<short> { 
 				
 				(short) seed++, (short) seed++
@@ -207,7 +217,7 @@ namespace Loyc.SyncLib.Tests
 				
 			};
 			Uint16 = (ushort) seed++;
-			//concatId($varstem, "Coll") = 
+			Uint16Coll = 
 			Uint16List = new List<ushort> { 
 				
 				(ushort) seed++, (ushort) seed++
@@ -219,7 +229,7 @@ namespace Loyc.SyncLib.Tests
 				
 			};
 			Int32 = (int) seed++;
-			//concatId($varstem, "Coll") = 
+			Int32Coll = 
 			Int32List = new List<int> { 
 				
 				(int) seed++, (int) seed++
@@ -231,7 +241,7 @@ namespace Loyc.SyncLib.Tests
 				
 			};
 			Uint32 = (uint) seed++;
-			//concatId($varstem, "Coll") = 
+			Uint32Coll = 
 			Uint32List = new List<uint> { 
 				
 				(uint) seed++, (uint) seed++
@@ -243,7 +253,7 @@ namespace Loyc.SyncLib.Tests
 				
 			};
 			Int64 = (long) seed++;
-			//concatId($varstem, "Coll") = 
+			Int64Coll = 
 			Int64List = new List<long> { 
 				
 				(long) seed++, (long) seed++
@@ -255,7 +265,7 @@ namespace Loyc.SyncLib.Tests
 				
 			};
 			Uint64 = (ulong) seed++;
-			//concatId($varstem, "Coll") = 
+			Uint64Coll = 
 			Uint64List = new List<ulong> { 
 				
 				(ulong) seed++, (ulong) seed++
@@ -267,7 +277,7 @@ namespace Loyc.SyncLib.Tests
 				
 			};
 			Single = (float) seed++;
-			//concatId($varstem, "Coll") = 
+			SingleColl = 
 			SingleList = new List<float> { 
 				
 				(float) seed++, (float) seed++
@@ -279,7 +289,7 @@ namespace Loyc.SyncLib.Tests
 				
 			};
 			Double = (double) seed++;
-			//concatId($varstem, "Coll") = 
+			DoubleColl = 
 			DoubleList = new List<double> { 
 				
 				(double) seed++, (double) seed++
@@ -291,7 +301,7 @@ namespace Loyc.SyncLib.Tests
 				
 			};
 			Decimal = (decimal) seed++;
-			//concatId($varstem, "Coll") = 
+			DecimalColl = 
 			DecimalList = new List<decimal> { 
 				
 				(decimal) seed++, (decimal) seed++
@@ -303,7 +313,7 @@ namespace Loyc.SyncLib.Tests
 				
 			};
 			BigInteger = (BigInteger) seed++;
-			//concatId($varstem, "Coll") = 
+			BigIntegerColl = 
 			BigIntegerList = new List<BigInteger> { 
 				
 				(BigInteger) seed++, (BigInteger) seed++
@@ -315,7 +325,7 @@ namespace Loyc.SyncLib.Tests
 				
 			};
 			Char = (char) seed++;
-			//concatId($varstem, "Coll") = 
+			CharColl = 
 			CharList = new List<char> { 
 				
 				(char) seed++, (char) seed++
@@ -401,7 +411,7 @@ namespace Loyc.SyncLib.Tests
 
 		public StandardFields Sync(S sync, StandardFields? obj)
 		{
-			obj = obj ?? new StandardFields(0);
+			obj = obj ?? new BigStandardModel(0);
 			obj.Bool = sync.Sync("Bool", obj.Bool);
 			obj.Int8 = sync.Sync("Int8", obj.Int8);
 			obj.Uint8 = sync.Sync("Uint8", obj.Uint8);
@@ -469,6 +479,21 @@ namespace Loyc.SyncLib.Tests
 			obj.BigIntegerList = sync.SyncList("BigIntegerList", obj.BigIntegerList);
 			obj.CharList = sync.SyncList("CharList", obj.CharList);
 			obj.StringList = sync.SyncList("StringList", obj.StringList);
+			obj.BoolColl = sync.SyncList("BoolColl", obj.BoolColl);
+			obj.Int8Coll = sync.SyncList("Int8Coll", obj.Int8Coll);
+			obj.Uint8Coll = sync.SyncList("Uint8Coll", obj.Uint8Coll);
+			obj.Int16Coll = sync.SyncList("Int16Coll", obj.Int16Coll);
+			obj.Uint16Coll = sync.SyncList("Uint16Coll", obj.Uint16Coll);
+			obj.Int32Coll = sync.SyncList("Int32Coll", obj.Int32Coll);
+			obj.Uint32Coll = sync.SyncList("Uint32Coll", obj.Uint32Coll);
+			obj.Int64Coll = sync.SyncList("Int64Coll", obj.Int64Coll);
+			obj.Uint64Coll = sync.SyncList("Uint64Coll", obj.Uint64Coll);
+			obj.SingleColl = sync.SyncList("SingleColl", obj.SingleColl);
+			obj.DoubleColl = sync.SyncList("DoubleColl", obj.DoubleColl);
+			obj.DecimalColl = sync.SyncList("DecimalColl", obj.DecimalColl);
+			obj.BigIntegerColl = sync.SyncList("BigIntegerColl", obj.BigIntegerColl);
+			obj.CharColl = sync.SyncList("CharColl", obj.CharColl);
+			obj.StringColl = sync.SyncList("StringColl", obj.StringColl);
 
 			return obj;
 		}

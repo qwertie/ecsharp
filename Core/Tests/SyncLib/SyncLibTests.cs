@@ -38,6 +38,12 @@ namespace Loyc.SyncLib.Tests
 		{
 			RoundTripTest(new StandardFields(50), new BigStandardModelSync<Writer>().Sync, new BigStandardModelSync<Reader>().Sync);
 		}
+
+		[Test]
+		public void RoundTripBigStandardModelNoMem()
+		{
+			RoundTripTest(new BigStandardModelNoMem(100), new BigStandardModelSync<Writer>().Sync, new BigStandardModelSync<Reader>().Sync);
+		}
 		
 		[Test]
 		public void RoundTripJackAndJill()

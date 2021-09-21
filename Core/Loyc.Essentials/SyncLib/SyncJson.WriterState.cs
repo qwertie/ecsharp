@@ -391,24 +391,33 @@ namespace Loyc.SyncLib
 								case '\f': buf[_i++] = (byte)'f'; break;
 								default: FinishEscape(buf, c, ref _i); break;
 							}
-						} else if (c < 127) {
+						} else if (c <= 127) {
 							if (c == '\\' || c == '"')
 								buf[_i++] = (byte)'\\';
 							buf[_i++] = (byte)c;
-						} else if (c <= 0x9F || escapeUnicode) {
+						} else if (escapeUnicode) {
 							buf[_i++] = (byte)'\\';
 							FinishEscape(buf, c, ref _i);
 						} else if (c <= 0x07FF) {
 							buf[_i++] = (byte)(0xC0 | (c >> 6));
 							buf[_i++] = (byte)(0x80 | (c & 0x3F));
-						} else if (c < 0xD800 || c > 0xDBFF || i + 1 >= s.Length || s[i + 1] < 0xDC00 || s[i + 1] > 0xDFFF) {
+						} else if (c >= 0xD800 && c <= 0xDFFF) {
+							if (c < 0xDC00 && i + 1 < s.Length && s[i + 1] >= 0xDC00 && s[i + 1] <= 0xDFFF) {
+								// valid surrogate pair
+								c = ((c & 0x3FF) << 10) + (s[++i] & 0x3FF) + 0x10000;
+								buf[_i++] = (byte)(0xF0 | (c >> 18));
+								buf[_i++] = (byte)(0x80 | (c >> 12) & 0x3F);
+								buf[_i++] = (byte)(0x80 | (c >> 6) & 0x3F);
+								buf[_i++] = (byte)(0x80 | (c & 0x3F));
+							} else {
+								// always escape unpaired surrogate characters. This is required because
+								// Encoding.UTF8 refuses to decode the UTF-8 form of such characters.
+								buf[_i++] = (byte)'\\';
+								FinishEscape(buf, c, ref _i);
+							}
+						} else {
+							// other BMP character
 							buf[_i++] = (byte)(0xE0 | (c >> 12));
-							buf[_i++] = (byte)(0x80 | (c >> 6) & 0x3F);
-							buf[_i++] = (byte)(0x80 | (c & 0x3F));
-						} else { // valid surrogate pair
-							c = ((c & 0x3FF) << 10) + (s[i + 1] & 0x3FF) + 0x10000;
-							buf[_i++] = (byte)(0xF0 | (c >> 18));
-							buf[_i++] = (byte)(0x80 | (c >> 12) & 0x3F);
 							buf[_i++] = (byte)(0x80 | (c >> 6) & 0x3F);
 							buf[_i++] = (byte)(0x80 | (c & 0x3F));
 						}
@@ -434,15 +443,21 @@ namespace Loyc.SyncLib
 					if (c <= 31) {
 						// Amazingly, \0 is not supported in JSON. Facepalm.
 						len += (c == '\t' || c == '\n' || c == '\r' || c == '\b' || c == '\f' ? 1 : 5);
-					} else if (c >= 127) {
-						if (c <= 0x9F || escapeUnicode)
+					} else if (c > 127) {
+						if (escapeUnicode)
 							len += 5;
 						else if (c <= 0x07FF)
 							len += 1;
-						else if (c < 0xD800 || c > 0xDBFF || i + 1 >= s.Length || s[i + 1] < 0xDC00 || s[i + 1] > 0xDFFF)
-							len += 2;
-						else // valid surrogate pair
-							len += 3;
+						else if (c >= 0xD800 && c <= 0xDFFF) {
+							if (c < 0xDC00 && i + 1 < s.Length && s[i + 1] >= 0xDC00 && s[i + 1] <= 0xDFFF) {
+								len += 3; // valid surrogate pair (4 bytes)
+								i++;
+							} else {
+								//len += 5; // invalid lone surrogate is escaped
+								len += 2;
+							}
+						} else
+							len += 2; // other BMP character (3 bytes)
 					} else if (c == '\\' || c == '"') {
 						len += 1;
 					}

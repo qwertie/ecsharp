@@ -99,7 +99,7 @@ namespace Loyc.SyncLib.Tests
 			(#type<$T[]>, "Array"),
 			(List<$T>, "List"),
 			//(IList< $T? >, "NList"),
-			//(IReadOnlyCollection< $T >, "Coll"),
+			(IReadOnlyCollection< $T >, "Coll"),
 		))
 		{
 			##unroll($T in standardTypes)
@@ -113,16 +113,19 @@ namespace Loyc.SyncLib.Tests
 		{
 			BoolArray = new bool[0];
 			BoolList = new List<bool> { false, true };
-			//BoolColl = BoolList;
-			StringArray = new string[] { "Yarn", "Twine" };
-			StringList = new List<string> { "Rope", "String" };
-			//StringColl = StringList;
+			BoolColl = BoolList;
+			StringArray = new string[] { "Yarn", "Twine\0", "\u0001\a\b\n\r\t\v•" };
+			StringList = new List<string> { "Rope", "String", "Thread🧵", "💩\u007F\u0080\u00A1", "￭\uDC00\uDCFF\uDFFF", "\uD800" };
+			StringColl = StringList;
+			Uint8Array = new byte[] { (byte)seed, 0, 10, 20, 30, (byte)'H', (byte)'o', (byte)'l', (byte)'a', 33, 127, 128, 192, 255 };
+			Uint8List = new List<byte> { 255, (byte)seed, 0 };
+			Uint8Coll = Uint8List;
 
 			##unroll($T in basicTypes) {
-				static if (!($T `staticMatches` bool)) {
+				static if (!($T `staticMatches` bool) && !($T `staticMatches` byte)) {
 					#snippet varstem = standardTypeToName($T);
 					$varstem = ($T) seed++;
-					//concatId($varstem, "Coll") = 
+					concatId($varstem, "Coll") = 
 					concatId($varstem, "List") = new List<$T> { 
 						($T) seed++, ($T) seed++
 					};
@@ -207,7 +210,7 @@ namespace Loyc.SyncLib.Tests
 				(#type<$T[]>, "Array", SyncList),
 				(List<$T>, "List", SyncList),
 				//(IList< $T? >, "NList", SyncList),
-				//(IReadOnlyCollection<$T>, "Coll", SyncList),
+				(IReadOnlyCollection<$T>, "Coll", SyncList),
 			))
 			{
 				##unroll($T in standardTypes)

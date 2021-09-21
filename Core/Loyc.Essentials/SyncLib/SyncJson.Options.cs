@@ -16,6 +16,12 @@ namespace Loyc.SyncLib
 {
 	partial class SyncJson
 	{
+		/// <summary>
+		/// Options that control general behavior of <see cref="SyncJson.Reader"/> and 
+		/// <see cref="SyncJson.Writer"/>. Note: some behaviors such as deduplication 
+		/// (including support for cyclic references) are controlled at the level of
+		/// individual fields, and such options are not duplicated here.
+		/// </summary>
 		public class Options
 		{
 			public Options(bool compactMode = false) => Write.Minify = compactMode;
@@ -227,42 +233,6 @@ namespace Loyc.SyncLib
 			return name;
 		}
 	}
-
-    // TODO: review Json.NET (NewtonSoft.Json?) which "does have support for referential types containing cyclic relationships"
-    // https://trycatch.me/xml-json-serialization-of-object-graphs-with-cyclic-references-in-net/
-    //public static partial class SyncJson
-    //{
-    //    static readonly Symbol _typeMarker = (Symbol)"\t";
-    //    static readonly Symbol _objectRef = (Symbol)"\r";
-    //    //public SyncTypeRegistry? TypeRegistry { get; set; }
-	//
-    //    public SyncJson() { }
-	//
-    //    public void Save<T>(Stream stream, T rootObject)
-    //    {
-    //        // Goal:
-    //        //{
-    //        //    "\r": 1, // reference
-    //        //    "\t": "Person", // type
-    //        //    "Name": "Jack",
-    //        //    "Age": 11,
-    //        //    "Siblings": [
-    //        //        { "\r": 2,
-    //        //          "Name": "Jill",
-    //        //          "Age": 9,
-    //        //          "Siblings": [{ "\r": 1 }]
-    //        //        }
-    //        //    ]
-    //        //}
-	//
-    //        var sync = new Synchronizer(stream, TypeRegistry ?? SyncTypeRegistry.Default);
-    //        sync.Sync(null, rootObject);
-    //    }
-	//
-    //    private SyncObjectFunc<JsonWriter, T> GetSyncObjectFunc<T>()
-    //    {
-    //    }
-    //}
 
 	/// <summary>Used to control how byte arrays are encoded by <see cref="SyncJson.Writer"/>.</summary>
 	[Flags]

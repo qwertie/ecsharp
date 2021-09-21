@@ -12,7 +12,7 @@ namespace Loyc.SyncLib.Impl
 	/// <summary>An interface implemented by adapters that help read and write lists 
 	/// of various types, e.g. <see cref="ListBuilder{T}"/>. The adapter can be
 	/// used to read a collection once or write it once, but not both.</summary>
-	public interface IListBuilder<TList, T> : IAdd<T> //, ICount, IReadSpan<T>
+	public interface IListBuilder<out TList, T> : IAdd<T> //, ICount, IReadSpan<T>
 	{
 		/// <summary>A method that is always called once when loading a list.</summary>
 		/// <param name="minLength">Minimum list size (<see cref="ISyncManager.MinimumListLength"/></param>

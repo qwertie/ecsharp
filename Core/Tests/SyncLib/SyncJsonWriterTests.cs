@@ -33,6 +33,18 @@ namespace Loyc.SyncLib.Tests
 			json = json.Replace(".0,", ",")
 				.Replace(".0\r", "\r").Replace(".0\n", "\n").Replace(".0]", "]");
 
+			// Newtonsoft uses lowercase hex, SyncJson uses uppercase
+			json = Regex.Replace(json, @"\\u....", m => "\\u" + m.Value.Substring(2).ToUpper());
+
+			// Newtonsoft will write unpaired surrogate code points into its UTF-16 output,
+			// but SyncJson cannot reasonably produce the equivalent UTF-8 code points
+			// because Encoding.UTF8 refuses to decode such code points. Therefore, SyncJson
+			// must use escaped output for these, and we must alter Newton's output to match.
+			json = Regex.Replace(json, "[\uD800-\uDBFF](?![\uDC00-\uDFFF])",
+				m => "\\u" + ((int)m.Value[0]).ToString("X4"));
+			json = Regex.Replace(json, "(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]",
+				m => "\\u" + ((int)m.Value[0]).ToString("X4"));
+
 			// Also, SyncJson has a nice compact representation of refs, and 
 			// we need to remove some whitespace from the Newton JSON (again,
 			// so that this string can equal the one from SyncJson).
@@ -80,19 +92,21 @@ namespace Loyc.SyncLib.Tests
 		[Test]
 		public void NewtonsoftBigStandardModelInterop()
 		{
-			var obj = new BigStandardModelNoMem(10);
+			var obj = new BigStandardModelNoMem(8);
 
 			// We should produce the same output as Newtonsoft except for minor formatting
-			// differences. ToNewtonString already deletes Newton's ".0" suffix on floats;
-			// also, Newtonsoft uses lowercase unicode escapes while we use uppercase.
+			// differences that are removed by ToNewtonString.
 			var jsonSerializer = new JsonSerializer {
 				PreserveReferencesHandling = PreserveReferencesHandling.None,
 				Formatting = Formatting.Indented,
 			};
-			var json = ToNewtonString(jsonSerializer, obj).Replace(@"\u001a", @"\u001A");;
+			var json = ToNewtonString(jsonSerializer, obj);
 			//Console.WriteLine(json);
 
-			var options = new SyncJson.Options { RootMode = 0, Write = { Indent = "  ", SpaceAfterColon = true } };
+			var options = new SyncJson.Options {
+				RootMode = 0,
+				Write = { Indent = "  ", SpaceAfterColon = true }
+			};
 			var syncJson  = SyncJson.WriteString(obj, new BigStandardModelSync<SyncJson.Writer>(), options);
 			var syncJson2 = SyncJson.WriteStringI(obj, new BigStandardModelSync<ISyncManager>().Sync, options);
 
@@ -107,7 +121,7 @@ namespace Loyc.SyncLib.Tests
 				},
 				Formatting = Formatting.None,
 			};
-			json = ToNewtonString(jsonSerializer, obj).Replace(@"\u001a", @"\u001A");
+			json = ToNewtonString(jsonSerializer, obj);
 
 			options = new SyncJson.Options(compactMode: true) {
 				NameConverter = SyncJson.ToCamelCase,
