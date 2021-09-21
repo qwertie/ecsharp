@@ -1,4 +1,4 @@
-	using Loyc;
+using Loyc;
 using Loyc.Collections;
 using Loyc.Collections.Impl;
 using Loyc.SyncLib.Impl;
@@ -460,20 +460,8 @@ namespace Loyc.SyncLib
 		##unroll($T in standardItemTypes)
 		{
 			static if ($T `staticMatches` byte || $T `staticMatches` char || $T `staticMatches` bool) {
-				//
-				// TODO: support other list types with byte/char/bool
-				//
+
 				[@`%newline`, @`%SLComment`(concat(NameWithType(" SyncList methods for ", $T)))]
-				public static List<$T>? SyncList<SyncManager>(this SyncManager sync,
-					FieldId name, List<$T>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
-					where SyncManager : ISyncManager
-				{
-					ScannableEnumerable<$T>.Scanner<List<$T>.Enumerator> scanner = default;
-					if (savable != null)
-						scanner = new ScannableEnumerable<$T>.Scanner<List<$T>.Enumerator>(savable.GetEnumerator());
-					return sync.$(out NameWithType(SyncList, $T, Impl))<ScannableEnumerable<$T>.Scanner<List<$T>.Enumerator>, List<$T>, ListBuilder<$T>>(
-						name, scanner, savable, new ListBuilder<$T>(), listMode, tupleLength);
-				}
 				public static $T[]? SyncList<SyncManager>(this SyncManager sync,
 					FieldId name, $T[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
 					where SyncManager : ISyncManager
@@ -481,6 +469,24 @@ namespace Loyc.SyncLib
 					var scanner = new InternalList.Scanner<$T>(savable.AsMemory());
 					return sync.$(out NameWithType(SyncList, $T, Impl))<InternalList.Scanner<$T>, $T[], ArrayBuilder<$T>>(
 						name, scanner, savable, new ArrayBuilder<$T>(), listMode, tupleLength);
+				}
+				##unroll(($List, $SyncList) in (
+					(#type<List<$T>? >, SyncList),
+					(#type<IList<$T>? >, SyncList),
+					(#type<IReadOnlyList<$T>? >, SyncList),
+					(#type<ICollection<$T>? >, SyncColl),
+					(#type<IReadOnlyCollection<$T>? >, SyncColl)
+				)) {
+					public static $List SyncList<SyncManager>(this SyncManager sync,
+						FieldId name, $List savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+						where SyncManager : ISyncManager
+					{
+						var scanner = default(ScannableEnumerable<$T>.Scanner<IEnumerator<$T>>);
+						if (savable != null && sync.IsWriting)
+							scanner = new ScannableEnumerable<$T>.Scanner<IEnumerator<$T>>(savable.GetEnumerator());
+						return sync.$(out NameWithType(SyncList, $T, Impl))<ScannableEnumerable<$T>.Scanner<IEnumerator<$T>>, $List, ListBuilder<$T>>(
+							name, scanner, savable, new ListBuilder<$T>(), listMode, tupleLength);
+					}
 				}
 				public static Memory<$T> SyncList<SyncManager>(this SyncManager sync,
 					FieldId name, Memory<$T> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
@@ -492,18 +498,29 @@ namespace Loyc.SyncLib
 					return sync.$(out NameWithType(SyncList, $T, Impl))<InternalList.Scanner<$T>, Memory<$T>, MemoryBuilder<$T>>(
 						name, scanner, null, new MemoryBuilder<$T>(), listMode | SubObjectMode.NotNull, tupleLength);
 				}
-				// Produces an error: CS0111: Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types
-				//public static List? SyncList<SyncManager, List>(this SyncManager sync,
-				//	FieldId name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
-				//	where SyncManager : ISyncManager
-				//	where List : ICollection<$T>, IReadOnlyCollection<$T>
-				//{
-				//	object? listRef = (listMode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) == SubObjectMode.NotNull ? null : savable;
-				//	var scanner = (savable == null ? Empty<$T>.Array : Loyc.Collections.MutableListExtensionMethods.LinqToLists.ToArray(savable)).Slice().Scan();
-				//	return sync.$(out NameWithType(Sync, $T, ListImpl))<List, InternalList.Scanner<$T>, CollectionBuilder<List, $T>>
-				//		(name, scanner, new CollectionBuilder<List, $T>(alloc), listMode, listRef, tupleLength);
-				//}
+				public static ReadOnlyMemory<$T> SyncList<SyncManager>(this SyncManager sync,
+					FieldId name, ReadOnlyMemory<$T> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+					where SyncManager : ISyncManager
+				{
+					if ((listMode & SubObjectMode.Deduplicate) != 0)
+						throw new ArgumentException("SubObjectMode.Deduplicate is incompatible with ReadOnlyMemory<T>");
+					var scanner = new InternalList.Scanner<$T>(savable);
+					return sync.$(out NameWithType(SyncList, $T, Impl))<InternalList.Scanner<$T>, ReadOnlyMemory<$T>, MemoryBuilder<$T>>(
+						name, scanner, null, new MemoryBuilder<$T>(), listMode | SubObjectMode.NotNull, tupleLength);
+				}
+				public static IListSource<$T> SyncList<SyncManager>(this SyncManager sync,
+					FieldId name, IListSource<$T> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+					where SyncManager : ISyncManager
+				{
+					var scanner = default(ScannableEnumerable<$T>.Scanner<IEnumerator<$T>>);
+					if (savable != null && sync.IsWriting)
+						scanner = new ScannableEnumerable<$T>.Scanner<IEnumerator<$T>>(savable.GetEnumerator());
+					var builder = new CollectionBuilder<DList<$T>, $T>(minLen => minLen > 0 ? new DList<$T>(minLen) : new DList<$T>());
+					return sync.$(out NameWithType(SyncList, $T, Impl))<ScannableEnumerable<$T>.Scanner<IEnumerator<$T>>, IListSource<$T>, CollectionBuilder<DList<$T>, $T>>(
+						name, scanner, savable, builder, listMode, tupleLength);
+				}
 			} else {
+				[@`%newline`, @`%SLComment`(concat(NameWithType(" SyncList methods for ", $T)))] #rawText("");
 				##unroll(($List, $SyncList) in (
 				    (#type<$T[]? >, SyncList),
 				    (#type<List<$T>? >, SyncList), (#type<IList<$T>? >, SyncList),
@@ -520,76 +537,6 @@ namespace Loyc.SyncLib
 				}
 			}
 		}
-
-		//##unroll($T in standardItemTypes)
-		//{
-		//
-		//	static FieldInfo? $(out concatId(_items_, stringify($T))) = typeof(List<$T>).GetField("_items");
-		//
-		//	/// <summary>Reads or writes a list of values in the current object.</summary>
-		//	public static List<$T> SyncList<SyncManager>(this SyncManager sync, FieldId name, List<$T> savable) where SyncManager : ISyncManager {
-		//		ReadOnlySpan<$T> span = default;
-		//		
-		//		if ((sync.Mode & SyncMode.Saving) != 0) {
-		//			// TODO: read private _items
-		//			span = savable.ToArray().AsMemory().Span;
-		//		}
-		//		
-		//		var list = sync.SyncListImpl(name, span);
-		//
-		//		// TODO: set private _items
-		//		return list.InternalArray == null ? savable : list.ToList();
-		//	}
-		//	/// <summary>Reads or writes a list of values in the current object.</summary>
-		//	public static IList<$T> SyncList<SyncManager>(this SyncManager sync, FieldId name, IList<$T> savable) where SyncManager : ISyncManager {
-		//		ReadOnlySpan<$T> span = default;
-		//		if ((sync.Mode & SyncMode.Saving) != 0) {
-		//			span = ((savable as $T[]) ?? savable.ToArray()).AsMemory().Span;
-		//		}
-		//		var list = sync.SyncListImpl(name, span);
-		//		return list.InternalArray == null ? savable : new DList<$T>(new InternalDList<$T>(list.InternalArray, list.Count));
-		//	}
-		//	/// <summary>Reads or writes a list of values in the current object.</summary>
-		//	public static IReadOnlyCollection<$T> SyncList<SyncManager>(this SyncManager sync, FieldId name, IReadOnlyCollection<$T> savable) where SyncManager : ISyncManager {
-		//		ReadOnlySpan<$T> span = default;
-		//		if ((sync.Mode & SyncMode.Saving) != 0) {
-		//			span = ((savable as $T[]) ?? savable.ToArray()).AsMemory().Span;
-		//		}
-		//		var list = sync.SyncListImpl(name, span);
-		//		return list.InternalArray == null ? savable : new DList<$T>(new InternalDList<$T>(list.InternalArray, list.Count));
-		//	}
-		//	/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		//	public static IList<$T> SyncList<SyncManager>(this SyncManager sync, FieldId name, IListAndReadOnly<$T> savable) where SyncManager : ISyncManager
-		//		=> SyncList(sync, name, (IList<$T>)savable);
-		//	/// <summary>Reads or writes a list of values in the current object.</summary>
-		//	public static $T[] SyncList<SyncManager>(this SyncManager sync, FieldId name, $T[] savable) where SyncManager : ISyncManager {
-		//		var list = sync.SyncListImpl(name, savable);
-		//		return list.InternalArray == null ? savable : list.AsArray();
-		//	}
-		//	/// <summary>Reads or writes a list of values in the current object.</summary>
-		//	public static Memory<$T> SyncList<SyncManager>(this SyncManager sync, FieldId name, Memory<$T> savable) where SyncManager : ISyncManager {
-		//		var list = sync.SyncListImpl(name, savable.Span);
-		//		return list.InternalArray == null ? savable : list.AsMemory();
-		//	}
-		//	/// <summary>Reads or writes a list of values in the current object.</summary>
-		//	public static ReadOnlyMemory<$T> SyncList<SyncManager>(this SyncManager sync, FieldId name, ReadOnlyMemory<$T> savable) where SyncManager : ISyncManager {
-		//		var list = sync.SyncListImpl(name, savable.Span);
-		//		return list.InternalArray == null ? savable : list.AsArray();
-		//	}
-		//}
-		//
-		//##unroll($T in standardItemTypes)
-		//{
-		//	##unroll($ListT in (List<$T>, IList<$T>, IReadOnlyCollection<$T>, #type<$T[]>, Memory<$T>, ReadOnlyMemory<$T>))
-		//	{
-		//		/// <summary>Reads or writes a list of values in the current object.</summary>
-		//		public static $ListT SyncList<SyncManager>(this SyncManager sync, string? name, $ListT savable) where SyncManager : ISyncManager
-		//			=> SyncList(sync, GSymbol.Get(name), savable);
-		//	}
-		//	/// <summary>Reads or writes a list of values in the current object (disambiguation method).</summary>
-		//	public static IList<$T> SyncList<SyncManager>(this SyncManager sync, string? name, IListAndReadOnly<$T> savable) where SyncManager : ISyncManager
-		//		=> SyncList(sync, GSymbol.Get(name), savable);
-		//}
 	}
 
 	##unroll($T in standardItemTypes)
@@ -599,20 +546,16 @@ namespace Loyc.SyncLib
 		/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
 		public static partial class $(out NameWithType(SyncManagerExt, $T)) {
 			static if ($T `staticMatches` byte || $T `staticMatches` char || $T `staticMatches` bool) {
-				public static List? SyncList<SyncManager, List>(this SyncManager sync,
+				public static List? SyncColl<SyncManager, List>(this SyncManager sync,
 					FieldId name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
 					where SyncManager : ISyncManager
 					where List : ICollection<$T>, IReadOnlyCollection<$T>
 				{
-					var scanner = savable == null ? Empty<$T>.Scanner : Loyc.Collections.MutableListExtensionMethods.LinqToLists.ToArray(savable).Slice(0).Scan();
+					InternalList.Scanner<$T> scanner = Empty<$T>.Scanner;
+					if (savable != null)
+						scanner = Loyc.Collections.MutableListExtensionMethods.LinqToLists.ToArray(savable).Slice(0).Scan();
 					return sync.$(out NameWithType(SyncList, $T, Impl))(name, scanner, savable, new CollectionBuilder<List, $T>(alloc), listMode, tupleLength);
 				}
-
-				public static List? SyncList<SyncManager, List>(this SyncManager sync,
-					string name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
-					where SyncManager : ISyncManager
-					where List : ICollection<$T>, IReadOnlyCollection<$T>
-					=> SyncList(sync, (FieldId)name, savable, alloc, listMode, tupleLength);
 			} else {
 				public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync,
 					FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc,
