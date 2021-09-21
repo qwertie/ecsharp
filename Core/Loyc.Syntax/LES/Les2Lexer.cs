@@ -181,7 +181,7 @@ namespace Loyc.Syntax.Les
 		/// <remarks>This method recognizes LES and EC#-style string syntax.</remarks>
 		[Obsolete("Please call the same method in Les3Lexer instead")]
 		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool les3TQIndents = false) =>
-			Les3Lexer.UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation, les3TQIndents);
+			Les3Lexer.UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation, les3TQIndents, true);
 
 		#endregion
 
@@ -287,7 +287,7 @@ namespace Loyc.Syntax.Les
 				// expecting: (BQString | Star(Set("[0-9a-zA-Z_'#~!%^&*-+=|<>/?:.@$]") | IdExtLetter))
 				c = source.PopFirst(out fail);
 				if (c == '`') {
-					Les3Lexer.UnescapeString(ref source, (char)c, false, onError, parsed);
+					Les3Lexer.UnescapeString(ref source, (char)c, false, onError, parsed, default, false, true);
 				} else {
 					while (SpecialIdSet.Contains(c) || c >= 128 && char.IsLetter((char)c)) {
 						parsed.Append((char)c);

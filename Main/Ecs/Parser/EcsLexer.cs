@@ -164,7 +164,7 @@ namespace Loyc.Ecs.Parser
 				return sb.ToString();
 			} else {
 				// triple-quoted or normal string: let LES lexer handle it
-				return Les3Lexer.UnescapeQuotedString(ref source, onError, indentation, true);
+				return Les3Lexer.UnescapeQuotedString(ref source, onError, indentation, true, false);
 			}
 		}
 

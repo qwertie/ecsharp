@@ -432,26 +432,31 @@ namespace Loyc
 		///   <c>span[index]</c>, incrementing index by the number of bytes in the 
 		///   character.</summary>
 		/// <returns>The decoded UCS32 code point. If the byte sequence 
-		///   is not valid UTF-8, this method returns <c>-span[index]</c>.</returns>
+		///   is not valid UTF-8, this method returns <c>-span[index]</c>
+		///   and increases <c>index</c> by one.</returns>
+		/// <exception cref="IndexOutOfRangeException">span[index] is invalid.</exception>
 		public static int DecodeUTF8Char(ReadOnlySpan<byte> span, ref int index)
 		{
-			var a = span[index];
+			var a = span[index++];
 			if (a < 0x80) {
 				return a;
-			} else if ((uint)(index + 1) < (uint)span.Length) {
-				var b = span[index + 1];
+			} else if ((uint)index < (uint)span.Length) {
+				var b = span[index];
 				if ((b & 0xC0) == 0x80 && a >= 0b1100_0000) {
-					if (a < 0b1110_0000) // two-byte code point
+					if (a < 0b1110_0000) { // two-byte code point
+						index++;
 						return ((a & 0b01_1111) << 6) | (b & 0b11_1111);
-					else if ((uint)(index + 2) < (uint)span.Length) {
+					} else if ((uint)(index + 1) < (uint)span.Length) {
 						var c = span[index + 1];
 						if ((c & 0xC0) == 0x80) {
 							if (a < 0b1111_0000) { // three-byte code point
+								index += 2;
 								return ((a & 0b1111) << 12) | ((b & 0b11_1111) << 6) | (c & 0b11_1111);
-							} else if ((uint)(index + 3) < (uint)span.Length) {
-								var d = span[index + 3];
+							} else if ((uint)(index + 2) < (uint)span.Length) {
+								var d = span[index + 2];
 								if ((d & 0xC0) == 0x80) {
 									if (c < 0b1111_1000) { // four-byte code point
+										index += 3;
 										return ((a & 0b0111) << 18) | ((b & 0b11_1111) << 12)
 											| (c & 0b11_1111) << 6 | (d & 0b11_1111);
 									}

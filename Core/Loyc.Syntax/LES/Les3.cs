@@ -130,17 +130,17 @@ namespace Loyc.Syntax.Les
 		/// sequences: <c>\n \r \' \" \0</c> etc. C#-style verbatim strings are 
 		/// NOT supported.
 		/// </remarks>
-		public static string UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, UString indentation = default(UString), bool allowExtraIndent = false)
+		public static string UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, UString indentation = default(UString), bool allowExtraIndent = false, bool parseAsBytes = true)
 		{
 			var sb = new StringBuilder();
-			UnescapeQuotedString(ref sourceText, onError, sb, indentation, allowExtraIndent);
+			UnescapeQuotedString(ref sourceText, onError, sb, indentation, allowExtraIndent, parseAsBytes);
 			return sb.ToString();
 		}
 
 		/// <summary>Parses a normal or triple-quoted string that still includes 
 		/// the quotes (see documentation of the first overload) into a 
 		/// StringBuilder.</summary>
-		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool allowExtraIndent = false)
+		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool allowExtraIndent = false, bool parseAsBytes = true)
 		{
 			bool isTripleQuoted = false, fail;
 			char quoteType = (char)sourceText.PopFirst(out fail);
@@ -150,7 +150,7 @@ namespace Loyc.Syntax.Les
 				sourceText = sourceText.Substring(2);
 				isTripleQuoted = true;
 			}
-			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation, allowExtraIndent))
+			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation, allowExtraIndent, parseAsBytes))
 				onError(sourceText.InternalStart, Localize.Localized("String literal did not end properly"));
 		}
 
@@ -158,15 +158,35 @@ namespace Loyc.Syntax.Les
 		/// have been stripped out. If triple-quote parsing was requested, stops 
 		/// parsing at three quote marks; otherwise, stops parsing at a single 
 		/// end-quote or newline.</summary>
+		/// <param name="allowExtraIndent">After each newline, indentation matching
+		///   the previous line is ignored. When this parameter is true, an additional 
+		///   one tab or three spaces is ignored if the initial indent matched.</param>
+		/// <param name="parseAsBytes">If this is true, LES parsing mode is used.
+		///   This mode assumes that the string represents a sequence of bytes, 
+		///   even though it is stored as WTF-16 in memory. In particular, it 
+		///   allows the \xNN escape sequence which represents a byte. If the byte NN
+		///   is between 0x80 and 0xFF, it is encoded as 0xDC80 + NN. As a side effect,
+		///   lone surrogate code units between 0xDC80 and 0xDCFF are recoded in UTF-8
+		///   form and then translated to three WTF-16 code units (each of which is
+		///   between 0xDC80 and 0xDCFF). If this parameter is false, this behavior
+		///   is turned off and \xNN is parsed the same way as \u00NN.</param>
 		/// <returns>true if parsing stopped at one or three quote marks, or false
 		/// if parsing stopped at the end of the input string or at a newline (in
 		/// a string that is not triple-quoted).</returns>
 		/// <remarks>This method recognizes LES and EC#-style string syntax.</remarks>
-		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool allowExtraIndent = false)
+		public static bool UnescapeString(
+			ref UString sourceText, 
+			char quoteType,
+			bool isTripleQuoted,
+			Action<int, string> onError,
+			StringBuilder sb,
+			UString indentation = default(UString),
+			bool allowExtraIndent = false,
+			bool parseAsBytes = true)
 		{
 			Debug.Assert(quoteType == '"' || quoteType == '\'' || quoteType == '`');
 			bool fail;
-			for (; ; )
+			for (;;)
 			{
 				if (sourceText.IsEmpty)
 					return false;
@@ -176,21 +196,21 @@ namespace Loyc.Syntax.Les
 					EscapeC category = 0;
 					int c = ParseHelpers.UnescapeChar(ref sourceText, ref category);
 					if ((c == quoteType || c == '\n') && sourceText.InternalStart == i0 + 1)
-					{
 						return c == quoteType; // end of string
-					}
-					if ((category & EscapeC.Unrecognized) != 0)
-					{
+
+					if ((category & EscapeC.Unrecognized) != 0) {
 						// This backslash was ignored by UnescapeChar
 						onError(i0, @"Unrecognized escape sequence '\{0}' in string".Localized(PrintHelpers.EscapeCStyle(sourceText[0, ' '].ToString(), EscapeC.Control)));
-					}
-					else if ((category & EscapeC.HasInvalid6DigitEscape) != 0)
+					} else if ((category & EscapeC.HasInvalid6DigitEscape) != 0)
 						onError(i0, @"Invalid 6-digit \u code treated as 5 digits".Localized());
+
 					sb.AppendCodePoint(c);
-					if ((category & EscapeC.BackslashX) != 0 && c >= 0x80)
-						DetectUtf8(sb);
-					else if (c.IsInRange(0xDC80, 0xDCFF))
-						RecodeSurrogate(sb);
+					if (parseAsBytes) {
+						if ((category & EscapeC.BackslashX) != 0 && c >= 0x80)
+							DetectUtf8(sb);
+						else if (c.IsInRange(0xDC80, 0xDCFF))
+							RecodeSurrogate(sb);
+					}
 				}
 				else
 				{

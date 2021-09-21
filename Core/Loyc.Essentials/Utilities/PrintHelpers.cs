@@ -84,7 +84,7 @@ namespace Loyc.Syntax
 				if (c >= 128) {
 					if ((flags & EscapeC.NonAscii) != 0) {
 						EscapeU(c, @out, flags);
-					} else if (c >= 0xDC00) {
+					} else if (c >= 0xD800) {
 						if ((flags & EscapeC.UnicodeNonCharacters) != 0 && (
 							c >= 0xFDD0 && c <= 0xFDEF || // 0xFDD0...0xFDEF 
 							(c & 0xFFFE) == 0xFFFE) || // 0xFFFE, 0xFFFF, 0x1FFFE, 0x1FFFF, etc.
