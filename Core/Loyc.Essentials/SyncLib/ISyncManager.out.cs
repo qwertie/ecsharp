@@ -68,11 +68,19 @@ namespace Loyc.SyncLib
 		/// enables fields to be read in a different order than they were written
 		/// (e.g. JSON, Protobuf). If this field is false, fields must be read in
 		/// the same order they were written, and omitting fields is not allowed
-		/// (e.g. you cannot skip over a null field without saving it).</summary>
+		/// (e.g. you cannot skip over a null field without saving it, nor skip
+		/// over a field and then read it later).</summary>
 		/// <remarks>If this property is false, the data may not have any recorded 
 		/// structure, and failure to read the correct fields in the correct order 
 		/// tends to give you "garbage" results.</remarks>
 		bool SupportsReordering { get; }
+
+		/// <summary>Indicates that this implementation of <see cref="ISyncManager"/>
+		///   supports the <see cref="NextField"/> property. (This property must be
+		///   false when <see cref="IsReading"/> is false.)</summary>
+		/// <remarks>All implementations where <see cref="SupportsReordering"/> is 
+		///   true should also return true for this property.</remarks>
+		bool SupportsNextField { get; }
 
 		/// <summary>Returns true if the <see cref="ISyncManager"/> supports 
 		/// deduplication of objects and cyclic object graphs. Note: all standard 
@@ -127,6 +135,91 @@ namespace Loyc.SyncLib
 		/// is reached. In that case, this property should return 0.
 		/// </remarks>
 		int? MinimumListLength { get; }
+
+		/// <summary>Returns the number of parent objects of the current object being
+		/// loaded or saved. This property is zero if the root object is being loaded
+		/// or saved.</summary>
+		int Depth { get; }
+
+		/// <summary>If <see cref="SupportsNextField"/> is true, the end of the current
+		///   object has not been reached, and <see cref="IsInsideList"/> is false, 
+		///   this property returns the name or integer ID of the next field in the 
+		///   input stream. Otherwise, it returns <see cref="FieldId.Missing"/>.</summary>
+		/// <remarks>
+		/// Even if a data stream supports reordering (<see cref="SupportsReordering"/>),
+		/// it may be inefficient to read fields out-of-order. Therefore, if your
+		/// code wants to read as efficiently as possible, it can use this property
+		/// to read the fields in the order they appear. Here is an example:
+		/// <example>
+		///     public MyObject Sync(ISyncManager sm, MyObject? obj)
+		///     {
+		///         obj ??= new MyObject();
+		///         if (!sm.SupportsNextField || sm.NeedsIntegerIds) {
+		///             // Synchronize in the normal way
+		///             obj.Field1 = sm.Sync("Field1", obj.Field1);
+		///             obj.Field2 = sm.Sync("Field2", obj.Field2);
+		///             obj.Field3 = sm.Sync("Field3", obj.Field3);
+		///         } else {
+		///             // Synchronize fields in the order they appear in the input.
+		///             FieldId name;
+		///             while ((name = sm.NextField) != FieldId.Missing) {
+		///                 if (name.Name == "Field1") {
+		///                     obj.Field1 = sm.Sync(null, obj.Field1);
+		///                 } else if (name.Name == "Field2") {
+		///                     obj.Field2 = sm.Sync(null, obj.Field2);
+		///                 } else if (name.Name == "Field3") {
+		///                     obj.Field3 = sm.Sync(null, obj.Field3);
+		///                 } else {
+		///                     throw new Exception("Unexpected field: " + name.Name);
+		///                 }
+		///             }
+		///         }
+		///         return obj;
+		///     }
+		/// </example>
+		/// There are three things worth noticing about this example.
+		/// <para/>
+		/// First, this example is only designed to support string field names, so it
+		/// checks the <see cref="NeedsIntegerIds"/> property and falls back on the
+		/// "normal" synchronization style if it is true. You also need a block of
+		/// "normal" synchronization code when writing an object to an output stream.
+		/// <para/>
+		/// Second, notice that this style of reading also allows you to detect
+		/// unexpected field names and respond to them (in this example, an exception
+		/// is thrown when an unexpected field is encountered).
+		/// <para/>
+		/// Third, notice the use of null field names (sm.Sync(null, ...)). This is
+		/// how you ask <see cref="ISyncManager"/> to synchronize the next field
+		/// without regard for the name of that field.
+		/// <para/>
+		/// Another potential use of this property is to save or load a string 
+		/// dictionary:
+		/// <example><![CDATA[
+		/// public IDictionary<string, string?> Sync(
+		///        ISyncManager sm, IDictionary<string, string?>? dict)
+		/// {
+		///     dict ??= new Dictionary<string, string?>();
+		///     if (sm.IsReading) {
+		///         if (!sm.SupportsNextField || sm.NeedsIntegerIds || sm.IsWriting)
+		///             throw new NotSupportedException(
+		///                 "StringDictionarySync is incompatible with this " + sm.GetType().Name);
+		///         
+		///         string? name;
+		///         while ((name = sm.NextField.Name) != null) {
+		///             dict[name] = sm.Sync(null, "");
+		///         }
+		///     } else { // Writing
+		///         foreach (var pair in dict)
+		///             sm.Sync(pair.Key, pair.Value);
+		///     }
+		///     return dict;
+		/// }
+		/// ]]></example>
+		/// A disadvantage of loading/storing a dictionary this way is that it is 
+		/// not compatible with data formats that don't use string field names, 
+		/// such as protocol buffers.
+		/// </remarks>
+		FieldId NextField { get; }
 
 		/// <summary>Some serializers do not support this method (see remarks).
 		/// If the method is supported, it determines whether a field with a specific
@@ -196,10 +289,24 @@ namespace Loyc.SyncLib
 		/// </remarks>
 		SyncType HasField(FieldId name, SyncType expectedType = SyncType.Unknown);
 
-		/// <summary>Returns the number of parent objects of the current object being
-		/// loaded or saved. This property is zero if the root object is being loaded
-		/// or saved.</summary>
-		int Depth { get; }
+		/// <summary>Reads or writes a "type tag" for the current object. This method
+		///   can only be called once after BeginSubObject returns true, and can only
+		///   be called before synchronizing the first subfield (i.e. before calling
+		///   any of the Sync() methods).</summary>
+		/// <param name="tag">The type tag to write. If <see cref="IsWriting"/> is 
+		///   false, this parameter is ignored.</param>
+		/// <returns>When <see cref="IsReading"/> is true, the return value is the 
+		///   tag stored in the data stream, or null if there is no tag. When 
+		///   <see cref="IsReading"/> is false, the return value is <c>tag</c>.
+		/// <remarks>
+		/// If <see cref="SupportsNextField"/> is false, in order to read a data stream 
+		/// correctly, you must call this method if and only if this method was called 
+		/// when writing the stream.
+		/// <para/>
+		/// No behavior has been defined for this method in <see cref="SyncMode.Merge"/>
+		/// mode, when <see cref="IsReading"/> and <see cref="IsWriting"/> are both true.
+		/// </remarks>
+		string? SyncTypeTag(string? tag);
 		/// <summary>Reads or writes a value of a field on the current object.</summary>
 		bool Sync(FieldId name, bool savable);
 		/// <summary>Reads or writes a value of a field on the current object.</summary>

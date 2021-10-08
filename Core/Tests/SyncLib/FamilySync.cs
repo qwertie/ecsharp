@@ -37,14 +37,14 @@ namespace Loyc.SyncLib.Tests
 		public Parent? Mother { get; set; }
 	}
 
-	public struct FamilyModel<SM> : 
+	public struct FamilySync<SM> : 
 		ISyncObject<SM, Family>, 
 		ISyncObject<SM, Parent>, 
 		ISyncObject<SM, Child>
 		where SM : ISyncManager
 	{
 		ObjectMode _listMode;
-		public FamilyModel(ObjectMode listMode) => _listMode = listMode;
+		public FamilySync(ObjectMode listMode) => _listMode = listMode;
 
 		public Family Sync(SM sync, Family? obj)
 		{

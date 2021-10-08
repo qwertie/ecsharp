@@ -16,6 +16,11 @@ namespace Loyc.SyncLib
 	[DebuggerDisplay(@"{Name} (Id={Id == int.MinValue ? ""none"" : (object) Id})")]
 	public struct FieldId
 	{
+		/// <summary>Represents the case where a data stream lacks a Field ID.
+		/// Array elements lack field IDs, and a simple binary format could
+		/// omit field IDs from all objects.</summary>
+		public static readonly FieldId Missing = new FieldId(null, int.MinValue);
+
 		public FieldId(string? name, int id) { Name = name; Id = id; }
 
 		/// <summary>Name chosen by the user, or null if unspecified.</summary>

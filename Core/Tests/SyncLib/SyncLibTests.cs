@@ -58,6 +58,18 @@ namespace Loyc.SyncLib.Tests
 			return jack;
 		}
 
+		[Test]
+		public void RoundTripSmallObject()
+		{
+			var obj = new SmallObject {
+				Field1 = 1,
+				Field2 = "two",
+				Field3 = 3.3,
+			};
+			RoundTripTest(obj, new SmallObjectSync<Writer>().Sync, new SmallObjectSync<Reader>().Sync, ObjectMode.Normal);
+			RoundTripTest(obj, new SmallObjectSync<Writer>().Sync, new SmallObjectSync<Reader>().Sync, ObjectMode.Deduplicate);
+		}
+
 		protected void RoundTripTest<T>(T value, SyncObjectFunc<Writer, T> writer, SyncObjectFunc<Reader, T> reader, ObjectMode saveMode = 0)
 		{
 			var data = Write(value, writer, saveMode);

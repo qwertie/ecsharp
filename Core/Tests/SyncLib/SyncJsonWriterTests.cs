@@ -155,7 +155,7 @@ namespace Loyc.SyncLib.Tests
 					RootMode = ObjectMode.Deduplicate,
 					Write = { Indent = "  ", SpaceAfterColon = true }
 				};
-				var syncHelper = new FamilyModel<SyncJson.Writer>((deduplicateLists ? ObjectMode.Deduplicate : 0) | ObjectMode.List);
+				var syncHelper = new FamilySync<SyncJson.Writer>((deduplicateLists ? ObjectMode.Deduplicate : 0) | ObjectMode.List);
 				var syncJson = SyncJson.WriteString(family, syncHelper, options);
 
 				Assert.AreEqual(json, syncJson);

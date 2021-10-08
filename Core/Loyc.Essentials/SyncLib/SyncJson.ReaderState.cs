@@ -124,7 +124,6 @@ namespace Loyc.SyncLib
 				TOS.ObjectStartIndex = int.MaxValue;
 			}
 
-
 			private IScanner<byte> _mainScanner;
 			private Memory<byte> _mainScannerBuf; // not used by ReaderState; it's passed to _mainScanner.Read()
 			internal Options _opt;
@@ -146,6 +145,16 @@ namespace Loyc.SyncLib
 			// True iff the current object is a list
 			public bool IsInsideList { get; private set; } = true;
 			public bool? ReachedEndOfList => TOS.ReachedEndOfList;
+
+			public ReadOnlyMemory<byte> NextFieldKey => TOS.CurPropKey.Text;
+
+			internal string? ReadTypeTag()
+			{
+				var keySpan = NextFieldKey.Span;
+				if (AreEqual(keySpan, _t) || AreEqual(keySpan, _type))
+					return ReadString(null);
+				return null;
+			}
 
 			public void SetCurrentObject(object value) {
 				if (_miniStack.Count != 0 && _miniStack.Last.id.Text.Length != 0) {
@@ -945,7 +954,7 @@ namespace Loyc.SyncLib
 				}
 			}
 
-			private bool AreEqual(ReadOnlySpan<byte> curProp, byte[] name)
+			static bool AreEqual(ReadOnlySpan<byte> curProp, byte[] name)
 			{
 				if (name.Length != curProp.Length)
 					return false;

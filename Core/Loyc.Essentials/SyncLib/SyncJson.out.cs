@@ -48,6 +48,12 @@ namespace Loyc.SyncLib
 		internal static readonly byte[] _r = new byte[] { 
 			(byte) '"', (byte) '\\', (byte) 'r', (byte) '"'
 		};	// SyncJson-style backreference
+		internal static readonly byte[] _t = new byte[] { 
+			(byte) '"', (byte) '\\', (byte) 't', (byte) '"'
+		};	// SyncJson-style type tag
+		internal static readonly byte[] _type = new byte[] { 
+			(byte) '"', (byte) '$', (byte) 't', (byte) 'y', (byte) 'p', (byte) 'e', (byte) '"'
+		};	// TODO: figure out how Newtonsoft type tags work
 		static Options _defaultOptions = new Options();
 
 		public partial struct Writer

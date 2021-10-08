@@ -91,6 +91,10 @@ namespace Loyc.SyncLib
 
 			public object CurrentObject { set { } }
 
+			public bool SupportsNextField => false;
+
+			public FieldId NextField => FieldId.Missing;
+
 			public (bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1)
 			{
 				return _s.BeginSubObject(name.Name, childKey, mode);
@@ -99,6 +103,11 @@ namespace Loyc.SyncLib
 			public void EndSubObject() => _s.EndSubObject();
 
 			public SyncType HasField(FieldId name, SyncType expectedType = SyncType.Unknown) => SyncType.Unknown;
+
+			public string? SyncTypeTag(string? tag) {
+				_s.WriteProp(_s._opt.NewtonsoftCompatibility ? "$type" : "\t", tag);
+				return tag;
+			}
 
 			public bool Sync(FieldId name, bool savable)
 			{

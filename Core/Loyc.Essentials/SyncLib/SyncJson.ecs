@@ -37,6 +37,8 @@ namespace Loyc.SyncLib
 		internal static readonly byte[] _values = stringToBytes(@"""$values"""); // Newtonsoft-style array prop
 		internal static readonly byte[] _f = stringToBytes(@"""\f"""); // SyncJson-style id
 		internal static readonly byte[] _r = stringToBytes(@"""\r"""); // SyncJson-style backreference
+		internal static readonly byte[] _t = stringToBytes(@"""\t"""); // SyncJson-style type tag
+		internal static readonly byte[] _type = stringToBytes(@"""$type"""); // TODO: figure out how Newtonsoft type tags work
 
 		static Options _defaultOptions = new Options();
 

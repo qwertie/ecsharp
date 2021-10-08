@@ -57,6 +57,10 @@ namespace Loyc.SyncLib
 
 			public object CurrentObject { set => _s.SetCurrentObject(value); }
 
+			public bool SupportsNextField => false; // TODO: support it!
+
+			public FieldId NextField => FieldId.Missing; // TODO: support it!
+
 			public (bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1)
 			{
 				return _s.BeginSubObject(name.Name, mode);
@@ -87,6 +91,8 @@ namespace Loyc.SyncLib
 
 				return SyncType.Missing;
 			}
+
+			public string? SyncTypeTag(string? tag) => _s.ReadTypeTag();
 
 			public bool Sync(FieldId name, bool savable) => _s.ReadBoolean(name.Name, false)!.Value;
 

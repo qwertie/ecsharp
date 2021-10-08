@@ -44,7 +44,10 @@ namespace Loyc.SyncLib
 		Deduplicate = 4,
 		
 		/// <summary>The object is not allowed to be null. Certain serializers 
-		/// may use the knowledge that a sub-object is never null to save space.</summary>
+		/// may use the knowledge that a sub-object is never null to save space.
+		/// Also, this flag should be used (without <see cref="Deduplicate"/>) when 
+		/// reading/writing value types as a hint to the serializer to avoid boxing.
+		/// </summary>
 		NotNull = 8,
 		
 		/// <summary>The object can have multiple types or derived classes, so a
@@ -52,13 +55,19 @@ namespace Loyc.SyncLib
 		/// TODO: figure out how it will work and say something about that here</summary>
 		//DynamicType = 16,
 		
-		/// <summary>Requests a fixed-size representation for a primitive type,
-		/// if available. When using <see cref="SyncJson"/>, this has no effect.</summary>
-		FixedSize = 32,
+		/// <summary>Requests that numeric fields of the object should use a fixed-size
+		/// representation, if available. When using <see cref="SyncJson"/>, this has 
+		/// no effect.</summary>
+		FixedSizeNumbers = 32,
+
+		/// <summary>Requests that numeric fields of the object should use a fixed-size
+		/// representation, if available. When using <see cref="SyncJson"/>, this has 
+		/// no effect.</summary>
+		VariableSizeNumbers = 64,
 
 		/// <summary>Requests that compact formatting be used when writing this object.
 		/// When using <see cref="SyncJson.Writer"/>, this mode suppresses newlines.</summary>
-		Compact = 64,
+		Compact = 128,
 
 		// This approach is probably wrong: if caller is specifying the SyncObjectFunc, 
 		// it can just call it directly; if not, the desire to unwrap could be 
