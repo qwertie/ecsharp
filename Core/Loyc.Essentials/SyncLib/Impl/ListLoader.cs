@@ -15,10 +15,10 @@ namespace Loyc.SyncLib.Impl
 	{
 		SyncItem _syncItem;
 		ListBuilder _builder;
-		readonly SubObjectMode _listMode;
+		readonly ObjectMode _listMode;
 		readonly int _tupleLength;
 
-		public ListLoader(SyncItem syncItem, ListBuilder builder, SubObjectMode listMode, int tupleLength = -1)
+		public ListLoader(SyncItem syncItem, ListBuilder builder, ObjectMode listMode, int tupleLength = -1)
 		{
 			_syncItem = syncItem;
 			_builder = builder;
@@ -34,7 +34,7 @@ namespace Loyc.SyncLib.Impl
 			if (begunList) {
 				Debug.Assert(sync.IsInsideList);
 				try {
-					if ((_listMode & SubObjectMode.Tuple) == SubObjectMode.Tuple) {
+					if ((_listMode & ObjectMode.Tuple) == ObjectMode.Tuple) {
 						Debug.Assert(_tupleLength > -1);
 						_builder.Alloc(_tupleLength);
 						for (int index = _tupleLength; index != 0 && sync.ReachedEndOfList != false; index--)

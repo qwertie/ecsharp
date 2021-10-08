@@ -12,7 +12,7 @@ namespace Loyc.SyncLib.Tests
 		where Writer: ISyncManager
 		where Reader: ISyncManager
 	{
-		protected abstract byte[] Write<T>(T value, SyncObjectFunc<Writer, T> sync, SubObjectMode mode);
+		protected abstract byte[] Write<T>(T value, SyncObjectFunc<Writer, T> sync, ObjectMode mode);
 		protected abstract T? Read<T>(byte[] data, SyncObjectFunc<Reader, T> sync);
 		protected virtual bool IsUTF8 => true;
 
@@ -48,7 +48,7 @@ namespace Loyc.SyncLib.Tests
 		[Test]
 		public void RoundTripJackAndJill()
 		{
-			RoundTripTest(Jack(), new PersonSync<Writer>().Sync, new PersonSync<Reader>().Sync, SubObjectMode.Deduplicate);
+			RoundTripTest(Jack(), new PersonSync<Writer>().Sync, new PersonSync<Reader>().Sync, ObjectMode.Deduplicate);
 		}
 		public static Person Jack()
 		{
@@ -58,7 +58,7 @@ namespace Loyc.SyncLib.Tests
 			return jack;
 		}
 
-		protected void RoundTripTest<T>(T value, SyncObjectFunc<Writer, T> writer, SyncObjectFunc<Reader, T> reader, SubObjectMode saveMode = 0)
+		protected void RoundTripTest<T>(T value, SyncObjectFunc<Writer, T> writer, SyncObjectFunc<Reader, T> reader, ObjectMode saveMode = 0)
 		{
 			var data = Write(value, writer, saveMode);
 			// To aid debugging, get a string version of the written data

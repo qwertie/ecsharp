@@ -44,7 +44,7 @@ namespace Loyc.SyncLib
 			internal Options _opt;
 			internal Options.ForWriter _optWrite;
 			internal bool _isInsideList = true;
-			internal InternalList<SubObjectMode> _stack = InternalList<SubObjectMode>.Empty;
+			internal InternalList<ObjectMode> _stack = InternalList<ObjectMode>.Empty;
 			internal byte[] _indent;
 			internal byte[] _newline;
 			internal byte _pendingComma;
@@ -71,7 +71,7 @@ namespace Loyc.SyncLib
 				return base.GetOutBuf(requiredBytes);
 			}
 
-			public (bool Begun, object? Object) BeginSubObject(string? name, object? childKey, SubObjectMode mode)
+			public (bool Begun, object? Object) BeginSubObject(string? name, object? childKey, ObjectMode mode)
 			{
 				if (childKey == null && MayBeNullable(mode)) {
 					WriteNull(name);
@@ -80,18 +80,18 @@ namespace Loyc.SyncLib
 
 				var buf = BeginProp(name, 25); // Reserve extra bytes for refs: {"$ref":"12345678901"}
 
-				if ((mode & SubObjectMode.Deduplicate) != 0) {
+				if ((mode & ObjectMode.Deduplicate) != 0) {
 					long id = _idGen.GetId(childKey, out bool firstTime);
 					if (!firstTime) {
 						WriteBackReference(buf, id);
 						return (false, childKey);
 					} else {
-						OpenBraceOrBrack(mode & ~SubObjectMode.List);
+						OpenBraceOrBrack(mode & ~ObjectMode.List);
 						if (_opt.NewtonsoftCompatibility)
 							WriteProp("$id", id.ToString());
 						else
 							WriteProp("\f", id);
-						if ((mode & SubObjectMode.List) != 0) {
+						if ((mode & ObjectMode.List) != 0) {
 							string valuesProp = _opt.NewtonsoftCompatibility ? "$values" : "";
 							BeginProp(valuesProp, 10);
 							OpenBraceOrBrack(mode);
@@ -102,7 +102,7 @@ namespace Loyc.SyncLib
 					OpenBraceOrBrack(mode);
 				}
 
-				if ((mode & SubObjectMode.Compact) != 0)
+				if ((mode & ObjectMode.Compact) != 0)
 					_compactMode++;
 				return (true, childKey);
 			}
@@ -141,13 +141,13 @@ namespace Loyc.SyncLib
 				CloseBraceOrBrack();
 			}
 
-			void OpenBraceOrBrack(SubObjectMode mode)
+			void OpenBraceOrBrack(ObjectMode mode)
 			{
 				_stack.Add(mode);
 
 				var buf = GetNextBuf(1 + NewlineSize);
 
-				_isInsideList = (mode & SubObjectMode.List) != 0;
+				_isInsideList = (mode & ObjectMode.List) != 0;
 
 				buf[_i++] = (byte) (_isInsideList ? '[' : '{');
 
@@ -158,7 +158,7 @@ namespace Loyc.SyncLib
 			void CloseBraceOrBrack()
 			{
 				var mode = _stack.Last;
-				if ((mode & SubObjectMode.Compact) != 0)
+				if ((mode & ObjectMode.Compact) != 0)
 					_compactMode--;
 				
 				// This will cause an unindent, since it is done before GetNextBuf() which writes the newline/indent
@@ -168,10 +168,10 @@ namespace Loyc.SyncLib
 				// is '\n', the object/list is empty and we don't even need a newline.
 				_pendingComma = (byte) (_pendingComma == '\n' ? 0 : '\n');
 
-				bool isList = (mode & SubObjectMode.List) != 0;
-				if (isList && (mode & SubObjectMode.Deduplicate) != 0)
+				bool isList = (mode & ObjectMode.List) != 0;
+				if (isList && (mode & ObjectMode.Deduplicate) != 0)
 				{
-					Debug.Assert(_stack.Last == (mode & ~SubObjectMode.List));
+					Debug.Assert(_stack.Last == (mode & ~ObjectMode.List));
 					
 					// In this case, two JSON objects are used to represent a single list, e.g.
 					//     "List": { "$id": "7", "$values": [...] }
@@ -196,7 +196,7 @@ namespace Loyc.SyncLib
 					Flush();
 					_isInsideList = true;
 				} else {
-					_isInsideList = (_stack.Last & SubObjectMode.Tuple) != 0;
+					_isInsideList = (_stack.Last & ObjectMode.Tuple) != 0;
 				}
 			}
 

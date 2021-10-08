@@ -9,7 +9,7 @@ namespace Loyc.SyncLib.Impl
 	public static class ObjectSyncher
 	{
 		public static ObjectSyncher<SyncManager, AsISyncObject<SyncManager, T>, T> 
-			For<SyncManager, T>(SyncObjectFunc<SyncManager, T> func, SubObjectMode mode)
+			For<SyncManager, T>(SyncObjectFunc<SyncManager, T> func, ObjectMode mode)
 			where SyncManager : ISyncManager
 			=> new ObjectSyncher<SyncManager, AsISyncObject<SyncManager, T>, T>(
 				new AsISyncObject<SyncManager, T>(func), mode);
@@ -21,9 +21,9 @@ namespace Loyc.SyncLib.Impl
 		where SyncObj : ISyncObject<SyncManager, T>
 	{
 		SyncObj _syncObj;
-		SubObjectMode _mode;
+		ObjectMode _mode;
 
-		public ObjectSyncher(SyncObj sync, SubObjectMode mode)
+		public ObjectSyncher(SyncObj sync, ObjectMode mode)
 		{
 			_syncObj = sync;
 			_mode = mode;
@@ -31,7 +31,7 @@ namespace Loyc.SyncLib.Impl
 
 		public T? Sync(ref SyncManager sync, FieldId propName, T? item)
 		{
-			bool avoidBoxing = (_mode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) == SubObjectMode.NotNull;
+			bool avoidBoxing = (_mode & (ObjectMode.Deduplicate | ObjectMode.NotNull)) == ObjectMode.NotNull;
 			var (begun, existingItem) = sync.BeginSubObject(propName, avoidBoxing ? null : item, _mode);
 			if (begun) {
 				try {
@@ -59,7 +59,7 @@ namespace Loyc.SyncLib.Impl
 
 		public void Write(ref SyncManager sync, FieldId propName, T? item)
 		{
-			bool avoidBoxing = (_mode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) == SubObjectMode.NotNull;
+			bool avoidBoxing = (_mode & (ObjectMode.Deduplicate | ObjectMode.NotNull)) == ObjectMode.NotNull;
 			var (begun, existingItem) = sync.BeginSubObject(propName, avoidBoxing ? null : item, _mode);
 			if (begun) {
 				try {

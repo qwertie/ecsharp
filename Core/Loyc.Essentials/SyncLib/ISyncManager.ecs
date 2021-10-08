@@ -128,8 +128,8 @@ namespace Loyc.SyncLib
 		bool SupportsDeduplication { get; }
 
 		/// <summary>Indicates that the properties of the current sub-object do not
-		/// have names because the basic <see cref="SubObjectMode"/> is either
-		/// <see cref="SubObjectMode.Tuple"/> or <see cref="SubObjectMode.List"/>.
+		/// have names because the basic <see cref="ObjectMode"/> is either
+		/// <see cref="ObjectMode.Tuple"/> or <see cref="ObjectMode.List"/>.
 		/// In this case, <see cref="SupportsReordering"/> is irrelevant, since 
 		/// fields do not have names or ID numbers.</summary>
 		bool IsInsideList { get; }
@@ -276,7 +276,7 @@ namespace Loyc.SyncLib
 		// I wanted to define methods like this:
 		// 
 		//     List<T>? SyncList<T, SyncField>(FieldId name, List<T>? savable, SyncField syncItem,
-		//       SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		//       ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 		//         where SyncField : ISyncField<SyncManager, T>;
 		//
 		// This way, the ISyncManager would be able to inject special behavior for 
@@ -310,7 +310,7 @@ namespace Loyc.SyncLib
 		// <param name="saving">The object being saved. This parameter is used to 
 		//   produce an object ID for deduplication, and it can be null if the user 
 		//   actually provided a null reference, or if the mode includes
-		//   SubObjectMode.NotNull and not SubObjectMode.Deduplicate.</param>
+		//   ObjectMode.NotNull and not ObjectMode.Deduplicate.</param>
 		// <param name="builder">A builder used to construct a new list when loading.
 		//   This parameter is ignored when not loading.</param>
 		// <returns>Returns default(TList) in Saving, Query and Schema modes. 
@@ -321,7 +321,7 @@ namespace Loyc.SyncLib
 			///   or write an array. Users don't need to call it.</summary>
 			/// <remarks>Full documentation is located in source code (ISyncManager.ecs)</remarks>
 			List? $(out NameWithType(SyncList, $T, Impl))<Scanner, List, ListBuilder>
-				(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+				(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<$T>
 				where ListBuilder : IListBuilder<List, $T>;
 		}
@@ -390,12 +390,12 @@ namespace Loyc.SyncLib
 		///   <see cref="ISyncManager"/> ignores this parameter. If a value type is
 		///   being read/written, you can set this parameter to null to avoid 
 		///   memory allocation, but be sure to use a mode that includes 
-		///   SubObjectMode.NotNull and not SubObjectMode.Deduplicate.</param>
-		/// <param name="mode">See <see cref="SubObjectMode"/> for information 
-		///   about the possible modes. When SubObjectMode.NotNull is present and
-		///   SubObjectMode.Deduplicate is absent, the value of childKey is ignored.</param>
+		///   ObjectMode.NotNull and not ObjectMode.Deduplicate.</param>
+		/// <param name="mode">See <see cref="ObjectMode"/> for information 
+		///   about the possible modes. When ObjectMode.NotNull is present and
+		///   ObjectMode.Deduplicate is absent, the value of childKey is ignored.</param>
 		/// <param name="listLength">If a variable-length list is being written
-		///   (i.e. <c>(mode & SubObjectMode.List) != 0 && Mode is SyncMode.Saving 
+		///   (i.e. <c>(mode & ObjectMode.List) != 0 && Mode is SyncMode.Saving 
 		///   or SyncMode.Query</c>), this must specify the list length. 
 		///   Implementations of this interface that use delimiters (e.g. JSON) 
 		///   will ignore this parameter, but others will write the length to the 
@@ -440,7 +440,7 @@ namespace Loyc.SyncLib
 		///   In Saving mode, and in every case except 4, the returned Object is 
 		///   the same as childKey.
 		/// </remarks>
-		(bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, SubObjectMode mode, int listLength = -1);
+		(bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1);
 
 		/// <summary>
 		/// If you called <see cref="BeginSubObject"/> and it returned true, you 
@@ -463,7 +463,7 @@ namespace Loyc.SyncLib
 
 				[@`%newline`, @`%SLComment`(concat(NameWithType(" SyncList methods for ", $T)))]
 				public static $T[]? SyncList<SyncManager>(this SyncManager sync,
-					FieldId name, $T[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+					FieldId name, $T[]? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 					where SyncManager : ISyncManager
 				{
 					var scanner = new InternalList.Scanner<$T>(savable.AsMemory());
@@ -478,7 +478,7 @@ namespace Loyc.SyncLib
 					(#type<IReadOnlyCollection<$T>? >, SyncColl)
 				)) {
 					public static $List SyncList<SyncManager>(this SyncManager sync,
-						FieldId name, $List savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+						FieldId name, $List savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 						where SyncManager : ISyncManager
 					{
 						var scanner = default(ScannableEnumerable<$T>.Scanner<IEnumerator<$T>>);
@@ -489,27 +489,27 @@ namespace Loyc.SyncLib
 					}
 				}
 				public static Memory<$T> SyncList<SyncManager>(this SyncManager sync,
-					FieldId name, Memory<$T> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+					FieldId name, Memory<$T> savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 					where SyncManager : ISyncManager
 				{
-					if ((listMode & SubObjectMode.Deduplicate) != 0)
-						throw new ArgumentException("SubObjectMode.Deduplicate is incompatible with Memory<T>");
+					if ((listMode & ObjectMode.Deduplicate) != 0)
+						throw new ArgumentException("ObjectMode.Deduplicate is incompatible with Memory<T>");
 					var scanner = new InternalList.Scanner<$T>(savable);
 					return sync.$(out NameWithType(SyncList, $T, Impl))<InternalList.Scanner<$T>, Memory<$T>, MemoryBuilder<$T>>(
-						name, scanner, null, new MemoryBuilder<$T>(), listMode | SubObjectMode.NotNull, tupleLength);
+						name, scanner, null, new MemoryBuilder<$T>(), listMode | ObjectMode.NotNull, tupleLength);
 				}
 				public static ReadOnlyMemory<$T> SyncList<SyncManager>(this SyncManager sync,
-					FieldId name, ReadOnlyMemory<$T> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+					FieldId name, ReadOnlyMemory<$T> savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 					where SyncManager : ISyncManager
 				{
-					if ((listMode & SubObjectMode.Deduplicate) != 0)
-						throw new ArgumentException("SubObjectMode.Deduplicate is incompatible with ReadOnlyMemory<T>");
+					if ((listMode & ObjectMode.Deduplicate) != 0)
+						throw new ArgumentException("ObjectMode.Deduplicate is incompatible with ReadOnlyMemory<T>");
 					var scanner = new InternalList.Scanner<$T>(savable);
 					return sync.$(out NameWithType(SyncList, $T, Impl))<InternalList.Scanner<$T>, ReadOnlyMemory<$T>, MemoryBuilder<$T>>(
-						name, scanner, null, new MemoryBuilder<$T>(), listMode | SubObjectMode.NotNull, tupleLength);
+						name, scanner, null, new MemoryBuilder<$T>(), listMode | ObjectMode.NotNull, tupleLength);
 				}
 				public static IListSource<$T> SyncList<SyncManager>(this SyncManager sync,
-					FieldId name, IListSource<$T> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+					FieldId name, IListSource<$T> savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 					where SyncManager : ISyncManager
 				{
 					var scanner = default(ScannableEnumerable<$T>.Scanner<IEnumerator<$T>>);
@@ -531,7 +531,7 @@ namespace Loyc.SyncLib
 				)) {
 					public static $List SyncList<SM>(this SM sync,
 						FieldId name, $List savable,
-						SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+						ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 							where SM : ISyncManager
 						=> new SyncList<SM, $T, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 				}
@@ -547,7 +547,7 @@ namespace Loyc.SyncLib
 		public static partial class $(out NameWithType(SyncManagerExt, $T)) {
 			static if ($T `staticMatches` byte || $T `staticMatches` char || $T `staticMatches` bool) {
 				public static List? SyncColl<SyncManager, List>(this SyncManager sync,
-					FieldId name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+					FieldId name, List? savable, Func<int, List> alloc, ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 					where SyncManager : ISyncManager
 					where List : ICollection<$T>, IReadOnlyCollection<$T>
 				{
@@ -559,7 +559,7 @@ namespace Loyc.SyncLib
 			} else {
 				public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync,
 					FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc,
-					SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+					ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 						where SM : ISyncManager
 						where Coll : ICollection<$T>
 						where SyncField : ISyncField<SM, $T>

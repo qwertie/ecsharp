@@ -25,10 +25,10 @@ namespace Loyc.SyncLib.Impl
 		where SyncItem : ISyncField<SM, T>
 	{
 		SyncItem _syncItem;
-		SubObjectMode _listMode;
+		ObjectMode _listMode;
 		int _tupleLength;
 		
-		public SyncList(SyncItem syncItem, SubObjectMode listMode, int tupleLength)
+		public SyncList(SyncItem syncItem, ObjectMode listMode, int tupleLength)
 		{
 			this._syncItem = syncItem;
 			this._listMode = listMode;
@@ -165,11 +165,11 @@ namespace Loyc.SyncLib.Impl
 		where List : ICollection<T>
 	{
 		SyncItem _syncItem;
-		SubObjectMode _listMode;
+		ObjectMode _listMode;
 		int _tupleLength;
 		Func<int, List> _alloc;
 
-		public SyncList(SyncItem syncItem, SubObjectMode listMode, int tupleLength, Func<int, List> alloc)
+		public SyncList(SyncItem syncItem, ObjectMode listMode, int tupleLength, Func<int, List> alloc)
 		{
 			this._syncItem = syncItem;
 			this._listMode = listMode;

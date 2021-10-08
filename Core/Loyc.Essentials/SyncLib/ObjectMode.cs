@@ -9,7 +9,7 @@ namespace Loyc.SyncLib
 	///   exclusive; Nullable and Deduplicate are flags that can be combined 
 	///   with the three basic kinds.</summary>
 	[Flags]
-	public enum SubObjectMode {
+	public enum ObjectMode {
 		/// <summary>A normal object, in which fields may have names.</summary>
 		Normal = 0,
 		
@@ -52,8 +52,8 @@ namespace Loyc.SyncLib
 		/// TODO: figure out how it will work and say something about that here</summary>
 		//DynamicType = 16,
 		
-		/// <summary>Requests a fixed-size representation, if available.
-		/// When using <see cref="SyncJson"/>, this has no effect.</summary>
+		/// <summary>Requests a fixed-size representation for a primitive type,
+		/// if available. When using <see cref="SyncJson"/>, this has no effect.</summary>
 		FixedSize = 32,
 
 		/// <summary>Requests that compact formatting be used when writing this object.

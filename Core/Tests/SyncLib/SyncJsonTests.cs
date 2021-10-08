@@ -13,7 +13,7 @@ namespace Loyc.SyncLib.Tests
 	public class SyncJsonTests : SyncLibTests<SyncJson.Reader, SyncJson.Writer>
 	{
 		SyncJson.Options _options = new SyncJson.Options();
-		SubObjectMode _saveMode;
+		ObjectMode _saveMode;
 
 		public SyncJsonTests(bool newtonCompat, bool nonDefaultSettings = false, bool minify = false)
 		{
@@ -35,7 +35,7 @@ namespace Loyc.SyncLib.Tests
 						VerifyEof = false,
 					}
 				};
-				_saveMode = SubObjectMode.Deduplicate | SubObjectMode.FixedSize;
+				_saveMode = ObjectMode.Deduplicate | ObjectMode.FixedSize;
 			}
 			_options.NewtonsoftCompatibility = newtonCompat;
 			_options.Write.Minify = minify;
@@ -48,7 +48,7 @@ namespace Loyc.SyncLib.Tests
 			return SyncJson.Read<T>(data, sync, _options)!; 
 		}
 
-		protected override byte[] Write<T>(T value, SyncObjectFunc<SyncJson.Writer, T> sync, SubObjectMode mode) {
+		protected override byte[] Write<T>(T value, SyncObjectFunc<SyncJson.Writer, T> sync, ObjectMode mode) {
 			_options.RootMode = mode;
 			return SyncJson.Write(value, sync, _options).ToArray();
 		}

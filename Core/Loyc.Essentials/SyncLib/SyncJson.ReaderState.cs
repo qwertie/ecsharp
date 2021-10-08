@@ -28,6 +28,8 @@ namespace Loyc.SyncLib
 				True = 6,
 				False = 7,
 
+				Missing = 8,
+
 				FirstCompositeType = 10,
 				Object = 11,
 				List = 12,
@@ -224,12 +226,12 @@ namespace Loyc.SyncLib
 				TOS.SkippedProps[propName] = (skippedValue, TOS.PositionOfBuf0 + tokenIndex);
 			}
 
-			internal (bool Begun, object? Object) BeginSubObject(string? name, SubObjectMode mode)
+			internal (bool Begun, object? Object) BeginSubObject(string? name, ObjectMode mode)
 			{
 				if (!FindProp(name, out (JsonValue value, long position) skippedObject))
 					Error(TOS.TokenStart.i, "Property \"{0}\" was missing".Localized(name), fatal: false);
 
-				bool expectList = (mode & SubObjectMode.List) != 0;
+				bool expectList = (mode & ObjectMode.List) != 0;
 				CurrentByte cur;
 
 				// Begin parsing the object, if possible
@@ -321,7 +323,7 @@ namespace Loyc.SyncLib
 				}
 				else if (type == JsonType.Null)
 				{
-					if ((mode & SubObjectMode.NotNull) != 0)
+					if ((mode & ObjectMode.NotNull) != 0)
 						Error(cur.i, "\"{0}\" is not nullable, but was null".Localized(name));
 					return (false, null);
 				}
@@ -431,7 +433,7 @@ namespace Loyc.SyncLib
 				return JsonType.Invalid;
 			}
 
-			internal List? ReadByteArray<ListBuilder, List>(string? name, ListBuilder builder, SubObjectMode mode) 
+			internal List? ReadByteArray<ListBuilder, List>(string? name, ListBuilder builder, ObjectMode mode) 
 				where ListBuilder : IListBuilder<List, byte>
 			{
 				if (FindProp(name, out (JsonValue value, long position) v)) {
@@ -531,7 +533,6 @@ namespace Loyc.SyncLib
 							
 						return _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, typeof(string))?.ToString();
 				}
-				Debug.Fail("unreachable");
 				return default;
 			}
 
@@ -574,7 +575,6 @@ namespace Loyc.SyncLib
 						}
 						return result.ToChar(null);
 				}
-				Debug.Fail("unreachable");
 				return default;
 			}
 
@@ -620,7 +620,6 @@ namespace Loyc.SyncLib
 						}
 						return (BigInteger) result.ToDouble(null);
 				}
-				Debug.Fail("unreachable");
 				return default;
 			}
 
@@ -664,7 +663,6 @@ namespace Loyc.SyncLib
 						}
 						return result.ToDouble(null);
 				}
-				Debug.Fail("unreachable");
 				return default;
 			}
 
@@ -708,7 +706,6 @@ namespace Loyc.SyncLib
 						}
 						return result.ToDecimal(null);
 				}
-				Debug.Fail("unreachable");
 				return default;
 			}
 
@@ -754,7 +751,6 @@ namespace Loyc.SyncLib
 						}
 						return result.Value;
 				}
-				Debug.Fail("unreachable");
 				return default;
 			}
 
@@ -763,6 +759,13 @@ namespace Loyc.SyncLib
 			{
 				if (TryReadPrimitive(name, out (JsonValue value, long position) v))
 					return v;
+				return MissingValue(name);
+			}
+
+			private (JsonValue value, long position) MissingValue(string? name)
+			{
+				if (_optRead.AllowMissingFields)
+					return (new JsonValue(JsonType.Missing, default), TOS.PositionOfBuf0 + TOS.TokenIndex);
 				throw NotFoundError(name);
 			}
 

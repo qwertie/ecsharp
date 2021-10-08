@@ -43,14 +43,14 @@ namespace Loyc.SyncLib.Tests
 		ISyncObject<SM, Child>
 		where SM : ISyncManager
 	{
-		SubObjectMode _listMode;
-		public FamilyModel(SubObjectMode listMode) => _listMode = listMode;
+		ObjectMode _listMode;
+		public FamilyModel(ObjectMode listMode) => _listMode = listMode;
 
 		public Family Sync(SM sync, Family? obj)
 		{
 			obj ??= new Family();
-			obj.Parents = sync.SyncList("Parents", obj.Parents, this, SubObjectMode.Deduplicate, _listMode);
-			obj.Children = sync.SyncList("Children", obj.Children, this, SubObjectMode.Deduplicate, _listMode);
+			obj.Parents = sync.SyncList("Parents", obj.Parents, this, ObjectMode.Deduplicate, _listMode);
+			obj.Children = sync.SyncList("Children", obj.Children, this, ObjectMode.Deduplicate, _listMode);
 			return obj;
 		}
 
@@ -58,7 +58,7 @@ namespace Loyc.SyncLib.Tests
 		{
 			obj ??= new Parent();
 			obj.Name = sm.Sync("Name", obj.Name);
-			obj.Children = sm.SyncList("Children", obj.Children, this, SubObjectMode.Deduplicate, _listMode);
+			obj.Children = sm.SyncList("Children", obj.Children, this, ObjectMode.Deduplicate, _listMode);
 			return obj;
 		}
 
@@ -66,8 +66,8 @@ namespace Loyc.SyncLib.Tests
 		{
 			sm.CurrentObject = child ??= new Child();
 			child.Name = sm.Sync("Name", child.Name);
-			child.Father = sm.Sync("Father", child.Father, this, SubObjectMode.Deduplicate);
-			child.Mother = sm.Sync("Mother", child.Mother, this, SubObjectMode.Deduplicate);
+			child.Father = sm.Sync("Father", child.Father, this, ObjectMode.Deduplicate);
+			child.Mother = sm.Sync("Mother", child.Mother, this, ObjectMode.Deduplicate);
 			return child;
 		}
 	}

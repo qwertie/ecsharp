@@ -82,7 +82,7 @@ namespace Loyc.SyncLib.Tests
 
 			options = new SyncJson.Options(compactMode: true) {
 				NameConverter = SyncJson.ToCamelCase,
-				RootMode = SubObjectMode.Deduplicate,
+				RootMode = ObjectMode.Deduplicate,
 				NewtonsoftCompatibility = true,
 			};
 			syncJson = SyncJson.WriteString(obj, new BigStandardModelSync<SyncJson.Writer>(), options);
@@ -125,7 +125,7 @@ namespace Loyc.SyncLib.Tests
 
 			options = new SyncJson.Options(compactMode: true) {
 				NameConverter = SyncJson.ToCamelCase,
-				RootMode = SubObjectMode.Deduplicate,
+				RootMode = ObjectMode.Deduplicate,
 				NewtonsoftCompatibility = true,
 			};
 			syncJson = SyncJson.WriteString(obj, new BigStandardModelSync<SyncJson.Writer>().Sync, options);
@@ -152,10 +152,10 @@ namespace Loyc.SyncLib.Tests
 				string json = ToNewtonString(jsonSerializer, family);
 
 				var options = new SyncJson.Options {
-					RootMode = SubObjectMode.Deduplicate,
+					RootMode = ObjectMode.Deduplicate,
 					Write = { Indent = "  ", SpaceAfterColon = true }
 				};
-				var syncHelper = new FamilyModel<SyncJson.Writer>((deduplicateLists ? SubObjectMode.Deduplicate : 0) | SubObjectMode.List);
+				var syncHelper = new FamilyModel<SyncJson.Writer>((deduplicateLists ? ObjectMode.Deduplicate : 0) | ObjectMode.List);
 				var syncJson = SyncJson.WriteString(family, syncHelper, options);
 
 				Assert.AreEqual(json, syncJson);

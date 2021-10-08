@@ -57,7 +57,7 @@ namespace Loyc.SyncLib
 
 			public object CurrentObject { set => _s.SetCurrentObject(value); }
 
-			public (bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, SubObjectMode mode, int listLength = -1)
+			public (bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1)
 			{
 				return _s.BeginSubObject(name.Name, mode);
 			}
@@ -66,7 +66,7 @@ namespace Loyc.SyncLib
 
 			public SyncType HasField(FieldId name, SyncType expectedType = SyncType.Unknown)
 			{
-				if (name == null)
+				if (name == null && !_s.IsInsideList)
 					return SyncType.Unknown;
 
 				var type = _s.HasField(name.Name);
@@ -144,7 +144,7 @@ namespace Loyc.SyncLib
 				return _s.ReadInteger(name.Name, false)!.Value;
 			}
 
-			public List? SyncListBoolImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+			public List? SyncListBoolImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<bool>
 				where ListBuilder : IListBuilder<List, bool>
 			{
@@ -152,12 +152,12 @@ namespace Loyc.SyncLib
 				return loader.Sync(ref this, name, saving);
 			}
 
-			public List? SyncListByteImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+			public List? SyncListByteImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<byte>
 				where ListBuilder : IListBuilder<List, byte>
 				=> _s.ReadByteArray<ListBuilder, List>(name, builder, mode);
 
-			public List? SyncListCharImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+			public List? SyncListCharImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<char>
 				where ListBuilder : IListBuilder<List, char>
 			{

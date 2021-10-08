@@ -75,7 +75,7 @@ namespace Loyc.SyncLib
 				}
 			}
 			//##unroll($T in (bool, byte, sbyte, short, ushort, int, uint, long, ulong, float, double, BigInteger, char, #type<string? >)) {
-			//	public InternalList<$T> SyncListImpl(FieldId name, ReadOnlySpan<$T> savable, SubObjectMode listMode = SubObjectMode.List)
+			//	public InternalList<$T> SyncListImpl(FieldId name, ReadOnlySpan<$T> savable, ObjectMode listMode = ObjectMode.List)
 			//	{
 			//		SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
 			//		return default;

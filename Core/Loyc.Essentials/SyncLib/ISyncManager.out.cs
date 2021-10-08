@@ -81,8 +81,8 @@ namespace Loyc.SyncLib
 		bool SupportsDeduplication { get; }
 
 		/// <summary>Indicates that the properties of the current sub-object do not
-		/// have names because the basic <see cref="SubObjectMode"/> is either
-		/// <see cref="SubObjectMode.Tuple"/> or <see cref="SubObjectMode.List"/>.
+		/// have names because the basic <see cref="ObjectMode"/> is either
+		/// <see cref="ObjectMode.Tuple"/> or <see cref="ObjectMode.List"/>.
 		/// In this case, <see cref="SupportsReordering"/> is irrelevant, since 
 		/// fields do not have names or ID numbers.</summary>
 		bool IsInsideList { get; }
@@ -268,21 +268,21 @@ namespace Loyc.SyncLib
 		///   or write an array. Users don't need to call it.</summary>
 		/// <remarks>Full documentation is located in source code (ISyncManager.ecs)</remarks>
 		List? SyncListBoolImpl<Scanner, List, ListBuilder>
-		(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+		(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 		
 		 where Scanner: IScanner<bool> where ListBuilder: IListBuilder<List, bool>;
 		/// <summary>This method is used by Sync() extension methods to read 
 		///   or write an array. Users don't need to call it.</summary>
 		/// <remarks>Full documentation is located in source code (ISyncManager.ecs)</remarks>
 		List? SyncListCharImpl<Scanner, List, ListBuilder>
-		(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+		(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 		
 		 where Scanner: IScanner<char> where ListBuilder: IListBuilder<List, char>;
 		/// <summary>This method is used by Sync() extension methods to read 
 		///   or write an array. Users don't need to call it.</summary>
 		/// <remarks>Full documentation is located in source code (ISyncManager.ecs)</remarks>
 		List? SyncListByteImpl<Scanner, List, ListBuilder>
-		(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+		(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 		
 		 where Scanner: IScanner<byte> where ListBuilder: IListBuilder<List, byte>;
 
@@ -350,12 +350,12 @@ namespace Loyc.SyncLib
 		///   <see cref="ISyncManager"/> ignores this parameter. If a value type is
 		///   being read/written, you can set this parameter to null to avoid 
 		///   memory allocation, but be sure to use a mode that includes 
-		///   SubObjectMode.NotNull and not SubObjectMode.Deduplicate.</param>
-		/// <param name="mode">See <see cref="SubObjectMode"/> for information 
-		///   about the possible modes. When SubObjectMode.NotNull is present and
-		///   SubObjectMode.Deduplicate is absent, the value of childKey is ignored.</param>
+		///   ObjectMode.NotNull and not ObjectMode.Deduplicate.</param>
+		/// <param name="mode">See <see cref="ObjectMode"/> for information 
+		///   about the possible modes. When ObjectMode.NotNull is present and
+		///   ObjectMode.Deduplicate is absent, the value of childKey is ignored.</param>
 		/// <param name="listLength">If a variable-length list is being written
-		///   (i.e. <c>(mode & SubObjectMode.List) != 0 && Mode is SyncMode.Saving 
+		///   (i.e. <c>(mode & ObjectMode.List) != 0 && Mode is SyncMode.Saving 
 		///   or SyncMode.Query</c>), this must specify the list length. 
 		///   Implementations of this interface that use delimiters (e.g. JSON) 
 		///   will ignore this parameter, but others will write the length to the 
@@ -400,7 +400,7 @@ namespace Loyc.SyncLib
 		///   In Saving mode, and in every case except 4, the returned Object is 
 		///   the same as childKey.
 		/// </remarks>
-		(bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, SubObjectMode mode, int listLength = -1);
+		(bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1);
 
 		/// <summary>
 		/// If you called <see cref="BeginSubObject"/> and it returned true, you 
@@ -421,7 +421,7 @@ namespace Loyc.SyncLib
 		
 		// SyncList methods for Bool
 		public static bool[]? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, bool[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, bool[]? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = new InternalList.Scanner<bool>(savable.AsMemory());
@@ -429,7 +429,7 @@ namespace Loyc.SyncLib
 			name, scanner, savable, new ArrayBuilder<bool>(), listMode, tupleLength);
 		}
 		public static List<bool>? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, List<bool>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, List<bool>? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<bool>.Scanner<IEnumerator<bool>>);
@@ -440,7 +440,7 @@ namespace Loyc.SyncLib
 		}
 
 		public static IList<bool>? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, IList<bool>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, IList<bool>? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<bool>.Scanner<IEnumerator<bool>>);
@@ -451,7 +451,7 @@ namespace Loyc.SyncLib
 		}
 
 		public static IReadOnlyList<bool>? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, IReadOnlyList<bool>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, IReadOnlyList<bool>? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<bool>.Scanner<IEnumerator<bool>>);
@@ -462,7 +462,7 @@ namespace Loyc.SyncLib
 		}
 
 		public static ICollection<bool>? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, ICollection<bool>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, ICollection<bool>? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<bool>.Scanner<IEnumerator<bool>>);
@@ -473,7 +473,7 @@ namespace Loyc.SyncLib
 		}
 
 		public static IReadOnlyCollection<bool>? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, IReadOnlyCollection<bool>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, IReadOnlyCollection<bool>? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<bool>.Scanner<IEnumerator<bool>>);
@@ -484,27 +484,27 @@ namespace Loyc.SyncLib
 		}
 		
 		public static Memory<bool> SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, Memory<bool> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, Memory<bool> savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
-			if ((listMode & SubObjectMode.Deduplicate) != 0)
-				throw new ArgumentException("SubObjectMode.Deduplicate is incompatible with Memory<T>");
+			if ((listMode & ObjectMode.Deduplicate) != 0)
+				throw new ArgumentException("ObjectMode.Deduplicate is incompatible with Memory<T>");
 			var scanner = new InternalList.Scanner<bool>(savable);
 			return sync.SyncListBoolImpl<InternalList.Scanner<bool>, Memory<bool>, MemoryBuilder<bool>>(
-			name, scanner, null, new MemoryBuilder<bool>(), listMode | SubObjectMode.NotNull, tupleLength);
+			name, scanner, null, new MemoryBuilder<bool>(), listMode | ObjectMode.NotNull, tupleLength);
 		}
 		public static ReadOnlyMemory<bool> SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, ReadOnlyMemory<bool> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, ReadOnlyMemory<bool> savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
-			if ((listMode & SubObjectMode.Deduplicate) != 0)
-				throw new ArgumentException("SubObjectMode.Deduplicate is incompatible with ReadOnlyMemory<T>");
+			if ((listMode & ObjectMode.Deduplicate) != 0)
+				throw new ArgumentException("ObjectMode.Deduplicate is incompatible with ReadOnlyMemory<T>");
 			var scanner = new InternalList.Scanner<bool>(savable);
 			return sync.SyncListBoolImpl<InternalList.Scanner<bool>, ReadOnlyMemory<bool>, MemoryBuilder<bool>>(
-			name, scanner, null, new MemoryBuilder<bool>(), listMode | SubObjectMode.NotNull, tupleLength);
+			name, scanner, null, new MemoryBuilder<bool>(), listMode | ObjectMode.NotNull, tupleLength);
 		}
 		public static IListSource<bool> SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, IListSource<bool> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, IListSource<bool> savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<bool>.Scanner<IEnumerator<bool>>);
@@ -518,57 +518,57 @@ namespace Loyc.SyncLib
 		// SyncList methods for SByte
 		public static sbyte[]? SyncList<SM>(this SM sync, 
 		  FieldId name, sbyte[]? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, sbyte, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static List<sbyte>? SyncList<SM>(this SM sync, 
 		  FieldId name, List<sbyte>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, sbyte, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IList<sbyte>? SyncList<SM>(this SM sync, 
 		  FieldId name, IList<sbyte>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, sbyte, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static IReadOnlyList<sbyte>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyList<sbyte>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, sbyte, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IListSource<sbyte>? SyncList<SM>(this SM sync, 
 		  FieldId name, IListSource<sbyte>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, sbyte, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ICollection<sbyte>? SyncList<SM>(this SM sync, 
 		  FieldId name, ICollection<sbyte>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, sbyte, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IReadOnlyCollection<sbyte>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyCollection<sbyte>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, sbyte, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static HashSet<sbyte>? SyncList<SM>(this SM sync, 
 		  FieldId name, HashSet<sbyte>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, sbyte, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ReadOnlyMemory<sbyte> SyncList<SM>(this SM sync, 
 		  FieldId name, ReadOnlyMemory<sbyte> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, sbyte, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static Memory<sbyte> SyncList<SM>(this SM sync, 
 		  FieldId name, Memory<sbyte> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, sbyte, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		
@@ -576,7 +576,7 @@ namespace Loyc.SyncLib
 		
 		// SyncList methods for Byte
 		public static byte[]? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, byte[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, byte[]? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = new InternalList.Scanner<byte>(savable.AsMemory());
@@ -584,7 +584,7 @@ namespace Loyc.SyncLib
 			name, scanner, savable, new ArrayBuilder<byte>(), listMode, tupleLength);
 		}
 		public static List<byte>? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, List<byte>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, List<byte>? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<byte>.Scanner<IEnumerator<byte>>);
@@ -595,7 +595,7 @@ namespace Loyc.SyncLib
 		}
 
 		public static IList<byte>? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, IList<byte>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, IList<byte>? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<byte>.Scanner<IEnumerator<byte>>);
@@ -606,7 +606,7 @@ namespace Loyc.SyncLib
 		}
 
 		public static IReadOnlyList<byte>? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, IReadOnlyList<byte>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, IReadOnlyList<byte>? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<byte>.Scanner<IEnumerator<byte>>);
@@ -617,7 +617,7 @@ namespace Loyc.SyncLib
 		}
 
 		public static ICollection<byte>? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, ICollection<byte>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, ICollection<byte>? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<byte>.Scanner<IEnumerator<byte>>);
@@ -628,7 +628,7 @@ namespace Loyc.SyncLib
 		}
 
 		public static IReadOnlyCollection<byte>? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, IReadOnlyCollection<byte>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, IReadOnlyCollection<byte>? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<byte>.Scanner<IEnumerator<byte>>);
@@ -639,27 +639,27 @@ namespace Loyc.SyncLib
 		}
 		
 		public static Memory<byte> SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, Memory<byte> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, Memory<byte> savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
-			if ((listMode & SubObjectMode.Deduplicate) != 0)
-				throw new ArgumentException("SubObjectMode.Deduplicate is incompatible with Memory<T>");
+			if ((listMode & ObjectMode.Deduplicate) != 0)
+				throw new ArgumentException("ObjectMode.Deduplicate is incompatible with Memory<T>");
 			var scanner = new InternalList.Scanner<byte>(savable);
 			return sync.SyncListByteImpl<InternalList.Scanner<byte>, Memory<byte>, MemoryBuilder<byte>>(
-			name, scanner, null, new MemoryBuilder<byte>(), listMode | SubObjectMode.NotNull, tupleLength);
+			name, scanner, null, new MemoryBuilder<byte>(), listMode | ObjectMode.NotNull, tupleLength);
 		}
 		public static ReadOnlyMemory<byte> SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, ReadOnlyMemory<byte> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, ReadOnlyMemory<byte> savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
-			if ((listMode & SubObjectMode.Deduplicate) != 0)
-				throw new ArgumentException("SubObjectMode.Deduplicate is incompatible with ReadOnlyMemory<T>");
+			if ((listMode & ObjectMode.Deduplicate) != 0)
+				throw new ArgumentException("ObjectMode.Deduplicate is incompatible with ReadOnlyMemory<T>");
 			var scanner = new InternalList.Scanner<byte>(savable);
 			return sync.SyncListByteImpl<InternalList.Scanner<byte>, ReadOnlyMemory<byte>, MemoryBuilder<byte>>(
-			name, scanner, null, new MemoryBuilder<byte>(), listMode | SubObjectMode.NotNull, tupleLength);
+			name, scanner, null, new MemoryBuilder<byte>(), listMode | ObjectMode.NotNull, tupleLength);
 		}
 		public static IListSource<byte> SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, IListSource<byte> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, IListSource<byte> savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<byte>.Scanner<IEnumerator<byte>>);
@@ -673,57 +673,57 @@ namespace Loyc.SyncLib
 		// SyncList methods for Short
 		public static short[]? SyncList<SM>(this SM sync, 
 		  FieldId name, short[]? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, short, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static List<short>? SyncList<SM>(this SM sync, 
 		  FieldId name, List<short>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, short, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IList<short>? SyncList<SM>(this SM sync, 
 		  FieldId name, IList<short>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, short, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static IReadOnlyList<short>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyList<short>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, short, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IListSource<short>? SyncList<SM>(this SM sync, 
 		  FieldId name, IListSource<short>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, short, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ICollection<short>? SyncList<SM>(this SM sync, 
 		  FieldId name, ICollection<short>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, short, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IReadOnlyCollection<short>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyCollection<short>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, short, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static HashSet<short>? SyncList<SM>(this SM sync, 
 		  FieldId name, HashSet<short>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, short, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ReadOnlyMemory<short> SyncList<SM>(this SM sync, 
 		  FieldId name, ReadOnlyMemory<short> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, short, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static Memory<short> SyncList<SM>(this SM sync, 
 		  FieldId name, Memory<short> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, short, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		
@@ -731,57 +731,57 @@ namespace Loyc.SyncLib
 		// SyncList methods for UShort
 		public static ushort[]? SyncList<SM>(this SM sync, 
 		  FieldId name, ushort[]? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ushort, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static List<ushort>? SyncList<SM>(this SM sync, 
 		  FieldId name, List<ushort>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ushort, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IList<ushort>? SyncList<SM>(this SM sync, 
 		  FieldId name, IList<ushort>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ushort, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static IReadOnlyList<ushort>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyList<ushort>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ushort, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IListSource<ushort>? SyncList<SM>(this SM sync, 
 		  FieldId name, IListSource<ushort>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ushort, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ICollection<ushort>? SyncList<SM>(this SM sync, 
 		  FieldId name, ICollection<ushort>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ushort, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IReadOnlyCollection<ushort>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyCollection<ushort>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ushort, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static HashSet<ushort>? SyncList<SM>(this SM sync, 
 		  FieldId name, HashSet<ushort>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ushort, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ReadOnlyMemory<ushort> SyncList<SM>(this SM sync, 
 		  FieldId name, ReadOnlyMemory<ushort> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ushort, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static Memory<ushort> SyncList<SM>(this SM sync, 
 		  FieldId name, Memory<ushort> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ushort, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		
@@ -789,57 +789,57 @@ namespace Loyc.SyncLib
 		// SyncList methods for Int
 		public static int[]? SyncList<SM>(this SM sync, 
 		  FieldId name, int[]? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, int, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static List<int>? SyncList<SM>(this SM sync, 
 		  FieldId name, List<int>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, int, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IList<int>? SyncList<SM>(this SM sync, 
 		  FieldId name, IList<int>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, int, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static IReadOnlyList<int>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyList<int>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, int, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IListSource<int>? SyncList<SM>(this SM sync, 
 		  FieldId name, IListSource<int>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, int, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ICollection<int>? SyncList<SM>(this SM sync, 
 		  FieldId name, ICollection<int>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, int, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IReadOnlyCollection<int>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyCollection<int>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, int, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static HashSet<int>? SyncList<SM>(this SM sync, 
 		  FieldId name, HashSet<int>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, int, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ReadOnlyMemory<int> SyncList<SM>(this SM sync, 
 		  FieldId name, ReadOnlyMemory<int> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, int, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static Memory<int> SyncList<SM>(this SM sync, 
 		  FieldId name, Memory<int> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, int, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		
@@ -847,57 +847,57 @@ namespace Loyc.SyncLib
 		// SyncList methods for UInt
 		public static uint[]? SyncList<SM>(this SM sync, 
 		  FieldId name, uint[]? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, uint, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static List<uint>? SyncList<SM>(this SM sync, 
 		  FieldId name, List<uint>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, uint, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IList<uint>? SyncList<SM>(this SM sync, 
 		  FieldId name, IList<uint>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, uint, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static IReadOnlyList<uint>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyList<uint>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, uint, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IListSource<uint>? SyncList<SM>(this SM sync, 
 		  FieldId name, IListSource<uint>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, uint, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ICollection<uint>? SyncList<SM>(this SM sync, 
 		  FieldId name, ICollection<uint>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, uint, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IReadOnlyCollection<uint>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyCollection<uint>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, uint, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static HashSet<uint>? SyncList<SM>(this SM sync, 
 		  FieldId name, HashSet<uint>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, uint, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ReadOnlyMemory<uint> SyncList<SM>(this SM sync, 
 		  FieldId name, ReadOnlyMemory<uint> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, uint, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static Memory<uint> SyncList<SM>(this SM sync, 
 		  FieldId name, Memory<uint> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, uint, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		
@@ -905,57 +905,57 @@ namespace Loyc.SyncLib
 		// SyncList methods for Long
 		public static long[]? SyncList<SM>(this SM sync, 
 		  FieldId name, long[]? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, long, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static List<long>? SyncList<SM>(this SM sync, 
 		  FieldId name, List<long>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, long, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IList<long>? SyncList<SM>(this SM sync, 
 		  FieldId name, IList<long>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, long, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static IReadOnlyList<long>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyList<long>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, long, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IListSource<long>? SyncList<SM>(this SM sync, 
 		  FieldId name, IListSource<long>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, long, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ICollection<long>? SyncList<SM>(this SM sync, 
 		  FieldId name, ICollection<long>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, long, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IReadOnlyCollection<long>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyCollection<long>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, long, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static HashSet<long>? SyncList<SM>(this SM sync, 
 		  FieldId name, HashSet<long>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, long, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ReadOnlyMemory<long> SyncList<SM>(this SM sync, 
 		  FieldId name, ReadOnlyMemory<long> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, long, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static Memory<long> SyncList<SM>(this SM sync, 
 		  FieldId name, Memory<long> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, long, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		
@@ -963,57 +963,57 @@ namespace Loyc.SyncLib
 		// SyncList methods for ULong
 		public static ulong[]? SyncList<SM>(this SM sync, 
 		  FieldId name, ulong[]? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ulong, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static List<ulong>? SyncList<SM>(this SM sync, 
 		  FieldId name, List<ulong>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ulong, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IList<ulong>? SyncList<SM>(this SM sync, 
 		  FieldId name, IList<ulong>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ulong, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static IReadOnlyList<ulong>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyList<ulong>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ulong, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IListSource<ulong>? SyncList<SM>(this SM sync, 
 		  FieldId name, IListSource<ulong>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ulong, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ICollection<ulong>? SyncList<SM>(this SM sync, 
 		  FieldId name, ICollection<ulong>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ulong, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IReadOnlyCollection<ulong>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyCollection<ulong>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ulong, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static HashSet<ulong>? SyncList<SM>(this SM sync, 
 		  FieldId name, HashSet<ulong>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ulong, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ReadOnlyMemory<ulong> SyncList<SM>(this SM sync, 
 		  FieldId name, ReadOnlyMemory<ulong> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ulong, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static Memory<ulong> SyncList<SM>(this SM sync, 
 		  FieldId name, Memory<ulong> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, ulong, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		
@@ -1021,57 +1021,57 @@ namespace Loyc.SyncLib
 		// SyncList methods for Float
 		public static float[]? SyncList<SM>(this SM sync, 
 		  FieldId name, float[]? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, float, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static List<float>? SyncList<SM>(this SM sync, 
 		  FieldId name, List<float>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, float, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IList<float>? SyncList<SM>(this SM sync, 
 		  FieldId name, IList<float>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, float, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static IReadOnlyList<float>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyList<float>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, float, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IListSource<float>? SyncList<SM>(this SM sync, 
 		  FieldId name, IListSource<float>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, float, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ICollection<float>? SyncList<SM>(this SM sync, 
 		  FieldId name, ICollection<float>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, float, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IReadOnlyCollection<float>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyCollection<float>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, float, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static HashSet<float>? SyncList<SM>(this SM sync, 
 		  FieldId name, HashSet<float>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, float, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ReadOnlyMemory<float> SyncList<SM>(this SM sync, 
 		  FieldId name, ReadOnlyMemory<float> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, float, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static Memory<float> SyncList<SM>(this SM sync, 
 		  FieldId name, Memory<float> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, float, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		
@@ -1079,57 +1079,57 @@ namespace Loyc.SyncLib
 		// SyncList methods for Double
 		public static double[]? SyncList<SM>(this SM sync, 
 		  FieldId name, double[]? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, double, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static List<double>? SyncList<SM>(this SM sync, 
 		  FieldId name, List<double>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, double, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IList<double>? SyncList<SM>(this SM sync, 
 		  FieldId name, IList<double>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, double, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static IReadOnlyList<double>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyList<double>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, double, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IListSource<double>? SyncList<SM>(this SM sync, 
 		  FieldId name, IListSource<double>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, double, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ICollection<double>? SyncList<SM>(this SM sync, 
 		  FieldId name, ICollection<double>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, double, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IReadOnlyCollection<double>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyCollection<double>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, double, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static HashSet<double>? SyncList<SM>(this SM sync, 
 		  FieldId name, HashSet<double>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, double, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ReadOnlyMemory<double> SyncList<SM>(this SM sync, 
 		  FieldId name, ReadOnlyMemory<double> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, double, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static Memory<double> SyncList<SM>(this SM sync, 
 		  FieldId name, Memory<double> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, double, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		
@@ -1137,57 +1137,57 @@ namespace Loyc.SyncLib
 		// SyncList methods for Decimal
 		public static decimal[]? SyncList<SM>(this SM sync, 
 		  FieldId name, decimal[]? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, decimal, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static List<decimal>? SyncList<SM>(this SM sync, 
 		  FieldId name, List<decimal>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, decimal, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IList<decimal>? SyncList<SM>(this SM sync, 
 		  FieldId name, IList<decimal>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, decimal, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static IReadOnlyList<decimal>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyList<decimal>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, decimal, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IListSource<decimal>? SyncList<SM>(this SM sync, 
 		  FieldId name, IListSource<decimal>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, decimal, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ICollection<decimal>? SyncList<SM>(this SM sync, 
 		  FieldId name, ICollection<decimal>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, decimal, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IReadOnlyCollection<decimal>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyCollection<decimal>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, decimal, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static HashSet<decimal>? SyncList<SM>(this SM sync, 
 		  FieldId name, HashSet<decimal>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, decimal, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ReadOnlyMemory<decimal> SyncList<SM>(this SM sync, 
 		  FieldId name, ReadOnlyMemory<decimal> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, decimal, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static Memory<decimal> SyncList<SM>(this SM sync, 
 		  FieldId name, Memory<decimal> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, decimal, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		
@@ -1195,57 +1195,57 @@ namespace Loyc.SyncLib
 		// SyncList methods for BigInteger
 		public static BigInteger[]? SyncList<SM>(this SM sync, 
 		  FieldId name, BigInteger[]? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, BigInteger, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static List<BigInteger>? SyncList<SM>(this SM sync, 
 		  FieldId name, List<BigInteger>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, BigInteger, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IList<BigInteger>? SyncList<SM>(this SM sync, 
 		  FieldId name, IList<BigInteger>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, BigInteger, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static IReadOnlyList<BigInteger>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyList<BigInteger>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, BigInteger, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IListSource<BigInteger>? SyncList<SM>(this SM sync, 
 		  FieldId name, IListSource<BigInteger>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, BigInteger, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ICollection<BigInteger>? SyncList<SM>(this SM sync, 
 		  FieldId name, ICollection<BigInteger>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, BigInteger, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IReadOnlyCollection<BigInteger>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyCollection<BigInteger>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, BigInteger, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static HashSet<BigInteger>? SyncList<SM>(this SM sync, 
 		  FieldId name, HashSet<BigInteger>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, BigInteger, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ReadOnlyMemory<BigInteger> SyncList<SM>(this SM sync, 
 		  FieldId name, ReadOnlyMemory<BigInteger> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, BigInteger, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static Memory<BigInteger> SyncList<SM>(this SM sync, 
 		  FieldId name, Memory<BigInteger> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, BigInteger, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		
@@ -1253,7 +1253,7 @@ namespace Loyc.SyncLib
 		
 		// SyncList methods for Char
 		public static char[]? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, char[]? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, char[]? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = new InternalList.Scanner<char>(savable.AsMemory());
@@ -1261,7 +1261,7 @@ namespace Loyc.SyncLib
 			name, scanner, savable, new ArrayBuilder<char>(), listMode, tupleLength);
 		}
 		public static List<char>? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, List<char>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, List<char>? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<char>.Scanner<IEnumerator<char>>);
@@ -1272,7 +1272,7 @@ namespace Loyc.SyncLib
 		}
 
 		public static IList<char>? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, IList<char>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, IList<char>? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<char>.Scanner<IEnumerator<char>>);
@@ -1283,7 +1283,7 @@ namespace Loyc.SyncLib
 		}
 
 		public static IReadOnlyList<char>? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, IReadOnlyList<char>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, IReadOnlyList<char>? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<char>.Scanner<IEnumerator<char>>);
@@ -1294,7 +1294,7 @@ namespace Loyc.SyncLib
 		}
 
 		public static ICollection<char>? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, ICollection<char>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, ICollection<char>? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<char>.Scanner<IEnumerator<char>>);
@@ -1305,7 +1305,7 @@ namespace Loyc.SyncLib
 		}
 
 		public static IReadOnlyCollection<char>? SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, IReadOnlyCollection<char>? savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, IReadOnlyCollection<char>? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<char>.Scanner<IEnumerator<char>>);
@@ -1316,27 +1316,27 @@ namespace Loyc.SyncLib
 		}
 		
 		public static Memory<char> SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, Memory<char> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, Memory<char> savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
-			if ((listMode & SubObjectMode.Deduplicate) != 0)
-				throw new ArgumentException("SubObjectMode.Deduplicate is incompatible with Memory<T>");
+			if ((listMode & ObjectMode.Deduplicate) != 0)
+				throw new ArgumentException("ObjectMode.Deduplicate is incompatible with Memory<T>");
 			var scanner = new InternalList.Scanner<char>(savable);
 			return sync.SyncListCharImpl<InternalList.Scanner<char>, Memory<char>, MemoryBuilder<char>>(
-			name, scanner, null, new MemoryBuilder<char>(), listMode | SubObjectMode.NotNull, tupleLength);
+			name, scanner, null, new MemoryBuilder<char>(), listMode | ObjectMode.NotNull, tupleLength);
 		}
 		public static ReadOnlyMemory<char> SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, ReadOnlyMemory<char> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, ReadOnlyMemory<char> savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
-			if ((listMode & SubObjectMode.Deduplicate) != 0)
-				throw new ArgumentException("SubObjectMode.Deduplicate is incompatible with ReadOnlyMemory<T>");
+			if ((listMode & ObjectMode.Deduplicate) != 0)
+				throw new ArgumentException("ObjectMode.Deduplicate is incompatible with ReadOnlyMemory<T>");
 			var scanner = new InternalList.Scanner<char>(savable);
 			return sync.SyncListCharImpl<InternalList.Scanner<char>, ReadOnlyMemory<char>, MemoryBuilder<char>>(
-			name, scanner, null, new MemoryBuilder<char>(), listMode | SubObjectMode.NotNull, tupleLength);
+			name, scanner, null, new MemoryBuilder<char>(), listMode | ObjectMode.NotNull, tupleLength);
 		}
 		public static IListSource<char> SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, IListSource<char> savable, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
+		  FieldId name, IListSource<char> savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<char>.Scanner<IEnumerator<char>>);
@@ -1350,57 +1350,57 @@ namespace Loyc.SyncLib
 		// SyncList methods for String
 		public static string?[]? SyncList<SM>(this SM sync, 
 		  FieldId name, string?[]? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, string?, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static List<string?>? SyncList<SM>(this SM sync, 
 		  FieldId name, List<string?>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, string?, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IList<string?>? SyncList<SM>(this SM sync, 
 		  FieldId name, IList<string?>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, string?, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static IReadOnlyList<string?>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyList<string?>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, string?, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IListSource<string?>? SyncList<SM>(this SM sync, 
 		  FieldId name, IListSource<string?>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, string?, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ICollection<string?>? SyncList<SM>(this SM sync, 
 		  FieldId name, ICollection<string?>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, string?, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static IReadOnlyCollection<string?>? SyncList<SM>(this SM sync, 
 		  FieldId name, IReadOnlyCollection<string?>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, string?, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static HashSet<string?>? SyncList<SM>(this SM sync, 
 		  FieldId name, HashSet<string?>? savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, string?, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 
 		public static ReadOnlyMemory<string?> SyncList<SM>(this SM sync, 
 		  FieldId name, ReadOnlyMemory<string?> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, string?, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		public static Memory<string?> SyncList<SM>(this SM sync, 
 		  FieldId name, Memory<string?> savable, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1) where SM: ISyncManager => 
 		  
 		  new SyncList<SM, string?, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
 		
@@ -1410,7 +1410,7 @@ namespace Loyc.SyncLib
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
 	public static partial class SyncManagerExtBool {
 		public static List? SyncColl<SyncManager, List>(this SyncManager sync, 
-		  FieldId name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		  FieldId name, List? savable, Func<int, List> alloc, ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 		
 		 where SyncManager: ISyncManager where List: ICollection<bool>, IReadOnlyCollection<bool>
 		{
@@ -1426,7 +1426,7 @@ namespace Loyc.SyncLib
 	public static partial class SyncManagerExtSByte {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 		
 		 where SM: ISyncManager where Coll: ICollection<sbyte> where SyncField: ISyncField<SM, sbyte> => 
 		  
@@ -1437,7 +1437,7 @@ namespace Loyc.SyncLib
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
 	public static partial class SyncManagerExtByte {
 		public static List? SyncColl<SyncManager, List>(this SyncManager sync, 
-		  FieldId name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		  FieldId name, List? savable, Func<int, List> alloc, ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 		
 		 where SyncManager: ISyncManager where List: ICollection<byte>, IReadOnlyCollection<byte>
 		{
@@ -1453,7 +1453,7 @@ namespace Loyc.SyncLib
 	public static partial class SyncManagerExtShort {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 		
 		 where SM: ISyncManager where Coll: ICollection<short> where SyncField: ISyncField<SM, short> => 
 		  
@@ -1465,7 +1465,7 @@ namespace Loyc.SyncLib
 	public static partial class SyncManagerExtUShort {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 		
 		 where SM: ISyncManager where Coll: ICollection<ushort> where SyncField: ISyncField<SM, ushort> => 
 		  
@@ -1477,7 +1477,7 @@ namespace Loyc.SyncLib
 	public static partial class SyncManagerExtInt {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 		
 		 where SM: ISyncManager where Coll: ICollection<int> where SyncField: ISyncField<SM, int> => 
 		  
@@ -1489,7 +1489,7 @@ namespace Loyc.SyncLib
 	public static partial class SyncManagerExtUInt {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 		
 		 where SM: ISyncManager where Coll: ICollection<uint> where SyncField: ISyncField<SM, uint> => 
 		  
@@ -1501,7 +1501,7 @@ namespace Loyc.SyncLib
 	public static partial class SyncManagerExtLong {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 		
 		 where SM: ISyncManager where Coll: ICollection<long> where SyncField: ISyncField<SM, long> => 
 		  
@@ -1513,7 +1513,7 @@ namespace Loyc.SyncLib
 	public static partial class SyncManagerExtULong {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 		
 		 where SM: ISyncManager where Coll: ICollection<ulong> where SyncField: ISyncField<SM, ulong> => 
 		  
@@ -1525,7 +1525,7 @@ namespace Loyc.SyncLib
 	public static partial class SyncManagerExtFloat {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 		
 		 where SM: ISyncManager where Coll: ICollection<float> where SyncField: ISyncField<SM, float> => 
 		  
@@ -1537,7 +1537,7 @@ namespace Loyc.SyncLib
 	public static partial class SyncManagerExtDouble {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 		
 		 where SM: ISyncManager where Coll: ICollection<double> where SyncField: ISyncField<SM, double> => 
 		  
@@ -1549,7 +1549,7 @@ namespace Loyc.SyncLib
 	public static partial class SyncManagerExtDecimal {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 		
 		 where SM: ISyncManager where Coll: ICollection<decimal> where SyncField: ISyncField<SM, decimal> => 
 		  
@@ -1561,7 +1561,7 @@ namespace Loyc.SyncLib
 	public static partial class SyncManagerExtBigInteger {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 		
 		 where SM: ISyncManager where Coll: ICollection<BigInteger> where SyncField: ISyncField<SM, BigInteger> => 
 		  
@@ -1572,7 +1572,7 @@ namespace Loyc.SyncLib
 	/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
 	public static partial class SyncManagerExtChar {
 		public static List? SyncColl<SyncManager, List>(this SyncManager sync, 
-		  FieldId name, List? savable, Func<int, List> alloc, SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		  FieldId name, List? savable, Func<int, List> alloc, ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 		
 		 where SyncManager: ISyncManager where List: ICollection<char>, IReadOnlyCollection<char>
 		{
@@ -1588,7 +1588,7 @@ namespace Loyc.SyncLib
 	public static partial class SyncManagerExtString {
 		public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync, 
 		  FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc, 
-		  SubObjectMode listMode = SubObjectMode.List, int tupleLength = -1)
+		  ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 		
 		 where SM: ISyncManager where Coll: ICollection<string?> where SyncField: ISyncField<SM, string?> => 
 		  

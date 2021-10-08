@@ -64,8 +64,8 @@ namespace Loyc.SyncLib
 			=> Encoding.UTF8.GetString(text.Span);
 			#endif
 
-		private static bool MayBeNullable(SubObjectMode mode)
-			=> (mode & (SubObjectMode.NotNull | SubObjectMode.Deduplicate)) != SubObjectMode.NotNull;
+		private static bool MayBeNullable(ObjectMode mode)
+			=> (mode & (ObjectMode.NotNull | ObjectMode.Deduplicate)) != ObjectMode.NotNull;
 
 		public partial struct Writer : ISyncManager
 		{
@@ -91,7 +91,7 @@ namespace Loyc.SyncLib
 
 			public object CurrentObject { set { } }
 
-			public (bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, SubObjectMode mode, int listLength = -1)
+			public (bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1)
 			{
 				return _s.BeginSubObject(name.Name, childKey, mode);
 			}
@@ -124,7 +124,7 @@ namespace Loyc.SyncLib
 
 			public BigInteger Sync(FieldId name, BigInteger savable, int bits, bool signed = true) => Sync(name, savable);
 
-			//public InternalList<byte> SyncListImpl(FieldId name, ReadOnlySpan<byte> savable, SubObjectMode listMode = SubObjectMode.List)
+			//public InternalList<byte> SyncListImpl(FieldId name, ReadOnlySpan<byte> savable, ObjectMode listMode = ObjectMode.List)
 			//{
 			//	var name2 = name == null ? "" : name.Name;
 			//	if (savable == default)
@@ -153,7 +153,7 @@ namespace Loyc.SyncLib
 			/// used to finish writing an object or list.</summary>
 			public void Flush() => _s.Flush();
 
-			public List? SyncListBoolImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+			public List? SyncListBoolImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<bool>
 				where ListBuilder : IListBuilder<List, bool>
 			{
@@ -168,7 +168,7 @@ namespace Loyc.SyncLib
 				}
 			}
 
-			public List? SyncListCharImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+			public List? SyncListCharImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<char>
 				where ListBuilder : IListBuilder<List, char>
 			{
@@ -192,7 +192,7 @@ namespace Loyc.SyncLib
 				}
 			}
 
-			public List? SyncListByteImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, SubObjectMode mode, int tupleLength = -1)
+			public List? SyncListByteImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<byte>
 				where ListBuilder : IListBuilder<List, byte>
 			{

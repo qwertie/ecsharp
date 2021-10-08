@@ -23,7 +23,7 @@ namespace Loyc.SyncLib.Impl
 	{
 		SyncList<SM, T, ObjectSyncher<SM, SyncObj, T>> _sync;
 
-		public SyncObjectList(SyncObj syncObj, SubObjectMode itemMode, SubObjectMode listMode, int tupleLength)
+		public SyncObjectList(SyncObj syncObj, ObjectMode itemMode, ObjectMode listMode, int tupleLength)
 		{
 			this._sync = new SyncList<SM, T, ObjectSyncher<SM, SyncObj, T>>(
 				new ObjectSyncher<SM, SyncObj, T>(syncObj, itemMode), listMode, tupleLength);
@@ -56,7 +56,7 @@ namespace Loyc.SyncLib.Impl
 	{
 		SyncList<SM, T, ObjectSyncher<SM, AsISyncObject<SM, T>, T>> _sync;
 
-		public SyncObjectList(SyncObjectFunc<SM, T> syncObj, SubObjectMode listMode, SubObjectMode itemMode, int tupleLength)
+		public SyncObjectList(SyncObjectFunc<SM, T> syncObj, ObjectMode listMode, ObjectMode itemMode, int tupleLength)
 		{
 			this._sync = new SyncList<SM, T, ObjectSyncher<SM, AsISyncObject<SM, T>, T>>(
 				new ObjectSyncher<SM, AsISyncObject<SM, T>, T>(syncObj, itemMode), listMode, tupleLength);

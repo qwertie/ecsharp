@@ -15,12 +15,12 @@ namespace Loyc.SyncLib.Impl
 		where SyncItem : ISyncField<SyncManager, T>
 	{
 		readonly SyncItem _syncItem;
-		readonly SubObjectMode _listMode;
+		readonly ObjectMode _listMode;
 
-		public ListSaver(SyncItem syncItem, SubObjectMode listMode)
+		public ListSaver(SyncItem syncItem, ObjectMode listMode)
 		{
 			_syncItem = syncItem;
-			_listMode = listMode | SubObjectMode.List;
+			_listMode = listMode | ObjectMode.List;
 		}
 
 		public List? Sync(ref SyncManager sync, FieldId name, List? list)
@@ -31,7 +31,7 @@ namespace Loyc.SyncLib.Impl
 				Debug.Assert(!status.Begun && status.Object == null);
 			} else {
 				var saver = new ScannerSaver<SyncManager, ScannableEnumerable<T>.Scanner<IEnumerator<T>>, T, SyncItem>(_syncItem, _listMode);
-				bool avoidBoxing = (_listMode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) == SubObjectMode.NotNull;
+				bool avoidBoxing = (_listMode & (ObjectMode.Deduplicate | ObjectMode.NotNull)) == ObjectMode.NotNull;
 				saver.Write(ref sync, name, new ScannableEnumerable<T>.Scanner<IEnumerator<T>>(list.GetEnumerator()), avoidBoxing ? null : list, list.Count);
 			}
 			return list;
@@ -45,12 +45,12 @@ namespace Loyc.SyncLib.Impl
 		where SyncItem : ISyncField<SyncManager, T>
 	{
 		readonly SyncItem _syncItem;
-		readonly SubObjectMode _listMode;
+		readonly ObjectMode _listMode;
 
-		public ListSaverC(SyncItem syncItem, SubObjectMode listMode)
+		public ListSaverC(SyncItem syncItem, ObjectMode listMode)
 		{
 			_syncItem = syncItem;
-			_listMode = listMode | SubObjectMode.List;
+			_listMode = listMode | ObjectMode.List;
 		}
 
 		public List? Sync(ref SyncManager sync, FieldId name, List? list)
@@ -60,7 +60,7 @@ namespace Loyc.SyncLib.Impl
 				Debug.Assert(!status.Begun && status.Object == null);
 			} else {
 				var saver = new ScannerSaver<SyncManager, ScannableEnumerable<T>.Scanner<IEnumerator<T>>, T, SyncItem>(_syncItem, _listMode);
-				bool avoidBoxing = (_listMode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) == SubObjectMode.NotNull;
+				bool avoidBoxing = (_listMode & (ObjectMode.Deduplicate | ObjectMode.NotNull)) == ObjectMode.NotNull;
 				saver.Write(ref sync, name, new ScannableEnumerable<T>.Scanner<IEnumerator<T>>(list.GetEnumerator()), avoidBoxing ? null : list, list.Count);
 			}
 			return list;
@@ -75,18 +75,18 @@ namespace Loyc.SyncLib.Impl
 		where SyncItem : ISyncField<SyncManager, T>
 	{
 		readonly SyncItem _syncItem;
-		readonly SubObjectMode _listMode;
+		readonly ObjectMode _listMode;
 
-		public ScannerSaver(SyncItem syncItem, SubObjectMode listMode)
+		public ScannerSaver(SyncItem syncItem, ObjectMode listMode)
 		{
 			_syncItem = syncItem;
-			_listMode = listMode | SubObjectMode.List;
+			_listMode = listMode | ObjectMode.List;
 		}
 
 		public void Write(ref SyncManager sync, FieldId name, Scanner scanner, object? list, int listCount)
 		{
 			Debug.Assert(!sync.IsReading);
-			Debug.Assert(list != null || (_listMode & (SubObjectMode.Deduplicate | SubObjectMode.NotNull)) == SubObjectMode.NotNull);
+			Debug.Assert(list != null || (_listMode & (ObjectMode.Deduplicate | ObjectMode.NotNull)) == ObjectMode.NotNull);
 			
 			var (begunList, obj) = sync.BeginSubObject(name, list, _listMode, listCount);
 			if (begunList) {

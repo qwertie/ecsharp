@@ -37,8 +37,8 @@ namespace Loyc.SyncLib
 			/// ISyncManager.Sync. To use camelCase, set this to <see cref="SyncJson.ToCamelCase"/></summary>
 			public Func<string, string>? NameConverter { get; set; }
 
-			/// <summary>The <see cref="SubObjectMode"/> used to read/write the root object</summary>
-			public SubObjectMode RootMode { get; set; } = SubObjectMode.Normal;
+			/// <summary>The <see cref="ObjectMode"/> used to read/write the root object</summary>
+			public ObjectMode RootMode { get; set; } = ObjectMode.Normal;
 
 			/// <summary>When NewtonsoftCompatibility is off, this property controls 
 			/// the way byte arrays and byte lists are written. In special cases it
@@ -215,6 +215,13 @@ namespace Loyc.SyncLib
 				/// the reader checks whether there is additional non-whitespace text beyond the end 
 				/// of what was read, and throws an exception if extra junk is encountered.</summary>
 				public bool VerifyEof { get; set; } = true;
+
+				/// <summary>This property controls <see cref="Reader"/>'s behavior when 
+				/// a request is made to read a field that does not exist. If this property
+				/// is true, the default value of the requested type is returned (null, 0,
+				/// or false). If this property is false, an exception is thrown. 
+				/// Default: false.</summary>
+				public bool AllowMissingFields { get; set; } = false;
 			}
 
 			#endregion

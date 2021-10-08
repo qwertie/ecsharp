@@ -73,7 +73,7 @@ namespace Loyc.SyncLib.Tests
 			// Serialize (save) or deserialize (load). It's saved as a simple list of
 			// entries, while in memory we have a more complex dictionary data structure.
 			IReadOnlyCollection<CalendarEntry> entries = calendar.Entries.Select(p => p.Value);
-			var entriesOut = sm.SyncColl("Entries", entries, SyncEntry, SubObjectMode.Normal)!;
+			var entriesOut = sm.SyncColl("Entries", entries, SyncEntry, ObjectMode.Normal)!;
 			if (sm.IsReading) {
 				calendar.Entries.Clear();
 				foreach (var entry in entriesOut)
