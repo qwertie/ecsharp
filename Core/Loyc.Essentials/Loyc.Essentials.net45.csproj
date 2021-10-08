@@ -309,8 +309,8 @@
     <Compile Include="Utilities\Triplet.cs" />
     <Compile Include="Utilities\ValueComparer.cs" />
     <Compile Include="Compatibility\WeakReference.cs" />
+    <Compile Include="Utilities\void.cs" />
     <Compile Include="Utilities\WrapperBase.cs" />
-    <Compile Include="void.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
