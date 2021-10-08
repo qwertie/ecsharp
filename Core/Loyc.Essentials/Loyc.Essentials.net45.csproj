@@ -247,7 +247,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ISyncManager.ecs</DependentUpon>
     </Compile>
-    <Compile Include="SyncLib\SubObjectMode.cs" />
+    <Compile Include="SyncLib\ObjectMode.cs" />
     <Compile Include="SyncLib\SyncJson.Options.cs" />
     <Compile Include="SyncLib\SyncJson.out.cs">
       <AutoGen>True</AutoGen>

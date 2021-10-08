@@ -179,9 +179,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>BigStandardModel.ecs</DependentUpon>
     </Compile>
-    <Compile Include="SyncLib\FamilyModel.cs" />
+    <Compile Include="SyncLib\FamilySync.cs" />
     <Compile Include="SyncLib\HomePageCalendarExample.cs" />
-    <Compile Include="SyncLib\PersonModel.cs" />
+    <Compile Include="SyncLib\PersonSync.cs" />
+    <Compile Include="SyncLib\SmallObjectSync.cs" />
+    <Compile Include="SyncLib\StringDictionarySync.cs" />
+    <Compile Include="SyncLib\SyncJsonReaderTests.cs" />
     <Compile Include="SyncLib\SyncJsonTests.cs" />
     <Compile Include="SyncLib\SyncJsonWriterTests.cs" />
     <Compile Include="SyncLib\SyncLibTests.cs" />
