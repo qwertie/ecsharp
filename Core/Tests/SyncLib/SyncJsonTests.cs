@@ -63,18 +63,18 @@ namespace Loyc.SyncLib.Tests
 			foreach (var entry in new[] {
 				new CalendarEntry(calendar) { 
 					StartTime = T(9,00), Duration = M(8*60), Description = "Workday!",
-					AdvanceReminder = M(30), Color = Color.Gray
+					AdvanceReminder = M(30), Color = Color.Gray, Id = 10
 				},
 				new CalendarEntry(calendar) {
 					StartTime = T(11,30), Duration = M(30), Description = "Sales meeting",
-					AdvanceReminder = M(5)
+					AdvanceReminder = M(5), Id = 11
 				},
 				new CalendarEntry(calendar) {
 					StartTime = T(13,00), Description = "Doctor appointment",
-					AdvanceReminder = M(25), Color = Color.Red
+					AdvanceReminder = M(25), Color = Color.Red, Id = 12
 				},
 				new CalendarEntry(calendar) {
-					StartTime = T(22,00), Duration = M(15), Description = "Brush teeth"
+					StartTime = T(22,00), Duration = M(15), Description = "Brush teeth", Id = 13
 				}
 			}) {
 				calendar.Entries[entry.StartTime].Add(entry);

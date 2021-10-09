@@ -134,6 +134,7 @@ namespace Loyc.SyncLib
 
 			#region Reader-specific options
 
+			// TODO: reconsider how custom type conversions work before initial release
 			public ForReader Read { get; set; } = new ForReader();
 
 			public class ForReader

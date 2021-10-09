@@ -70,6 +70,11 @@ namespace Loyc.SyncLib.Tests
 		}
 		*/
 
-
+		// TODO: test JSON file that begins with whitespace or comment
+		// TODO: test JSON file that is just a primitive
+		// TODO: a test in which a JSON obj or list has extra fields after those read by the Sync func
+		// TODO: a test in which a JSON obj or list has extra fields that include an object with an $id that is used later
+		// TODO: a test in which we read the invalid JSON "1, 2" when VerifyEof is off, which should work anyway
+		// TODO: a test that makes Frame.Checkpoint invalid due to Read()
 	}
 }

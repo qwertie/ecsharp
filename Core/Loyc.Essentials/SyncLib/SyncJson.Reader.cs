@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Text;
-using static Loyc.SyncLib.SyncJson.ReaderState;
+using static Loyc.SyncLib.SyncJson.Parser;
 
 namespace Loyc.SyncLib
 {
@@ -49,7 +49,7 @@ namespace Loyc.SyncLib
 	
 			public bool IsInsideList => _s.IsInsideList;
 
-			public bool? ReachedEndOfList => _s.ReachedEndOfList;
+			public bool? ReachedEndOfList => _s.IsInsideList ? _s.ReachedEndOfList : null;
 
 			public int? MinimumListLength => 0;
 
