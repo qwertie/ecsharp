@@ -107,6 +107,9 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
+		public ref T FirstRef => ref _array[0];
+		public ref T LastRef => ref _array[_count - 1];
+
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public T First
 		{
