@@ -10,6 +10,35 @@ using Loyc.SyncLib.Impl;
 using System.IO;
 using System.Linq;
 
+//
+// The plan is to show this on the home page.
+//
+// The goal is to serialize a "Calendar" with "Calendar entries" in two ways,
+// using
+//
+//   (1) the SyncLib way
+//   (2) the conventional approach to serialization with Newtonsoft.Json
+//
+// Not only does the SyncLib version require less than half the code, it also
+// supports multiple formats (not just JSON!) and the code probably runs faster
+// (TODO: benchhmarks).
+//
+// Real-world projects are where SyncLib excels and traditional "attribute based"
+// serialization falls flat on its face. In the real world, developers learn that
+// serializing their business objects directly simply doesn't allow the level of
+// control they need. It is often inadequate for:
+//
+// - Type conversions (in this example, Color <=> string, and BMultiMap <=> List)
+// - Nonlocal representation changes (Start + End Date <=> Start Date + Duration)
+// - Multiple serialization formats for backward compaitibility purposes (v1/v2)
+//
+// This example includes all of these forms of complexity. In the past, this
+// complexity forced developers to create dedicated serialization types. Since
+// SyncLib is controlled by ordinary code instead of attributes, you don't need
+// dedicated serialization types, which avoids the need to write code to convert
+// between business objects and serialization types. Thus, with SyncLib you can
+// accomplish the same thing in much less code.
+// 
 namespace Loyc.SyncLib.Tests
 {
 	public class Calendar
