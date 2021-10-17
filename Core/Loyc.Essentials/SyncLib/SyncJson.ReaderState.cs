@@ -141,7 +141,7 @@ namespace Loyc.SyncLib
 			internal (bool Begun, object? Object) BeginSubObject(string? name, ObjectMode mode)
 			{
 				if (!FindProp(name, out (JsonValue value, long position) skippedObject))
-					Error(CurPointer.i, "Property \"{0}\" was missing".Localized(name), fatal: false);
+					ThrowError(CurPointer.Index, "Property \"{0}\" was missing".Localized(name), fatal: false);
 
 				bool expectList = (mode & ObjectMode.List) != 0;
 
@@ -275,11 +275,11 @@ namespace Loyc.SyncLib
 				if (type == JsonType.Null)
 				{
 					if ((mode & ObjectMode.NotNull) != 0)
-						Error(cur.i, "\"{0}\" is not nullable, but was null".Localized(name));
+						ThrowError(cur.Index, "\"{0}\" is not nullable, but was null".Localized(name));
 					return (false, null);
 				}
 
-				throw NewError(cur.i, "\"{0}\" was expected to be a {1}, but it was a {2}"
+				throw NewError(cur.Index, "\"{0}\" was expected to be a {1}, but it was a {2}"
 					.Localized(name ?? "list item", expectList ? "list" : "object", type.ToString()));
 			}
 
@@ -291,7 +291,7 @@ namespace Loyc.SyncLib
 			private void EndSubObjectCore(ref JsonPointer cur)
 			{
 				bool hasNextProp = EndObjectAndCommit(ref cur);
-				if (!hasNextProp && cur.i >= cur.Buf.Length && ReplayDepth > 0) {
+				if (!hasNextProp && cur.Index >= cur.Buf.Length && ReplayDepth > 0) {
 					// Reached end of frame. Return to original frame.
 					EndReplay();
 				}
@@ -769,7 +769,7 @@ namespace Loyc.SyncLib
 						curProp = curProp.Slice(1, curProp.Length - 2); // strip off the quotes
 					} else {
 						if (_optRead.Strict)
-							Error(CurPointer.PropKeyIndex, "String expected");
+							ThrowError(CurPointer.PropKeyIndex, "String expected");
 						else if (type >= JsonType.FirstCompositeType)
 							return false;
 					}

@@ -130,12 +130,12 @@ namespace Loyc.SyncLib
 			protected ref struct JsonPointer
 			{
 				public ReadOnlySpan<byte> Buf;
-				public int i;
+				public int Index;
 
-				public byte Byte => Buf[i];
-				public byte this[int offs] => Buf[i + offs];
+				public byte Byte => Buf[Index];
+				public byte this[int offs] => Buf[Index + offs];
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				public int ByteOr(int fallback) => (uint)i < (uint)Buf.Length ? Buf[i] : fallback;
+				public int ByteOr(int fallback) => (uint)Index < (uint)Buf.Length ? Buf[Index] : fallback;
 				
 				// Name of current property in the current object (type JsonType.Invalid at
 				// the end of an object)
@@ -147,7 +147,7 @@ namespace Loyc.SyncLib
 
 				public override string ToString() // for debugging only
 				{
-					return Encoding.UTF8.GetString(Buf.Slice(i).ToArray());
+					return Encoding.UTF8.GetString(Buf.Slice(Index).ToArray());
 				}
 			}
 
@@ -194,7 +194,7 @@ namespace Loyc.SyncLib
 				public int ValueIndex;
 				public JsonPointer Pointer => new JsonPointer {
 					Buf = Buf.Span,
-					i = ValueIndex,
+					Index = ValueIndex,
 					PropKeyIndex = PropKeyIndex,
 					CurPropKey = CurPropKey,
 				};
@@ -228,15 +228,15 @@ namespace Loyc.SyncLib
 			public Parser(ReadOnlyMemory<byte> memory, Options options)
 			{
 				_mainScanner = null;
-				Frame.Buf = memory;
-				Frame.IsReplaying = true;
+				_frame.Buf = memory;
+				_frame.IsReplaying = true;
 
 				Init(options);
 			}
 			[MemberNotNull(nameof(_opt), nameof(_optRead))]
 			private void Init(Options options)
 			{
-				Frame.ObjectStartIndex = int.MaxValue;
+				_frame.ObjectStartIndex = int.MaxValue;
 
 				_opt = options;
 				_optRead = options.Read;
@@ -247,7 +247,7 @@ namespace Loyc.SyncLib
 				Commit(ref cur);
 			}
 
-			private JsonFrame Frame;
+			private JsonFrame _frame;
 
 			protected IScanner<byte>? _mainScanner;
 			protected Memory<byte> _mainScannerBuf; // not used by ReaderState; it's passed to _mainScanner.Read()
@@ -284,31 +284,31 @@ namespace Loyc.SyncLib
 			// Caches the value of _stack.Last.type != JsonType.Object
 			public bool IsInsideList { get; protected set; } = true;
 
-			public bool ReachedEndOfList => Frame.CurrentByte == ']';
+			public bool ReachedEndOfList => _frame.CurrentByte == ']';
 
 			/// <summary>Returns a struct that points to the beginning of the current value 
 			///   and if !IsInsideList, knows the associated key. If there are no more 
 			///   values in the current object, thie property points to the closing ']'
 			///   or '}', or to the end of the file. If parsing stopped at a syntax error,
 			///   this may point to the error or to the last value before the error.</summary>
-			protected JsonPointer CurPointer => Frame.Pointer;
+			protected JsonPointer CurPointer => _frame.Pointer;
 
 			/// <summary>Returns the last index saved with Commit(), which should always point 
 			///   either to the first byte of a JSON value (not a property key!), or to the end
 			///   of an object (or the end of the file, if the end has been reached).
 			///   This property is always equal to `CurPosition.Index`.
 			/// </summary>
-			protected int CurIndex => Frame.ValueIndex;
-			protected long CurPosition => Frame.PositionOfBuf0 + Frame.ValueIndex;
+			protected int CurIndex => _frame.ValueIndex;
+			protected long CurPosition => _frame.PositionOfBuf0 + _frame.ValueIndex;
 			
-			protected ReadOnlySpan<byte> CurPropKey => Frame.CurPropKey.Text.Span;
-			protected JsonType CurPropKeyType => Frame.CurPropKey.Type;
+			protected ReadOnlySpan<byte> CurPropKey => _frame.CurPropKey.Text.Span;
+			protected JsonType CurPropKeyType => _frame.CurPropKey.Type;
 
 			/// <summary>Text of the current key (empty if inside a list or at end of object)</summary>
-			protected ReadOnlyMemory<byte> NextFieldKey => Frame.CurPropKey.Text;
+			protected ReadOnlyMemory<byte> NextFieldKey => _frame.CurPropKey.Text;
 
-			protected long PositionOfBuf0 => Frame.PositionOfBuf0;
-			protected long PositionOf(in JsonPointer cur) => Frame.PositionOfBuf0 + cur.i;
+			protected long PositionOfBuf0 => _frame.PositionOfBuf0;
+			protected long PositionOf(in JsonPointer cur) => _frame.PositionOfBuf0 + cur.Index;
 
 			#region Support for "replay" of skipped memory blocks (to scan an object or value again)
 
@@ -319,20 +319,20 @@ namespace Loyc.SyncLib
 			{
 				Debug.Assert(value.value.Type >= JsonType.FirstCompositeType);
 				Debug.Assert((value.value.Text.Span[0] == '{') == (value.value.Type == JsonType.Object));
-				_frameStack.Add(Frame);
-				Frame = new JsonFrame {
+				_frameStack.Add(_frame);
+				_frame = new JsonFrame {
 					Buf = value.value.Text,
 					IsReplaying = true,
 					PositionOfBuf0 = value.position,
 					ValueIndex = 0,
 					ObjectStartIndex = int.MaxValue,
 				};
-				cur = Frame.Pointer;
+				cur = _frame.Pointer;
 			}
 
 			protected void EndReplay()
 			{
-				Frame = _frameStack.Last;
+				_frame = _frameStack.Last;
 				_frameStack.Pop();
 			}
 
@@ -342,10 +342,10 @@ namespace Loyc.SyncLib
 
 			protected void Commit(ref JsonPointer cur)
 			{
-				Frame.ValueIndex = cur.i;
-				Frame.PropKeyIndex = cur.PropKeyIndex;
-				Frame.CurPropKey = cur.CurPropKey;
-				Frame.CurrentByte = cur.ByteOr(']');
+				_frame.ValueIndex = cur.Index;
+				_frame.PropKeyIndex = cur.PropKeyIndex;
+				_frame.CurPropKey = cur.CurPropKey;
+				_frame.CurrentByte = cur.ByteOr(']');
 			}
 
 			/// <summary>
@@ -369,13 +369,13 @@ namespace Loyc.SyncLib
 				if (AutoRead(ref cur) && ((isList = cur.Byte == '[') || cur.Byte == '{')) {
 					if (isList) {
 						if (allowList) {
-							cur.i++;
+							cur.Index++;
 							SkipWhitespace(ref cur);
 							Push(JsonType.List);
 						}
 						return JsonType.List;
 					} else {
-						cur.i++;
+						cur.Index++;
 						SkipWhitespace(ref cur);
 						Push(JsonType.Object);
 						BeginProp(false, ref cur);
@@ -402,7 +402,7 @@ namespace Loyc.SyncLib
 			protected bool TryOpenListValuesAndCommit(ref JsonPointer cur)
 			{
 				if (AutoRead(ref cur) && cur.Byte == '[') {
-					cur.i++;
+					cur.Index++;
 					SkipWhitespace(ref cur);
 					_stack.LastRef.Type = JsonType.ListWithId;
 					Commit(ref cur);
@@ -439,7 +439,7 @@ namespace Loyc.SyncLib
 				} else {
 					SkipWhitespace(ref cur);
 					if (AutoRead(ref cur)) {
-						Error(cur.i, "Expected EOF", false);
+						ThrowError(cur.Index, "Expected EOF", false);
 					}
 				}
 				Commit(ref cur);
@@ -467,11 +467,11 @@ namespace Loyc.SyncLib
 				// check that the closer was expected
 				if (IsInsideList != isList)
 					goto missingCloser;
-				cur.i++;
+				cur.Index++;
 				return;
 
 			missingCloser:
-				Error(cur.i, IsInsideList ? "Expected ']'" : "Expected '}'", fatal: true);
+				ThrowError(cur.Index, IsInsideList ? "Expected ']'" : "Expected '}'", fatal: true);
 			}
 
 			// Used by ISyncManager.HasField() to detect the type of the current (unparsed) value
@@ -488,7 +488,7 @@ namespace Loyc.SyncLib
 						case '8': case '9':
 							// Find out if it's an integer
 							var lookahead = cur;
-							for (lookahead.i++; AutoRead(ref lookahead); lookahead.i++) {
+							for (lookahead.Index++; AutoRead(ref lookahead); lookahead.Index++) {
 								if (cur.Byte < '0' || cur.Byte > '9') {
 									if (cur.Byte == '.' || cur.Byte == 'e')
 										return JsonType.Number;
@@ -522,30 +522,30 @@ namespace Loyc.SyncLib
 				SkipWhitespace(ref cur);
 				if (expectComma) {
 					if (!SkipIf(',', ref cur)) {
-						cur.PropKeyIndex = cur.i;
+						cur.PropKeyIndex = cur.Index;
 						cur.CurPropKey = default;
 						return false;
 					}
 					SkipWhitespace(ref cur);
 				}
 
-				cur.PropKeyIndex = cur.i;
+				cur.PropKeyIndex = cur.Index;
 				var key = cur.CurPropKey = ScanValue(ref cur);
 
 				if (key.Type == JsonType.Invalid)
 				{
 					// There's no property here. It's either the end of the object, or a syntax error
-					if ((uint)cur.i < (uint)cur.Buf.Length && (cur.Byte == '}' || cur.Byte == ']')) {
+					if ((uint)cur.Index < (uint)cur.Buf.Length && (cur.Byte == '}' || cur.Byte == ']')) {
 						if (expectComma && _optRead.Strict)
-							Error(cur.i, "Comma is not allowed before '{0}'".Localized((char) cur.Byte));
+							ThrowError(cur.Index, "Comma is not allowed before '{0}'".Localized((char) cur.Byte));
 						else if (cur.Byte == ']')
-							Error(cur.i, "Expected '}'");
+							ThrowError(cur.Index, "Expected '}'");
 
-						cur.PropKeyIndex = cur.i;
+						cur.PropKeyIndex = cur.Index;
 						cur.CurPropKey = default;
 						return false;
 					} else
-						Error(cur.i, "Expected a property name");
+						ThrowError(cur.Index, "Expected a property name");
 				}
 				else if (key.Type <= JsonType.String)
 				{
@@ -556,12 +556,12 @@ namespace Loyc.SyncLib
 				else
 				{
 					if (_optRead.Strict)
-						Error(cur.PropKeyIndex, "Expected a string");
+						ThrowError(cur.PropKeyIndex, "Expected a string");
 				}
 
 				// Skip the ':'
 				if (!SkipWhitespaceAnd(':', ref cur))
-					Error(cur.i, "Expected ':'");
+					ThrowError(cur.Index, "Expected ':'");
 				
 				// Skip whitespace again to reach the beginning of the value
 				SkipWhitespace(ref cur);
@@ -579,17 +579,17 @@ namespace Loyc.SyncLib
 					bool reachedEnd;
 					if (SkipWhitespaceAnd(',', ref cur)) {
 						SkipWhitespace(ref cur);
-						cur.PropKeyIndex = cur.i;
+						cur.PropKeyIndex = cur.Index;
 
 						reachedEnd = cur.ByteOr(']') == ']';
 						if (reachedEnd && _optRead.Strict)
-							Error(cur.i, "Comma is not allowed before '{0}'".Localized((char)cur.Byte));
+							ThrowError(cur.Index, "Comma is not allowed before '{0}'".Localized((char)cur.Byte));
 					} else {
-						cur.PropKeyIndex = cur.i;
+						cur.PropKeyIndex = cur.Index;
 
 						reachedEnd = cur.ByteOr(']') == ']';
 						if (!reachedEnd)
-							Error(cur.i, "Expected ']'", fatal: true);
+							ThrowError(cur.Index, "Expected ']'", fatal: true);
 					}
 					return !reachedEnd;
 				} else {
@@ -611,7 +611,7 @@ namespace Loyc.SyncLib
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			protected void SkipWhitespace(ref JsonPointer cur)
 			{
-				for (; AutoRead(ref cur); cur.i++) {
+				for (; AutoRead(ref cur); cur.Index++) {
 					byte c = cur.Byte;
 					if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
 						continue;
@@ -629,10 +629,10 @@ namespace Loyc.SyncLib
 					if ((c = cur[1]) == '/') {
 						// TODO: add "warning" feature: Report(cur, _optRead.AllowComments, "JSON does not support comments")
 						if (!_optRead.AllowComments)
-							Error(cur.i, "JSON does not support comments");
+							ThrowError(cur.Index, "JSON does not support comments");
 							
 						// Skip single-line comment
-						for (cur.i += 2; ; cur.i++) {
+						for (cur.Index += 2; ; cur.Index++) {
 							if (!AutoRead(ref cur, 1))
 								return;
 							if ((c = cur.Byte) == '\r' || c == '\n')
@@ -640,15 +640,15 @@ namespace Loyc.SyncLib
 						}
 					} else if (c == '*') {
 						if (!_optRead.AllowComments)
-							Error(cur.i, "JSON does not support comments");
+							ThrowError(cur.Index, "JSON does not support comments");
 
 						// Skip multi-line comment
 						int commentSize = 2;
-						for (cur.i += 2; ; cur.i++, commentSize++) {
+						for (cur.Index += 2; ; cur.Index++, commentSize++) {
 							if (!AutoRead(ref cur, 1))
-								Error(cur.i - commentSize, "JSON syntax error: multiline comment was not closed");
+								ThrowError(cur.Index - commentSize, "JSON syntax error: multiline comment was not closed");
 							if (cur.Byte == '*' && cur[1] == '/') {
-								cur.i += 2;
+								cur.Index += 2;
 								break;
 							}
 						}
@@ -700,7 +700,7 @@ namespace Loyc.SyncLib
 				return exc;
 			}
 
-			protected void Error(int i, string msg, bool fatal = true) => throw NewError(i, msg, fatal);
+			protected void ThrowError(int i, string msg, bool fatal = true) => throw NewError(i, msg, fatal);
 
 			#endregion
 
@@ -713,28 +713,28 @@ namespace Loyc.SyncLib
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			private bool AutoRead(ref JsonPointer cur, int extraLookahead = 0)
 			{
-				Debug.Assert(cur.Buf == Frame.Buf.Span);
-				if ((uint)(cur.i + extraLookahead) < (uint)cur.Buf.Length)
+				Debug.Assert(cur.Buf == _frame.Buf.Span);
+				if ((uint)(cur.Index + extraLookahead) < (uint)cur.Buf.Length)
 					return true;
-				cur.i = Read(cur.i, extraLookahead + 1);
-				cur.Buf = Frame.Buf.Span;
-				return (uint)(cur.i + extraLookahead) < (uint)cur.Buf.Length;
+				cur.Index = Read(cur.Index, extraLookahead + 1);
+				cur.Buf = _frame.Buf.Span;
+				return (uint)(cur.Index + extraLookahead) < (uint)cur.Buf.Length;
 			}
 			// Reads new data into Frame.Buf if possible
 			private int Read(int index, int lookaheadNeeded)
 			{
-				if (Frame.IsReplaying)
+				if (_frame.IsReplaying)
 					return index;
 
 				int requestSize = Max(lookaheadNeeded, DefaultMinimumScanSize);
-				int skip = Min(Frame.ObjectStartIndex, Min(Frame.ValueIndex, index));
+				int skip = Min(_frame.ObjectStartIndex, Min(_frame.ValueIndex, index));
 				
-				Frame.Buf = _mainScanner!.Read(skip, (index -= skip) + requestSize, ref _mainScannerBuf);
+				_frame.Buf = _mainScanner!.Read(skip, (index -= skip) + requestSize, ref _mainScannerBuf);
 
-				Frame.ValueIndex -= skip;
-				Frame.PropKeyIndex -= skip;
-				if (Frame.ObjectStartIndex != int.MaxValue)
-					Frame.ObjectStartIndex -= skip;
+				_frame.ValueIndex -= skip;
+				_frame.PropKeyIndex -= skip;
+				if (_frame.ObjectStartIndex != int.MaxValue)
+					_frame.ObjectStartIndex -= skip;
 				
 				return index;
 			}
@@ -747,22 +747,22 @@ namespace Loyc.SyncLib
 
 			protected JsonValue ScanValue(ref JsonPointer cur)
 			{
-				int startIndex = cur.i;
+				int startIndex = cur.Index;
 				if (AutoRead(ref cur)) {
 					var b = cur.Byte;
 					if (b == '"')
 					{
 						var type = JsonType.SimpleString;
-						for (cur.i++; AutoRead(ref cur); cur.i++) {
+						for (cur.Index++; AutoRead(ref cur); cur.Index++) {
 							if (cur.Byte == '\\') {
 								type = JsonType.String;
-								cur.i++; // we don't yet care which escape it is, but be sure to skip \"
+								cur.Index++; // we don't yet care which escape it is, but be sure to skip \"
 							} else if (cur.Byte == '"') {
-								return new JsonValue(type, Frame.Buf.Slice(startIndex, ++cur.i - startIndex));
+								return new JsonValue(type, _frame.Buf.Slice(startIndex, ++cur.Index - startIndex));
 							} else if (cur.Byte == '\n') {
-								Frame.LineNumber++;
+								_frame.LineNumber++;
 								if (_optRead.Strict)
-									throw NewError(cur.i, "Newline in JSON string literal");
+									throw NewError(cur.Index, "Newline in JSON string literal");
 							} else if (cur.Byte >= 0x80) { // non-ASCII character
 								type = JsonType.String;
 							}
@@ -770,21 +770,21 @@ namespace Loyc.SyncLib
 					}
 					else if (b == 'n' && AutoRead(ref cur, 4) && cur[1] == 'u' && cur[2] == 'l' && cur[3] == 'l')
 					{
-						int i = cur.i;
-						cur.i += 4;
-						return new JsonValue(JsonType.Null, Frame.Buf.Slice(i, 4));
+						int i = cur.Index;
+						cur.Index += 4;
+						return new JsonValue(JsonType.Null, _frame.Buf.Slice(i, 4));
 					}
 					else if (b == 'f' && AutoRead(ref cur, 5) && cur[1] == 'a' && cur[2] == 'l' && cur[3] == 's' && cur[4] == 'e')
 					{
-						int i = cur.i;
-						cur.i += 5;
-						return new JsonValue(JsonType.False, Frame.Buf.Slice(i, 5));
+						int i = cur.Index;
+						cur.Index += 5;
+						return new JsonValue(JsonType.False, _frame.Buf.Slice(i, 5));
 					}
 					else if (b == 't' && AutoRead(ref cur, 4) && cur[1] == 'r' && cur[2] == 'u' && cur[3] == 'e')
 					{
-						int i = cur.i;
-						cur.i += 4;
-						return new JsonValue(JsonType.True, Frame.Buf.Slice(i, 4));
+						int i = cur.Index;
+						cur.Index += 4;
+						return new JsonValue(JsonType.True, _frame.Buf.Slice(i, 4));
 					}
 					else if (b == '{' || b == '[')
 					{
@@ -795,14 +795,14 @@ namespace Loyc.SyncLib
 						// will remain in the buffer. considering that this method can be on the
 						// stack multiple times, we can safely decrease it, but not increase it.
 						// Also, the old value must be restored once we're done scanning.
-						var oldObjectStart = Frame.ObjectStartIndex;
-						Frame.ObjectStartIndex = Min(Frame.ObjectStartIndex, cur.i);
-						long objectPosition = cur.i + Frame.PositionOfBuf0;
-						cur.i++;
+						var oldObjectStart = _frame.ObjectStartIndex;
+						_frame.ObjectStartIndex = Min(_frame.ObjectStartIndex, cur.Index);
+						long objectPosition = cur.Index + _frame.PositionOfBuf0;
+						cur.Index++;
 
 						// Avoid stack overflow (it would terminate the process)
 						if (_skipObjectDepth++ + _stack.Count > _optRead.MaxDepth)
-							throw MaxDepthError(cur.i);
+							throw MaxDepthError(cur.Index);
 
 						JsonValue idValue = default;
 
@@ -810,14 +810,14 @@ namespace Loyc.SyncLib
 							for (;;) {
 								var key = ScanValue(ref cur);
 								if (key.Type == JsonType.Invalid)
-									Error(cur.i, "Expected a value");
+									ThrowError(cur.Index, "Expected a value");
 
 								if (closer == '}') {
 									if (!SkipWhitespaceAnd(':', ref cur))
-										Error(cur.i, "Expected ':'");
+										ThrowError(cur.Index, "Expected ':'");
 									var value = ScanValue(ref cur);
 									if (value.Type == JsonType.Invalid)
-										Error(cur.i, "Expected a value");
+										ThrowError(cur.Index, "Expected a value");
 
 									if (idValue.Type == default && IsObjectIdProp(key))
 										idValue = value;
@@ -826,7 +826,7 @@ namespace Loyc.SyncLib
 								if (!SkipWhitespaceAnd(',', ref cur)) {
 									if (SkipIf(closer, ref cur))
 										break;
-									Error(cur.i, "Expected ','");
+									ThrowError(cur.Index, "Expected ','");
 								}
 							}
 						}
@@ -834,19 +834,19 @@ namespace Loyc.SyncLib
 						_skipObjectDepth--;
 
 						var type = closer == ']' ? JsonType.List : JsonType.Object;
-						int objectStart = (int)(objectPosition - Frame.PositionOfBuf0);
-						Frame.ObjectStartIndex = oldObjectStart;
+						int objectStart = (int)(objectPosition - _frame.PositionOfBuf0);
+						_frame.ObjectStartIndex = oldObjectStart;
 						//TOS.TokenIndex = cur.i;
-						var @object = new JsonValue(type, Frame.Buf.Slice(objectStart, cur.i - objectStart));
+						var @object = new JsonValue(type, _frame.Buf.Slice(objectStart, cur.Index - objectStart));
 						if (idValue.Type != default)
-							SaveSkippedObjectWithId(idValue, @object, Frame.PositionOfBuf0 + objectStart);
+							SaveSkippedObjectWithId(idValue, @object, _frame.PositionOfBuf0 + objectStart);
 
 						return @object;
 					}
 					else // expect a number, or end-of-object
 					{
 						if (b == '-') {
-							cur.i++;
+							cur.Index++;
 							if (!AutoRead(ref cur))
 								return new JsonValue(JsonType.Invalid, default); // EOF
 							b = cur.Byte;
@@ -856,15 +856,15 @@ namespace Loyc.SyncLib
 						if (b >= '0' && b <= '9') {
 							// Read initial digits
 							if (_optRead.Strict && b == '0')
-								cur.i++;
+								cur.Index++;
 							else {
 								do
-									cur.i++;
+									cur.Index++;
 								while (AutoRead(ref cur) && cur.Byte >= '0' && cur.Byte <= '9');
 							}
 						} else if (b != '.' || _optRead.Strict) {
 							if (b == '.')
-								Error(cur.i, "Expected '0.' instead of '.'");
+								ThrowError(cur.Index, "Expected '0.' instead of '.'");
 							else
 								return new JsonValue(JsonType.Invalid, default);
 						}
@@ -872,28 +872,28 @@ namespace Loyc.SyncLib
 						// Read decimal places, if any
 						if (AutoRead(ref cur) && cur.Byte == '.') {
 							type = JsonType.Number;
-							cur.i++;
-							int old_i = cur.i;
+							cur.Index++;
+							int old_i = cur.Index;
 							while (AutoRead(ref cur) && cur.Byte >= '0' && cur.Byte <= '9')
-								cur.i++;
-							if (old_i == cur.i && _optRead.Strict)
-								Error(cur.i, "Expected digits after '.'");
+								cur.Index++;
+							if (old_i == cur.Index && _optRead.Strict)
+								ThrowError(cur.Index, "Expected digits after '.'");
 						}
 
 						// Read exponent, if any
 						if (AutoRead(ref cur) && (cur.Byte == 'e' || cur.Byte == 'E')) {
 							type = JsonType.Number;
-							cur.i++;
+							cur.Index++;
 							if (AutoRead(ref cur) && (cur.Byte == '+' || cur.Byte == '-'))
-								cur.i++;
-							int iOld = cur.i;
+								cur.Index++;
+							int iOld = cur.Index;
 							while (AutoRead(ref cur) && cur.Byte >= '0' && cur.Byte <= '9')
-								cur.i++;
-							if (iOld == cur.i)
-								Error(cur.i, "Expected exponent digits");
+								cur.Index++;
+							if (iOld == cur.Index)
+								ThrowError(cur.Index, "Expected exponent digits");
 						}
 
-						return new JsonValue(type, Frame.Buf.Slice(startIndex, cur.i - startIndex));
+						return new JsonValue(type, _frame.Buf.Slice(startIndex, cur.Index - startIndex));
 					}
 				}
 				return new JsonValue(JsonType.Invalid, default); // EOF
@@ -925,7 +925,7 @@ namespace Loyc.SyncLib
 			private bool SkipIf(char expecting, ref JsonPointer cur)
 			{
 				if (AutoRead(ref cur) && cur.Byte == expecting) {
-					cur.i++;
+					cur.Index++;
 					return true;
 				}
 				return false;
@@ -935,7 +935,7 @@ namespace Loyc.SyncLib
 			{
 				// Avoid stack overflow (which would terminate the process)
 				if (_stack.Count >= _optRead.MaxDepth)
-					throw MaxDepthError(Frame.ValueIndex);
+					throw MaxDepthError(_frame.ValueIndex);
 
 				_stack.Add(new StackEntry(objectType));
 				IsInsideList = objectType != JsonType.Object;
@@ -1044,7 +1044,7 @@ namespace Loyc.SyncLib
 				byte b = curProp[cp_i];
 				if (b < 0x80) {
 					if (b == '\\')
-						return DecodeEscape(curProp, ref cp_i, Frame.PropKeyIndex);
+						return DecodeEscape(curProp, ref cp_i, _frame.PropKeyIndex);
 					else {
 						cp_i++;
 						return b;
@@ -1069,7 +1069,7 @@ namespace Loyc.SyncLib
 					case (byte) 't':  ++cp_i; return '\t';
 					case (byte) '0':
 						if (_optRead.Strict)
-							Error(stringStartIndex + cp_i, "JSON does not support the '\\0' escape sequence");
+							ThrowError(stringStartIndex + cp_i, "JSON does not support the '\\0' escape sequence");
 						++cp_i;
 						return '\0';
 					case (byte) 'u':
@@ -1079,13 +1079,13 @@ namespace Loyc.SyncLib
 							|| (b = G.HexDigitValue((char) curProp[cp_i + 2])) < 0
 							|| (c = G.HexDigitValue((char) curProp[cp_i + 3])) < 0
 							|| (d = G.HexDigitValue((char) curProp[cp_i + 4])) < 0)
-							Error(stringStartIndex + cp_i, "'\\u' escape sequence was too short");
+							ThrowError(stringStartIndex + cp_i, "'\\u' escape sequence was too short");
 						cp_i += 5;
 						int ch = (a << 12) | (b << 8) | (c << 4) | d;
 						return ch;
 				}
 				if (_optRead.Strict)
-					Error(stringStartIndex + cp_i, "Invalid escape sequence '\\{0}'".Localized(curProp[cp_i]));
+					ThrowError(stringStartIndex + cp_i, "Invalid escape sequence '\\{0}'".Localized(curProp[cp_i]));
 				return '\\';
 			}
 
