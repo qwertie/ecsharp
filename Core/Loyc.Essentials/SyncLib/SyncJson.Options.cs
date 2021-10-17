@@ -159,6 +159,12 @@ namespace Loyc.SyncLib
 				/// </remarks>
 				public bool Strict { get; set; } = false;
 
+				/// <summary>If objects are nested more than this many levels deep, an
+				/// exception will be thrown and the reader will refuse to read further.
+				/// This option helps avoid <see cref="StackOverflowException"/> while reading,
+				/// which normally forces a .NET process to terminate.</summary>
+				public int MaxDepth { get; set; } = 64;
+
 				/// <summary>When you attempt to read a primitive (such as a string or double),
 				///   but an object or a list is encountered instead, this property controls 
 				///   how that object is converted to the primitive type. If this property is 

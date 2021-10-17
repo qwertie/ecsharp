@@ -30,7 +30,7 @@ using System.Linq;
 //
 // - Type conversions (in this example, Color <=> string, and BMultiMap <=> List)
 // - Nonlocal representation changes (Start + End Date <=> Start Date + Duration)
-// - Multiple serialization formats for backward compaitibility purposes (v1/v2)
+// - Multiple serialization formats for backward compatibility purposes (v1/v2)
 //
 // This example includes all of these forms of complexity. In the past, this
 // complexity forced developers to create dedicated serialization types. Since

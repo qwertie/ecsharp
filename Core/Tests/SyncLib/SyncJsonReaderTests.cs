@@ -40,7 +40,7 @@ namespace Loyc.SyncLib.Tests
 		}
 
 		[Test]
-		public void TrickyBackRef()
+		public void TrickyBackRef1()
 		{
 			string json1 = @"
 				{
@@ -48,7 +48,6 @@ namespace Loyc.SyncLib.Tests
 				    ""favorite"": {""\r"":1}
 				}
 			";
-
 		}
 
 		static string SyncName(ISyncManager sm, string name)
@@ -76,5 +75,33 @@ namespace Loyc.SyncLib.Tests
 		// TODO: a test in which a JSON obj or list has extra fields that include an object with an $id that is used later
 		// TODO: a test in which we read the invalid JSON "1, 2" when VerifyEof is off, which should work anyway
 		// TODO: a test that makes Frame.Checkpoint invalid due to Read()
+		// TODO: a test in which a deduplicated object is skipped and then read later:
+		//       (i) order: A, C, B
+		//       (ii) order: C, B, A
+		//       { "A": { "\f": 1, "name": "Beatlejuice" }, "B": { "\r": 1 }, "C": 3 }
+		// TODO: add a test where the same object is skipped twice.
+		//     {
+		//        "A": {
+		//           "X": { "$id": "9", "field": 111 },
+		//           "Y": 222,
+		//           "Z": { "$ref": "9" }
+		//        },
+		//        "B": 333
+		//     }
+		//     If the user reads B, then A, then Y, object "9" is skipped when
+		//     reading "B" and again when reading "Y".
+		// TODO: a test in which \r is represented as \u000D and \f is represented as \u0066.
+		// TODO: a test in which $ref is represented as \u0024ref and $id is $i\u0064.
+		// TODO: a test with $values and with \u0024values
+		// TODO: a test that reads "B" before "A" in
+		//     {
+		//        "A": {
+		//           "X": { "$id": "9", "field": 111 },
+		//        },
+		//        "B": { "$ref": "9" }
+		//     }
+		//     ensuring that the C# object in property X is the same one in property B.
+		// TODO: test recursion MaxDepth limit in (1) normal reading and (2) skipping
+		// TODO (low priority): support $id that is not the first property
 	}
 }

@@ -14,16 +14,23 @@ namespace Loyc.SyncLib
 {
 	partial class SyncJson
 	{
-
+		/// <summary>
+		///   ReaderState is responsible for managing the higher-level idea of reading 
+		///   specific properties from a JSON stream: "finding" properties (and skipping 
+		///   over properties we're not reading yet), "rewinding" to skipped objects, 
+		///   dealing with type conversions and type errors, and supporting object
+		///   deduplication.
+		/// </summary><remarks>
+		///   Please see the description of <see cref="Parser"/> to understand the 
+		///   low-level API that this class depends on. That description also summarizes
+		///   some key points about how this class works.
+		/// </remarks>
 		internal class ReaderState : Parser
 		{
 			public ReaderState(ReadOnlyMemory<byte> memory, Options options) : base(memory, options) { }
 			public ReaderState(IScanner<byte> scanner,      Options options) : base(scanner, options) { }
 
-			// Only needed if data is read out-of-order
-			private InternalList<JsonFrame> _frames = InternalList<JsonFrame>.Empty;
 
-			public ReadOnlyMemory<byte> NextFieldKey => Frame.CurPropKey.Text;
 
 			internal string? ReadTypeTag()
 			{
@@ -40,8 +47,10 @@ namespace Loyc.SyncLib
 				}
 			}
 			
-			// Map from object IDs to objects
+			// Map from object IDs to objects.
 			private Dictionary<JsonValue, object>? _objects;
+			// TODO: delete _skippedObjects entry after reading the object into _objects
+			private Dictionary<JsonValue, (JsonValue value, long position)>? _skippedObjects;
 
 			byte[] _nameBuf = Empty<byte>.Array;
 
@@ -62,9 +71,7 @@ namespace Loyc.SyncLib
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			bool FindProp(string? name, out (JsonValue value, long position) v)
 			{
-				ref JsonFrame f = ref Frame;
-
-				v = (default(JsonValue), f.PositionOfBuf0 + f.ValueIndex);
+				v = (default(JsonValue), CurPosition);
 				if (IsInsideList || name == null)
 					return true;
 
@@ -73,14 +80,13 @@ namespace Loyc.SyncLib
 					name = _opt.NameConverter(name);
 
 				// Is it the current property?
-				if (AreEqual(f.CurPropKey.Text.Span, f.CurPropKey.Type, name))
+				if (AreEqual(CurPropKey, CurPropKeyType, name))
 					return true;
 
 				return FindPropOutOfOrder(name, originalName, ref v);
 			}
 			bool FindPropOutOfOrder(string? name, string originalName, ref (JsonValue value, long position) v)
 			{
-				ref JsonFrame f = ref Frame;
 				var skippedProps = _stack.LastRef.SkippedProps;
 
 				// Is it something we skipped over earlier?
@@ -91,21 +97,28 @@ namespace Loyc.SyncLib
 						return true;
 				}
 
-				var cur = CurPosition;
+				var cur = CurPointer;
 
 				// The current and skipped properties aren't what we need. Scan forward.
 				if (cur.CurPropKey.Type != JsonType.Invalid) {
 					while (true) {
-						var valueIndex = cur.i;
+						long valuePosition = PositionOf(cur);
 						var skippedValue = ScanValue(ref cur);
 						
-						SaveSkippedValue(ref cur.CurPropKey, in skippedValue, valueIndex);
+						SaveSkippedValue(ref cur.CurPropKey, in skippedValue, valuePosition);
 
 						if (!BeginProp(true, ref cur))
-							break; // no comma
+							break; // end of object
+
+						if (AreEqual(cur.CurPropKey.Text.Span, cur.CurPropKey.Type, name)) {
+							Commit(ref cur);
+							return true;
+						}
 					}
 				} else if (skippedProps == null)
 					return false;
+
+				Commit(ref cur);
 
 				// Name was not found in this object. Fallback: if there is a
 				// NameConverter, try looking for the orginalName.
@@ -113,7 +126,7 @@ namespace Loyc.SyncLib
 				return skippedProps?.TryGetValue(new JsonValue(JsonType.String, nameBytes), out v) ?? false;
 			}
 
-			private void SaveSkippedValue(ref JsonValue propName, in JsonValue skippedValue, int valueIndex)
+			private void SaveSkippedValue(ref JsonValue propName, in JsonValue skippedValue, long position)
 			{
 				// TODO: normalize the value! e.g. "\u0041" => "A", otherwise it'll be unfindable
 				
@@ -122,87 +135,109 @@ namespace Loyc.SyncLib
 
 				ref var tos = ref _stack.LastRef;
 				tos.SkippedProps ??= new Dictionary<JsonValue, (JsonValue value, long position)>();
-				tos.SkippedProps[propName] = (skippedValue, Frame.PositionOfBuf0 + valueIndex);
+				tos.SkippedProps[propName] = (skippedValue, position);
 			}
 
 			internal (bool Begun, object? Object) BeginSubObject(string? name, ObjectMode mode)
 			{
 				if (!FindProp(name, out (JsonValue value, long position) skippedObject))
-					Error(Frame.Position.i, "Property \"{0}\" was missing".Localized(name), fatal: false);
+					Error(CurPointer.i, "Property \"{0}\" was missing".Localized(name), fatal: false);
 
 				bool expectList = (mode & ObjectMode.List) != 0;
 
 				// Begin the object/list, if there is an object/list here
-				JsonPosition cur;
+				JsonPointer cur;
 				var type = skippedObject.value.Type;
-				if (type == JsonType.NotParsed) {
-					cur = Frame.Position;
-					Debug.Assert(Frame.ObjectStartIndex == int.MaxValue);
-					Debug.Assert(!Frame.IsReplaying);
+				bool isReplay = type != JsonType.NotParsed;
+				if (isReplay) {
+					BeginReplay(skippedObject, out cur);
+					Debug.Assert(ReplayDepth > 0);
 				} else {
-					PushFrame(skippedObject, out cur);
-					Debug.Assert(Frame.IsReplaying);
+					cur = CurPointer;
 				}
-				var objectPosition = Frame.PositionOfBuf0 + cur.i;
-				type = TryToBeginObjectAndCommit(ref cur);
+				Debug.Assert(skippedObject.position == PositionOf(cur));
+
+				type = TryToBeginObject(ref cur, expectList);
 
 				if (type >= JsonType.FirstCompositeType)
 				{
 					if (type == JsonType.List) {
 						if (expectList) {
+							Commit(ref cur);
 							return (true, null); // Success! List opened.
 						} else {
 							// Unexpected list!
-							// TODO: find a way to make this nonfatal.
-							throw NewError((int)(objectPosition - Frame.PositionOfBuf0), "Expected object, got list");
+							// TryToBeginObject() did NOT enter the list, so we need not
+							// call UndoBeginObject() to return to the original position.
+							// However, if we called BeginReplay(), we need to undo that.
+							if (isReplay)
+								EndReplay();
+							int i = (int)(skippedObject.position - PositionOfBuf0);
+							throw NewError(i, "Expected object, got list", fatal: false);
 						}
 					}
 
-					// Check if the object starts with a backreference ("$ref" or "\r")
+					// Check if the object is a backreference ("$ref" or "\r")
 					var propKey = cur.CurPropKey;
 					var keySpan = propKey.Text.Span;
 					if (AreEqual(keySpan, _ref) || AreEqual(keySpan, _r))
 					{
-						Frame.Checkpoint = cur.AsCheckpoint();
+						long position = PositionOf(cur);
 						var value = ScanValueAndBeginNext(ref cur);
 						
 						// A backreference must be a primitive and not followed by another prop
 						if (value.Type is > JsonType.NotParsed and < JsonType.FirstCompositeType
 							&& cur.CurPropKey.Text.Length == 0)
 						{
-							// TODO: deal with backreferences to objects that were previously skipped
-							object? existing = null;
-							if (_objects == null || !_objects.TryGetValue(value, out existing)) {
-								Error(Frame.ValueIndex, "Backreferenced object not found");
-							}
+							// Okay, good, we can finish reading the backref object (and if the
+							// backref was a skipped object, return to the previous frame)
+							EndSubObjectCore(ref cur);
 
-							EndObjectAndCommit(ref cur);
-							
-							return (false, existing);
+							// Now try to get the already-read deduplicated object.
+							if (_objects != null && _objects.TryGetValue(value, out object? existing)) {
+								// Good! Return it.
+								return (false, existing);
+							} else {
+								// The object wasn't read earlier. Was it skipped?
+								if (_skippedObjects != null && _skippedObjects.TryGetValue(value, out skippedObject) 
+										&& skippedObject.value.Type == JsonType.Object)	{
+									// It was skipped! So now we need to switch to that skipped object
+									// and begin reading it, similar to the case where FindProp finds
+									// a skipped object. Note: don't worry, objects in _skippedObjects
+									// cannot be backrefrences.
+									BeginReplay(skippedObject, out cur);
+									isReplay = true;
+									type = TryToBeginObject(ref cur, expectList);
+									Debug.Assert(type == JsonType.Object);
+								} else {
+									// Sad!
+									throw NewError(position, "Backreferenced object not found", fatal: false);
+								}
+							}
 						} else {
-							// The prop cannot be a backreference. Back up to the beginning of the value
-							Frame.RevertToCheckpoint();
+							// Apparently this is not a real backreference; ignore it.
+							SaveSkippedValue(ref propKey, value, CurPosition);
 						}
 					}
 
 					// Read object ID, if any ("$id" or "\f")
-					if (AreEqual(keySpan, _f) || AreEqual(keySpan, _id))
+					if (IsObjectIdProp(propKey))
 					{
-						Frame.Checkpoint = cur.AsCheckpoint();
-						var id = ScanValueAndBeginNext(ref cur);
+						var idValue = ScanValueAndBeginNext(ref cur);
 
-						if (id.Type == JsonType.Invalid)
+						if (idValue.Type == JsonType.Invalid)
 						{
-							throw SyntaxError(cur.i, name ?? AsciiToString(keySpan));
+							throw SyntaxError(PositionOf(cur), name ?? AsciiToString(keySpan));
 						}
-						else if (id.Type < JsonType.FirstCompositeType)
+						else if (idValue.Type < JsonType.FirstCompositeType)
 						{
 							// The ID seems acceptable (though we haven't checked if it's a duplicate)
-							_stack.LastRef.Id = id;
+							_stack.LastRef.Id = idValue;
 
 							Commit(ref cur);
 
-							// If caller expected a list, there should be a list prop next: "":[...]
+							// If caller expected a list, there should be a list prop next:
+							// "$values":[...] or "":[...]
 							keySpan = cur.CurPropKey.Text.Span;
 							if (expectList) {
 								if (keySpan.Length == 2 || AreEqual(keySpan, _values)) {
@@ -214,16 +249,22 @@ namespace Loyc.SyncLib
 						}
 						else
 						{
-							// This cannot be an id. Back up to the beginning of the value.
-							Frame.RevertToCheckpoint();
+							// Apparently this is not a real object id; ignore it.
+							SaveSkippedValue(ref cur.CurPropKey, idValue, PositionOf(cur));
 						}
 					}
 
 					if (expectList) {
-						// Unexpected object!
-						// TODO: find a way to make this nonfatal
-						throw NewError((int)(objectPosition - Frame.PositionOfBuf0), "Expected list, got object");
+						// Unexpected object! We can undo entering the object, so that the
+						// error is not fatal. It's important that no Commit() was done
+						// after entering the object, otherwise undo would be impossible.
+						UndoBeginObject(ref cur);
+						if (isReplay)
+							EndReplay();
+
+						throw NewError(skippedObject.position, "Expected list, got object", fatal: false);
 					} else  {
+						Commit(ref cur);
 						return (true, null); // success: object opened
 					}
 				}
@@ -244,8 +285,41 @@ namespace Loyc.SyncLib
 
 			internal void EndSubObject()
 			{
-				var cur = CurPosition;
-				EndObjectAndCommit(ref cur);
+				var cur = CurPointer;
+				EndSubObjectCore(ref cur);
+			}
+			private void EndSubObjectCore(ref JsonPointer cur)
+			{
+				bool hasNextProp = EndObjectAndCommit(ref cur);
+				if (!hasNextProp && cur.i >= cur.Buf.Length && ReplayDepth > 0) {
+					// Reached end of frame. Return to original frame.
+					EndReplay();
+				}
+			}
+
+
+			protected override bool IsObjectIdProp(in JsonValue key)
+			{
+				var keySpan = key.Text.Span;
+				return AreEqual(keySpan, _id) || AreEqual(keySpan, _f);
+			}
+			protected override void SaveSkippedObjectWithId(in JsonValue idValue, in JsonValue @object, long position)
+			{
+				_skippedObjects ??= new Dictionary<JsonValue, (JsonValue value, long position)>();
+				
+				// Note: we can't use .Add() here because it is possible for the *same*
+				// JSON object to be skipped more than once. For instance:
+				//     {
+				//        "A": {
+				//           "X": { "$id": "9", "field": 111 },
+				//           "Y": 222,
+				//           "Z": { "$ref": "9" }
+				//        },
+				//        "B": 333
+				//     }
+				// If the user reads B, then A, then Y, object "9" is skipped when
+				// reading "B" and again when reading "Y".
+				_skippedObjects[idValue] = (@object, position);
 			}
 
 			internal SyncType HasField(string? name)
@@ -275,7 +349,7 @@ namespace Loyc.SyncLib
 					// Get type of property value
 					var type = v.value.Type;
 					if (type == JsonType.NotParsed) {
-						var cur = Frame.Position;
+						var cur = CurPointer;
 						type = DetectTypeOfUnparsedValue(ref cur);
 					}
 					return type;
@@ -289,7 +363,7 @@ namespace Loyc.SyncLib
 				if (FindProp(name, out (JsonValue value, long position) v)) {
 					var type = v.value.Type;
 					if (type == JsonType.NotParsed) {
-						var cur = CurPosition;
+						var cur = CurPointer;
 						type = DetectTypeOfUnparsedValue(ref cur);
 					}
 
@@ -336,7 +410,7 @@ namespace Loyc.SyncLib
 							return BuildListFromSpan<ListBuilder, List>(output.Value.AsMemory().Span, builder);
 						}
 						// TODO: make this nonfatal by saving skipped value
-						throw SyntaxError((int)(v.position - Frame.PositionOfBuf0), name, "BAIS byte array");
+						throw SyntaxError(v.position, name, "BAIS byte array");
 					}
 				}
 				return default;
@@ -579,7 +653,7 @@ namespace Loyc.SyncLib
 
 					case JsonType.Null:
 						if (!nullable)
-							Error((int)(v.position - Frame.PositionOfBuf0), "\"{0}\" is not nullable, but was null".Localized(name));
+							throw NewError(v.position, "\"{0}\" is not nullable, but was null".Localized(name));
 						return null;
 
 					case JsonType.True:
@@ -615,7 +689,7 @@ namespace Loyc.SyncLib
 			private (JsonValue value, long position) MissingValue(string? name)
 			{
 				if (_optRead.AllowMissingFields)
-					return (new JsonValue(JsonType.Missing, default), Frame.PositionOfBuf0 + Frame.ValueIndex);
+					return (new JsonValue(JsonType.Missing, default), CurPosition);
 				throw NotFoundError(name);
 			}
 
@@ -624,11 +698,11 @@ namespace Loyc.SyncLib
 			{
 				if (FindProp(name, out v)) {
 					if (v.value.Type == JsonType.NotParsed) {
-						var cur = Frame.Position;
+						var cur = CurPointer;
 						v.value = ScanValue(ref cur);
 						
 						if (v.value.Type == JsonType.Invalid)
-							throw SyntaxError(Frame.ValueIndex, name);
+							throw SyntaxError(CurPosition, name);
 
 						BeginNext(ref cur);
 						Commit(ref cur);
@@ -639,23 +713,6 @@ namespace Loyc.SyncLib
 			}
 
 			#endregion
-
-
-
-			private void PushFrame(in (JsonValue value, long position) v, out JsonPosition cur)
-			{
-				Debug.Assert(v.value.Type >= JsonType.FirstCompositeType);
-				Debug.Assert((v.value.Text.Span[0] == '{') == (v.value.Type == JsonType.Object));
-				_frames.Add(Frame);
-				Frame = new JsonFrame {
-					Buf = v.value.Text,
-					IsReplaying = true,
-					PositionOfBuf0 = v.position,
-					ValueIndex = 0,
-					ObjectStartIndex = int.MaxValue,
-				};
-				cur = Frame.Position;
-			}
 
 
 
@@ -712,7 +769,7 @@ namespace Loyc.SyncLib
 						curProp = curProp.Slice(1, curProp.Length - 2); // strip off the quotes
 					} else {
 						if (_optRead.Strict)
-							Error(Frame.PropKeyIndex, "String expected");
+							Error(CurPointer.PropKeyIndex, "String expected");
 						else if (type >= JsonType.FirstCompositeType)
 							return false;
 					}
@@ -737,12 +794,12 @@ namespace Loyc.SyncLib
 					msg = "null encountered in JSON at non-nullable location";
 				if (name != null)
 					msg += " \"" + name + '"';
-				return NewError((int)(position - Frame.PositionOfBuf0), msg, false);
+				return NewError(position, msg, false);
 			}
 			
 			[MethodImpl(MethodImplOptions.NoInlining)]
 			public Exception NotFoundError(string? name)
-				=> NewError(Frame.ValueIndex, "Property not found: {0}".Localized(name), false);
+				=> NewError(CurPosition, "Property not found: {0}".Localized(name), false);
 			
 			[MethodImpl(MethodImplOptions.NoInlining)]
 			private Exception UnexpectedTypeError(long position, string? name, string expected, JsonType type)
@@ -751,7 +808,7 @@ namespace Loyc.SyncLib
 				var msg = "Expected {0}, got {1} in JSON".Localized(expected, type);
 				if (name != null)
 					msg += " \"" + name + '"';
-				return NewError((int)(position - Frame.PositionOfBuf0), msg, false);
+				return NewError(position, msg, false);
 			}
 		}
 	}

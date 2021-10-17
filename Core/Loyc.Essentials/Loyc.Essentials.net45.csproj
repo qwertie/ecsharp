@@ -254,6 +254,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SyncJson.ecs</DependentUpon>
     </Compile>
+    <Compile Include="SyncLib\SyncJson.Parser.cs" />
     <Compile Include="SyncLib\SyncJson.Reader.cs" />
     <Compile Include="SyncLib\SyncJson.ReaderState.cs" />
     <Compile Include="SyncLib\SyncJson.Writer.cs" />

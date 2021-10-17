@@ -15,17 +15,71 @@ namespace Loyc.SyncLib
 {
 	partial class SyncJson
 	{
-		// Operations it should do:
-		// - Low-level begin object (skip '{' and read first key, or skip '[')
-		// - Low-level end object (skip '}' or ']')
-		// - Scan value AND begin next prop?
-		// - get cur
 		/// <summary>
-		/// Low-level UTF8 JSON scanner. This class understands the details of JSON 
-		/// syntax, but is only designed to read JSON linearly (it doesn't track 
-		/// skipped values).
-		/// </summary>
-		internal class Parser
+		///   Low-level UTF8 JSON scanner. This class understands the details of JSON 
+		///   syntax, but is only designed to read JSON linearly (it doesn't track 
+		///   skipped values).
+		/// </summary><remarks>
+		///   Let's go through an example to understand how the parser is designed to
+		///   work:
+		///     <code>
+		///           { "array": [123, 456], "bool": true }
+		///     </code>
+		///   The initial state will point to the '{' (the JSON file itself is treated
+		///   as if it were the contents of an array, i.e. IsInsideList == true, so
+		///   '{' is the beginning of the first value of that aray. Of course, normally
+		///   a JSON file will simply end rather than have a comma and a second value.)
+		/// <para/>
+		///   The derived class, <see cref="ReaderState"/>, will get the initial 
+		///   position from the CurPosition property (cur = CurPosition) and then call 
+		///   TryToBeginObject(ref cur, _) to enter the object, at which point cur will 
+		///   point to the '['. This brings us to three notables thing to keep in mind 
+		///   about the Parser: 
+		/// <ol>
+		///   <li>First, it "prefers" to stop scanning at the beginning of each value, 
+		///     which is why TryToBeginObject scans forward to '[' rather than stopping 
+		///     at the first '"' (i.e. the "array" key). The `cur` variable contains 
+		///     enough information to get the bytes of the key so that the key can be 
+		///     extracted to a string if necessary. </li>
+		///   <li>Second, the current position is designed to be stored in a stack 
+		///     variable (called `cur` by convention) so that the buffer can have type 
+		///     <see cref="Span{byte}"/> (which cannot be stored on the heap). 
+		///     Therefore, while `cur` is the "current" position, that position is not 
+		///     saved on the heap until `Commit(ref cur)` is called. Thus, backtracking 
+		///     to the last value is as simple as not committing `cur`, UNLESS there 
+		///     has been a change to the object stack (if TryToBeginObject was called
+		///     and it succeeded, the stack changed, but it can be undone by calling
+		///     <see cref="UndoBeginObject"/>).</li>
+		///   <li>Third, there is list called _stack that has a stack entry for each 
+		///     JSON object or list that is entered. There is a special case for 
+		///     deduplicated lists, which (in the Newtonsoft mode) have the form 
+		///     `{ "$id": NNN, "$values": [list items] }`. In this case there is only
+		///     a single entry on the _stack for both the outer object and the inner 
+		///     list. The derived class calls <see cref="TryOpenListValuesAndCommit"/>
+		///     when it detects the special list-of-values prop.</li>
+		/// </ul>
+		///   If the end user is expecting an array called "array", the derived class 
+		///   will then call `TryToBeginObject(ref cur, true)` to enter it, after which
+		///   cur will point to '1'. Primitive list items are read using 
+		///   <see cref="ScanValue"/> followed by <see cref="BeginNext"/>, which skips 
+		///   the comma and whitespace (when not reading a list, it also skips over the
+		///   next key). As before, <see cref="Commit"/> must be called to save the new
+		///   byte position.
+		/// <para/>
+		///   If the end user is expecting some prop other than "array", the derived
+		///   class will skip over the value of "array" by calling ScanValue() and 
+		///   BeginNext() (or BeginProp()) and then it will save the 
+		///   <see cref="JsonValue"/> associated with "array" (which includes the
+		///   memory block of `[123, 456]`) in a dictionary in _stack.Last for later 
+		///   retrieval.
+		/// <para/>
+		///   If, later on, the user wants to read "array", the derived class can begin
+		///   scanning it by calling <see cref="BeginReplay"/> and return to the 
+		///   original location in the stream (with the corresponding original state) by 
+		///   calling <see cref="EndReplay"/>. Note: these methods don't affect the 
+		///   `_stack` of objects; there is a separate stack for replays.
+		/// </remarks>
+		internal abstract class Parser
 		{
 			internal enum JsonType {
 				Invalid = -1,
@@ -44,6 +98,7 @@ namespace Loyc.SyncLib
 				FirstCompositeType = 10,
 				Object = 11,
 				List = 12,
+				
 				// Used by the derived class (ReaderState) to represent an array enclosed in
 				// a wrapper object with an ID code, e.g. { $id": "7", "$values": [ ... ] }.
 				ListWithId = 13,
@@ -72,42 +127,28 @@ namespace Loyc.SyncLib
 			/// Represents a pointer to the current position in the JSON data stream, plus
 			/// the index where the current item started and the property key at that index.
 			/// </summary>
-			protected ref struct JsonPosition
+			protected ref struct JsonPointer
 			{
-				public ReadOnlySpan<byte> span;
+				public ReadOnlySpan<byte> Buf;
 				public int i;
-				public byte Byte => span[i];
-				public byte this[int offs] => span[i + offs];
+
+				public byte Byte => Buf[i];
+				public byte this[int offs] => Buf[i + offs];
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				public int ByteOr(int fallback) => (uint)i < (uint)span.Length ? span[i] : fallback;
+				public int ByteOr(int fallback) => (uint)i < (uint)Buf.Length ? Buf[i] : fallback;
 				
-				// Name of current property in the current object (type JsonType.Invalid at end of object)
+				// Name of current property in the current object (type JsonType.Invalid at
+				// the end of an object)
 				// (TODO: what if reading a list?)
 				// (TODO: make more efficient by not storing Memory<byte> of the key)
 				public JsonValue CurPropKey;
 				// Location where current property key starts in Buf
 				public int PropKeyIndex;
-				public JsonCheckpoint AsCheckpoint()
-				{
-					return new JsonCheckpoint {
-						KeyIndex = PropKeyIndex,
-						KeyLength = CurPropKey.Text.Length,
-						KeyType = CurPropKey.Type,
-						ValueIndex = i,
-					};
-				}
+
 				public override string ToString() // for debugging only
 				{
-					return Encoding.UTF8.GetString(span.Slice(i).ToArray());
+					return Encoding.UTF8.GetString(Buf.Slice(i).ToArray());
 				}
-			}
-
-			protected struct JsonCheckpoint
-			{
-				public int KeyIndex; // 0 in case of list
-				public int KeyLength; // 0 in case of list
-				public JsonType KeyType;
-				public int ValueIndex;
 			}
 
 			/// <summary>Scanning of multiple JSON objects can be in progress 
@@ -137,7 +178,7 @@ namespace Loyc.SyncLib
 			/// For performance, the SkippedProps and SkippedDefs dictionaries
 			/// are not created unless properties/definitions are actually skipped.
 			/// </remarks>
-			protected struct JsonFrame
+			private struct JsonFrame
 			{
 				// The buffer being read from (replayed buffer, or something from _mainScanner)
 				public ReadOnlyMemory<byte> Buf;
@@ -145,25 +186,18 @@ namespace Loyc.SyncLib
 				public bool IsReplaying;
 				// Location within the JSON file of Buf.Span[0] (used for error reporting)
 				public long PositionOfBuf0;
+				// Number of newlines encountered
+				public int LineNumber;
+				// TODO: Index of the most recent newline relative to Buf[0] (can be negative)
+				public int LineStart;
 				// Location where the next value starts in Buf
 				public int ValueIndex;
-				public JsonPosition Position => new JsonPosition {
-					span = Buf.Span,
+				public JsonPointer Pointer => new JsonPointer {
+					Buf = Buf.Span,
 					i = ValueIndex,
 					PropKeyIndex = PropKeyIndex,
 					CurPropKey = CurPropKey,
 				};
-
-				public JsonCheckpoint? Checkpoint; // TODO: keep this valid during Read()
-				public void DiscardCheckpoint() => Checkpoint = null;
-				public void RevertToCheckpoint()
-				{
-					PropKeyIndex = Checkpoint!.Value.KeyIndex;
-					var keyText = Buf.Slice(PropKeyIndex, Checkpoint.Value.KeyLength);
-					CurPropKey = new JsonValue(Checkpoint.Value.KeyType, keyText);
-					ValueIndex = Checkpoint.Value.ValueIndex;
-					DiscardCheckpoint();
-				}
 
 				// updated during Commit: Position.Byte, or ']' at EOF. ']' is used as the
 				// EOF indicator so ReachedEndOfList is detected efficiently in that case.
@@ -177,13 +211,12 @@ namespace Loyc.SyncLib
 				public JsonValue CurPropKey;
 
 				public string ValueDebugString => Encoding.UTF8.GetString(Buf.Slice(ValueIndex).ToArray());
+				public string BufDebugString => Encoding.UTF8.GetString(Buf.ToArray());
 				
 				// This seems wrong because JsonFrame doesn't correspond to a single nesting level
 					// List of properties that were skipped earlier (immediate children)
 					// Note: the keys here never use JsonType.SimpleString
 					//public Dictionary<JsonValue, (JsonValue value, long position)>? SkippedProps;
-				// List of object definitions that were skipped earlier (any nesting level)
-				public Dictionary<JsonValue, (JsonValue value, long position)>? SkippedDefs;
 			}
 
 			public Parser(IScanner<byte> scanner, Options options)
@@ -209,12 +242,12 @@ namespace Loyc.SyncLib
 				_optRead = options.Read;
 
 				// Skip initial whitespace
-				var cur = CurPosition;
+				var cur = CurPointer;
 				SkipWhitespace(ref cur);
 				Commit(ref cur);
 			}
 
-			protected JsonFrame Frame;
+			private JsonFrame Frame;
 
 			protected IScanner<byte>? _mainScanner;
 			protected Memory<byte> _mainScannerBuf; // not used by ReaderState; it's passed to _mainScanner.Read()
@@ -229,6 +262,8 @@ namespace Loyc.SyncLib
 			{
 				public JsonValue Id;
 				public JsonType Type;
+				
+				// Not used by Parser. Used by ReaderState to track skipped values.
 				public Dictionary<JsonValue, (JsonValue value, long position)>? SkippedProps;
 
 				public StackEntry(JsonType objectType)
@@ -256,42 +291,94 @@ namespace Loyc.SyncLib
 			///   values in the current object, thie property points to the closing ']'
 			///   or '}', or to the end of the file. If parsing stopped at a syntax error,
 			///   this may point to the error or to the last value before the error.</summary>
-			protected JsonPosition CurPosition => Frame.Position;
+			protected JsonPointer CurPointer => Frame.Pointer;
 
-			protected void Commit(ref JsonPosition cur)
+			/// <summary>Returns the last index saved with Commit(), which should always point 
+			///   either to the first byte of a JSON value (not a property key!), or to the end
+			///   of an object (or the end of the file, if the end has been reached).
+			///   This property is always equal to `CurPosition.Index`.
+			/// </summary>
+			protected int CurIndex => Frame.ValueIndex;
+			protected long CurPosition => Frame.PositionOfBuf0 + Frame.ValueIndex;
+			
+			protected ReadOnlySpan<byte> CurPropKey => Frame.CurPropKey.Text.Span;
+			protected JsonType CurPropKeyType => Frame.CurPropKey.Type;
+
+			/// <summary>Text of the current key (empty if inside a list or at end of object)</summary>
+			protected ReadOnlyMemory<byte> NextFieldKey => Frame.CurPropKey.Text;
+
+			protected long PositionOfBuf0 => Frame.PositionOfBuf0;
+			protected long PositionOf(in JsonPointer cur) => Frame.PositionOfBuf0 + cur.i;
+
+			#region Support for "replay" of skipped memory blocks (to scan an object or value again)
+
+			/// Only needed if data is read out-of-order; not used direct
+			private InternalList<JsonFrame> _frameStack = InternalList<JsonFrame>.Empty;
+
+			protected void BeginReplay(in (JsonValue value, long position) value, out JsonPointer cur)
+			{
+				Debug.Assert(value.value.Type >= JsonType.FirstCompositeType);
+				Debug.Assert((value.value.Text.Span[0] == '{') == (value.value.Type == JsonType.Object));
+				_frameStack.Add(Frame);
+				Frame = new JsonFrame {
+					Buf = value.value.Text,
+					IsReplaying = true,
+					PositionOfBuf0 = value.position,
+					ValueIndex = 0,
+					ObjectStartIndex = int.MaxValue,
+				};
+				cur = Frame.Pointer;
+			}
+
+			protected void EndReplay()
+			{
+				Frame = _frameStack.Last;
+				_frameStack.Pop();
+			}
+
+			protected int ReplayDepth => _frameStack.Count;
+
+			#endregion
+
+			protected void Commit(ref JsonPointer cur)
 			{
 				Frame.ValueIndex = cur.i;
 				Frame.PropKeyIndex = cur.PropKeyIndex;
 				Frame.CurPropKey = cur.CurPropKey;
 				Frame.CurrentByte = cur.ByteOr(']');
-				
-				// TODO: Commit() is getting too expensive, can we make it faster?
-				Frame.DiscardCheckpoint();
 			}
 
 			/// <summary>
 			/// Checks if cur points to an object or list value and if so, "begins" the 
-			/// object by (1) skipping the opening '[' or '{', (2) pushing the object type 
-			/// onto _stack, (3) advancing cur to the beginning of the first value in the 
-			/// object, (4) updating ReachedEndOfList, and (5) committing cur because 
-			/// there's no mechanism to undo all the prior operations.
+			/// object by 
+			/// (1) skipping the opening '[' or '{', 
+			/// (2) pushing the object type onto _stack, which throws if
+			///     _optRead.MaxDepth is exceeded.
+			/// (3) advancing cur to the beginning of the first value in the object, 
+			/// (4) updating ReachedEndOfList, and 
+			/// (5) committing cur because there's no mechanism to undo all the prior 
+			///     operations. 
 			/// </summary>
-			/// <returns>JsonType.List or JsonType.Object if a subobject was begun;
-			/// otherwise, returns JsonType.NotParsed.</returns>
-			protected JsonType TryToBeginObjectAndCommit(ref JsonPosition cur)
+			/// <param name="allowList">If this is true and the input is a list, the 
+			///   operation is aborted (JsonType.List is still returned).</param>
+			/// <returns>JsonType.List or JsonType.Object if a subobject was detected;
+			///   otherwise, returns JsonType.NotParsed.</returns>
+			protected JsonType TryToBeginObject(ref JsonPointer cur, bool allowList)
 			{
 				bool isList;
 				if (AutoRead(ref cur) && ((isList = cur.Byte == '[') || cur.Byte == '{')) {
-					cur.i++;
-					SkipWhitespace(ref cur);
 					if (isList) {
-						Push(JsonType.List);
-						Commit(ref cur);
+						if (allowList) {
+							cur.i++;
+							SkipWhitespace(ref cur);
+							Push(JsonType.List);
+						}
 						return JsonType.List;
 					} else {
+						cur.i++;
+						SkipWhitespace(ref cur);
 						Push(JsonType.Object);
 						BeginProp(false, ref cur);
-						Commit(ref cur);
 						return JsonType.Object;
 					}
 				} else {
@@ -299,7 +386,20 @@ namespace Loyc.SyncLib
 				}
 			}
 
-			protected bool TryOpenListValuesAndCommit(ref JsonPosition cur)
+			// Undo action(s) taken by TryToBeginObject, under the assumption that
+			// CurPointer points at the first byte of the object ('{' or '['), which
+			// means that setting `cur = CurPosition` takes us back there.
+			//
+			// NOTE: often TryToBeginObject is called after BeginReplay. In that
+			// case, the derived class must call EndReplay after UndoBeginObject.
+			protected void UndoBeginObject(ref JsonPointer cur)
+			{
+				Pop();
+				cur = CurPointer;
+				Debug.Assert((char) cur.ByteOr('!') is '{' or '[');
+			}
+
+			protected bool TryOpenListValuesAndCommit(ref JsonPointer cur)
 			{
 				if (AutoRead(ref cur) && cur.Byte == '[') {
 					cur.i++;
@@ -319,7 +419,7 @@ namespace Loyc.SyncLib
 			/// (5) reads the next property key, if the outer object isn't a list, and
 			/// (6) Commit()s
 			/// </summary>
-			protected void EndObjectAndCommit(ref JsonPosition cur)
+			protected bool EndObjectAndCommit(ref JsonPointer cur)
 			{
 				var type = _stack.Last.Type;
 
@@ -333,8 +433,9 @@ namespace Loyc.SyncLib
 				Pop();
 
 				// TODO: this use of VerifyEof looks suspicious to me, is the code correct?
+				bool nextPropAfterObjectExists = false;
 				if (_stack.Count != 0 || !_optRead.VerifyEof) {
-					BeginNext(ref cur);
+					nextPropAfterObjectExists = BeginNext(ref cur);
 				} else {
 					SkipWhitespace(ref cur);
 					if (AutoRead(ref cur)) {
@@ -342,9 +443,11 @@ namespace Loyc.SyncLib
 					}
 				}
 				Commit(ref cur);
+				
+				return nextPropAfterObjectExists;
 			}
 
-			private void EndObjectCore(ref JsonPosition cur)
+			private void EndObjectCore(ref JsonPointer cur)
 			{
 				bool isList;
 				if (!((isList = cur.Byte == ']') || cur.Byte == '}')) {
@@ -372,7 +475,7 @@ namespace Loyc.SyncLib
 			}
 
 			// Used by ISyncManager.HasField() to detect the type of the current (unparsed) value
-			protected JsonType DetectTypeOfUnparsedValue(ref JsonPosition cur)
+			protected JsonType DetectTypeOfUnparsedValue(ref JsonPointer cur)
 			{
 				if (AutoRead(ref cur)) {
 					switch ((char) cur.Byte) {
@@ -410,7 +513,7 @@ namespace Loyc.SyncLib
 
 			#region BeginProp and BeginNext
 
-			protected bool BeginProp(bool expectComma, ref JsonPosition cur)
+			protected bool BeginProp(bool expectComma, ref JsonPointer cur)
 			{
 				// This must not be called inside a list (but at the beginning of an
 				// object, IsInsideList hasn't been updated)
@@ -432,7 +535,7 @@ namespace Loyc.SyncLib
 				if (key.Type == JsonType.Invalid)
 				{
 					// There's no property here. It's either the end of the object, or a syntax error
-					if ((uint)cur.i < (uint)cur.span.Length && (cur.Byte == '}' || cur.Byte == ']')) {
+					if ((uint)cur.i < (uint)cur.Buf.Length && (cur.Byte == '}' || cur.Byte == ']')) {
 						if (expectComma && _optRead.Strict)
 							Error(cur.i, "Comma is not allowed before '{0}'".Localized((char) cur.Byte));
 						else if (cur.Byte == ']')
@@ -468,7 +571,7 @@ namespace Loyc.SyncLib
 
 			// A method called to move to the next prop or list item after reading a prop/item.
 			// Its job is to skip the comma and either detect end-of-list or read the next key.
-			protected bool BeginNext(ref JsonPosition cur)
+			protected bool BeginNext(ref JsonPointer cur)
 			{
 				if (IsInsideList) {
 					cur.CurPropKey = default;
@@ -494,7 +597,7 @@ namespace Loyc.SyncLib
 				}
 			}
 
-			protected JsonValue ScanValueAndBeginNext(ref JsonPosition cur)
+			protected JsonValue ScanValueAndBeginNext(ref JsonPointer cur)
 			{
 				var value = ScanValue(ref cur);
 				BeginNext(ref cur);
@@ -506,7 +609,7 @@ namespace Loyc.SyncLib
 			#region SkipWhitespace, SkipComment
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			protected void SkipWhitespace(ref JsonPosition cur)
+			protected void SkipWhitespace(ref JsonPointer cur)
 			{
 				for (; AutoRead(ref cur); cur.i++) {
 					byte c = cur.Byte;
@@ -519,11 +622,12 @@ namespace Loyc.SyncLib
 				}
 			}
 
-			protected void SkipComment(ref JsonPosition cur)
+			protected void SkipComment(ref JsonPointer cur)
 			{
 				byte c = cur.Byte;
 				if (c == '/' && AutoRead(ref cur, 1)) {
 					if ((c = cur[1]) == '/') {
+						// TODO: add "warning" feature: Report(cur, _optRead.AllowComments, "JSON does not support comments")
 						if (!_optRead.AllowComments)
 							Error(cur.i, "JSON does not support comments");
 							
@@ -557,24 +661,39 @@ namespace Loyc.SyncLib
 			#region Error management
 
 			[MethodImpl(MethodImplOptions.NoInlining)]
-			protected Exception SyntaxError(int index, string? name, string context = "JSON value")
+			protected Exception SyntaxError(long position, string? name, string context = "JSON value")
 			{
 				// TODO: localize all errors exactly once
 				var msg = "Syntax error in {0}".Localized(context.Localized());
 				if (name != null)
 					msg += " \"" + name + '"';
-				return NewError(index, msg);
+				return NewError(position, msg);
 			}
 
+			private Exception MaxDepthError(int i)
+			{
+				return NewError(i, "Unable to read JSON because it is too deeply nested", fatal: true);
+			}
+
+			protected Exception NewError(int i, string msg, bool fatal = true) => NewError(PositionOfBuf0 + i, msg, fatal);
 			[MethodImpl(MethodImplOptions.NoInlining)]
-			protected Exception NewError(int i, string msg, bool fatal = true)
+			protected Exception NewError(long position, string msg, bool fatal = true)
 			{
 				if (_fatalError != null)
 					return _fatalError; // New error is just a symptom of the old error; rethrow
 
-				long position = Frame.PositionOfBuf0 + i;
-				var exc = new FormatException(msg + " " + "(at byte {0})".Localized(position));
+				string msg2;
+				int index = (int)(position - PositionOfBuf0);
+				if ((uint)index >= (uint)CurPointer.Buf.Length) {
+					msg2 = "{0} (at byte {1})".Localized(msg, position);
+				} else {
+					int c = G.DecodeUTF8Char(CurPointer.Buf, ref index);
+					msg2 = "{0} (at byte {1} '{2}')".Localized(msg, position, c < 32 ? "0x" + c.ToString("X") : (char)c);
+				}
+				
+				var exc = new FormatException(msg2);
 				exc.Data["position"] = position;
+				exc.Data["recoverable"] = !fatal;
 				
 				if (fatal)
 					_fatalError = exc;
@@ -592,14 +711,14 @@ namespace Loyc.SyncLib
 
 			// Ensures that the _i < _buf.Length by reading more if necessary
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			private bool AutoRead(ref JsonPosition cur, int extraLookahead = 0)
+			private bool AutoRead(ref JsonPointer cur, int extraLookahead = 0)
 			{
-				Debug.Assert(cur.span == Frame.Buf.Span);
-				if ((uint)(cur.i + extraLookahead) < (uint)cur.span.Length)
+				Debug.Assert(cur.Buf == Frame.Buf.Span);
+				if ((uint)(cur.i + extraLookahead) < (uint)cur.Buf.Length)
 					return true;
 				cur.i = Read(cur.i, extraLookahead + 1);
-				cur.span = Frame.Buf.Span;
-				return (uint)(cur.i + extraLookahead) < (uint)cur.span.Length;
+				cur.Buf = Frame.Buf.Span;
+				return (uint)(cur.i + extraLookahead) < (uint)cur.Buf.Length;
 			}
 			// Reads new data into Frame.Buf if possible
 			private int Read(int index, int lookaheadNeeded)
@@ -610,7 +729,7 @@ namespace Loyc.SyncLib
 				int requestSize = Max(lookaheadNeeded, DefaultMinimumScanSize);
 				int skip = Min(Frame.ObjectStartIndex, Min(Frame.ValueIndex, index));
 				
-				Frame.Buf = _mainScanner.Read(skip, (index -= skip) + requestSize, ref _mainScannerBuf);
+				Frame.Buf = _mainScanner!.Read(skip, (index -= skip) + requestSize, ref _mainScannerBuf);
 
 				Frame.ValueIndex -= skip;
 				Frame.PropKeyIndex -= skip;
@@ -624,26 +743,26 @@ namespace Loyc.SyncLib
 
 			#region ScanValue()
 
-			protected JsonValue ScanValue()
+			int _skipObjectDepth;
+
+			protected JsonValue ScanValue(ref JsonPointer cur)
 			{
-				var cur = Frame.Position;
-				return ScanValue(ref cur);
-			}
-			protected JsonValue ScanValue(ref JsonPosition cur)
-			{
-				Frame.ValueIndex = cur.i;
+				int startIndex = cur.i;
 				if (AutoRead(ref cur)) {
 					var b = cur.Byte;
 					if (b == '"')
 					{
 						var type = JsonType.SimpleString;
-						Debug.Assert(cur.i == Frame.ValueIndex);
 						for (cur.i++; AutoRead(ref cur); cur.i++) {
 							if (cur.Byte == '\\') {
 								type = JsonType.String;
 								cur.i++; // we don't yet care which escape it is, but be sure to skip \"
 							} else if (cur.Byte == '"') {
-								return new JsonValue(type, Frame.Buf.Slice(Frame.ValueIndex, ++cur.i - Frame.ValueIndex));
+								return new JsonValue(type, Frame.Buf.Slice(startIndex, ++cur.i - startIndex));
+							} else if (cur.Byte == '\n') {
+								Frame.LineNumber++;
+								if (_optRead.Strict)
+									throw NewError(cur.i, "Newline in JSON string literal");
 							} else if (cur.Byte >= 0x80) { // non-ASCII character
 								type = JsonType.String;
 							}
@@ -681,16 +800,29 @@ namespace Loyc.SyncLib
 						long objectPosition = cur.i + Frame.PositionOfBuf0;
 						cur.i++;
 
+						// Avoid stack overflow (it would terminate the process)
+						if (_skipObjectDepth++ + _stack.Count > _optRead.MaxDepth)
+							throw MaxDepthError(cur.i);
+
+						JsonValue idValue = default;
+
 						if (!SkipWhitespaceAnd(closer, ref cur)) {
 							for (;;) {
-								if (ScanValue(ref cur).Type == JsonType.Invalid)
+								var key = ScanValue(ref cur);
+								if (key.Type == JsonType.Invalid)
 									Error(cur.i, "Expected a value");
+
 								if (closer == '}') {
 									if (!SkipWhitespaceAnd(':', ref cur))
 										Error(cur.i, "Expected ':'");
-									if (ScanValue(ref cur).Type == JsonType.Invalid)
+									var value = ScanValue(ref cur);
+									if (value.Type == JsonType.Invalid)
 										Error(cur.i, "Expected a value");
+
+									if (idValue.Type == default && IsObjectIdProp(key))
+										idValue = value;
 								}
+
 								if (!SkipWhitespaceAnd(',', ref cur)) {
 									if (SkipIf(closer, ref cur))
 										break;
@@ -699,11 +831,17 @@ namespace Loyc.SyncLib
 							}
 						}
 
+						_skipObjectDepth--;
+
 						var type = closer == ']' ? JsonType.List : JsonType.Object;
 						int objectStart = (int)(objectPosition - Frame.PositionOfBuf0);
 						Frame.ObjectStartIndex = oldObjectStart;
 						//TOS.TokenIndex = cur.i;
-						return new JsonValue(type, Frame.Buf.Slice(objectStart, cur.i - objectStart));
+						var @object = new JsonValue(type, Frame.Buf.Slice(objectStart, cur.i - objectStart));
+						if (idValue.Type != default)
+							SaveSkippedObjectWithId(idValue, @object, Frame.PositionOfBuf0 + objectStart);
+
+						return @object;
 					}
 					else // expect a number, or end-of-object
 					{
@@ -755,22 +893,36 @@ namespace Loyc.SyncLib
 								Error(cur.i, "Expected exponent digits");
 						}
 
-						return new JsonValue(type, Frame.Buf.Slice(Frame.ValueIndex, cur.i - Frame.ValueIndex));
+						return new JsonValue(type, Frame.Buf.Slice(startIndex, cur.i - startIndex));
 					}
 				}
 				return new JsonValue(JsonType.Invalid, default); // EOF
 			}
 
+			// These methods exist because the derived class needs to know when a deduplicated
+			// object is skipped, so that it can be read later. For example:
+			//     {
+			//        "A": {
+			//           "X": { "$id": "9", "field": 111 },
+			//        },
+			//        "B": 222,
+			//        "C": { "$ref": "9" }
+			//     }
+			// If "C" is read before "A", "A" was skipped and the inner object "9" must be
+			// replayed to get the value of "C".
+			protected abstract bool IsObjectIdProp(in JsonValue key);
+			protected abstract void SaveSkippedObjectWithId(in JsonValue idValue, in JsonValue @object, long position);
+
 			#endregion
 
-			private bool SkipWhitespaceAnd(char expecting, ref JsonPosition cur)
+			private bool SkipWhitespaceAnd(char expecting, ref JsonPointer cur)
 			{
 				SkipWhitespace(ref cur);
 				return SkipIf(expecting, ref cur);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			private bool SkipIf(char expecting, ref JsonPosition cur)
+			private bool SkipIf(char expecting, ref JsonPointer cur)
 			{
 				if (AutoRead(ref cur) && cur.Byte == expecting) {
 					cur.i++;
@@ -779,12 +931,16 @@ namespace Loyc.SyncLib
 				return false;
 			}
 
-			void Push(JsonType objectType)
+			private void Push(JsonType objectType)
 			{
+				// Avoid stack overflow (which would terminate the process)
+				if (_stack.Count >= _optRead.MaxDepth)
+					throw MaxDepthError(Frame.ValueIndex);
+
 				_stack.Add(new StackEntry(objectType));
 				IsInsideList = objectType != JsonType.Object;
 			}
-			void Pop()
+			private void Pop()
 			{
 				_stack.Pop();
 				IsInsideList = _stack.Count == 0 ? true : _stack.Last.Type != JsonType.Object;
