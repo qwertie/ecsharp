@@ -14,17 +14,21 @@ namespace Loyc.SyncLib
 	{
 		public static SyncJson.Reader NewReader(IScanner<byte> input, Options? options = null)
 			=> new Reader(new ReaderState(input ?? throw new ArgumentNullException(nameof(input)), options ?? _defaultOptions));
+		public static SyncJson.Reader NewReader(ReadOnlyMemory<byte> input, Options? options = null)
+			=> new Reader(new ReaderState(input, options ?? _defaultOptions));
+		public static SyncJson.Reader NewReader(string input, Options? options = null)
+			=> NewReader(Encoding.UTF8.GetBytes(input), options);
 
 		internal static T? Read<T>(ReadOnlyMemory<byte> json, SyncObjectFunc<Reader, T> sync, Options? options = null)
 		{
 			options ??= _defaultOptions;
-			Reader reader = NewReader(new InternalList.Scanner<byte>(json), options);
+			Reader reader = NewReader(json, options);
 			return SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
 		}
 		internal static T? ReadI<T>(ReadOnlyMemory<byte> json, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 		{
 			options ??= _defaultOptions;
-			Reader reader = NewReader(new InternalList.Scanner<byte>(json), options);
+			Reader reader = NewReader(json, options);
 			return SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
 		}
 
@@ -68,11 +72,8 @@ namespace Loyc.SyncLib
 
 			public void EndSubObject() => _s.EndSubObject();
 
-			public SyncType HasField(FieldId name, SyncType expectedType = SyncType.Unknown)
+			public SyncType GetFieldType(FieldId name, SyncType expectedType = SyncType.Unknown)
 			{
-				if (name == null && !_s.IsInsideList)
-					return SyncType.Unknown;
-
 				var type = _s.HasField(name.Name);
 				
 				// Check whether the type matches the expected type

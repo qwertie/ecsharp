@@ -20,6 +20,10 @@ namespace Loyc.SyncLib
 	/// <summary>Standard extension methods for <see cref="ISyncManager"/>.</summary>
 	public static partial class SyncManagerExt
 	{
+		public static SyncType NextFieldType<SM>(this SM sync, SyncType expectedType = SyncType.Unknown)
+			where SM : ISyncManager
+			=> sync.GetFieldType(FieldId.Missing, expectedType);
+
 		public static T? Sync<SM, T>(this SM sync,
 			FieldId name, T? savable, SyncObjectFunc<SM, T> syncFunc,
 			ObjectMode mode = ObjectMode.Deduplicate)

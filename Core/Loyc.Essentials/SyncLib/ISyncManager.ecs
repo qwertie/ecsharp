@@ -145,8 +145,8 @@ namespace Loyc.SyncLib
 		/// <summary>Indicates that the serialized format uses field ID numbers rather 
 		/// than field names (e.g. Protocol Buffers). When using strings or global 
 		/// symbols, the ID is indicated implcitly via field order: the first field 
-		/// read or written has ID=1, the second has ID=2, etc. If you need to customize 
-		/// the field numbers, you can do so by creating a private 
+		/// read or written has ID=1, the second has ID=2, etc. If you need to 
+		/// customize the field numbers, you can do so by creating a private 
 		/// <see cref="Loyc.SymbolPool"/> and creating symbols with custom ID numbers.
 		/// </summary>
 		bool NeedsIntegerIds { get; }
@@ -271,11 +271,13 @@ namespace Loyc.SyncLib
 		/// <summary>Some serializers do not support this method (see remarks).
 		/// If the method is supported, it determines whether a field with a specific
 		/// name exists, and if so, what type it has.</summary>
-		/// <param name="name">Name to search for in the current stream.
-		///   If <see cref="NeedsIntegerIds"/> is true then the FieldId must be in a
-		///   private <see cref="SymbolPool"/> and it needs to have had an ID number
-		///   manually assigned to it. If the name does not meet this requirement,
-		///   the method will return SyncType.Unknown.</param>
+		/// <param name="name">Name to search for in the current stream. If this 
+		///   parameter is <see cref="FieldId.Missing"/> it is interpreted as a request 
+		///   to get the type of the next field or the next list item, which is only 
+		///   supported if (1) <see cref="SupportsNextField"/> or (2) 
+		///   <see cref="SupportsReordering"/> and <see	cref="IsInsideList"/>. If 
+		///   <see cref="NeedsIntegerIds"/> is true then the FieldId needs an id number 
+		///   to search for. </param>
 		/// <param name="expectedType">The type that the caller expects to encounter,
 		///   or SyncType.Unknown if the caller has no preference.</param>
 		/// <returns>
@@ -292,31 +294,31 @@ namespace Loyc.SyncLib
 		/// </returns>
 		/// <remarks>
 		///   Generally, this method can provide useful information only if 
-		///   <see cref="SupportsReordering"/> is true, `Mode == SyncMode.Loading`, and
-		///   <see cref="IsInsideList"/> is false. If any of these conditions is not 
-		///   met, the method normally returns SyncType.Unknown. Conceptually,
-		///   a list or tuple is treated as an object in which field names are unknown,
-		///   rather than as an object in which the fields have no names.
+		///   <see cref="IsReading"/>, when (1) <see cref="SupportsReordering"/> is true or
+		///   (2) name is <see cref="FieldId.Missing"/> and <see cref="SupportsNextField"/>.
+		///   If these conditions are not met, the method normally returns SyncType.Unknown.
 		///   <para/>
 		///   The SyncType enumeration has a collection of common types that are supported
 		///   by most data formats. However, some formats may not support all types, or
 		///   may store data in a different form than you might reasonably expect. For
 		///   example, when a byte array is stored in JSON, it is stored as a string by
-		///   default. When reading a byte array from JSON, HasField will report that the 
-		///   type is SyncType.String because even though the reader is capable of 
+		///   default. When reading a byte array from JSON, GetFieldType will report that  
+		///   the type is SyncType.String because even though the reader is capable of 
 		///   decoding the string as a byte array, it cannot know that the string 
 		///   represents a byte array. For this reason, the expectedType parameter exists
 		///   as a filtering technique. You can set this parameter to SyncType.ByteList 
 		///   to indicate that you expect to read a byte array. If the JSON data type is 
-		///   boolean, which cannot be interpreted as a byte array, HasField() returns 
-		///   SyncType.Missing. But if the JSON data type is string, HasField() returns 
+		///   boolean, which cannot be interpreted as a byte array, GetFieldType() returns 
+		///   SyncType.Missing. But if the JSON data type is string, GetFieldType() returns 
 		///   SyncType.String. This indicates that the data tream contains a String that 
 		///   is potentially convertible to SyncType.ByteList, although the conversion is 
 		///   not guaranteed to work. If you then read this field by calling
 		///   Sync(name, (byte[]) null) and it turns out that the string cannot be 
-		///   interpreted as a byte array, an exception will be thrown.
+		///   interpreted as a byte array, an exception will be thrown. After catching
+		///   this exception, it may or may not be possible to continue reading from the 
+		///   stream, depending on how the <see cref="ISyncManager"/> was implemented.
 		///   <para/>
-		///   If a value is not implicitly convertible to the expectedType, HasField
+		///   If a value is not implicitly convertible to the expectedType, GetFieldType
 		///   should return SyncType.Missing even if the conversion is supported.
 		///   For example, if the actual type is Char but a Byte was expected, the
 		///   ISyncManager implementation may support this conversion by masking off 
@@ -326,7 +328,7 @@ namespace Loyc.SyncLib
 		///   previous paragraph, because JSON pretends String matches ByteList even 
 		///   though the conversion may fail. However, the fact that a ByteList is 
 		///   stored as a String is an implementation detail that your code should
-		///   not explicitly deal with, so HasField must report that the conversion
+		///   not explicitly deal with, so GetFieldType must report that the conversion
 		///   is supported in order not to confuse code that is unaware of the 
 		///   implementation detail.)
 		///   <para/>
@@ -334,7 +336,7 @@ namespace Loyc.SyncLib
 		///   implicit conversion from boolean to number, as well as conversions from 
 		///   "smaller" to "bigger" number types.
 		/// </remarks>
-		SyncType HasField(FieldId name, SyncType expectedType = SyncType.Unknown);
+		SyncType GetFieldType(FieldId name, SyncType expectedType = SyncType.Unknown);
 
 		/// <summary>Reads or writes a "type tag" for the current object. This method
 		///   can only be called once after BeginSubObject returns true, and can only

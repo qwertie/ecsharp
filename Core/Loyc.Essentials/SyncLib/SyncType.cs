@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Loyc.SyncLib
 {
-	/// <summary>Abstract types used with <see cref="ISyncManager.HasField"/>.</summary>
+	/// <summary>Abstract types used with <see cref="ISyncManager.GetFieldType"/>.</summary>
 	/// <remarks>
 	/// Designing this enum was a tradeoff between detail and simplicity. 
 	/// <para/>
@@ -21,11 +21,11 @@ namespace Loyc.SyncLib
 	/// integers are both classified as Integer).
 	/// </remarks>
 	public enum SyncType {
-		/// <summary>This is returned by <see cref="ISyncManager.HasField"/> 
+		/// <summary>This is returned by <see cref="ISyncManager.GetFieldType"/> 
 		/// when the reader cannot determine whether the field exists, or when
 		/// the ISyncManager is not a reader (i.e. the mode is not SyncMode.Loading)</summary>
 		Unknown = -1,
-		/// <summary>This is returned by <see cref="ISyncManager.HasField"/> 
+		/// <summary>This is returned by <see cref="ISyncManager.GetFieldType"/> 
 		/// when the reader has determined that the field does not exist.</summary>
 		Missing = 0,
 		/// <summary>Indicates that the field exists but that the implementation of 
@@ -37,6 +37,12 @@ namespace Loyc.SyncLib
 		Integer = 5,
 		Float = 6,
 		Char = 7,
+		/// <summary>A composite object. Note: <see cref="SyncJson"/> sometimes reports
+		/// that a list is an "object" because deduplicated lists are represented as 
+		/// JSON objects. It is even possible to read such a list as though it is an
+		/// object, but it can also be read as a list. Unfortunately it is not possible
+		/// to determine whether such an object actually represents a list, except by
+		/// attempting to read it as a list.</summary>
 		Object = 8,
 		/// <summary>When returned from HasField(), this value indicates that the stream 
 		/// contains the `null` value.</summary>

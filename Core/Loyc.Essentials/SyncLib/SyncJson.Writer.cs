@@ -102,7 +102,7 @@ namespace Loyc.SyncLib
 
 			public void EndSubObject() => _s.EndSubObject();
 
-			public SyncType HasField(FieldId name, SyncType expectedType = SyncType.Unknown) => SyncType.Unknown;
+			public SyncType GetFieldType(FieldId name, SyncType expectedType = SyncType.Unknown) => SyncType.Unknown;
 
 			public string? SyncTypeTag(string? tag) {
 				_s.WriteProp(_s._opt.NewtonsoftCompatibility ? "$type" : "\t", tag);
