@@ -36,7 +36,7 @@ namespace Loyc.SyncLib.Tests
 				}",
 				// JSON obj or list has extra fields that include an object with an $id that is used later
 				@"{
-					""ignored"": {""$id"":""1"", ""unread"": 0.09e+02, ""name"":""Joe""}
+					""ignored"": {""$id"":""1"", ""unread"": 0.09e+02, ""name"":""Joe""},
 					""favorite"": {""$ref"":""1""},
 					""items"": [{""$ref"":""1""}, {""$id"":""2"", ""name"":""Dan""}],
 				}",
@@ -63,7 +63,7 @@ namespace Loyc.SyncLib.Tests
 			public static ItemsAndFavorite Sync(ISyncManager sm, ItemsAndFavorite? value)
 			{
 				value ??= new ItemsAndFavorite();
-				value.Favorite = sm.Sync("favorite", value.Favorite);
+				value.Favorite = sm.Sync("favorite", value.Favorite, SyncName);
 				value.Items = sm.SyncList("items", value.Items, SyncName, ObjectMode.Deduplicate) ?? new List<string>();
 				return value;
 			}
@@ -387,6 +387,7 @@ namespace Loyc.SyncLib.Tests
 			return ab;
 		}
 
+		// TODO: arrange for all the strings to be read as an scanner wrapped around IEnumerable<byte>
 		// TODO: a test in which \r is represented as \u000D and \f is represented as \u0066.
 		// TODO: a test in which $ref is represented as \u0024ref and $id is $i\u0064.
 		// TODO: a test with $values and with \u0024values

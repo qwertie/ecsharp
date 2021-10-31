@@ -425,7 +425,7 @@ namespace Loyc.SyncLib
 
 				EndObjectCore(ref cur);
 
-				// TODO: the derived class should handle this case
+				// TODO: shouldn't the derived class handle this case?
 				if (type == JsonType.ListWithId) {
 					EndObjectCore(ref cur);
 				}
@@ -454,7 +454,6 @@ namespace Loyc.SyncLib
 					// Skip any remaining properties of the object
 					bool hasMoreData;
 					do {
-						// TODO: if ScanValue ecounters a subobject with an id, we must save it for later
 						// TODO: document limitation: any single skipped value is limited to 2GB
 						var ignored = ScanValue(ref cur);
 						hasMoreData = BeginNext(ref cur);
@@ -815,6 +814,8 @@ namespace Loyc.SyncLib
 								if (closer == '}') {
 									if (!SkipWhitespaceAnd(':', ref cur))
 										ThrowError(cur.Index, "Expected ':'");
+									SkipWhitespace(ref cur);
+
 									var value = ScanValue(ref cur);
 									if (value.Type == JsonType.Invalid)
 										ThrowError(cur.Index, "Expected a value");
@@ -828,6 +829,7 @@ namespace Loyc.SyncLib
 										break;
 									ThrowError(cur.Index, "Expected ','");
 								}
+								SkipWhitespace(ref cur);
 							}
 						}
 

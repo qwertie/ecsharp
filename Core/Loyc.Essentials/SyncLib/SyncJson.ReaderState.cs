@@ -107,11 +107,17 @@ namespace Loyc.SyncLib
 						
 						SaveSkippedValue(ref cur.CurPropKey, in skippedValue, valuePosition);
 
-						if (!BeginProp(true, ref cur))
-							break; // end of object
+						if (!BeginProp(true, ref cur)) {
+							// end of object, or syntax error
+							int b = cur.ByteOr(']');
+							if (b == ']' || b == '}')
+								break;
+							ThrowError(cur.Index, "JSON syntax error");
+						}
 
 						if (AreEqual(cur.CurPropKey.Text.Span, cur.CurPropKey.Type, name)) {
 							Commit(ref cur);
+							v.position = PositionOf(cur);
 							return true;
 						}
 					}
@@ -132,6 +138,8 @@ namespace Loyc.SyncLib
 				
 				if (propName.Type == JsonType.SimpleString)
 					propName.Type = JsonType.String;
+				if (propName.Type == JsonType.String) // remove the quotes
+					propName.Text = propName.Text.Slice(1, propName.Text.Length - 2);
 
 				ref var tos = ref _stack.LastRef;
 				tos.SkippedProps ??= new Dictionary<JsonValue, (JsonValue value, long position)>();
@@ -191,7 +199,7 @@ namespace Loyc.SyncLib
 						{
 							// Okay, good, we can finish reading the backref object (and if the
 							// backref was a skipped object, return to the previous frame)
-							EndSubObjectCore(ref cur);
+							EndSubObjectAndCommit(ref cur);
 
 							// Now try to get the already-read deduplicated object.
 							if (_objects != null && _objects.TryGetValue(value, out object? existing)) {
@@ -209,6 +217,8 @@ namespace Loyc.SyncLib
 									isReplay = true;
 									type = TryToBeginObject(ref cur, expectList);
 									Debug.Assert(type == JsonType.Object);
+									propKey = cur.CurPropKey;
+									keySpan = propKey.Text.Span;
 								} else {
 									// Sad!
 									throw NewError(position, "Backreferenced object not found", fatal: false);
@@ -225,6 +235,23 @@ namespace Loyc.SyncLib
 					{
 						var idValue = ScanValueAndBeginNext(ref cur);
 
+						if (_objects != null && _objects.TryGetValue(idValue, out object? existing))
+						{
+							// Whoa! Either the same object ID was used twice, or this exact area
+							// of the JSON was already read earlier. For example, suppose the user
+							// of SyncLib reads "favorite" from this JSON first, and then reads
+							// "items" afterward:
+							// {
+							//   "items": [{"\f":1, "name":"Joe"}, {"\f":2, "name":"Dan"}],
+							//   "favorite": {"\r":1}
+							// }
+							// Reading "favorite" has the effect of "redirecting" the read operation
+							// to `items[0]`, so when "items" is read later, the object with ID 1
+							// has already been loaded and is normally stored in the _objects table.
+							EndSubObjectAndCommit(ref cur);
+							return (false, existing);
+						}
+						
 						if (idValue.Type == JsonType.Invalid)
 						{
 							throw SyntaxError(PositionOf(cur), name ?? AsciiToString(keySpan));
@@ -286,9 +313,9 @@ namespace Loyc.SyncLib
 			internal void EndSubObject()
 			{
 				var cur = CurPointer;
-				EndSubObjectCore(ref cur);
+				EndSubObjectAndCommit(ref cur);
 			}
-			private void EndSubObjectCore(ref JsonPointer cur)
+			private void EndSubObjectAndCommit(ref JsonPointer cur)
 			{
 				bool hasNextProp = EndObjectAndCommit(ref cur);
 				if (!hasNextProp && cur.Index >= cur.Buf.Length && ReplayDepth > 0) {
