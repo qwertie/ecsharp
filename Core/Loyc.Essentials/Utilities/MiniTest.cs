@@ -517,7 +517,7 @@ namespace Loyc.MiniTest
 		/// <param name="code">A method to run</param>
 		/// <param name="message">The message that will be displayed on failure</param>
 		/// <param name="args">Arguments to be used in formatting the message</param>
-		public static Exception? ThrowsAny(Type expectedExceptionType, Action code, string? message, params object?[]? args)
+		public static Exception ThrowsAny(Type expectedExceptionType, Action code, string? message, params object?[]? args)
 		{
 			try {
 				code();
@@ -527,31 +527,31 @@ namespace Loyc.MiniTest
 				Fail2(message, args, "Throws(): Expected {0}, got {1}", expectedExceptionType.Name, ex.GetType().Name);
 			}
 			Fail2(message, args, "Throws(): Expected {0}, but no exception was thrown", expectedExceptionType.Name);
-			return null; // normally unreachable
+			return null!; // normally unreachable
 		}
 		
-		public static Exception? ThrowsAny(Type expectedExceptionType, Action code)
+		public static Exception ThrowsAny(Type expectedExceptionType, Action code)
 		{
 			return ThrowsAny(expectedExceptionType, code, null, null);
 		}
 
 		[Obsolete("Use ThrowsAny (this method inadvertantly means ThrowsAny anyway)")]
-		public static T? Throws<T>(Action code, string message, params object[] args) where T : Exception
+		public static T Throws<T>(Action code, string message, params object[] args) where T : Exception
 		{
-			return (T?)ThrowsAny(typeof(T), code, message, args);
+			return (T)ThrowsAny(typeof(T), code, message, args);
 		}
 		[Obsolete("Use ThrowsAny (this method inadvertantly means ThrowsAny anyway)")]
-		public static T? Throws<T>(Action code) where T : Exception
+		public static T Throws<T>(Action code) where T : Exception
 		{
-			return (T?)ThrowsAny(typeof(T), code);
+			return (T)ThrowsAny(typeof(T), code);
 		}
-		public static T? ThrowsAny<T>(Action code, string message, params object[] args) where T : Exception
+		public static T ThrowsAny<T>(Action code, string message, params object[] args) where T : Exception
 		{
-			return (T?)ThrowsAny(typeof(T), code, message, args);
+			return (T)ThrowsAny(typeof(T), code, message, args);
 		}
-		public static T? ThrowsAny<T>(Action code) where T : Exception
+		public static T ThrowsAny<T>(Action code) where T : Exception
 		{
-			return (T?)ThrowsAny(typeof(T), code);
+			return (T)ThrowsAny(typeof(T), code);
 		}
 
 		/// <summary>

@@ -160,9 +160,9 @@ namespace Loyc.SyncLib
 				public bool Strict { get; set; } = false;
 
 				/// <summary>If objects are nested more than this many levels deep, an
-				/// exception will be thrown and the reader will refuse to read further.
-				/// This option helps avoid <see cref="StackOverflowException"/> while reading,
-				/// which normally forces a .NET process to terminate.</summary>
+				///   exception will be thrown and the reader will refuse to read further.
+				///   This option helps avoid <see cref="StackOverflowException"/> while reading,
+				///   which normally forces a .NET process to terminate.</summary>
 				public int MaxDepth { get; set; } = 64;
 
 				/// <summary>When you attempt to read a primitive (such as a string or double),
@@ -174,14 +174,14 @@ namespace Loyc.SyncLib
 				///   of a UTF-8 JSON object or list, and whatever value it returns is the 
 				///   conversion result.</summary>
 				/// <remarks>
-				/// The first byte of the Memory buffer is '{' if the input is an object,
-				/// or '[' if the input is a list.
+				///   The first byte of the Memory buffer is '{' if the input is an object,
+				///   or '[' if the input is a list.
 				/// <para/>
-				/// One way of starting to handle the conversion request would be to call 
-				/// <see cref="NewReader"/> to begin parsing the memory buffer.
+				///   One way of starting to handle the conversion request would be to call 
+				///   <see cref="NewReader"/> to begin parsing the memory buffer.
 				/// <para/>
-				/// If the target type is a string, the simplest implementation is to return the 
-				/// JSON itself, which can be accomplished as follows:
+				///   If the target type is a string, the simplest implementation is to return the 
+				///   JSON itself, which can be accomplished as follows:
 				/// <code>
 				/// 	// This code requires .NET Core 3+ (use json.ToArray() otherwise)
 				/// 	var options = new SyncJson.Options {
@@ -195,13 +195,13 @@ namespace Loyc.SyncLib
 				///   type is encountered instead, this property controls how that primitive
 				///   is converted to an object or list (see remarks)</summary>
 				/// <remarks>
-				/// The boolean parameter is true when a list is required.
+				///   The boolean parameter is true when a list is required.
 				/// <para/>
-				/// If this property is left with its default value of null, 
-				/// (1) If the JSON value is a string, ReadStringAsObject is used instead
-				/// (2) If the JSON value is a number, ReadNumberAsObject is used instead
-				/// (3) Otherwise, the value cannot be converted to an object or list, so
-				///     FormatException is thrown.
+				///   If this property is left with its default value of null, 
+				///   (1) If the JSON value is a string, ReadStringAsObject is used instead
+				///   (2) If the JSON value is a number, ReadNumberAsObject is used instead
+				///   (3) Otherwise, the value cannot be converted to an object or list, so
+				///       FormatException is thrown.
 				/// </remarks>
 				public Func<string, ReadOnlyMemory<byte>, bool, Memory<byte>>? PrimitiveToObject { get; set; } = null;
 
@@ -219,29 +219,41 @@ namespace Loyc.SyncLib
 				public string FalseAsString { get; set; } = "false";
 
 				/// <summary>When this property is true and the root object has been read successfully,
-				/// the reader checks whether there is additional non-whitespace text beyond the end 
-				/// of what was read, and throws an exception if extra junk is encountered.</summary>
+				///   the reader checks whether there is additional non-whitespace text beyond the end 
+				///   of what was read, and throws an exception if extra junk is encountered.</summary>
 				public bool VerifyEof { get; set; } = true;
 
 				/// <summary>This property controls <see cref="Reader"/>'s behavior when 
-				/// a request is made to read a field that does not exist. If this property
-				/// is true, the default value of the requested type is returned (null, 0,
-				/// or false). If this property is false, an exception is thrown. 
-				/// Default: false.</summary>
+				///   a request is made to read a field that does not exist. If this property
+				///   is true, the missing field is treated exactly as if it were set to null.
+				///   Default: false.</summary>
 				public bool AllowMissingFields { get; set; } = false;
+
+				/// <summary>This property requests that if a property is set to null but read as 
+				///   a primitive type, the default value of that type should be returned instead
+				///   of throwing an exception. For example, if <see cref="Reader.Sync(FieldId, int)"/>
+				///   encounters a null, it will return 0 instead if throwing an exception if this
+				///   property is true.</summary>
+				/// <seealso cref="ObjectMode.ReadNullAsDefault"/>
+				public bool ReadNullPrimitivesAsDefault { get; set; } = false;
 			}
 
 			#endregion
 		}
 
-		/// <summary>Gets a copy of a string with the first character changed to lowercase.
-		/// Assignable to <see cref="Options.NameConverter"/>.</summary>
+		/// <summary>Converts a string to camelCase format, e.g. "FileSize" => "fileSize" and
+		/// "SQLQuery" => "sqlQuery". Assignable to <see cref="Options.NameConverter"/>.</summary>
 		public static string ToCamelCase(string name)
 		{
 			char c;
 			if (name.Length > 0 && (c = char.ToLowerInvariant(name[0])) != name[0]) {
 				var name2 = new StringBuilder(name);
 				name2[0] = c;
+				for (int i = 1; i < name2.Length && char.IsUpper(name.TryGet(i + 1, 'A')); i++) {
+					if ((c = char.ToLowerInvariant(name2[i])) == name2[i])
+						break;
+					name2[i] = c;
+				}
 				return name2.ToString();
 			}
 			return name;

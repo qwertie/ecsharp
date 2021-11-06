@@ -6,7 +6,6 @@ using System.Drawing;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using Loyc.SyncLib.Impl;
 using System.IO;
 using System.Linq;
 

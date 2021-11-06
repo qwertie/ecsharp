@@ -31,7 +31,7 @@ namespace Loyc.SyncLib.Impl
 		public SyncList(SyncItem syncItem, ObjectMode listMode, int tupleLength)
 		{
 			this._syncItem = syncItem;
-			this._listMode = listMode;
+			this._listMode = listMode | ObjectMode.List;
 			this._tupleLength = tupleLength;
 		}
 
@@ -172,7 +172,7 @@ namespace Loyc.SyncLib.Impl
 		public SyncList(SyncItem syncItem, ObjectMode listMode, int tupleLength, Func<int, List> alloc)
 		{
 			this._syncItem = syncItem;
-			this._listMode = listMode;
+			this._listMode = listMode | ObjectMode.List;
 			this._tupleLength = tupleLength;
 			this._alloc = alloc;
 		}

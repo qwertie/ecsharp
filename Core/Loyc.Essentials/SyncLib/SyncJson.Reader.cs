@@ -61,9 +61,9 @@ namespace Loyc.SyncLib
 
 			public object CurrentObject { set => _s.SetCurrentObject(value); }
 
-			public bool SupportsNextField => false; // TODO: support it!
+			public bool SupportsNextField => true; // TODO: support it!
 
-			public FieldId NextField => FieldId.Missing; // TODO: support it!
+			public FieldId NextField => _s.NextField;
 
 			public (bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1)
 			{
@@ -95,60 +95,64 @@ namespace Loyc.SyncLib
 
 			public string? SyncTypeTag(string? tag) => _s.ReadTypeTag();
 
-			public bool Sync(FieldId name, bool savable) => _s.ReadBoolean(name.Name, false)!.Value;
+			public bool Sync(FieldId name, bool savable) => _s.ReadBoolean(name.Name, false) ?? false;
+
+			// Note: these casts are inherently checked for overflow. Even if "unchecked" 
+			//       were used here, they would still be checked because BigInteger's 
+			//       conversion operators use checked conversion internally.
 
 			public sbyte Sync(FieldId name, sbyte savable)
-				=> checked((sbyte) _s.ReadInteger(name.Name, false)!.Value);
+				=> checked((sbyte) (_s.ReadInteger(name.Name, false) ?? default));
 
 			public byte Sync(FieldId name, byte savable)
-				=> checked((byte) _s.ReadInteger(name.Name, false)!.Value);
+				=> checked((byte) (_s.ReadInteger(name.Name, false) ?? default));
 
 			public short Sync(FieldId name, short savable)
-				=> checked((short) _s.ReadInteger(name.Name, false)!.Value);
+				=> checked((short) (_s.ReadInteger(name.Name, false) ?? default));
 
 			public ushort Sync(FieldId name, ushort savable)
-				=> checked((ushort) _s.ReadInteger(name.Name, false)!.Value);
+				=> checked((ushort) (_s.ReadInteger(name.Name, false) ?? default));
 
 			public int Sync(FieldId name, int savable)
-				=> checked((int) _s.ReadInteger(name.Name, false)!.Value);
+				=> checked((int) (_s.ReadInteger(name.Name, false) ?? default));
 
 			public uint Sync(FieldId name, uint savable)
-				=> checked((uint) _s.ReadInteger(name.Name, false)!.Value);
+				=> checked((uint) (_s.ReadInteger(name.Name, false) ?? default));
 
 			public long Sync(FieldId name, long savable)
-				=> checked((long) _s.ReadInteger(name.Name, false)!.Value);
+				=> checked((long) (_s.ReadInteger(name.Name, false) ?? default));
 
 			public ulong Sync(FieldId name, ulong savable)
-				=> checked((ulong) _s.ReadInteger(name.Name, false)!.Value);
+				=> checked((ulong) (_s.ReadInteger(name.Name, false) ?? default));
 
 			public float Sync(FieldId name, float savable)
-				=> (float) _s.ReadDouble(name.Name, false)!.Value;
+				=> (float) (_s.ReadDouble(name.Name, false) ?? default);
 
 			public double Sync(FieldId name, double savable)
-				=> _s.ReadDouble(name.Name, false)!.Value;
+				=> _s.ReadDouble(name.Name, false) ?? default;
 
 			public decimal Sync(FieldId name, decimal savable)
-				=> _s.ReadDecimal(name.Name, false)!.Value;
+				=> _s.ReadDecimal(name.Name, false) ?? default;
 
 			public BigInteger Sync(FieldId name, BigInteger savable)
-				=> _s.ReadInteger(name.Name, false)!.Value;
+				=> _s.ReadInteger(name.Name, false) ?? default;
 
 			public char Sync(FieldId name, char savable)
-				=> _s.ReadChar(name.Name, false)!.Value;
+				=> _s.ReadChar(name.Name, false) ?? '\0';
 
 			public int Sync(FieldId name, int savable, int bits, bool signed = true)
 			{
-				return (int) _s.ReadInteger(name.Name, false)!.Value;
+				return (int) (_s.ReadInteger(name.Name, false) ?? default);
 			}
 
 			public long Sync(FieldId name, long savable, int bits, bool signed = true)
 			{
-				return (long) _s.ReadInteger(name.Name, false)!.Value;
+				return (long) (_s.ReadInteger(name.Name, false) ?? default);
 			}
 
 			public BigInteger Sync(FieldId name, BigInteger savable, int bits, bool signed = true)
 			{
-				return _s.ReadInteger(name.Name, false)!.Value;
+				return _s.ReadInteger(name.Name, false) ?? default;
 			}
 
 			public List? SyncListBoolImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)

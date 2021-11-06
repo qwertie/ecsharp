@@ -89,6 +89,7 @@ namespace Loyc.Tests
 				new SyncJsonTests(newtonCompat: true,  true,  false),
 				new SyncJsonTests(newtonCompat: false, false, false),
 				new SyncJsonTests(newtonCompat: false, true,  true),
+				new SyncJsonReaderTests(),
 				new InternalListScannerTests(_seed),
 				new ScannableEnumerableTests(_seed),
 				new ScannableEnumerableTests(_seed, 200_000),

@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Loyc.SyncLib;
 
-namespace Loyc.SyncLib.Impl
+namespace Loyc.SyncLib
 {
 	/// <summary>Represents the low-level synchronization behavior for a single list 
 	/// item. <see cref="SyncManagerHelper"/> needs this.</summary>
@@ -21,7 +21,10 @@ namespace Loyc.SyncLib.Impl
 	//{
 	//	void Write(ref SyncManager sync, Symbol? name, T? value);
 	//}
+}
 
+namespace Loyc.SyncLib.Impl
+{
 	/// <summary>An adapter from <see cref="SyncFieldFunc_Ref{S,T}"/> to <see cref="ISyncField{S,T}"/></summary>
 	public struct AsISyncField<SyncManager, T> : ISyncField<SyncManager, T>
 	{

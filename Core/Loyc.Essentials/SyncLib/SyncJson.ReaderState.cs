@@ -54,6 +54,11 @@ namespace Loyc.SyncLib
 
 			byte[] _nameBuf = Empty<byte>.Array;
 
+			public FieldId NextField
+				=> CurPropKey.Type <= JsonType.NotParsed 
+					? FieldId.Missing
+					: DecodeString(CurPropKey);
+
 			Memory<byte> ToNameBuf(ReadOnlySpan<char> name)
 			{
 				int len = WriterState.GetLengthAsBytes(name, false);
@@ -80,7 +85,7 @@ namespace Loyc.SyncLib
 					name = _opt.NameConverter(name);
 
 				// Is it the current property?
-				if (AreEqual(CurPropKey, CurPropKeyType, name))
+				if (AreEqual(in CurPropKey, name))
 					return true;
 
 				return FindPropOutOfOrder(name, originalName, ref v);
@@ -104,15 +109,19 @@ namespace Loyc.SyncLib
 					while (true) {
 						long valuePosition = PositionOf(cur);
 						var skippedValue = ScanValue(ref cur);
-						
+
 						SaveSkippedValue(ref cur.CurPropKey, in skippedValue, valuePosition);
 
 						if (!BeginProp(true, ref cur)) {
-							// end of object, or syntax error
-							int b = cur.ByteOr(']');
-							if (b == ']' || b == '}')
+							// end of object, EOF, or syntax error
+							if (IsCloserAt(cur))
 								break;
-							ThrowError(cur.Index, "JSON syntax error");
+							if (cur.Index >= cur.Buf.Length) {
+								if (_stack.Count != 0)
+									ThrowError(cur.Index, "JSON ended unexpectedly");
+							} else {
+								ThrowError(cur.Index, "JSON syntax error");
+							}
 						}
 
 						if (AreEqual(cur.CurPropKey.Text.Span, cur.CurPropKey.Type, name)) {
@@ -121,25 +130,39 @@ namespace Loyc.SyncLib
 							return true;
 						}
 					}
-				} else if (skippedProps == null)
-					return false;
-
+				} else if (!IsCloserAt(cur)) {
+					throw NewError(cur.Index, "Syntax error in JSON object");
+				}
+				
 				Commit(ref cur);
+
+				if (skippedProps == null)
+					return false;
 
 				// Name was not found in this object. Fallback: if there is a
 				// NameConverter, try looking for the orginalName.
 				nameBytes = ToNameBuf(originalName.AsSpan());
-				return skippedProps?.TryGetValue(new JsonValue(JsonType.String, nameBytes), out v) ?? false;
+				return skippedProps.TryGetValue(new JsonValue(JsonType.String, nameBytes), out v);
 			}
+
+
 
 			private void SaveSkippedValue(ref JsonValue propName, in JsonValue skippedValue, long position)
 			{
-				// TODO: normalize the value! e.g. "\u0041" => "A", otherwise it'll be unfindable
-				
-				if (propName.Type == JsonType.SimpleString)
-					propName.Type = JsonType.String;
-				if (propName.Type == JsonType.String) // remove the quotes
+				if (propName.Type == JsonType.SimpleString) {
 					propName.Text = propName.Text.Slice(1, propName.Text.Length - 2);
+					propName.Type = JsonType.String;
+				} else if (propName.Type == JsonType.String) {
+					// Normalize the value: e.g. "\u0041" => "A", otherwise it'll be unfindable.
+					// This is not very efficient since it takes two passes over the string and
+					// requires multiple memory allocations, but optimizing it isn't worthwhile:
+					//   (1) escape sequences are rare in keys, but this key has 'em
+					//   (2) it's on the slow path anyway - we're optimizing mainly for reading
+					//       fields in the correct order, but the current field is unexpected or
+					//       out of order
+					var utf16 = DecodeString(propName);
+					propName.Text = Encoding.UTF8.GetBytes(utf16);
+				}
 
 				ref var tos = ref _stack.LastRef;
 				tos.SkippedProps ??= new Dictionary<JsonValue, (JsonValue value, long position)>();
@@ -148,8 +171,11 @@ namespace Loyc.SyncLib
 
 			internal (bool Begun, object? Object) BeginSubObject(string? name, ObjectMode mode)
 			{
-				if (!FindProp(name, out (JsonValue value, long position) skippedObject))
+				if (!FindProp(name, out (JsonValue value, long position) skippedObject)) {
+					if (_optRead.AllowMissingFields)
+						return (false, null); 
 					ThrowError(CurPointer.Index, "Property \"{0}\" was missing".Localized(name), fatal: false);
+				}
 
 				bool expectList = (mode & ObjectMode.List) != 0;
 
@@ -254,14 +280,12 @@ namespace Loyc.SyncLib
 						
 						if (idValue.Type == JsonType.Invalid)
 						{
-							throw SyntaxError(PositionOf(cur), name ?? AsciiToString(keySpan));
+							throw SyntaxError(cur.Index, name ?? AsciiToString(keySpan));
 						}
 						else if (idValue.Type < JsonType.FirstCompositeType)
 						{
 							// The ID seems acceptable (though we haven't checked if it's a duplicate)
 							_stack.LastRef.Id = idValue;
-
-							Commit(ref cur);
 
 							// If caller expected a list, there should be a list prop next:
 							// "$values":[...] or "":[...]
@@ -429,7 +453,7 @@ namespace Loyc.SyncLib
 						// TODO: THIS IS BROKEN. WE MUST DECODE ESCAPE SEQUENCES FIRST: \b => 8, \\ => \
 						// ***********************************************************
 						// Interpret as BAIS
-						var output = ByteArrayInString.TryConvertToBytes(text.Span);
+						var output = ByteArrayInString.TryConvertToBytes(text.Span.Slice(1, text.Length - 2));
 						if (output.HasValue) {
 							if (output.Value.AsMemory() is List memory)
 								return memory;
@@ -437,7 +461,7 @@ namespace Loyc.SyncLib
 							return BuildListFromSpan<ListBuilder, List>(output.Value.AsMemory().Span, builder);
 						}
 						// TODO: make this nonfatal by saving skipped value
-						throw SyntaxError(v.position, name, "BAIS byte array");
+						throw SyntaxError((int)(v.position - PositionOfBuf0), name, "BAIS byte array");
 					}
 				}
 				return default;
@@ -484,7 +508,7 @@ namespace Loyc.SyncLib
 							
 						return _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, typeof(string))?.ToString();
 				}
-				return default;
+				return null; // missing property
 			}
 
 			public char? ReadChar(string? name, bool nullable)
@@ -503,7 +527,7 @@ namespace Loyc.SyncLib
 						return checked((char) DecodeNumber(v.value.Text.Span));
 
 					case JsonType.Null:
-						if (!nullable)
+						if (!nullable && !_optRead.ReadNullPrimitivesAsDefault)
 							throw UnexpectedNullError(v.position, name);
 						return null;
 						
@@ -526,7 +550,7 @@ namespace Loyc.SyncLib
 						}
 						return result.ToChar(null);
 				}
-				return default;
+				return null; // missing property
 			}
 
 			public BigInteger? ReadInteger(string? name, bool nullable)
@@ -548,7 +572,7 @@ namespace Loyc.SyncLib
 						return (BigInteger) DecodeNumber(v.value.Text.Span);
 
 					case JsonType.Null:
-						if (!nullable)
+						if (!nullable && !_optRead.ReadNullPrimitivesAsDefault)
 							throw UnexpectedNullError(v.position, name);
 						return null;
 						
@@ -571,7 +595,7 @@ namespace Loyc.SyncLib
 						}
 						return (BigInteger) result.ToDouble(null);
 				}
-				return default;
+				return null; // missing property
 			}
 
 			public double? ReadDouble(string? name, bool nullable)
@@ -591,7 +615,7 @@ namespace Loyc.SyncLib
 						return (double) DecodeNumber(v.value.Text.Span);
 
 					case JsonType.Null:
-						if (!nullable)
+						if (!nullable && !_optRead.ReadNullPrimitivesAsDefault)
 							throw UnexpectedNullError(v.position, name);
 						return null;
 						
@@ -614,7 +638,7 @@ namespace Loyc.SyncLib
 						}
 						return result.ToDouble(null);
 				}
-				return default;
+				return null; // missing property
 			}
 
 			public decimal? ReadDecimal(string? name, bool nullable)
@@ -634,7 +658,7 @@ namespace Loyc.SyncLib
 						return (decimal) DecodeDecimal(v.value.Text.Span);
 
 					case JsonType.Null:
-						if (!nullable)
+						if (!nullable && !_optRead.ReadNullPrimitivesAsDefault)
 							throw UnexpectedNullError(v.position, name);
 						return null;
 						
@@ -657,7 +681,7 @@ namespace Loyc.SyncLib
 						}
 						return result.ToDecimal(null);
 				}
-				return default;
+				return null; // missing property
 			}
 
 			public bool? ReadBoolean(string? name, bool nullable)
@@ -679,7 +703,7 @@ namespace Loyc.SyncLib
 						return DecodeNumber(v.value.Text.Span) != 0;
 
 					case JsonType.Null:
-						if (!nullable)
+						if (!nullable && !_optRead.ReadNullPrimitivesAsDefault)
 							throw NewError(v.position, "\"{0}\" is not nullable, but was null".Localized(name));
 						return null;
 
@@ -702,7 +726,7 @@ namespace Loyc.SyncLib
 						}
 						return result.Value;
 				}
-				return default;
+				return null; // missing property
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -729,7 +753,7 @@ namespace Loyc.SyncLib
 						v.value = ScanValue(ref cur);
 						
 						if (v.value.Type == JsonType.Invalid)
-							throw SyntaxError(CurPosition, name);
+							throw SyntaxError(cur.Index, name);
 
 						BeginNext(ref cur);
 						Commit(ref cur);
@@ -753,6 +777,7 @@ namespace Loyc.SyncLib
 						return false;
 				return true;
 			}
+			private bool AreEqual(in JsonValue value, string? name) => AreEqual(value.Text.Span, value.Type, name);
 			private bool AreEqual(ReadOnlySpan<byte> curProp, JsonType type, string? name)
 			{
 				if (name == null)
@@ -829,10 +854,10 @@ namespace Loyc.SyncLib
 				=> NewError(CurPosition, "Property not found: {0}".Localized(name), false);
 			
 			[MethodImpl(MethodImplOptions.NoInlining)]
-			private Exception UnexpectedTypeError(long position, string? name, string expected, JsonType type)
+			internal Exception UnexpectedTypeError(long position, string? name, string expected, JsonType type)
 			{
 				// TODO: localize all errors exactly once
-				var msg = "Expected {0}, got {1} in JSON".Localized(expected, type);
+				var msg = "Expected {0}, got {1} from JSON".Localized(expected, type);
 				if (name != null)
 					msg += " \"" + name + '"';
 				return NewError(position, msg, false);

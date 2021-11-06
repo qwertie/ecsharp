@@ -47,9 +47,12 @@ namespace Loyc.SyncLib.Impl
 					Debug.Assert(existingItem == null);
 					return item!;
 				}
+				if ((_mode & ObjectMode.ReadNullAsDefault) != 0 && existingItem == null)
+					return default;
 				try {
 					return (T?) existingItem;
-				} catch (InvalidCastException) {
+				} catch (Exception) {
+					// Either InvalidCastException, or NullReferenceException if casting null to struct
 					string? got = existingItem?.GetType().NameWithGenericArgs() ?? "null";
 					throw new InvalidCastException(
 						$"{sync.GetType().Name}: expected {typeof(T).NameWithGenericArgs()}, got {got}");

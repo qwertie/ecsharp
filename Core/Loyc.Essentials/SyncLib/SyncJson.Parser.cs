@@ -299,10 +299,9 @@ namespace Loyc.SyncLib
 			///   This property is always equal to `CurPosition.Index`.
 			/// </summary>
 			protected int CurIndex => _frame.ValueIndex;
-			protected long CurPosition => _frame.PositionOfBuf0 + _frame.ValueIndex;
+			internal long CurPosition => _frame.PositionOfBuf0 + _frame.ValueIndex;
 			
-			protected ReadOnlySpan<byte> CurPropKey => _frame.CurPropKey.Text.Span;
-			protected JsonType CurPropKeyType => _frame.CurPropKey.Type;
+			protected ref JsonValue CurPropKey => ref _frame.CurPropKey;
 
 			/// <summary>Text of the current key (empty if inside a list or at end of object)</summary>
 			protected ReadOnlyMemory<byte> NextFieldKey => _frame.CurPropKey.Text;
@@ -399,12 +398,21 @@ namespace Loyc.SyncLib
 				Debug.Assert((char) cur.ByteOr('!') is '{' or '[');
 			}
 
+			/// <summary>
+			/// This must be called when the list is reached in a deduplicated list such as 
+			///   <c>{ "$id": 7, "$values": [1,2,3,4,5] }</c>.
+			/// This method skips the opening '[' and whitespace, changes the top-of-stack 
+			/// type to <see cref="JsonType.ListWithId"/> instead of creating a new stack 
+			/// entry for the list, sets <see cref="IsInsideList"/>, and calls 
+			/// <see cref="Commit"/>. None of this is done unless the next byte is '['.
+			/// </summary>
 			protected bool TryOpenListValuesAndCommit(ref JsonPointer cur)
 			{
 				if (AutoRead(ref cur) && cur.Byte == '[') {
 					cur.Index++;
 					SkipWhitespace(ref cur);
 					_stack.LastRef.Type = JsonType.ListWithId;
+					IsInsideList = true;
 					Commit(ref cur);
 					return true;
 				}
@@ -423,12 +431,12 @@ namespace Loyc.SyncLib
 			{
 				var type = _stack.Last.Type;
 
-				EndObjectCore(ref cur);
-
-				// TODO: shouldn't the derived class handle this case?
 				if (type == JsonType.ListWithId) {
 					EndObjectCore(ref cur);
+					IsInsideList = false;
 				}
+
+				EndObjectCore(ref cur);
 
 				Pop();
 
@@ -452,6 +460,13 @@ namespace Loyc.SyncLib
 				bool isList;
 				if (!((isList = cur.Byte == ']') || cur.Byte == '}')) {
 					// Skip any remaining properties of the object
+
+					if (!IsInsideList && CurPropKey.Type == JsonType.Invalid) {
+						// Reading the prop key failed earlier, so we should be at the end
+						// of the object, but we're not. Must be a syntax error.
+						goto missingCloser;
+					}
+
 					bool hasMoreData;
 					do {
 						// TODO: document limitation: any single skipped value is limited to 2GB
@@ -459,7 +474,8 @@ namespace Loyc.SyncLib
 						hasMoreData = BeginNext(ref cur);
 					} while (hasMoreData);
 
-					if (!((isList = cur.Byte == ']') || cur.Byte == '}'))
+					var b = cur.ByteOr(0);
+					if (!((isList = b == ']') || b == '}'))
 						goto missingCloser;
 				}
 
@@ -515,14 +531,14 @@ namespace Loyc.SyncLib
 			protected bool BeginProp(bool expectComma, ref JsonPointer cur)
 			{
 				// This must not be called inside a list (but at the beginning of an
-				// object, IsInsideList hasn't been updated)
+				// object, IsInsideList hasn't been set to false yet)
 				Debug.Assert(!IsInsideList || !expectComma);
 				
 				SkipWhitespace(ref cur);
 				if (expectComma) {
 					if (!SkipIf(',', ref cur)) {
 						cur.PropKeyIndex = cur.Index;
-						cur.CurPropKey = default;
+						cur.CurPropKey = new JsonValue(JsonType.Invalid, default);
 						return false;
 					}
 					SkipWhitespace(ref cur);
@@ -534,7 +550,7 @@ namespace Loyc.SyncLib
 				if (key.Type == JsonType.Invalid)
 				{
 					// There's no property here. It's either the end of the object, or a syntax error
-					if ((uint)cur.Index < (uint)cur.Buf.Length && (cur.Byte == '}' || cur.Byte == ']')) {
+					if (IsCloserAt(cur)) {
 						if (expectComma && _optRead.Strict)
 							ThrowError(cur.Index, "Comma is not allowed before '{0}'".Localized((char) cur.Byte));
 						else if (cur.Byte == ']')
@@ -566,6 +582,11 @@ namespace Loyc.SyncLib
 				SkipWhitespace(ref cur);
 
 				return true;
+			}
+
+			protected bool IsCloserAt(in JsonPointer cur)
+			{
+				return (uint)cur.Index < (uint)cur.Buf.Length && (cur.Byte == '}' || cur.Byte == ']');
 			}
 
 			// A method called to move to the next prop or list item after reading a prop/item.
@@ -660,13 +681,18 @@ namespace Loyc.SyncLib
 			#region Error management
 
 			[MethodImpl(MethodImplOptions.NoInlining)]
-			protected Exception SyntaxError(long position, string? name, string context = "JSON value")
+			protected Exception SyntaxError(int index, string? propName, string context = "JSON value")
 			{
 				// TODO: localize all errors exactly once
+				var cur = CurPointer;
 				var msg = "Syntax error in {0}".Localized(context.Localized());
-				if (name != null)
-					msg += " \"" + name + '"';
-				return NewError(position, msg);
+				if (index >= cur.Buf.Length) {
+					Debug.Assert(!AutoRead(ref cur));
+					msg = "Unexpected end-of-file in {0}".Localized(context.Localized());
+				}
+				if (propName != null)
+					msg += " \"" + propName + '"';
+				return NewError(index, msg);
 			}
 
 			private Exception MaxDepthError(int i)
@@ -767,19 +793,19 @@ namespace Loyc.SyncLib
 							}
 						}
 					}
-					else if (b == 'n' && AutoRead(ref cur, 4) && cur[1] == 'u' && cur[2] == 'l' && cur[3] == 'l')
+					else if (b == 'n' && AutoRead(ref cur, 3) && cur[1] == 'u' && cur[2] == 'l' && cur[3] == 'l')
 					{
 						int i = cur.Index;
 						cur.Index += 4;
 						return new JsonValue(JsonType.Null, _frame.Buf.Slice(i, 4));
 					}
-					else if (b == 'f' && AutoRead(ref cur, 5) && cur[1] == 'a' && cur[2] == 'l' && cur[3] == 's' && cur[4] == 'e')
+					else if (b == 'f' && AutoRead(ref cur, 4) && cur[1] == 'a' && cur[2] == 'l' && cur[3] == 's' && cur[4] == 'e')
 					{
 						int i = cur.Index;
 						cur.Index += 5;
 						return new JsonValue(JsonType.False, _frame.Buf.Slice(i, 5));
 					}
-					else if (b == 't' && AutoRead(ref cur, 4) && cur[1] == 'r' && cur[2] == 'u' && cur[3] == 'e')
+					else if (b == 't' && AutoRead(ref cur, 3) && cur[1] == 'r' && cur[2] == 'u' && cur[3] == 'e')
 					{
 						int i = cur.Index;
 						cur.Index += 4;
@@ -824,12 +850,18 @@ namespace Loyc.SyncLib
 										idValue = value;
 								}
 
-								if (!SkipWhitespaceAnd(',', ref cur)) {
+								if (SkipWhitespaceAnd(',', ref cur)) {
+									SkipWhitespace(ref cur);
+									if (SkipIf(closer, ref cur)) {
+										if (_optRead.Strict)
+											ThrowError(cur.Index, "Comma is not allowed before '{0}'".Localized((char) cur.Byte));
+										break;
+									}
+								} else {
 									if (SkipIf(closer, ref cur))
 										break;
 									ThrowError(cur.Index, "Expected ','");
 								}
-								SkipWhitespace(ref cur);
 							}
 						}
 
@@ -1069,6 +1101,11 @@ namespace Loyc.SyncLib
 					case (byte) 'n':  ++cp_i; return '\n';
 					case (byte) 'r':  ++cp_i; return '\r';
 					case (byte) 't':  ++cp_i; return '\t';
+					case (byte) 'v':
+						if (_optRead.Strict)
+							ThrowError(stringStartIndex + cp_i, "JSON does not support the '\\v' escape sequence");
+						++cp_i;
+						return '\v';
 					case (byte) '0':
 						if (_optRead.Strict)
 							ThrowError(stringStartIndex + cp_i, "JSON does not support the '\\0' escape sequence");

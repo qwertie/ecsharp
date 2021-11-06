@@ -69,6 +69,17 @@ namespace Loyc.SyncLib
 		/// When using <see cref="SyncJson.Writer"/>, this mode suppresses newlines.</summary>
 		Compact = 128,
 
+		/// <summary>Requests that when there is a null value in the data stream and
+		///   a value type is being read, the <c>default</c> value should be returned
+		///   instead of throwing an exception.</summary>
+		/// <remarks>Since synchronizers for primitive types (such as Int32) do not
+		///   accept an <see cref="ObjectMode"/> parameter, a separate way of 
+		///   indicating this mode is needed for primitive types. For example, when 
+		///   using <see cref="SyncJson.Reader"/>, you can enable the 
+		///   <see cref="SyncJson.Options.ForReader.ReadNullPrimitivesAsDefault"/>
+		///   option to get a similar effect.</remarks>
+		ReadNullAsDefault = 256,
+
 		// This approach is probably wrong: if caller is specifying the SyncObjectFunc, 
 		// it can just call it directly; if not, the desire to unwrap could be 
 		// indicated somehow when registering the SyncObjectFunc?

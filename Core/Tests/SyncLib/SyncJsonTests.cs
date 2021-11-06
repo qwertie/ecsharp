@@ -130,5 +130,17 @@ namespace Loyc.SyncLib.Tests
 			Assert.AreEqual(a.AdvanceReminder, b.AdvanceReminder);
 			Assert.AreEqual(a.Color, b.Color);
 		}
+
+		[Test]
+		public void ToCamelCaseTest()
+		{
+			Assert.AreEqual("hiThere", SyncJson.ToCamelCase("HiThere"));
+			Assert.AreEqual("_HiThere", SyncJson.ToCamelCase("_HiThere"));
+			Assert.AreEqual("hello", SyncJson.ToCamelCase("hello"));
+			Assert.AreEqual("hello", SyncJson.ToCamelCase("Hello"));
+			Assert.AreEqual("hello", SyncJson.ToCamelCase("HELLO"));
+			Assert.AreEqual("sqlQuery", SyncJson.ToCamelCase("SQLQuery"));
+			Assert.AreEqual("_SQLQuery", SyncJson.ToCamelCase("_SQLQuery"));
+		}
 	}
 }

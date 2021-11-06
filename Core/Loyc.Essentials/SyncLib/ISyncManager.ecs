@@ -195,8 +195,13 @@ namespace Loyc.SyncLib
 		/// <remarks>
 		/// Even if a data stream supports reordering (<see cref="SupportsReordering"/>),
 		/// it may be inefficient to read fields out-of-order. Therefore, if your
-		/// code wants to read as efficiently as possible, it can use this property
-		/// to read the fields in the order they appear. Here is an example:
+		/// code wants to read as efficiently as possible, and it expects to receive
+		/// data out of order, it can use this property to read the fields in the order 
+		/// they appear. Another reason you might read data this way is if you expect
+		/// to read an extremely large object (e.g. 1 GB or more) and you want to avoid
+		/// the extra memory allocations that occur when reading data out of order.
+		/// <para/>
+		/// Here is an example:
 		/// <example>
 		///     public MyObject Sync(ISyncManager sm, MyObject? obj)
 		///     {
@@ -224,7 +229,33 @@ namespace Loyc.SyncLib
 		///         return obj;
 		///     }
 		/// </example>
-		/// There are three things worth noticing about this example.
+		/// <b>Warning</b>: some readers support name conversion, so that the name 
+		/// passed to the Sync methods is not the same as the name used in the data 
+		/// stream. For example, when <see cref="SyncJson.Options.NameConverter"/> 
+		/// is <see cref="SyncJson.ToCamelCase"/>, a name like "Field1" is stored 
+		/// as "field1". But NextField may report the actual string from the 
+		/// datastream ("field1") which will cause code written this way to fail.
+		/// If the camelcase conversion is the only one you intend to support, you
+		/// can work around this problem in your synchronizer with uppercase 
+		/// comparisons:
+		/// <para/>
+		///     string? name;
+		///     while ((name = sm.NextField.Name?.ToUpperInvariant()) != null) {
+		///         if (name == "FIELD1") {
+		///             obj.Field1 = sm.Sync(null, obj.Field1);
+		///         } else if (name == "FIELD2") {
+		///             obj.Field2 = sm.Sync(null, obj.Field2);
+		///         } else if (name == "FIELD3") {
+		///             obj.Field3 = sm.Sync(null, obj.Field3);
+		///         } else {
+		///             throw new Exception("Unexpected field: " + name);
+		///         }
+		///     }
+		/// <para/>
+		/// However, this workaround reduces the performance advantage of reading 
+		/// fields in order.
+		/// <para/>
+		/// There are three other things worth noticing about this example.
 		/// <para/>
 		/// First, this example is only designed to support string field names, so it
 		/// checks the <see cref="NeedsIntegerIds"/> property and falls back on the
@@ -489,8 +520,9 @@ namespace Loyc.SyncLib
 		/// </remarks>
 		object CurrentObject { set; }
 
-		/// <summary>Attempts to begin reading or writing a sub-object.
-		///   Be sure to read the remarks.</summary>
+		/// <summary>Attempts to begin reading or writing a sub-object. This is a
+		///   low-level method; end-users normally should not call it. Be sure to 
+		///   fully read the documentation before use.</summary>
 		/// <param name="name">The name of the property being loaded or saved in
 		///   the current object.</param>
 		/// <param name="childKey">If the current Mode is Saving or Query, this 
