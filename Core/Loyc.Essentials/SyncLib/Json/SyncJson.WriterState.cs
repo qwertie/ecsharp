@@ -15,29 +15,6 @@ namespace Loyc.SyncLib
 {
 	partial class SyncJson
 	{
-		internal partial class WriterStateBase
-		{
-			protected IBufferWriter<byte> _output;
-			//protected Memory<byte> _buf; // a sub-buffer returned from _output
-			protected int _i = 0; // next index within _out to write
-
-			protected ObjectIDGenerator _idGen = new ObjectIDGenerator(); // IDs start at one
-			//SyncTypeRegistry _typeRegistry;
-			//static Dictionary<int, object> _idTable;
-			
-			public WriterStateBase(IBufferWriter<byte> output) => _output = output;
-			protected Span<byte> GetOutBuf(int requiredBytes)
-			{
-				Flush();
-				return _output.GetMemory(requiredBytes).Span;
-			}
-			internal void Flush()
-			{
-				_output.Advance(_i);
-				_i = 0;
-			}
-		}
-
 		/// <summary>The core logic for writing JSON data in UTF-8 format</summary>
 		internal partial class WriterState : WriterStateBase
 		{

@@ -600,6 +600,13 @@ namespace Loyc.SyncLib
 	{
 		##unroll($T in standardItemTypes)
 		{
+			public static $T SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref $T field) 
+				where SyncManager : ISyncManager
+				=> field = sync.Sync(name, field);
+		}
+
+		##unroll($T in standardItemTypes)
+		{
 			static if ($T `staticMatches` byte || $T `staticMatches` char || $T `staticMatches` bool) {
 
 				[@`%newline`, @`%SLComment`(concat(NameWithType(" SyncList methods for ", $T)))]

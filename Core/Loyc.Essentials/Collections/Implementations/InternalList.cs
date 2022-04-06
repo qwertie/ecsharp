@@ -579,10 +579,14 @@ namespace Loyc.Collections.Impl
 		/// <param name="data">State information to be passed to compare()</param>
 		/// <param name="count">Number of items in the list being searched</param>
 		/// <param name="compare">Comparison method that is given the current index 
-		/// to examine and the state parameter "data".</param>
+		/// to examine (first parameter) and the state parameter "data". It needs to 
+		/// return a number less than zero if index should be lowered (e.g. the value 
+		/// at the current index is too high and the list is sorted in ascending order),
+		/// or a number greater than zero if the index should be increased, or zero
+		/// if the value at the current index is equal to whatever is being sought.</param>
 		/// <param name="lowerBound">Whether to find the "lower bound" in case there
-		/// are duplicates in the list. If duplicates exist of the search key k 
-		/// exist, the lowest index of a matching duplicate is returned. This
+		/// are duplicates in the list. If duplicates exist of the value being 
+		/// sought, the lowest index of a matching duplicate is returned. This
 		/// search mode may be slightly slower when a match exists.</param>
 		/// <returns>The index of the matching index, if found. If no exact
 		/// match was found, this method returns the bitwise complement of an

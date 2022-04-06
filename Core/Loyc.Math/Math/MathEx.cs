@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Numerics;
 
 namespace Loyc.Math
 {
@@ -347,13 +348,17 @@ namespace Loyc.Math
 		/// <inheritdoc cref="CountOnes(int)"/>
 		public static int CountOnes(ulong x)
 		{
-			x -= ((x >> 1) & 0x5555555555555555u);
-			x = (((x >> 2) & 0x3333333333333333u) + (x & 0x3333333333333333u));
-			x = (((x >> 4) + x) & 0x0f0f0f0f0f0f0f0fu);
-			x += (x >> 8);
-			x += (x >> 16);
-			int x32 = (int)x + (int)(x >> 32);
-			return (int)(x32 & 0x0000007f);
+			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472 || NET48
+				x -= ((x >> 1) & 0x5555555555555555u);
+				x = (((x >> 2) & 0x3333333333333333u) + (x & 0x3333333333333333u));
+				x = (((x >> 4) + x) & 0x0f0f0f0f0f0f0f0fu);
+				x += (x >> 8);
+				x += (x >> 16);
+				int x32 = (int)x + (int)(x >> 32);
+				return (int)(x32 & 0x0000007f);
+			#else
+				return BitOperations.PopCount(x);
+			#endif
 		}
 		#endregion
 
@@ -433,91 +438,74 @@ namespace Loyc.Math
 
 		#endregion
 
-		#region FindFirstOne, FindLastOne, FindFirstZero, FindLastZero
-		/// <summary>Returns the bit position of the first '1' bit in a uint, or -1 
+		#region PositionOfLeastSignificantOne, PositionOfMostSignificantZero, etc.
+
+		[Obsolete("Renamed to PositionOfLeastSignificantOne")]
+		public static int FindFirstOne(uint i) => PositionOfLeastSignificantOne(i);
+		[Obsolete("Renamed to PositionOfMostSignificantOne")]
+		public static int FindLastOne(uint i) => PositionOfMostSignificantOne(i);
+		[Obsolete("Renamed to PositionOfLeastSignificantZero")]
+		public static int FindFirstZero(uint i) => PositionOfLeastSignificantZero(i);
+		[Obsolete("Renamed to PositionOfMostSignificantZero")]
+		public static int FindLastZero(uint i) => PositionOfMostSignificantZero(i);
+
+		/// <summary>Returns the bit position of the least-significant '1' bit in a uint, or 32 
 		/// the input is zero.</summary>
-		public static int FindFirstOne(uint i)
+		public static int PositionOfLeastSignificantOne(uint i)
 		{
-			int result = 0;
-			if ((ushort)i == 0)
-			{
-				i >>= 16;
-				result += 16;
-			}
-			if ((byte)i == 0)
-			{
-				i >>= 8;
-				result += 8;
-			}
-			if ((i & 0xF) == 0)
-			{
-				i >>= 4;
-				result += 4;
-			}
-			if ((i & 3) == 0)
-			{
-				i >>= 2;
-				result += 2;
-			}
-			if ((i & 1) == 0)
-			{
-				result += 1;
-				if ((i & 2) == 0)
+			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472 || NET48
+				int result = 0;
+				if ((ushort)i == 0)
 				{
-					Debug.Assert(result == 31);
-					return -1;
+					i >>= 16;
+					result += 16;
 				}
-			}
-			return result;
+				if ((byte)i == 0)
+				{
+					i >>= 8;
+					result += 8;
+				}
+				if ((i & 0xF) == 0)
+				{
+					i >>= 4;
+					result += 4;
+				}
+				if ((i & 3) == 0)
+				{
+					i >>= 2;
+					result += 2;
+				}
+				if ((i & 1) == 0)
+				{
+					result += 1;
+					if ((i & 2) == 0)
+					{
+						Debug.Assert(result == 31);
+						return 32;
+					}
+				}
+				return result;
+			#else
+				return BitOperations.TrailingZeroCount(i);
+			#endif
 		}
 
-		/// <summary>Returns the bit position of the first '0' bit in a uint, or -1
+		/// <summary>Returns the bit position of the least-significant '0' bit in a uint, or 32
 		/// if there are no zeros.</summary>
-		public static int FindFirstZero(uint i)
+		public static int PositionOfLeastSignificantZero(uint i)
 		{
-			return FindFirstOne(~i);
+			return PositionOfLeastSignificantOne(~i);
 		}
 
-		/// <summary>Returns the bit position of the first '1' bit in a uint, or -1 
+		public static int LeadingZeroCount(uint i) => G.LeadingZeroCount(i);
+
+		/// <summary>Returns the bit position of the most-significant '1' bit in a uint, or -1 
 		/// the input is zero.</summary>
-		public static int FindLastOne(uint i)
-		{
-			int result = 31;
-			if (i >> 16 == 0)
-			{
-				i <<= 16;
-				result -= 16;
-			}
-			if (i >> 24 == 0)
-			{
-				i <<= 8;
-				result -= 8;
-			}
-			if (i >> 28 == 0)
-			{
-				i <<= 4;
-				result -= 4;
-			}
-			if (i >> 30 == 0)
-			{
-				i <<= 2;
-				result -= 2;
-			}
-			if (i >> 31 == 0)
-			{
-				result -= 1;
-				if (i == 0)
-				{
-					Debug.Assert(result == 0);
-					return -1;
-				}
-			}
-			return result;
-		}
+		public static int PositionOfMostSignificantOne(uint i) => G.PositionOfMostSignificantOne(i);
 
-		public static int FindLastZero(uint i)
+		public static int PositionOfMostSignificantZero(uint i)
 		{
-			return FindLastOne(~i);
+			return PositionOfMostSignificantOne(~i);
 		}
 		#endregion
 

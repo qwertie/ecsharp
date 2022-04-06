@@ -35,7 +35,7 @@ namespace Loyc.SyncLib.Tests
 						VerifyEof = false,
 					}
 				};
-				_saveMode = ObjectMode.Deduplicate | ObjectMode.FixedSizeNumbers;
+				_saveMode = ObjectMode.Deduplicate;
 			}
 			_options.NewtonsoftCompatibility = newtonCompat;
 			_options.Write.Minify = minify;

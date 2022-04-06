@@ -13,6 +13,7 @@ using Loyc.Collections;
 using System.Runtime.CompilerServices;
 using System.Reflection;
 using System.Linq.Expressions;
+using System.Numerics;
 
 namespace Loyc
 {
@@ -269,16 +270,20 @@ namespace Loyc
 		}
 
 		#region Math methods don't really belong here
-		// These methods are used by Loyc.Syntax which doesn't reference Loyc.Math and 
-		// therefore can't use MathEx
+		// These methods are used by Loyc.Syntax / Loyc.SyncLib, which don't reference
+		// Loyc.Math and therefore can't use MathEx.
 
 		/// <summary>Returns the number of bits that are set in the specified integer.</summary>
 		public static int CountOnes(byte x)
 		{
-			int X = x;
-			X -= ((X >> 1) & 0x55);
-			X = (((X >> 2) & 0x33) + (X & 0x33));
-			return (X & 0x0F) + (X >> 4);
+			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472 || NET48
+				int X = x;
+				X -= ((X >> 1) & 0x55);
+				X = (((X >> 2) & 0x33) + (X & 0x33));
+				return (X & 0x0F) + (X >> 4);
+			#else
+				return BitOperations.PopCount(x);
+			#endif
 		}
 
 		/// <summary>Returns the number of bits that are set in the specified integer.</summary>
@@ -290,15 +295,19 @@ namespace Loyc
 		/// <inheritdoc cref="CountOnes(int)"/>
 		public static int CountOnes(uint x)
 		{
-			// 32-bit recursive reduction using SWAR... but first step 
-			// is mapping 2-bit values into sum of 2 1-bit values in 
-			// sneaky way
-			x -= ((x >> 1) & 0x55555555);
-			x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
-			x = (((x >> 4) + x) & 0x0f0f0f0f);
-			x += (x >> 8);
-			x += (x >> 16);
-			return (int)(x & 0x0000003f);
+			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472 || NET48
+				// 32-bit recursive reduction using SWAR... but first step 
+				// is mapping 2-bit values into sum of 2 1-bit values in 
+				// sneaky way
+				x -= ((x >> 1) & 0x55555555);
+				x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
+				x = (((x >> 4) + x) & 0x0f0f0f0f);
+				x += (x >> 8);
+				x += (x >> 16);
+				return (int)(x & 0x0000003f);
+			#else
+				return BitOperations.PopCount(x);
+			#endif
 		}
 
 
@@ -314,12 +323,16 @@ namespace Loyc
 		/// <inheritdoc cref="Log2Floor(int)"/>
 		public static int Log2Floor(uint x)
 		{
-			x |= (x >> 1);
-			x |= (x >> 2);
-			x |= (x >> 4);
-			x |= (x >> 8);
-			x |= (x >> 16);
-			return (CountOnes(x) - 1);
+			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472 || NET48
+				x |= (x >> 1);
+				x |= (x >> 2);
+				x |= (x >> 4);
+				x |= (x >> 8);
+				x |= (x >> 16);
+				return (CountOnes(x) - 1);
+			#else
+				return BitOperations.Log2(x);
+			#endif
 		}
 		/// <summary>
 		/// Returns the floor of the base-2 logarithm of x. e.g. 1024 -> 10, 1000 -> 9
@@ -334,6 +347,56 @@ namespace Loyc
 			if (x < 0)
 				return -1;
 			return Log2Floor((uint)x);
+		}
+
+		public static int LeadingZeroCount(uint i)
+		{
+			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472 || NET48
+				return 31 - PositionOfMostSignificantOne(i);
+			#else
+				return BitOperations.LeadingZeroCount(i);
+			#endif
+		}
+
+		/// <summary>Returns the bit position of the most-significant '1' bit in a uint, or -1 
+		/// the input is zero.</summary>
+		public static int PositionOfMostSignificantOne(uint i)
+		{
+			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472 || NET48
+				int result = 31;
+				if (i >> 16 == 0)
+				{
+					i <<= 16;
+					result -= 16;
+				}
+				if (i >> 24 == 0)
+				{
+					i <<= 8;
+					result -= 8;
+				}
+				if (i >> 28 == 0)
+				{
+					i <<= 4;
+					result -= 4;
+				}
+				if (i >> 30 == 0)
+				{
+					i <<= 2;
+					result -= 2;
+				}
+				if (i >> 31 == 0)
+				{
+					result -= 1;
+					if (i == 0)
+					{
+						Debug.Assert(result == 0);
+						return -1;
+					}
+				}
+				return result;
+			#else
+				return 31 - BitOperations.LeadingZeroCount(i);
+			#endif
 		}
 
 		#region ShiftLeft and ShiftRight for floating point

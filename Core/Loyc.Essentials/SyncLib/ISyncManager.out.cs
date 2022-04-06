@@ -558,6 +558,51 @@ namespace Loyc.SyncLib
 
 	public static partial class SyncManagerExt
 	{
+		public static bool SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref bool field) where SyncManager: ISyncManager => 
+		  
+		  field = sync.Sync(name, field);
+		public static sbyte SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref sbyte field) where SyncManager: ISyncManager => 
+		  
+		  field = sync.Sync(name, field);
+		public static byte SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref byte field) where SyncManager: ISyncManager => 
+		  
+		  field = sync.Sync(name, field);
+		public static short SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref short field) where SyncManager: ISyncManager => 
+		  
+		  field = sync.Sync(name, field);
+		public static ushort SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref ushort field) where SyncManager: ISyncManager => 
+		  
+		  field = sync.Sync(name, field);
+		public static int SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref int field) where SyncManager: ISyncManager => 
+		  
+		  field = sync.Sync(name, field);
+		public static uint SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref uint field) where SyncManager: ISyncManager => 
+		  
+		  field = sync.Sync(name, field);
+		public static long SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref long field) where SyncManager: ISyncManager => 
+		  
+		  field = sync.Sync(name, field);
+		public static ulong SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref ulong field) where SyncManager: ISyncManager => 
+		  
+		  field = sync.Sync(name, field);
+		public static float SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref float field) where SyncManager: ISyncManager => 
+		  
+		  field = sync.Sync(name, field);
+		public static double SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref double field) where SyncManager: ISyncManager => 
+		  
+		  field = sync.Sync(name, field);
+		public static decimal SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref decimal field) where SyncManager: ISyncManager => 
+		  
+		  field = sync.Sync(name, field);
+		public static BigInteger SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref BigInteger field) where SyncManager: ISyncManager => 
+		  
+		  field = sync.Sync(name, field);
+		public static char SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref char field) where SyncManager: ISyncManager => 
+		  
+		  field = sync.Sync(name, field);
+		public static string? SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref string? field) where SyncManager: ISyncManager => 
+		  
+		  field = sync.Sync(name, field);
 
 		
 		// SyncList methods for Bool

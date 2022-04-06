@@ -17,11 +17,21 @@ namespace Loyc.SyncLib
 	partial class SyncJson
 	{
 		/// <summary>
-		/// Options that control general behavior of <see cref="SyncJson.Reader"/> and 
-		/// <see cref="SyncJson.Writer"/>. Note: some behaviors such as deduplication 
-		/// (including support for cyclic references) are controlled at the level of
-		/// individual fields, and such options are not duplicated here.
+		///   Options that control general behavior of <see cref="SyncJson.Reader"/> and 
+		///   <see cref="SyncJson.Writer"/>. Note: some behaviors such as deduplication 
+		///   (including support for cyclic references) are controlled at the level of
+		///   individual fields, and such options are not duplicated here.
 		/// </summary>
+		/// <remarks>
+		///   <see cref="Reader"/> and <see cref="Writer"/> do not make a copy of this
+		///   object before using it, so for the most part it is possible to change 
+		///   these options after constructing the reader/writer and have those changes 
+		///   take effect somewhere in the middle of a JSON object. However, certain 
+		///   options are cached for performance reasons, e.g. <see cref="Writer"/> 
+		///   caches the UTF-8 version of <see cref="Options.ForWriter.Indent"/> and 
+		///   <see cref="Options.ForWriter.Newline"/> during initialization, and 
+		///   therefore will not notice if these properties change later.
+		/// </remarks>
 		public class Options
 		{
 			public Options(bool compactMode = false) => Write.Minify = compactMode;

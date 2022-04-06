@@ -55,16 +55,6 @@ namespace Loyc.SyncLib
 		/// TODO: figure out how it will work and say something about that here</summary>
 		//DynamicType = 16,
 		
-		/// <summary>Requests that numeric fields of the object should use a fixed-size
-		/// representation, if available. When using <see cref="SyncJson"/>, this has 
-		/// no effect.</summary>
-		FixedSizeNumbers = 32,
-
-		/// <summary>Requests that numeric fields of the object should use a fixed-size
-		/// representation, if available. When using <see cref="SyncJson"/>, this has 
-		/// no effect.</summary>
-		VariableSizeNumbers = 64,
-
 		/// <summary>Requests that compact formatting be used when writing this object.
 		/// When using <see cref="SyncJson.Writer"/>, this mode suppresses newlines.</summary>
 		Compact = 128,

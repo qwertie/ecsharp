@@ -27,10 +27,12 @@ namespace Benchmark
 				new Pair<string,Action>("CPTrie (strings)", () => CPTrieBenchmark.BenchmarkStrings(words)),
 				new Pair<string,Action>("CPTrie (integers)", CPTrieBenchmark.BenchmarkInts),
 				new Pair<string,Action>("Byte array access", Benchmarks.ByteArrayAccess),
+				#if OXYPLOT
 				new Pair<string,Action>("AList benchmarks (with chart Form)", 
 					() => new ListBenchmarks { TestDLists = false, TestOther = false }.Run(EzChartForm.StartOnNewThread(true))),
 				new Pair<string,Action>("All collection benchmarks (with chart Form)", 
 					() => new ListBenchmarks().Run(EzChartForm.StartOnNewThread(true))),
+				#endif
 			});
 		}
 

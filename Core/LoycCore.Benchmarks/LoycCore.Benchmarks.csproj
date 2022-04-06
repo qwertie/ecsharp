@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>9.0</LangVersion>
+    <OutputPath>..\Bin\$(Configuration)\</OutputPath>
+    <OutputType>Exe</OutputType>
+    <NoWarn>1591, 1573, 0419</NoWarn>
+    <SignAssembly>false</SignAssembly>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>Benchmark</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Benchmarks\Oxyplot\**" />
+    <EmbeddedResource Remove="Benchmarks\Oxyplot\**" />
+    <None Remove="Benchmarks\Oxyplot\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj" />
+    <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj" />
+    <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.csproj" />
+    <ProjectReference Include="..\Loyc.Math\Loyc.Math.csproj" />
+    <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.csproj" />
+    <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Resources\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

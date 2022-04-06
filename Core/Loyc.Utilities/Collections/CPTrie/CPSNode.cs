@@ -1,4 +1,4 @@
-﻿// http://www.codeproject.com/KB/recipes/cptrie.aspx
+// http://www.codeproject.com/KB/recipes/cptrie.aspx
 namespace Loyc.Collections.Impl
 {
 	using System;
@@ -651,7 +651,7 @@ namespace Loyc.Collections.Impl
 			}
 			else
 			{
-				int v = MathEx.FindFirstZero(_valuesUsed);
+				int v = MathEx.PositionOfLeastSignificantZero(_valuesUsed);
 				if (v >= _values.Length)
 					_values = InternalList.CopyToNewArray(_values, _values.Length, _values.Length + 1 + (_values.Length >> 1));
 				_values[v] = value;

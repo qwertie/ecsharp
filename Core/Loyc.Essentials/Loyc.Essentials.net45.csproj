@@ -229,6 +229,13 @@
     <Compile Include="Collections\Implementations\InternalList.cs" />
     <Compile Include="Collections\Implementations\WeakKeyComparer.cs" />
     <Compile Include="Collections\Implementations\WeakKeyDictionary.cs" />
+    <Compile Include="SyncLib\Binary\SyncBinary.cs" />
+    <Compile Include="SyncLib\Binary\SyncBinary.FieldIdMode.cs" />
+    <Compile Include="SyncLib\Binary\SyncBinary.Options.cs" />
+    <Compile Include="SyncLib\Binary\SyncBinary.Reader.cs" />
+    <Compile Include="SyncLib\Binary\SyncBinary.ReaderState.cs" />
+    <Compile Include="SyncLib\Binary\SyncBinary.Writer.cs" />
+    <Compile Include="SyncLib\Binary\SyncBinary.WriterState.cs" />
     <Compile Include="SyncLib\FieldId.cs" />
     <Compile Include="SyncLib\Impl\IListBuilder.cs" />
     <Compile Include="SyncLib\Impl\ISyncField.cs" />
@@ -248,22 +255,23 @@
       <DependentUpon>ISyncManager.ecs</DependentUpon>
     </Compile>
     <Compile Include="SyncLib\ObjectMode.cs" />
-    <Compile Include="SyncLib\SyncJson.Options.cs" />
-    <Compile Include="SyncLib\SyncJson.out.cs">
+    <Compile Include="SyncLib\Json\SyncJson.Options.cs" />
+    <Compile Include="SyncLib\Json\SyncJson.out.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>SyncJson.ecs</DependentUpon>
     </Compile>
-    <Compile Include="SyncLib\SyncJson.Parser.cs" />
-    <Compile Include="SyncLib\SyncJson.Reader.cs" />
-    <Compile Include="SyncLib\SyncJson.ReaderState.cs" />
-    <Compile Include="SyncLib\SyncJson.Writer.cs" />
-    <Compile Include="SyncLib\SyncJson.WriterState.cs" />
+    <Compile Include="SyncLib\Json\SyncJson.Parser.cs" />
+    <Compile Include="SyncLib\Json\SyncJson.Reader.cs" />
+    <Compile Include="SyncLib\Json\SyncJson.ReaderState.cs" />
+    <Compile Include="SyncLib\Json\SyncJson.Writer.cs" />
+    <Compile Include="SyncLib\Json\SyncJson.WriterState.cs" />
     <Compile Include="SyncLib\SyncManagerExt.cs" />
     <Compile Include="SyncLib\SyncMode.cs" />
     <Compile Include="SyncLib\SyncObjectList.cs" />
     <Compile Include="SyncLib\SyncType.cs" />
     <Compile Include="SyncLib\TypeStuff.cs" />
+    <Compile Include="SyncLib\Impl\WriterStateBase.cs" />
     <Compile Include="Utilities\ByteArrayInString.cs" />
     <Compile Include="Utilities\G.cs" />
     <Compile Include="Utilities\EzStopwatch.cs" />
@@ -274,7 +282,7 @@
       <Generator>LeMP</Generator>
       <LastGenOutput>ISyncManager.out.cs</LastGenOutput>
     </None>
-    <None Include="SyncLib\SyncJson.ecs">
+    <None Include="SyncLib\Json\SyncJson.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>SyncJson.out.cs</LastGenOutput>
     </None>
