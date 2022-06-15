@@ -106,7 +106,10 @@ namespace Loyc.Syntax
 			if (newTargetStart != (ushort)newTargetStart)
 			{
 				// Switch to StdComplexCallNode because new value of _targetOffs won't fit in ushort
-				return new StdComplexCallNode(Target, Args, new SourceRange(RAS.Source, startIndex, endIndex - startIndex), RAS.Style);
+				if (HasAttrs)
+					return new StdComplexCallNodeWithAttrs(Attrs, Target, Args, new SourceRange(RAS.Source, startIndex, endIndex - startIndex), RAS.Style);
+				else
+					return new StdComplexCallNode(Target, Args, new SourceRange(RAS.Source, startIndex, endIndex - startIndex), RAS.Style);
 			}
 			else
 			{
