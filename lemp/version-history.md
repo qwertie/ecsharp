@@ -6,6 +6,38 @@ layout: article
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v30.1: June 15, 2022 ###
+
+- Potentially breaking: support for .NET 4.5 has been removed (.NET 4.7 is still supported temporarily)
+
+### v30.0.0: January 26, 2021 (unreleased) ###
+
+### Enhanced C# syntax / engine ###
+
+- There is now a LeMP macro that converts array literals to C# `new[] {...}` expressions. This includes byte arrays, which are no longer handled by the EC# printer itself.
+- Added support for custom literals in the in EC# lexer
+- `ParseHelpers.UnescapeChar` now allows `\U` escape sequences to be any length between 1 and 6 (previously the length was required to be 4, 5, or 6). This affects both EC# and LES. Rationale: it's a bit simpler to explain this behavior, and it eliminates the main reason for having a separate two-digit escape sequence \xNN (though \x is certainly still supported)
+- Added `IParsingOptions.LiteralParser` property, and added support for it in the LES3 and EC# parsers.
+- `StandardLiteralHandlers` or a custom handler table can now be used to print literals for which support is not built into EC# (note: handlers for built-in types generally take priority over custom handlers.)
+- Introduced `EcsFacts` class for reporting miscellaneous information about EC# operators, statements, types, etc.
+- Fix regression: Printing of quotes in @"verbatim" string literals was broken in v2.9.0. By example, the string `@"("")"` was printed as `@"(")"`, which is a syntax error.
+- Bug fix: negative hex literals like `-0x1` would print as `0xffffffff`
+  - A side effect is that hex letters are now capitalized. Also, very large numbers will get one `_` separator, e.g. `0x98_76543210uL`.
+
+#### LeMP engine ####
+
+- Add concept of `LexicalMacroAttribute.DeprecatedNames` as a first-class feature, where _names_ are deprecated rather than _macros_. A _macro_ itself is not deprecated unless all names are deprecated in all namespaces.
+- LeMP reports when a deprecated macro is used along with the message in `LexicalMacroAttribute.DeprecationMessage`. If no message is provided, LeMP will attempt to detect a different name that is not deprecated, or a different namespace to which the macro has moved, and tell the user to use the new name or namespace (it's not designed to detect the new name if the namespace and name both changed.)
+- LeMP will automatically import LeMP.ecs in .ecs files, but in other files such as .les, the user must import these macros with `#importMacros(LeMP.ecs);` In general, LeMP will auto-import `LeMP.ext`, where `ext` is the file extension converted to lowercase.
+
+#### LeMP macros: ####
+
+- Potentially breaking: all macros that are at least vaguely C#-specific have been moved to a new namespace called `LeMP.ecs`, which is auto-imported in .ecs files
+- All macros in `LeMP.Prelude.Les`, `LeMP.Prelude.Les3`, and `LeMP.Les3.To.CSharp` are deprecated. LeMP will tell users to import the new namespaces, `LeMP.les2.to.cs` and `LeMP.les3.to.cs`. The new namespace names are chosen to resemble the auto-imported namespaces such as `LeMP.les2` (even though `LeMP.les2` doesn't actually exist - this namespace, if it did exist, would be for macros that are specific to LES2 but not related to conversion to a specific other language.)
+- `define(pattern) {...}` will now ignore braces around the pattern
+- Enhanced `#preprocessChild` with a new syntax for selecting subtree "paths" in its first argument
+- `concat` macros now preprocess their arguments
+
 ### v2.9.0.3 (a.k.a. v29): January 13, 2021 ###
 
 Potentially breaking changes:
