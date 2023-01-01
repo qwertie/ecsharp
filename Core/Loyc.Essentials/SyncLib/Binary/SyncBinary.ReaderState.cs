@@ -4,23 +4,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Loyc.SyncLib
+namespace Loyc.SyncLib;
+
+partial class SyncBinary
 {
-	partial class SyncBinary
+	internal class ReaderState
 	{
-		internal class ReaderState
+
+		public bool IsInsideList;
+
+		public bool? ReachedEndOfList { get; internal set; }
+		public int Depth { get; internal set; }
+		public FieldId NextField { get; internal set; }
+
+		internal void SetCurrentObject(object value)
 		{
-
-			public bool IsInsideList;
-
-			public bool? ReachedEndOfList { get; internal set; }
-			public int Depth { get; internal set; }
-			public FieldId NextField { get; internal set; }
-
-			internal void SetCurrentObject(object value)
-			{
-				throw new NotImplementedException();
-			}
+			throw new NotImplementedException();
 		}
 	}
 }

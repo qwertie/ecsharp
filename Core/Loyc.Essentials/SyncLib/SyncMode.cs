@@ -12,7 +12,9 @@ namespace Loyc.SyncLib
 		/// <summary>Data is being saved. Your sync function should save the object 
 		///   provided. This mode could also used for synchronization behaviors in 
 		///   which a one-way synchronization occurs from the object to an 
-		///   underlying data store, e.g. updating some kind of virtual DOM.</summary>
+		///   underlying data store, e.g. updating some kind of virtual DOM.
+		///   In this mode, the return value of every Sync function must be the same
+		///   value that was passed into the <c>savable</c> parameter.</summary>
 		Writing = 2, 
 		/// <summary>A schema is being saved. Similar to the Loading mode, your 
 		///   sync function will not be given an object value in this mode. Your 

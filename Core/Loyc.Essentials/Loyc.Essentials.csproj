@@ -4,7 +4,7 @@
          In Visual Studio, use the dropdown at the top-left of any .cs file to choose netcoreapp3.1 -->
     <TargetFrameworks>netcoreapp3.1;netstandard2.0;netstandard2.1</TargetFrameworks>
     <Nullable>enable</Nullable>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>10.0</LangVersion>
     <OutputPath>..\Bin\$(Configuration)\</OutputPath>
     <NoWarn>1591, 1573, 0419, 1587, 1574</NoWarn>
     <SignAssembly>true</SignAssembly>
