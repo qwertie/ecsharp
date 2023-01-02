@@ -138,7 +138,11 @@ namespace Loyc.SyncLib.Tests
 		{
 			var family = Family.DemoFamily();
 
-			for (int iteration = 1; iteration <= 2; iteration++) {
+			// This test writes a Demo Family to JSON in two different ways, either with lists
+			// deduplicated or not deduplicated. In both cases we verify that SyncLib and
+			// Newtonsoft produce equivalent output (though they don't produce the _same_ output).
+			for (int iteration = 1; iteration <= 2; iteration++)
+			{
 				bool deduplicateLists = iteration == 2;
 
 				var jsonSerializer = new JsonSerializer

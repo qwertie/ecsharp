@@ -300,8 +300,8 @@ namespace Loyc.SyncLib
 		FieldId NextField { get; }
 
 		/// <summary>Some serializers do not support this method (see remarks).
-		/// If the method is supported, it determines whether a field with a specific
-		/// name exists, and if so, what type it has.</summary>
+		///   If the method is supported, it determines whether a field with a specific
+		///   name exists, and if so, what type it has.</summary>
 		/// <param name="name">Name to search for in the current stream. If this 
 		///   parameter is <see cref="FieldId.Missing"/> it is interpreted as a request 
 		///   to get the type of the next field or the next list item, which is only 
@@ -329,10 +329,10 @@ namespace Loyc.SyncLib
 		///   (2) name is <see cref="FieldId.Missing"/> and <see cref="SupportsNextField"/>.
 		///   If these conditions are not met, the method normally returns SyncType.Unknown.
 		///   <para/>
-		///   The SyncType enumeration has a collection of common types that are supported
-		///   by most data formats. However, some formats may not support all types, or
-		///   may store data in a different form than you might reasonably expect. For
-		///   example, when a byte array is stored in JSON, it is stored as a string by
+		///   The <see cref="SyncType"/> enumeration has a collection of common types that 
+		///   are supported by most data formats. However, some formats may not support all 
+		///   types, or may store data in a different form than you might reasonably expect. 
+		///   For example, when a byte array is stored in JSON, it is stored as a string by
 		///   default. When reading a byte array from JSON, GetFieldType will report that  
 		///   the type is SyncType.String because even though the reader is capable of 
 		///   decoding the string as a byte array, it cannot know that the string 
@@ -344,10 +344,11 @@ namespace Loyc.SyncLib
 		///   SyncType.String. This indicates that the data tream contains a String that 
 		///   is potentially convertible to SyncType.ByteList, although the conversion is 
 		///   not guaranteed to work. If you then read this field by calling
-		///   Sync(name, (byte[]) null) and it turns out that the string cannot be 
+		///   <c>Sync(name, (byte[]) null)</c> and it turns out that the string cannot be 
 		///   interpreted as a byte array, an exception will be thrown. After catching
 		///   this exception, it may or may not be possible to continue reading from the 
-		///   stream, depending on how the <see cref="ISyncManager"/> was implemented.
+		///   stream, depending on whether the <see cref="ISyncManager"/> was designed to
+		///   keep working after that kind of failure.
 		///   <para/>
 		///   If a value is not implicitly convertible to the expectedType, GetFieldType
 		///   should return SyncType.Missing even if the conversion is supported.
@@ -469,9 +470,8 @@ namespace Loyc.SyncLib
 		/// <summary>Sets the "current object" reference. This method must be called 
 		///   when deserializing object graphs with cycles (see remarks).</summary>
 		/// <remarks>
-		/// To understand why this property is needed to help deserialize object 
-		/// graphs that contain cycles, consider a Person class that has a reference 
-		/// to all the Siblings of the person:
+		/// To understand why this property is needed, consider a Person class that 
+		/// has a reference to all the Siblings of the person:
 		/// <code>
 		///   class Person
 		///   {
@@ -492,18 +492,17 @@ namespace Loyc.SyncLib
 		///       obj.Siblings = sync.SyncList("Siblings", obj.Siblings, SyncPerson);
 		///   }
 		/// </code>
-		/// But this function cannot load a Person correctly! To understand this,
-		/// let's think about what <c>SyncList</c> does: it reads a list of Persons
-		/// (synchronously), and returns a <c>Person[]</c>. But each Person in that 
-		/// array contains a reference back to the current person. If Jack is being 
-		/// loaded, then the <c>Person[]</c> contains Jill, which has a reference back 
-		/// to Jack.
+		/// But it's impossible for this function to load a Person correctly! To 
+		/// understand why, let's think about what <c>SyncList</c> does: it reads a 
+		/// list of Persons (synchronously), and returns a <c>Person[]</c>. But each 
+		/// Person in that array contains a reference back to the current person. If 
+		/// Jack is being loaded, then the <c>Person[]</c> contains Jill, which has a 
+		/// reference back to Jack.
 		/// <para/>
-		/// But it is impossible for <c>SyncList</c> to return an object that has a 
-		/// reference to Jack, because the reference to Jack only exists in the local 
-		/// variable <c>obj</c>. So as the <c>SyncList</c> method deserializes Jill, 
-		/// Jill's synchronizer must fail while reading the list of siblings, because
-		/// no reference to Jack is available.
+		/// But <c>SyncList</c> can't return an array that has a reference to Jack, 
+		/// because the reference to Jack only exists in the local variable <c>obj</c>.
+		/// So as the <c>SyncList</c> method deserializes Jill, Jill's synchronizer 
+		/// must fail while reading Jill's list of siblings.
 		/// <para/>
 		/// To fix this, set <c>CurrentObject</c> before calling <c>SyncList</c>:
 		/// <code>
@@ -515,8 +514,8 @@ namespace Loyc.SyncLib
 		///       obj.Siblings = sync.SyncList("Siblings", obj.Siblings, SyncPerson);
 		///   }
 		/// </code>
-		/// If the current type needs deduplication, but is not involved in cyclic 
-		/// object graphs, then setting <see cref="CurrentObject"/> is optional.
+		/// If the current type cannot contain any objects that may refer back to 
+		/// itself, then setting <see cref="CurrentObject"/> is optional.
 		/// </remarks>
 		object CurrentObject { set; }
 
@@ -529,8 +528,8 @@ namespace Loyc.SyncLib
 		///   must be a reference that represents the object being saved, or null 
 		///   if the object is null. In Loading mode (and sometimes in Schema mode), 
 		///   <see cref="ISyncManager"/> ignores this parameter. If a value type is
-		///   being read/written, you can set this parameter to null to avoid 
-		///   memory allocation, but be sure to use a mode that includes 
+		///   being read/written, you can set this parameter to null to avoid a
+		///   memory allocation for boxing, but only if you use a mode that includes 
 		///   ObjectMode.NotNull and not ObjectMode.Deduplicate.</param>
 		/// <param name="mode">See <see cref="ObjectMode"/> for information 
 		///   about the possible modes. When ObjectMode.NotNull is present and

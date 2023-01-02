@@ -29,7 +29,7 @@ partial class SyncBinary
 		public bool IsReading => false;
 		public bool IsWriting => true;
 
-		public bool SupportsReordering => true;
+		public bool SupportsReordering => false;
 		public bool SupportsDeduplication => true;
 		public bool NeedsIntegerIds => false;
 

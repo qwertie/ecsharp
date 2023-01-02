@@ -291,23 +291,24 @@ namespace Loyc.SyncLib;
 ///   <c>Sync("...", 0, 8, false)</c> would return it as 255.
 /// <para/>
 ///   If you use a fractional number of bytes then adjacent bitfields can share a 
-///   single byte. For example, if you write a 12-bit bitfield followed by a 4-bit
+///   single byte. For example, if you write a 20-bit bitfield followed by a 4-bit
 ///   bitfield using 
 ///   <code>
-///       sm.Sync("...", 257, 12, true); // 257 = 0b0001_00000001
-///       sm.Sync("...",  -1,  4, true);
+///       sm.Sync("...", 257, 20, true); // 257 = 0b0001_00000001
+///       sm.Sync("...",  -1,  4, true); // -1 (as 4 bits) = 0b1111
 ///   </code>
-///   Then two bytes are written: 0b00000001, 0b11110001.
+///   Then these three bytes are written: 0b00000000, 0b00000001, 0b11110001.
 /// <para/>
 ///   If the total number of bits in a series of bitfields is not a multiple of 8, 
 ///   then the high bits of the final byte are zero, and these high bits are ignored 
 ///   when the stream is read. For example, if your code says:
 ///   <code>
 ///       sm.Sync("...", 257, 10, true); // 257 = 0b0001_00000001
-///       sm.Sync("...",  -1,  4, true);
-///       sm.Sync("...",   7);
+///       sm.Sync("...",  -1,  4, true); // -1 (as 4 bits) = 0b1111
+///       sm.Sync("...",   7);           // 7 = 0b111
 ///   </code>
-///   It produces the following output: 0b00000001, 0b00111101, 0b00000111.
+///   Then these three bytes are written: 0b00000001, 0b00111101, 0b00000111. When
+///   reading these fields, the top two bits of the second byte are ignored.
 ///   
 /// <h4>Strings</h4>
 ///   
@@ -316,7 +317,7 @@ namespace Loyc.SyncLib;
 ///   surrogate code units. The length is stored in the same format as integers 
 ///   (above). A length prefix of null represents the string being null. The length 
 ///   is expressed in bytes, not codepoints. This is essentially the same format as a 
-///   byte array, so you can change the type of a string to a byte array while 
+///   byte array, so you could change the type of a string to a byte array while 
 ///   retaining backward compatibility.
 /// <para/>
 ///   Surrogate pairs in the .NET representation are converted to single 4-byte 
@@ -332,8 +333,7 @@ namespace Loyc.SyncLib;
 ///   A boolean is encoded as an integer where 0 = false and 1 = true (and thus 
 ///   255 = null). When reading a boolean from the data stream, it is read as a 32-bit 
 ///   integer, which is interpreted as `false` if it is 0 and `true` otherwise.
-///   Of course, this means you can safely change an integer field to boolean or vice 
-///   versa.
+///   This means you can safely change an integer field to boolean or vice versa.
 ///   
 /// <h4>Floating point</h4>
 ///   
@@ -342,10 +342,20 @@ namespace Loyc.SyncLib;
 ///   
 /// <h4>Decimal</h4>
 /// 
-///   Decimals are stored in the 80-bit little-endian fixed-size format defined by 
-///   Microsoft for decimal numbers.
+///   Decimals are stored in the 128-bit fixed-size format defined by Microsoft for 
+///   decimal numbers, but little-endian, so: the 96-bit "integer part" is stored 
+///   first (it's analagous to the "mantissa" in floating-point, but is actually an 
+///   integer), followed by 16 unused bits that are zero, followed by 8 bits for
+///   the negative base-10 exponent (which is limited to a range of 0 to 28) 
+///   followed by the most significant byte, which is 0 if the number is positive 
+///   and 0x80 if negative.
+///   
+///   The most unique thing about this format is that zero bits at the end of a number
+///   are significant. For example, 7.00m is different from 7m (but equal to it). For 
+///   7m, the integer part is 7 and the negative exponent is 0; for 7.00m, the integer 
+///   part is 700 and the negative exponent is 2.
 /// 
-/// <h4>Arrays/lists</h4>
+/// <h4>Arrays/lists/Memory&lt;T></h4>
 ///   
 ///   Arrays/lists are length-prefixed, and the length itself uses the standard integer 
 ///   format laid out above. For example, <c>new[] { 1, 10, 100, 1000 }</c> is encoded 

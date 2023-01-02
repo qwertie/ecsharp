@@ -110,15 +110,16 @@ namespace Loyc.SyncLib
 		/// false otherwise. In all other cases, null is returned.</summary>
 		/// <remarks>
 		/// <ul>
-		/// <li>In Loading mode, the manager knows the list length if the list has 
-		///     variable length, in which case true or false is returned.</li>
+		/// <li>In Loading mode, the manager knows when the end of the list is reached,
+		///     so true or false is returned if a list is being scanned.</li>
 		/// <li>In Saving mode, the caller knows the list length but the manager does 
 		///     not, so this property always returns null.</li>
-		/// <li>In Schema mode, the no list actually exists, but the manager typically 
+		/// <li>In Schema mode, no list actually exists, but the manager typically 
 		///     pretends that the list's length is 1.</li>
-		/// <li>In Query and Merge modes, the manager doesn't know the list length but 
-		///     it may have a maximum list length. In this case, this property returns
+		/// <li>In Query mode, the manager doesn't know the list length but it may 
+		///     have a maximum list length. In this case, this property returns
 		///     null at the beginning, then true when the limit is reached.</li>
+		/// <li>In Merge mode... this needs some thought; TODO</li>
 		/// </ul>
 		/// </remarks>
 		bool? ReachedEndOfList { get; }
@@ -429,9 +430,8 @@ namespace Loyc.SyncLib
 		/// <summary>Sets the "current object" reference. This method must be called 
 		///   when deserializing object graphs with cycles (see remarks).</summary>
 		/// <remarks>
-		/// To understand why this property is needed to help deserialize object 
-		/// graphs that contain cycles, consider a Person class that has a reference 
-		/// to all the Siblings of the person:
+		/// To understand why this property is needed, consider a Person class that 
+		/// has a reference to all the Siblings of the person:
 		/// <code>
 		///   class Person
 		///   {
@@ -452,18 +452,17 @@ namespace Loyc.SyncLib
 		///       obj.Siblings = sync.SyncList("Siblings", obj.Siblings, SyncPerson);
 		///   }
 		/// </code>
-		/// But this function cannot load a Person correctly! To understand this,
-		/// let's think about what <c>SyncList</c> does: it reads a list of Persons
-		/// (synchronously), and returns a <c>Person[]</c>. But each Person in that 
-		/// array contains a reference back to the current person. If Jack is being 
-		/// loaded, then the <c>Person[]</c> contains Jill, which has a reference back 
-		/// to Jack.
+		/// But it's impossible for this function to load a Person correctly! To 
+		/// understand why, let's think about what <c>SyncList</c> does: it reads a 
+		/// list of Persons (synchronously), and returns a <c>Person[]</c>. But each 
+		/// Person in that array contains a reference back to the current person. If 
+		/// Jack is being loaded, then the <c>Person[]</c> contains Jill, which has a 
+		/// reference back to Jack.
 		/// <para/>
-		/// But it is impossible for <c>SyncList</c> to return an object that has a 
-		/// reference to Jack, because the reference to Jack only exists in the local 
-		/// variable <c>obj</c>. So as the <c>SyncList</c> method deserializes Jill, 
-		/// Jill's synchronizer must fail while reading the list of siblings, because
-		/// no reference to Jack is available.
+		/// But <c>SyncList</c> can't return an array that has a reference to Jack, 
+		/// because the reference to Jack only exists in the local variable <c>obj</c>.
+		/// So as the <c>SyncList</c> method deserializes Jill, Jill's synchronizer 
+		/// must fail while reading Jill's list of siblings.
 		/// <para/>
 		/// To fix this, set <c>CurrentObject</c> before calling <c>SyncList</c>:
 		/// <code>
@@ -475,8 +474,8 @@ namespace Loyc.SyncLib
 		///       obj.Siblings = sync.SyncList("Siblings", obj.Siblings, SyncPerson);
 		///   }
 		/// </code>
-		/// If the current type needs deduplication, but is not involved in cyclic 
-		/// object graphs, then setting <see cref="CurrentObject"/> is optional.
+		/// If the current type cannot contain any objects that may refer back to 
+		/// itself, then setting <see cref="CurrentObject"/> is optional.
 		/// </remarks>
 		object CurrentObject { set; }
 

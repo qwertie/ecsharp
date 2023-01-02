@@ -9,7 +9,7 @@ namespace Loyc.SyncLib
 	/// The data type of a field name in SyncLib, which can be implicitly converted from 
 	/// a string. It includes both a Name string and an Id integer, in order to support 
 	/// both string-keyed fields (e.g. JSON) and int-keyed fields (e.g. Protocol Buffers).
-	/// By convention, an Id of -1 indicates that int-keyed implementations of 
+	/// By convention, an Id of int.MinValue indicates that int-keyed implementations of 
 	/// <see cref="ISyncManager"/> should choose an ID automatically based on the field 
 	/// order.
 	/// </summary>
