@@ -11,6 +11,10 @@ namespace Loyc.SyncLib;
 
 partial class SyncBinary
 {
+	/// <summary>
+	///   The <see cref="ISyncManager"/> implementation for reading <see cref="SyncBinary"/>'s 
+	///   data format.
+	/// </summary>
 	public partial struct Reader : ISyncManager
 	{
 		private ReaderState _s;

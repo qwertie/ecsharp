@@ -82,14 +82,13 @@ namespace Loyc.SyncLib
 
 			public bool IsInsideList => _s._isInsideList;
 
-
 			public bool? ReachedEndOfList => null;
 
 			public int? MinimumListLength => null;
 
 			public int Depth => _s._stack.Count - 1;
 
-			public object CurrentObject { set { } }
+			public object CurrentObject { set { } } // implementation is not needed for a writer
 
 			public bool SupportsNextField => false;
 

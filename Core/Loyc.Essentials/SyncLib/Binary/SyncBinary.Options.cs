@@ -170,6 +170,20 @@ partial class SyncBinary
 		public IntFormat DefaultIntFormat { get; set; } = IntFormat.SyncLib;
 		public IntFormat LengthPrefixFormat { get; set; } = IntFormat.SyncLib;
 
+		/// <summary>Maximum size of one number, in bytes. The default is 1 MB, i.e. a 
+		///   maximum value of roughly <c>(BigInteger)int.MaxValue << (8 * 1024 * 1024)</c>.
+		///   An exception occurs if you try to serialize/deserialize a number
+		///   larger than this.</summary>
+		public int MaxNumberSize { get; set; } = 1024 * 1024 + 4;
+
+		/// <summary>Controls the set of markers that are written or expected in
+		///   the binary data stream. The purpose of markers is simply to increase 
+		///   the chance that when a data stream is being read incorrectly (because 
+		///   you are not reading exactly the same fields/types that were written) 
+		///   an exception will occur soon afterward. Markers increase the data 
+		///   size, however.</summary>
+		public Markers Markers { get; set; } = Markers.Default;
+
 		#region Writer-specific options
 
 		public ForWriter Write { get; set; } = new ForWriter();
@@ -187,8 +201,28 @@ partial class SyncBinary
 
 		public class ForReader
 		{
+			/// <summary>If this is true, numbers in the data stream that are too 
+			///   large to fit in the requested type are silently truncated. If this
+			///   is false, such large numbers cause <see cref="Reader"/> to throw
+			///   <see cref="OverflowException"/>.</summary>
+			/// <remarks>For example, 33000 is too large for Int16, and if this property
+			///   is true it will be "truncated" to -32536.</remarks>
+			public bool SilentlyTruncateLargeNumbers { get; set; } = false;
 		}
 
 		#endregion
+	}
+
+	public enum Markers
+	{
+		None = 0,
+		ObjectStart = 1,
+		ObjectEnd = 2,
+		Objects = ObjectStart | ObjectEnd,
+		ListStart = 4,
+		ListEnd = 8,
+		TypeTag = 16,
+		Default = Objects | TypeTag,
+		All = 31,
 	}
 }

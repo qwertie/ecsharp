@@ -4,6 +4,7 @@ using Loyc.SyncLib.Impl;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -16,9 +17,9 @@ partial class SyncBinary
 	public static SyncBinary.Writer NewWriter(IBufferWriter<byte> output, Options? options = null)
 		=> new Writer(new WriterState(output ?? new ArrayBufferWriter<byte>(), options ?? _defaultOptions));
 
-	/// <summary>The default binary writer for binary data, which uses SyncLib 
-	/// integer encoding. 
-	/// 
+	/// <summary>
+	///   The <see cref="ISyncManager"/> implementation for writing <see cref="SyncBinary"/>'s 
+	///   data format.
 	/// </summary>
 	public struct Writer : ISyncManager
 	{
@@ -35,14 +36,13 @@ partial class SyncBinary
 
 		public bool IsInsideList => _s._isInsideList;
 
-
 		public bool? ReachedEndOfList => null;
 
 		public int? MinimumListLength => null;
 
-		public int Depth => throw new NotImplementedException();
+		public int Depth => _s._depth;
 
-		public object CurrentObject { set { } }
+		public object CurrentObject { set { } } // implementation is not needed for a writer
 
 		public bool SupportsNextField => false;
 
@@ -58,176 +58,109 @@ partial class SyncBinary
 			throw new NotImplementedException();
 		}
 
-		public SyncType GetFieldType(FieldId name, SyncType expectedType = SyncType.Unknown)
-		{
-			throw new NotImplementedException();
-		}
+		public SyncType GetFieldType(FieldId name, SyncType expectedType = SyncType.Unknown) => SyncType.Unknown;
 
-		public bool Sync(FieldId name, bool savable)
-		{
-			throw new NotImplementedException();
-		}
+		public string? SyncTypeTag(string? tag) { _s.WriteTypeTag(tag); return tag; }
 
-		public sbyte Sync(FieldId name, sbyte savable)
-		{
-			throw new NotImplementedException();
-		}
+		public bool   Sync(FieldId name, bool savable) { _s.Write(savable); return savable; }
 
-		public byte Sync(FieldId name, byte savable)
-		{
-			throw new NotImplementedException();
-		}
+		public sbyte  Sync(FieldId name, sbyte savable) { _s.Write(savable); return savable; }
 
-		public short Sync(FieldId name, short savable)
-		{
-			throw new NotImplementedException();
-		}
+		public byte   Sync(FieldId name, byte savable) { _s.Write(savable); return savable; }
 
-		public ushort Sync(FieldId name, ushort savable)
-		{
-			throw new NotImplementedException();
-		}
+		public short  Sync(FieldId name, short savable) { _s.Write(savable); return savable; }
 
-		public int Sync(FieldId name, int savable)
-		{
-			throw new NotImplementedException();
-		}
+		public ushort Sync(FieldId name, ushort savable) { _s.Write(savable); return savable; }
 
-		public uint Sync(FieldId name, uint savable)
-		{
-			throw new NotImplementedException();
-		}
+		public int    Sync(FieldId name, int savable) { _s.Write(savable); return savable; }
 
-		public long Sync(FieldId name, long savable)
-		{
-			throw new NotImplementedException();
-		}
+		public uint   Sync(FieldId name, uint savable) { _s.Write(savable); return savable; }
 
-		public ulong Sync(FieldId name, ulong savable)
-		{
-			throw new NotImplementedException();
-		}
+		public long   Sync(FieldId name, long savable) { _s.Write(savable); return savable; }
 
-		public float Sync(FieldId name, float savable)
-		{
-			throw new NotImplementedException();
-		}
+		public ulong  Sync(FieldId name, ulong savable) { _s.Write(savable); return savable; }
 
-		public double Sync(FieldId name, double savable)
-		{
-			throw new NotImplementedException();
-		}
+		public float  Sync(FieldId name, float savable) { _s.Write(savable); return savable; }
 
-		public decimal Sync(FieldId name, decimal savable)
-		{
-			throw new NotImplementedException();
-		}
+		public double Sync(FieldId name, double savable) { _s.Write(savable); return savable; }
 
-		public BigInteger Sync(FieldId name, BigInteger savable)
-		{
-			throw new NotImplementedException();
-		}
+		public decimal Sync(FieldId name, decimal savable) { _s.Write(savable); return savable; }
 
-		public char Sync(FieldId name, char savable)
-		{
-			throw new NotImplementedException();
-		}
+		public BigInteger Sync(FieldId name, BigInteger savable) { _s.Write(savable); return savable; }
 
-		public string Sync(FieldId name, string savable)
-		{
-			throw new NotImplementedException();
-		}
+		public char   Sync(FieldId name, char savable) { _s.Write((ushort)savable); return savable; }
+
+		public string Sync(FieldId name, string savable) { _s.Write(savable); return savable; }
 
 		public int Sync(FieldId name, int savable, int bits, bool signed = true)
 		{
-			throw new NotImplementedException();
+			_s.WriteBitfield(savable, (uint)bits);
+			return savable;
 		}
 
 		public long Sync(FieldId name, long savable, int bits, bool signed = true)
 		{
-			throw new NotImplementedException();
+			_s.WriteBitfield(savable, (uint)bits);
+			return savable;
 		}
 
 		public BigInteger Sync(FieldId name, BigInteger savable, int bits, bool signed = true)
 		{
-			throw new NotImplementedException();
+			_s.WriteBitfield(savable, (uint)bits);
+			return savable;
 		}
 
-		public bool? Sync(FieldId name, bool? savable)
-		{
-			throw new NotImplementedException();
-		}
+		public bool?   Sync(FieldId name, bool? savable) { _s.WriteNullable(savable); return savable; }
 
-		public sbyte? Sync(FieldId name, sbyte? savable)
-		{
-			throw new NotImplementedException();
-		}
+		public sbyte?  Sync(FieldId name, sbyte? savable) { _s.WriteNullable(savable); return savable; }
 
-		public byte? Sync(FieldId name, byte? savable)
-		{
-			throw new NotImplementedException();
-		}
+		public byte?   Sync(FieldId name, byte? savable) { _s.WriteNullable(savable); return savable; }
 
-		public short? Sync(FieldId name, short? savable)
-		{
-			throw new NotImplementedException();
-		}
+		public short?  Sync(FieldId name, short? savable) { _s.WriteNullable(savable); return savable; }
 
-		public ushort? Sync(FieldId name, ushort? savable)
-		{
-			throw new NotImplementedException();
-		}
+		public ushort? Sync(FieldId name, ushort? savable) { _s.WriteNullable(savable); return savable; }
 
-		public int? Sync(FieldId name, int? savable)
-		{
-			throw new NotImplementedException();
-		}
+		public int?    Sync(FieldId name, int? savable) { _s.WriteNullable(savable); return savable; }
 
-		public uint? Sync(FieldId name, uint? savable)
-		{
-			throw new NotImplementedException();
-		}
+		public uint?   Sync(FieldId name, uint? savable) { _s.WriteNullable(savable); return savable; }
 
-		public long? Sync(FieldId name, long? savable)
-		{
-			throw new NotImplementedException();
-		}
+		public long?   Sync(FieldId name, long? savable) { _s.WriteNullable(savable); return savable; }
 
-		public ulong? Sync(FieldId name, ulong? savable)
-		{
-			throw new NotImplementedException();
-		}
+		public ulong?  Sync(FieldId name, ulong? savable) { _s.WriteNullable(savable); return savable; }
 
-		public float? Sync(FieldId name, float? savable)
-		{
-			throw new NotImplementedException();
-		}
+		public float?  Sync(FieldId name, float? savable) { _s.WriteNullable(savable); return savable; }
 
-		public double? Sync(FieldId name, double? savable)
-		{
-			throw new NotImplementedException();
-		}
+		public double? Sync(FieldId name, double? savable) { _s.WriteNullable(savable); return savable; }
 
-		public decimal? Sync(FieldId name, decimal? savable)
-		{
-			throw new NotImplementedException();
-		}
+		public decimal? Sync(FieldId name, decimal? savable) { _s.WriteNullable(savable); return savable; }
 
-		public BigInteger? Sync(FieldId name, BigInteger? savable)
-		{
-			throw new NotImplementedException();
-		}
+		public BigInteger? Sync(FieldId name, BigInteger? savable) { _s.WriteNullable(savable); return savable; }
 
 		public char? Sync(FieldId name, char? savable)
 		{
-			throw new NotImplementedException();
+			if (savable == null)
+				_s.WriteNull();
+			else
+				_s.Write((ushort) savable.Value);
+			return savable;
 		}
+
+		private static bool MayBeNullable(ObjectMode mode)
+			=> (mode & (ObjectMode.NotNull | ObjectMode.Deduplicate)) != ObjectMode.NotNull;
 
 		public List? SyncListBoolImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 			where Scanner : IScanner<bool>
 			where ListBuilder : IListBuilder<List, bool>
 		{
-			throw new NotImplementedException();
+			if (MayBeNullable(mode) && saving == null) {
+				var status = BeginSubObject(name, null, mode, 0);
+				Debug.Assert(!status.Begun && status.Object == null);
+				return default;
+			} else {
+				var saver = new ScannerSaver<SyncBinary.Writer, Scanner, bool, SyncPrimitive<SyncBinary.Writer>>(new SyncPrimitive<SyncBinary.Writer>(), mode);
+				saver.Write(ref this, name, scanner!, saving, tupleLength);
+				return saving;
+			}
 		}
 
 		public List? SyncListByteImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
@@ -240,11 +173,6 @@ partial class SyncBinary
 		public List? SyncListCharImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 			where Scanner : IScanner<char>
 			where ListBuilder : IListBuilder<List, char>
-		{
-			throw new NotImplementedException();
-		}
-
-		public string SyncTypeTag(string tag)
 		{
 			throw new NotImplementedException();
 		}

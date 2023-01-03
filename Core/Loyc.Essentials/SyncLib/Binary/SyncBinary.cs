@@ -16,9 +16,8 @@ namespace Loyc.SyncLib;
 /// <remarks>
 ///   The binary <see cref="ISyncManager"/> implementations (which are used by the 
 ///   static methods in this class) do not support reordering or the <c>NextField</c>
-///   property. They don't support automatic dynamic typing, and they don't store 
-///   metadata such as field names in the output. However, they do support deduplication 
-///   (including cyclic object graphs).
+///   property, and they don't store metadata such as field names in the output. However,
+///   they do support deduplication (including cyclic object graphs).
 /// <para/>
 ///   Fields must be read/written in the same order they were read, and with the same 
 ///   data type (or a "compatible" data type as described below), or at best it will 
@@ -55,9 +54,9 @@ namespace Loyc.SyncLib;
 ///         new MyItem { Id = 3, SerialNumber = 65537 },
 ///         new MySync<SyncBinary.Writer>());
 /// </code>
-///   The result is simply be these 4 bytes: 0b00000011, 0b11000001, 0b00000000, 0b00000001
+///   The result is simply these 4 bytes: 0b00000011, 0b11000001, 0b00000000, 0b00000001
 /// <para/>
-///   The first byte represents 7 (Id); the other three represent 65537 (SerialNumber).
+///   The first byte represents 3 (Id); the other three represent 65537 (SerialNumber).
 ///   It's impossible to tell just by looking at these bytes that they represent two numbers;
 ///   in fact, by coincidence, if you serialize the array <c>new byte[] { 193, 0, 1 }</c>
 ///   the output is exactly the same 4 bytes! This is why you must read a binary data stream 
@@ -221,12 +220,40 @@ namespace Loyc.SyncLib;
 ///   The following encoding schemes for key data types are "set in stone": they won't
 ///   change between versions of SyncLib.
 /// 
+/// <h4>Object/array start/end markers</h4>
+/// 
+///   SyncBinary can optionally output markers at the start/end of an object. Their
+///   purpose is simply to increase the chance that when a data stream is being read
+///   incorrectly (because you are not reading exactly the same fields/types that were 
+///   written) an exception will occur soon afterward. Markers increase the data size,
+///   however.
+///   
+///   All the markers are single ASCII bytes, e.g. if a marker is '{', that means 0x7B.
+///   The start-object marker is '{' when entering an odd-numbered Depth, or '(' if even.
+///   The end-object marker is '}' when exiting an odd-numbered Depth, or ')' otherwise.
+///   The start-list marker is always '['; the end-list marker is always ']'. Please note
+///   that strings count as lists, and will have list markers if they are enabled.
+///   
+///   <see cref="SyncBinary.Options.Markers"/> controls which markers are read/written.
+///   Markers cannot be auto-detected (for example, if the data stream contains '{' there 
+///   is no way to tell whether it's a marker or whether 0x7B is part of a data value); 
+///   when reading a binary data stream, you must use the same marker mode as when the 
+///   blob was written, or reading will fail.
+///   
+///   The default behavior is to write start/end markers for objects and type tags, but 
+///   not for lists.
+/// 
+/// <h4>Object type tag</h4>
+/// 
+///   An object type tag is like a normal string field except that it is additionally 
+///   prefixed with 'T' if the <see cref="Markers.TypeTag"/> option is enabled.
+/// 
 /// <h4>Integers</h4>
 ///   
 ///   Integers are normally stored in big-endian format according to the variable-
 ///   length scheme depicted below. It can be thought of as 9 separate formats: 7 of 
-///   the formats are for integers of specific sizes, one is for BigIntegers, and one 
-///   is for null. Each 'x' represents a number bit:
+///   the formats are for integers of specific sizes, one is for very large integers,
+///   and one is for null. Each 'x' represents a number bit:
 ///   <code>
 ///    (1) 0xxxxxxx                                 | 1 byte;   7 number bits
 ///    (2) 10xxxxxx xxxxxxxx                        | 2 bytes; 14 number bits
@@ -241,9 +268,15 @@ namespace Loyc.SyncLib;
 ///   If the number is signed, the sign bit is always the first 'x' in the 
 ///   depiction. For example, the number -2 is represented as 0b01111110.
 /// <para/>
+///   If there is a length prefix "n", it is encoded in the same way, so in principle 
+///   there is no limit to the number of bits in the number. However, SyncBinary.Reader 
+///   and SyncBinary.Writer limit the number size, by default, to 1 MB, large enough 
+///   for <c>(BigInteger)1 << (8 * 1024 * 1024)</c>. Also, the length prefix is not 
+///   allowed to start with 1111111x.
+/// <para/>
 ///   This format offers several advantages:
 ///   <ul>
-///     <li>Since the format is the same regardless of the .NET integer type,
+///     <li>Since the format is the same regardless of the integer's size in code,
 ///       you can safely enlarge an integer field, e.g. from `Int32` to `Int64`,
 ///       without breaking backward compatibility. You can even upgrade fields to 
 ///       `BigInteger`!</li>
@@ -253,12 +286,12 @@ namespace Loyc.SyncLib;
 ///     <li>Because signed and unsigned numbers are stored in a similar way, you
 ///       can switch a signed number to be unsigned and retain backward compaibility
 ///       if (and only if) the field is never negative in any of the old data streams.
-///       However, you can't switch unsigned to signed (see explanation below).
+///       However, you cannot switch unsigned to signed (see explanation below).
 ///     <li>A CPU can read numbers in this format faster than it can read numbers
 ///       in the traditional VLQ or LEB128 formats. For integers under 50 bits, it 
 ///       requires only one conditional branch to read one number, rather one branch 
 ///       per byte. Also, generally, less bit-fiddling is required to reconstruct 
-///       integers from their binary form.</li>
+///       integers from their serialized form.</li>
 ///   </ul>
 ///   Note: although signed and unsigned numbers are stored in a similar way, 
 ///   switching an unsigned field to signed is unsafe. That's because certain positive 
@@ -292,7 +325,7 @@ namespace Loyc.SyncLib;
 /// <para/>
 ///   If you use a fractional number of bytes then adjacent bitfields can share a 
 ///   single byte. For example, if you write a 20-bit bitfield followed by a 4-bit
-///   bitfield using 
+///   bitfield like so: 
 ///   <code>
 ///       sm.Sync("...", 257, 20, true); // 257 = 0b0001_00000001
 ///       sm.Sync("...",  -1,  4, true); // -1 (as 4 bits) = 0b1111
@@ -301,7 +334,7 @@ namespace Loyc.SyncLib;
 /// <para/>
 ///   If the total number of bits in a series of bitfields is not a multiple of 8, 
 ///   then the high bits of the final byte are zero, and these high bits are ignored 
-///   when the stream is read. For example, if your code says:
+///   when the stream is read. For example, if your code says
 ///   <code>
 ///       sm.Sync("...", 257, 10, true); // 257 = 0b0001_00000001
 ///       sm.Sync("...",  -1,  4, true); // -1 (as 4 bits) = 0b1111
@@ -312,13 +345,15 @@ namespace Loyc.SyncLib;
 ///   
 /// <h4>Strings</h4>
 ///   
-///   Strings are stored in length-prefixed WTF-8 format, which is the same as UTF-8
-///   except that any .NET string can be stored, even if it contains unpaired 
-///   surrogate code units. The length is stored in the same format as integers 
+///   Strings are stored in length-prefixed WTF-8 format (this means UTF-8 format,
+///   but highlights that any .NET string can be stored, even if it contains unpaired 
+///   surrogate code units). The length is stored in the same format as integers 
 ///   (above). A length prefix of null represents the string being null. The length 
 ///   is expressed in bytes, not codepoints. This is essentially the same format as a 
 ///   byte array, so you could change the type of a string to a byte array while 
 ///   retaining backward compatibility.
+/// <para/>
+///   If list markers are enabled, '[' is written before the string and ']' after.
 /// <para/>
 ///   Surrogate pairs in the .NET representation are converted to single 4-byte 
 ///   characters in the UTF-8 format.
@@ -330,10 +365,11 @@ namespace Loyc.SyncLib;
 ///   
 /// <h4>Booleans</h4>
 ///   
-///   A boolean is encoded as an integer where 0 = false and 1 = true (and thus 
+///   A boolean is encoded as an integer where 0 = false and 1 = true (and as usual,
 ///   255 = null). When reading a boolean from the data stream, it is read as a 32-bit 
 ///   integer, which is interpreted as `false` if it is 0 and `true` otherwise.
-///   This means you can safely change an integer field to boolean or vice versa.
+///   This means you can safely change an integer field to boolean or vice versa
+///   between versions.
 ///   
 /// <h4>Floating point</h4>
 ///   
@@ -357,6 +393,8 @@ namespace Loyc.SyncLib;
 /// 
 /// <h4>Arrays/lists/Memory&lt;T></h4>
 ///   
+///   If list markers are enabled, '[' is written before a list and ']' afterward.
+/// <para/>
 ///   Arrays/lists are length-prefixed, and the length itself uses the standard integer 
 ///   format laid out above. For example, <c>new[] { 1, 10, 100, 1000 }</c> is encoded 
 ///   in six bytes as <c>4, 1, 10, 100, 0b10000011, 0b11101000</c>. Null is encoded in a 

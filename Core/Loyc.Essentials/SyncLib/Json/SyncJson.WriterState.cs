@@ -34,18 +34,26 @@ namespace Loyc.SyncLib
 				_newline = Encoding.UTF8.GetBytes(_optWrite.Newline);
 			}
 
+			// TODO: try GetOutSpan instead
+			protected new Span<byte> FlushAndGetOutSpan(int requiredBytes)
+			{
+				Flush();
+				return _output.GetSpan(requiredBytes);
+			}
+
 			// Writes the pending comma/newline, if any, and gets a Span for writing.
 			Span<byte> GetNextBuf(int requiredBytes)
 			{
 				if (_pendingComma != 0) {
-					var buf = base.GetOutBuf(requiredBytes + 1 + NewlineSize);
+					var buf = base.FlushAndGetOutSpan(requiredBytes + 1 + NewlineSize);
 					if (_pendingComma != '\n')
 						buf[_i++] = _pendingComma;
 					MaybeNewlineWithIndent(buf);
 					_pendingComma = 0;
 					return buf;
+				} else {
+					return base.FlushAndGetOutSpan(requiredBytes);
 				}
-				return base.GetOutBuf(requiredBytes);
 			}
 
 			public (bool Begun, object? Object) BeginSubObject(string? name, object? childKey, ObjectMode mode)

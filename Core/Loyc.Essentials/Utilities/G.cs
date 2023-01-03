@@ -399,6 +399,20 @@ namespace Loyc
 			#endif
 		}
 
+		/// <summary>Returns the bit position of the most-significant '1' bit in a uint, or -1 
+		/// the input is zero.</summary>
+		public static int PositionOfMostSignificantOne(ulong i)
+		{
+			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472 || NET48
+				if ((uint) i == i)
+					return PositionOfMostSignificantOne((uint) i);
+				else
+					return PositionOfMostSignificantOne((uint)(i >> 32)) + 32;
+			#else
+				return 63 - BitOperations.LeadingZeroCount(i);
+			#endif
+		}
+
 		#region ShiftLeft and ShiftRight for floating point
 
 		public static double ShiftLeft(double num, int amount)
