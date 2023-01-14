@@ -1024,7 +1024,7 @@ namespace Loyc.SyncLib
 				// Maybe I should just write an ordinary loop?
 				#if NET50 // is this the right name for .NET 5?
 				return Encoding.Latin1.GetString(text);
-				#elif NETSTANDARD2_0 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472
+				#elif NETSTANDARD2_0 || NET45 || NET46 || NET47
 				return Encoding.ASCII.GetString(text.ToArray());
 				#else
 				return Encoding.ASCII.GetString(text);

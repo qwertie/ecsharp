@@ -16,7 +16,7 @@ namespace Loyc.Graphs
 	{
 		IEnumerable<Node> Nodes { get; }
 		
-		#if NETSTANDARD2_0 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472
+		#if NETSTANDARD2_0 || NET45 || NET46 || NET47
 		IEnumerable<Edge> Edges { get; }
 		#else
 		IEnumerable<Edge> Edges => LGInterfaces.GetOutboundDirectEdges<Node, Edge, EdgeList>(Nodes);

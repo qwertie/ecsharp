@@ -3,6 +3,11 @@
 // NOTE: THIS CODE HAS NOT BEEN WELL-TESTED AND DOES NOT YET HAVE A TEST SUITE.
 // 
 
+
+
+
+
+
 namespace Loyc.Math
 {
 	using System;
@@ -10,6 +15,7 @@ namespace Loyc.Math
 	using System.Linq;
 	using System.Text;
 	using System.Diagnostics;
+
 
 	/// <summary>Fixed-point type based on Int32 with 8 fractional bits</summary>
 	public partial struct FPI8 : IComparable<FPI8>, IEquatable<FPI8>, IConvertible
@@ -28,12 +34,20 @@ namespace Loyc.Math
 		public const double MinDouble = Int32.MinValue / (double)(1 << Frac);
 		public const Int32 Mask = (1 << Frac) - 1;
 
+
 		public static explicit operator FPI8(int value) { return new FPI8(value); }
+
 		public static implicit operator FPI8(short value) { return new FPI8(value); }
+
+
 		
+
 		public static explicit operator FPI8(uint value) { return new FPI8(value); }
+
 		// C# complains about ambiguity if we have two implicit conversion operators
 		//public static implicit operator FPI8(ushort value) { return new FPI8(value); }
+
+
 
 		public static explicit operator FPI8(long value) { return new FPI8(value); }
 		public static explicit operator FPI8(ulong value) { return new FPI8(value); }
@@ -46,30 +60,49 @@ namespace Loyc.Math
 		public static explicit operator float(FPI8 value) { return (float)value.N * (1.0f / (1 << Frac)); }
 		public static explicit operator double(FPI8 value) { return (double)value.N * (1.0 / (1 << Frac)); }
 		
+
 		public static explicit operator FPI16(FPI8 value)
 		{
+
+
+
 			if (value.N > (Int32.MaxValue >> 8))
 				return FPI16.MaxValue;
 			if (value.N < (Int32.MinValue >> 8))
 				return FPI16.MinValue;
+
 			return FPI16.Prescaled((Int32)(value.N << 8));
 		}
+
 		public static explicit operator FPI23(FPI8 value)
 		{
+
+
+
 			if (value.N > (Int32.MaxValue >> 15))
 				return FPI23.MaxValue;
 			if (value.N < (Int32.MinValue >> 15))
 				return FPI23.MinValue;
+
 			return FPI23.Prescaled((Int32)(value.N << 15));
 		}
+
 		public static explicit operator FPL16(FPI8 value)
 		{
+
+
+
 			return FPL16.Prescaled(((Int64)value.N << 8));
 		}
+
 		public static explicit operator FPL32(FPI8 value)
 		{
+
+
+
 			return FPL32.Prescaled(((Int64)value.N << 24));
 		}
+
 
 		public Int32 N;
 
@@ -77,18 +110,22 @@ namespace Loyc.Math
 		{
  			throw new OverflowException();
 		}
+
 		public static FPI8 CheckedCast(int num)
 		{
 			if (num < MinInt || num > MaxInt)
 				Overflow();
 			return Prescaled((Int32)num << Frac);
 		}
+
+
 		public static FPI8 CheckedCast(uint num)
 		{
 			if (num > MaxInt)
 				Overflow();
 			return Prescaled((Int32)num << Frac);
 		}
+
 		public static FPI8 CheckedCast(long num)
 		{
 			if (num < MinInt || num > MaxInt)
@@ -127,16 +164,20 @@ namespace Loyc.Math
 		public FPI8(int num)
 		{
 			N = (Int32)num << Frac;
+
 			if (num < MinInt)
 				N = Int32.MinValue;
 			if (num > MaxInt)
 				N = Int32.MaxValue;
+
 		}
 		public FPI8(uint num)
 		{
 			N = (Int32)num << Frac;
+
 			if (num > (uint)MaxInt)
 				N = Int32.MaxValue;
+
 		}
 		public FPI8(long num)
 		{
@@ -170,8 +211,10 @@ namespace Loyc.Math
 		public static FPI8 operator -(FPI8 a, FPI8 b) { a.N -= b.N; return a; }
 		public static FPI8 operator -(FPI8 a) { a.N = -a.N; return a; }
 
+
 		public static FPI8 operator *(FPI8 a, FPI8 b) { return Prescaled((int)((long)a.N * (long)b.N >> Frac)); }
 		public static FPI8 operator /(FPI8 a, FPI8 b) { return Prescaled((int)((long)(a.N << Frac) / b.N)); }
+
 		public static FPI8 operator %(FPI8 a, FPI8 b) { a.N %= b.N; return a; }
 		public static FPI8 operator <<(FPI8 a, int b) { a.N <<= b; return a; }
 		public static FPI8 operator >>(FPI8 a, int b) { a.N >>= b; return a; }
@@ -322,6 +365,7 @@ namespace Loyc.Math
 		#endregion
 	}
 
+
 	/// <summary>Fixed-point type based on Int32 with 16 fractional bits</summary>
 	public partial struct FPI16 : IComparable<FPI16>, IEquatable<FPI16>, IConvertible
 	{
@@ -339,12 +383,20 @@ namespace Loyc.Math
 		public const double MinDouble = Int32.MinValue / (double)(1 << Frac);
 		public const Int32 Mask = (1 << Frac) - 1;
 
+
 		public static explicit operator FPI16(int value) { return new FPI16(value); }
+
 		public static implicit operator FPI16(short value) { return new FPI16(value); }
+
+
 		
+
 		public static explicit operator FPI16(uint value) { return new FPI16(value); }
+
 		// C# complains about ambiguity if we have two implicit conversion operators
 		//public static implicit operator FPI16(ushort value) { return new FPI16(value); }
+
+
 
 		public static explicit operator FPI16(long value) { return new FPI16(value); }
 		public static explicit operator FPI16(ulong value) { return new FPI16(value); }
@@ -357,26 +409,44 @@ namespace Loyc.Math
 		public static explicit operator float(FPI16 value) { return (float)value.N * (1.0f / (1 << Frac)); }
 		public static explicit operator double(FPI16 value) { return (double)value.N * (1.0 / (1 << Frac)); }
 		
+
 		public static explicit operator FPI8(FPI16 value)
 		{
+
+
+
 			return FPI8.Prescaled((Int32)(value.N >> 8));
 		}
+
 		public static explicit operator FPI23(FPI16 value)
 		{
+
+
+
 			if (value.N > (Int32.MaxValue >> 7))
 				return FPI23.MaxValue;
 			if (value.N < (Int32.MinValue >> 7))
 				return FPI23.MinValue;
+
 			return FPI23.Prescaled((Int32)(value.N << 7));
 		}
+
 		public static explicit operator FPL16(FPI16 value)
 		{
+
+
+
 			return FPL16.Prescaled((Int64)(value.N));
 		}
+
 		public static explicit operator FPL32(FPI16 value)
 		{
+
+
+
 			return FPL32.Prescaled(((Int64)value.N << 16));
 		}
+
 
 		public Int32 N;
 
@@ -384,18 +454,22 @@ namespace Loyc.Math
 		{
  			throw new OverflowException();
 		}
+
 		public static FPI16 CheckedCast(int num)
 		{
 			if (num < MinInt || num > MaxInt)
 				Overflow();
 			return Prescaled((Int32)num << Frac);
 		}
+
+
 		public static FPI16 CheckedCast(uint num)
 		{
 			if (num > MaxInt)
 				Overflow();
 			return Prescaled((Int32)num << Frac);
 		}
+
 		public static FPI16 CheckedCast(long num)
 		{
 			if (num < MinInt || num > MaxInt)
@@ -434,16 +508,20 @@ namespace Loyc.Math
 		public FPI16(int num)
 		{
 			N = (Int32)num << Frac;
+
 			if (num < MinInt)
 				N = Int32.MinValue;
 			if (num > MaxInt)
 				N = Int32.MaxValue;
+
 		}
 		public FPI16(uint num)
 		{
 			N = (Int32)num << Frac;
+
 			if (num > (uint)MaxInt)
 				N = Int32.MaxValue;
+
 		}
 		public FPI16(long num)
 		{
@@ -477,8 +555,10 @@ namespace Loyc.Math
 		public static FPI16 operator -(FPI16 a, FPI16 b) { a.N -= b.N; return a; }
 		public static FPI16 operator -(FPI16 a) { a.N = -a.N; return a; }
 
+
 		public static FPI16 operator *(FPI16 a, FPI16 b) { return Prescaled((int)((long)a.N * (long)b.N >> Frac)); }
 		public static FPI16 operator /(FPI16 a, FPI16 b) { return Prescaled((int)((long)(a.N << Frac) / b.N)); }
+
 		public static FPI16 operator %(FPI16 a, FPI16 b) { a.N %= b.N; return a; }
 		public static FPI16 operator <<(FPI16 a, int b) { a.N <<= b; return a; }
 		public static FPI16 operator >>(FPI16 a, int b) { a.N >>= b; return a; }
@@ -629,6 +709,7 @@ namespace Loyc.Math
 		#endregion
 	}
 
+
 	/// <summary>Fixed-point type based on Int32 with 23 fractional bits</summary>
 	public partial struct FPI23 : IComparable<FPI23>, IEquatable<FPI23>, IConvertible
 	{
@@ -646,11 +727,19 @@ namespace Loyc.Math
 		public const double MinDouble = Int32.MinValue / (double)(1 << Frac);
 		public const Int32 Mask = (1 << Frac) - 1;
 
+
 		public static explicit operator FPI23(int value) { return new FPI23(value); }
+
 		public static implicit operator FPI23(sbyte value) { return new FPI23(value); }
+
+
 		
+
 		public static explicit operator FPI23(uint value) { return new FPI23(value); }
+
 		//public static implicit operator FPI23(byte value) { return new FPI23(value); }
+
+
 
 		public static explicit operator FPI23(long value) { return new FPI23(value); }
 		public static explicit operator FPI23(ulong value) { return new FPI23(value); }
@@ -663,22 +752,39 @@ namespace Loyc.Math
 		public static explicit operator float(FPI23 value) { return (float)value.N * (1.0f / (1 << Frac)); }
 		public static explicit operator double(FPI23 value) { return (double)value.N * (1.0 / (1 << Frac)); }
 		
+
 		public static explicit operator FPI8(FPI23 value)
 		{
+
+
+
 			return FPI8.Prescaled((Int32)(value.N >> 15));
 		}
+
 		public static explicit operator FPI16(FPI23 value)
 		{
+
+
+
 			return FPI16.Prescaled((Int32)(value.N >> 7));
 		}
+
 		public static explicit operator FPL16(FPI23 value)
 		{
+
+
+
 			return FPL16.Prescaled((Int64)(value.N >> 7));
 		}
+
 		public static explicit operator FPL32(FPI23 value)
 		{
+
+
+
 			return FPL32.Prescaled(((Int64)value.N << 9));
 		}
+
 
 		public Int32 N;
 
@@ -686,18 +792,22 @@ namespace Loyc.Math
 		{
  			throw new OverflowException();
 		}
+
 		public static FPI23 CheckedCast(int num)
 		{
 			if (num < MinInt || num > MaxInt)
 				Overflow();
 			return Prescaled((Int32)num << Frac);
 		}
+
+
 		public static FPI23 CheckedCast(uint num)
 		{
 			if (num > MaxInt)
 				Overflow();
 			return Prescaled((Int32)num << Frac);
 		}
+
 		public static FPI23 CheckedCast(long num)
 		{
 			if (num < MinInt || num > MaxInt)
@@ -736,16 +846,20 @@ namespace Loyc.Math
 		public FPI23(int num)
 		{
 			N = (Int32)num << Frac;
+
 			if (num < MinInt)
 				N = Int32.MinValue;
 			if (num > MaxInt)
 				N = Int32.MaxValue;
+
 		}
 		public FPI23(uint num)
 		{
 			N = (Int32)num << Frac;
+
 			if (num > (uint)MaxInt)
 				N = Int32.MaxValue;
+
 		}
 		public FPI23(long num)
 		{
@@ -779,8 +893,10 @@ namespace Loyc.Math
 		public static FPI23 operator -(FPI23 a, FPI23 b) { a.N -= b.N; return a; }
 		public static FPI23 operator -(FPI23 a) { a.N = -a.N; return a; }
 
+
 		public static FPI23 operator *(FPI23 a, FPI23 b) { return Prescaled((int)((long)a.N * (long)b.N >> Frac)); }
 		public static FPI23 operator /(FPI23 a, FPI23 b) { return Prescaled((int)((long)(a.N << Frac) / b.N)); }
+
 		public static FPI23 operator %(FPI23 a, FPI23 b) { a.N %= b.N; return a; }
 		public static FPI23 operator <<(FPI23 a, int b) { a.N <<= b; return a; }
 		public static FPI23 operator >>(FPI23 a, int b) { a.N >>= b; return a; }
@@ -931,6 +1047,7 @@ namespace Loyc.Math
 		#endregion
 	}
 
+
 	/// <summary>Fixed-point type based on Int64 with 16 fractional bits</summary>
 	public partial struct FPL16 : IComparable<FPL16>, IEquatable<FPL16>, IConvertible
 	{
@@ -948,9 +1065,13 @@ namespace Loyc.Math
 		public const double MinDouble = Int64.MinValue / (double)(1 << Frac);
 		public const Int64 Mask = (1 << Frac) - 1;
 
+
 		public static implicit operator FPL16(int value) { return new FPL16(value); }
+
 		
+
 		public static implicit operator FPL16(uint value) { return new FPL16(value); }
+
 
 		public static explicit operator FPL16(long value) { return new FPL16(value); }
 		public static explicit operator FPL16(ulong value) { return new FPL16(value); }
@@ -963,38 +1084,59 @@ namespace Loyc.Math
 		public static explicit operator float(FPL16 value) { return (float)value.N * (1.0f / (1 << Frac)); }
 		public static explicit operator double(FPL16 value) { return (double)value.N * (1.0 / (1 << Frac)); }
 		
+
 		public static explicit operator FPI8(FPL16 value)
 		{
+
+
+
 			if (value.N > (Int64.MaxValue >> 24))
 				return FPI8.MaxValue;
 			if (value.N < (Int64.MinValue >> 24))
 				return FPI8.MinValue;
+
 			return FPI8.Prescaled((Int32)(value.N >> 8));
 		}
+
 		public static explicit operator FPI16(FPL16 value)
 		{
+
+
+
 			if (value.N > (Int64.MaxValue >> 32))
 				return FPI16.MaxValue;
 			if (value.N < (Int64.MinValue >> 32))
 				return FPI16.MinValue;
+
 			return FPI16.Prescaled((Int32)(value.N));
 		}
+
 		public static explicit operator FPI23(FPL16 value)
 		{
+
+
+
 			if (value.N > (Int64.MaxValue >> 39))
 				return FPI23.MaxValue;
 			if (value.N < (Int64.MinValue >> 39))
 				return FPI23.MinValue;
+
 			return FPI23.Prescaled((Int32)(value.N << 7));
 		}
+
 		public static explicit operator FPL32(FPL16 value)
 		{
+
+
+
 			if (value.N > (Int64.MaxValue >> 16))
 				return FPL32.MaxValue;
 			if (value.N < (Int64.MinValue >> 16))
 				return FPL32.MinValue;
+
 			return FPL32.Prescaled(((Int64)value.N << 16));
 		}
+
 
 		public Int64 N;
 
@@ -1002,6 +1144,8 @@ namespace Loyc.Math
 		{
  			throw new OverflowException();
 		}
+
+
 		public static FPL16 CheckedCast(long num)
 		{
 			if (num < MinInt || num > MaxInt)
@@ -1040,10 +1184,12 @@ namespace Loyc.Math
 		public FPL16(int num)
 		{
 			N = (Int64)num << Frac;
+
 		}
 		public FPL16(uint num)
 		{
 			N = (Int64)num << Frac;
+
 		}
 		public FPL16(long num)
 		{
@@ -1077,6 +1223,7 @@ namespace Loyc.Math
 		public static FPL16 operator -(FPL16 a, FPL16 b) { a.N -= b.N; return a; }
 		public static FPL16 operator -(FPL16 a) { a.N = -a.N; return a; }
 
+
 		public static FPL16 operator *(FPL16 a, FPL16 b)
 		{
 			return Prescaled(MathEx.MulShift(a.N, b.N, Frac));
@@ -1097,6 +1244,7 @@ namespace Loyc.Math
 			return a;
 			// TODO: test negative numbers: 7 / -2.5, -7 / 2.5, -7 / -2.5
 		}
+
 		public static FPL16 operator %(FPL16 a, FPL16 b) { a.N %= b.N; return a; }
 		public static FPL16 operator <<(FPL16 a, int b) { a.N <<= b; return a; }
 		public static FPL16 operator >>(FPL16 a, int b) { a.N >>= b; return a; }
@@ -1247,6 +1395,7 @@ namespace Loyc.Math
 		#endregion
 	}
 
+
 	/// <summary>Fixed-point type based on Int64 with 32 fractional bits</summary>
 	public partial struct FPL32 : IComparable<FPL32>, IEquatable<FPL32>, IConvertible
 	{
@@ -1264,11 +1413,17 @@ namespace Loyc.Math
 		public const double MinDouble = Int64.MinValue / (double)(1 << Frac);
 		public const Int64 Mask = (1 << Frac) - 1;
 
+
 		public static implicit operator FPL32(int value) { return new FPL32(value); }
+
 		
+
 		public static explicit operator FPL32(uint value) { return new FPL32(value); }
+
 		// C# complains about ambiguity if we have two implicit conversion operators
 		//public static implicit operator FPL32(ushort value) { return new FPL32(value); }
+
+
 
 		public static explicit operator FPL32(long value) { return new FPL32(value); }
 		public static explicit operator FPL32(ulong value) { return new FPL32(value); }
@@ -1281,34 +1436,54 @@ namespace Loyc.Math
 		public static explicit operator float(FPL32 value) { return (float)value.N * (1.0f / (1 << Frac)); }
 		public static explicit operator double(FPL32 value) { return (double)value.N * (1.0 / (1 << Frac)); }
 		
+
 		public static explicit operator FPI8(FPL32 value)
 		{
+
+
+
 			if (value.N > (Int64.MaxValue >> 8))
 				return FPI8.MaxValue;
 			if (value.N < (Int64.MinValue >> 8))
 				return FPI8.MinValue;
+
 			return FPI8.Prescaled((Int32)(value.N >> 24));
 		}
+
 		public static explicit operator FPI16(FPL32 value)
 		{
+
+
+
 			if (value.N > (Int64.MaxValue >> 16))
 				return FPI16.MaxValue;
 			if (value.N < (Int64.MinValue >> 16))
 				return FPI16.MinValue;
+
 			return FPI16.Prescaled((Int32)(value.N >> 16));
 		}
+
 		public static explicit operator FPI23(FPL32 value)
 		{
+
+
+
 			if (value.N > (Int64.MaxValue >> 23))
 				return FPI23.MaxValue;
 			if (value.N < (Int64.MinValue >> 23))
 				return FPI23.MinValue;
+
 			return FPI23.Prescaled((Int32)(value.N >> 9));
 		}
+
 		public static explicit operator FPL16(FPL32 value)
 		{
+
+
+
 			return FPL16.Prescaled((Int64)(value.N >> 16));
 		}
+
 
 		public Int64 N;
 
@@ -1316,6 +1491,8 @@ namespace Loyc.Math
 		{
  			throw new OverflowException();
 		}
+
+
 		public static FPL32 CheckedCast(long num)
 		{
 			if (num < MinInt || num > MaxInt)
@@ -1354,12 +1531,15 @@ namespace Loyc.Math
 		public FPL32(int num)
 		{
 			N = (Int64)num << Frac;
+
 		}
 		public FPL32(uint num)
 		{
 			N = (Int64)num << Frac;
+
 			if (num > (uint)MaxInt)
 				N = Int64.MaxValue;
+
 		}
 		public FPL32(long num)
 		{
@@ -1393,6 +1573,7 @@ namespace Loyc.Math
 		public static FPL32 operator -(FPL32 a, FPL32 b) { a.N -= b.N; return a; }
 		public static FPL32 operator -(FPL32 a) { a.N = -a.N; return a; }
 
+
 		public static FPL32 operator *(FPL32 a, FPL32 b)
 		{
 			return Prescaled(MathEx.MulShift(a.N, b.N, Frac));
@@ -1413,6 +1594,7 @@ namespace Loyc.Math
 			return a;
 			// TODO: test negative numbers: 7 / -2.5, -7 / 2.5, -7 / -2.5
 		}
+
 		public static FPL32 operator %(FPL32 a, FPL32 b) { a.N %= b.N; return a; }
 		public static FPL32 operator <<(FPL32 a, int b) { a.N <<= b; return a; }
 		public static FPL32 operator >>(FPL32 a, int b) { a.N >>= b; return a; }
@@ -1562,6 +1744,7 @@ namespace Loyc.Math
 
 		#endregion
 	}
+
 
 }
 

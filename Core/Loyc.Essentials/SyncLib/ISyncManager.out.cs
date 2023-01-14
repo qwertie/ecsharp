@@ -1,4 +1,4 @@
-// Generated from ISyncManager.ecs by LeMP custom tool. LeMP version: 30.1.0.0
+// Generated from ISyncManager.ecs by LeMP custom tool. LeMP version: 30.1.91.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -254,8 +254,8 @@ namespace Loyc.SyncLib
 		FieldId NextField { get; }
 
 		/// <summary>Some serializers do not support this method (see remarks).
-		/// If the method is supported, it determines whether a field with a specific
-		/// name exists, and if so, what type it has.</summary>
+		///   If the method is supported, it determines whether a field with a specific
+		///   name exists, and if so, what type it has.</summary>
 		/// <param name="name">Name to search for in the current stream. If this 
 		///   parameter is <see cref="FieldId.Missing"/> it is interpreted as a request 
 		///   to get the type of the next field or the next list item, which is only 
@@ -283,10 +283,10 @@ namespace Loyc.SyncLib
 		///   (2) name is <see cref="FieldId.Missing"/> and <see cref="SupportsNextField"/>.
 		///   If these conditions are not met, the method normally returns SyncType.Unknown.
 		///   <para/>
-		///   The SyncType enumeration has a collection of common types that are supported
-		///   by most data formats. However, some formats may not support all types, or
-		///   may store data in a different form than you might reasonably expect. For
-		///   example, when a byte array is stored in JSON, it is stored as a string by
+		///   The <see cref="SyncType"/> enumeration has a collection of common types that 
+		///   are supported by most data formats. However, some formats may not support all 
+		///   types, or may store data in a different form than you might reasonably expect. 
+		///   For example, when a byte array is stored in JSON, it is stored as a string by
 		///   default. When reading a byte array from JSON, GetFieldType will report that  
 		///   the type is SyncType.String because even though the reader is capable of 
 		///   decoding the string as a byte array, it cannot know that the string 
@@ -298,10 +298,11 @@ namespace Loyc.SyncLib
 		///   SyncType.String. This indicates that the data tream contains a String that 
 		///   is potentially convertible to SyncType.ByteList, although the conversion is 
 		///   not guaranteed to work. If you then read this field by calling
-		///   Sync(name, (byte[]) null) and it turns out that the string cannot be 
+		///   <c>Sync(name, (byte[]) null)</c> and it turns out that the string cannot be 
 		///   interpreted as a byte array, an exception will be thrown. After catching
 		///   this exception, it may or may not be possible to continue reading from the 
-		///   stream, depending on how the <see cref="ISyncManager"/> was implemented.
+		///   stream, depending on whether the <see cref="ISyncManager"/> was designed to
+		///   keep working after that kind of failure.
 		///   <para/>
 		///   If a value is not implicitly convertible to the expectedType, GetFieldType
 		///   should return SyncType.Missing even if the conversion is supported.
@@ -488,8 +489,8 @@ namespace Loyc.SyncLib
 		///   must be a reference that represents the object being saved, or null 
 		///   if the object is null. In Loading mode (and sometimes in Schema mode), 
 		///   <see cref="ISyncManager"/> ignores this parameter. If a value type is
-		///   being read/written, you can set this parameter to null to avoid 
-		///   memory allocation, but be sure to use a mode that includes 
+		///   being read/written, you can set this parameter to null to avoid a
+		///   memory allocation for boxing, but only if you use a mode that includes 
 		///   ObjectMode.NotNull and not ObjectMode.Deduplicate.</param>
 		/// <param name="mode">See <see cref="ObjectMode"/> for information 
 		///   about the possible modes. When ObjectMode.NotNull is present and

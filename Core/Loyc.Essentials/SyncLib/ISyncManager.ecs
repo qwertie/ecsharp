@@ -157,15 +157,16 @@ namespace Loyc.SyncLib
 		/// false otherwise. In all other cases, null is returned.</summary>
 		/// <remarks>
 		/// <ul>
-		/// <li>In Loading mode, the manager knows the list length if the list has 
-		///     variable length, in which case true or false is returned.</li>
+		/// <li>In Loading mode, the manager knows when the end of the list is reached,
+		///     so true or false is returned if a list is being scanned.</li>
 		/// <li>In Saving mode, the caller knows the list length but the manager does 
 		///     not, so this property always returns null.</li>
-		/// <li>In Schema mode, the no list actually exists, but the manager typically 
+		/// <li>In Schema mode, no list actually exists, but the manager typically 
 		///     pretends that the list's length is 1.</li>
-		/// <li>In Query and Merge modes, the manager doesn't know the list length but 
-		///     it may have a maximum list length. In this case, this property returns
+		/// <li>In Query mode, the manager doesn't know the list length but it may 
+		///     have a maximum list length. In this case, this property returns
 		///     null at the beginning, then true when the limit is reached.</li>
+		/// <li>In Merge mode... this needs some thought; TODO</li>
 		/// </ul>
 		/// </remarks>
 		bool? ReachedEndOfList { get; }

@@ -348,7 +348,7 @@ namespace Loyc.Math
 		/// <inheritdoc cref="CountOnes(int)"/>
 		public static int CountOnes(ulong x)
 		{
-			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472 || NET48
+			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47
 				x -= ((x >> 1) & 0x5555555555555555u);
 				x = (((x >> 2) & 0x3333333333333333u) + (x & 0x3333333333333333u));
 				x = (((x >> 4) + x) & 0x0f0f0f0f0f0f0f0fu);
@@ -453,7 +453,7 @@ namespace Loyc.Math
 		/// the input is zero.</summary>
 		public static int PositionOfLeastSignificantOne(uint i)
 		{
-			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472 || NET48
+			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47
 				int result = 0;
 				if ((ushort)i == 0)
 				{

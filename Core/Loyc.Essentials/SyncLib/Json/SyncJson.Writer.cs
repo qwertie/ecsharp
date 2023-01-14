@@ -58,7 +58,7 @@ namespace Loyc.SyncLib
 			=> Utf8ToString(Write(value, sync, options));
 
 		static string Utf8ToString(ReadOnlyMemory<byte> text)
-			#if NETSTANDARD2_0 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472
+			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
 			=> Encoding.UTF8.GetString(text.ToArray());
 			#else
 			=> Encoding.UTF8.GetString(text.Span);

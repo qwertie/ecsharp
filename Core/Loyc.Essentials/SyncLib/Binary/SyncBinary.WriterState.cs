@@ -334,7 +334,7 @@ partial class SyncBinary
 			if (num <= long.MaxValue && num >= long.MinValue) {
 				Write((long)num);
 			} else {
-				#if NETSTANDARD2_0 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462
+				#if NETSTANDARD2_0 || NET45 || NET46 || NET47
 				var numberBytes = num.ToByteArray();
 				int numNumberBytes = numberBytes.Length;
 				#else
@@ -356,7 +356,7 @@ partial class SyncBinary
 				span = span.Slice(_i);
 				Debug.Assert(span.Length >= numNumberBytes);
 
-				#if NETSTANDARD2_0 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462
+				#if NETSTANDARD2_0 || NET45 || NET46 || NET47
 				Array.Reverse(numberBytes);
 				numberBytes.CopyTo(span);
 				#else
@@ -388,7 +388,7 @@ partial class SyncBinary
 		{
 			Debug.Assert(outBuf.Length - _i >= numBytes);
 
-			#if !(NETSTANDARD2_0 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462)
+			#if !(NETSTANDARD2_0 || NET45 || NET46 || NET47)
 			if (num.TryWriteBytes(outBuf.Slice(_i), out int bytesWritten, false, isBigEndian: false)) {
 				Debug.Assert(bytesWritten == numBytes);
 				return;
@@ -410,7 +410,7 @@ partial class SyncBinary
 		public void Write(float num)
 		{
 			// TODO: what about endianness?
-			#if NETSTANDARD2_0 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462
+			#if NETSTANDARD2_0 || NET45 || NET462 || NET472
 			// inefficient
 			uint bytes = BitConverter.ToUInt32(BitConverter.GetBytes(num), 0);
 			#else
@@ -441,7 +441,12 @@ partial class SyncBinary
 		public void Write(ReadOnlySpan<char> str)
 		{
 			// Encoding.UTF8 allows unpaired surrogates. Technically this is "WTF-8"
+			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+			var array = str.ToArray();
+			int wtf8size = Encoding.UTF8.GetByteCount(array);
+			#else
 			int wtf8size = Encoding.UTF8.GetByteCount(str);
+			#endif
 			// worst-case overhead: 2 bytes for start/end markers + 5 for string length
 			int requiredBytes = 7 + wtf8size;
 
@@ -452,7 +457,13 @@ partial class SyncBinary
 
 			WriteSignedOrUnsigned((uint)wtf8size, (uint)wtf8size); // length prefix
 
+			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+			var outBytes = Encoding.UTF8.GetBytes(array, 0, array.Length);
+			outBytes.CopyTo(outSpan.Slice(_i));
+			int wtf8size2 = outBytes.Length;
+			#else
 			int wtf8size2 = Encoding.UTF8.GetBytes(str, outSpan.Slice(_i));
+			#endif
 			Debug.Assert(wtf8size == wtf8size2);
 			_i += wtf8size;
 

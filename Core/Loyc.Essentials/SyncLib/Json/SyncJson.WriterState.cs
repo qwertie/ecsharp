@@ -226,7 +226,7 @@ namespace Loyc.SyncLib
 				else {
 					Debug.Assert(_opt.ByteArrayMode != JsonByteArrayMode.Array);
 					if (_opt.NewtonsoftCompatibility || _opt.ByteArrayMode == JsonByteArrayMode.Base64) {
-						#if NETSTANDARD2_0 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NET47 || NET471 || NET472
+						#if NETSTANDARD2_0 || NET45 || NET46 || NET47
 						WriteProp(propName, System.Convert.ToBase64String(value.ToArray()));
 						#else
 						WriteProp(propName, System.Convert.ToBase64String(value));
