@@ -1,3 +1,4 @@
+using Loyc.Collections.Impl;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ namespace Loyc.SyncLib.Impl
 {
 	internal partial class WriterStateBase
 	{
-		protected IBufferWriter<byte> _output;
+		protected internal IBufferWriter<byte> _output;
 		//protected Memory<byte> _buf; // a sub-buffer returned from _output
 		protected int _i = 0; // next index within _out to write
 
@@ -37,10 +38,11 @@ namespace Loyc.SyncLib.Impl
 			_buf = _output.GetMemory(System.Math.Max(requiredBytes, MinimumBufSize));
 			return _buf.Span;
 		}
-		internal void Flush()
+		internal IBufferWriter<byte> Flush()
 		{
 			_output.Advance(_i);
 			_i = 0;
+			return _output;
 		}
 	}
 }

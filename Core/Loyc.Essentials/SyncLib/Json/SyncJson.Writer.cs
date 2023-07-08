@@ -18,7 +18,7 @@ namespace Loyc.SyncLib
 {
 	partial class SyncJson
 	{
-		public static SyncJson.Writer NewWriter(IBufferWriter<byte> output, Options? options = null)
+		public static SyncJson.Writer NewWriter(IBufferWriter<byte>? output = null, Options? options = null)
 			=> new Writer(new WriterState(output ?? new ArrayBufferWriter<byte>(), options ?? _defaultOptions));
 
 		public static ReadOnlyMemory<byte> Write<T>(T value, SyncObjectFunc<Writer, T> sync, Options? options = null)
@@ -86,7 +86,7 @@ namespace Loyc.SyncLib
 
 			public int? MinimumListLength => null;
 
-			public int Depth => _s._stack.Count - 1;
+			public int Depth => _s.Depth;
 
 			public object CurrentObject { set { } } // implementation is not needed for a writer
 
@@ -153,13 +153,27 @@ namespace Loyc.SyncLib
 			}
 
 			/// <summary>Ensures that all written output has been registered with the 
-			/// <see cref="IBufferWriter{byte}"/> object with which this writer was 
-			/// initialized, so that e.g. <see cref="ArrayBufferWriter{T}.WrittenMemory"/> 
-			/// returns complete JSON output. It is only necessary to call this method 
-			/// if you are writing a primitive (e.g. number or string), because flushing 
-			/// happens automatically when <see cref="ISyncManager.EndSubObject"/> is 
-			/// used to finish writing an object or list.</summary>
-			public void Flush() => _s.Flush();
+			///   <see cref="IBufferWriter{byte}"/> object with which this writer was 
+			///   initialized, and then returns it. If you called <see cref="NewWriter"/> 
+			///   without arguments, this function returns a <see cref="ArrayBufferWriter{T}"/>
+			///   (see example below).</summary>
+			/// <remarks>
+			///   It is only necessary to call this method just after writing a primitive 
+			///   (e.g. number or string), because flushing happens automatically when 
+			///   <see cref="ISyncManager.EndSubObject"/> is used to finish writing an 
+			///   object or list.
+			/// <para/>
+			///   Here's an example that uses this method to write a primitive:
+			/// <pre><![CDATA[
+			///     var writer = SyncJson.NewWriter();
+			///     writer.Sync(null, 1234.5);
+			///     var output = (ArrayBufferWriter<byte>) writer.Flush();
+			///     
+			///     // Output: 1234.5
+			///     Console.WriteLine("Output: " + Encoding.UTF8.GetString(output.WrittenSpan));
+			/// ]]></pre>
+			/// </remarks>
+			public IBufferWriter<byte> Flush() => _s.Flush();
 
 			public List? SyncListBoolImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<bool>

@@ -149,27 +149,6 @@ partial class SyncBinary
 	/// </remarks>
 	public class Options
 	{
-		/// <summary>Controls whether field IDs are written to and read from the 
-		///   file. The default is Off, which is the fastest and produces the most
-		///   compact output, but is less able to detect file corruption and
-		///   mistakes in your versioning code.</summary>
-		public FieldIdMode FieldIdMode { get; set; } = FieldIdMode.Off;
-
-		/// <summary>This property controls the byte order when writing floating-
-		///   point numbers, which always use a fixed-size format. "Big endian" 
-		///   means that the "high" byte that contains the sign bit is written 
-		///   first. If this property is false, little-endian format is used 
-		///   instead, which means that the high byte is written last.
-		///   Default: false</summary>
-		public bool BigEndianFloats { get; set; } = false;
-
-		/// <summary>This property controls whether integers are stored in fixed-
-		/// size format by default. This option only takes effect when a new 
-		/// object starts (when <see cref="ISyncManager.BeginSubObject"/> is called).
-		/// </summary>
-		public IntFormat DefaultIntFormat { get; set; } = IntFormat.SyncLib;
-		public IntFormat LengthPrefixFormat { get; set; } = IntFormat.SyncLib;
-
 		/// <summary>Maximum size of one number, in bytes. The default is 1 MB, i.e. a 
 		///   maximum value of roughly <c>(BigInteger)int.MaxValue << (8 * 1024 * 1024)</c>.
 		///   An exception occurs if you try to serialize/deserialize a number
@@ -184,12 +163,20 @@ partial class SyncBinary
 		///   size, however.</summary>
 		public Markers Markers { get; set; } = Markers.Default;
 
+		/// <summary>The <see cref="ObjectMode"/> used to read/write the root object.
+		///   This option has no effect if you are using <see cref="NewWriter"/> or 
+		///   <see cref="NewReader"/>.</summary>
+		public ObjectMode RootMode { get; set; } = ObjectMode.Normal;
+
 		#region Writer-specific options
 
 		public ForWriter Write { get; set; } = new ForWriter();
 
 		public class ForWriter
 		{
+			/// <summary>Initial size of the output buffer when writing JSON (default: 1024).
+			/// This property is ignored if you provide your own buffer to <see cref="SyncJson.NewWriter"/></summary>
+			public int InitialBufferSize { get; set; } = 512;
 		}
 
 		#endregion
@@ -208,6 +195,20 @@ partial class SyncBinary
 			/// <remarks>For example, 33000 is too large for Int16, and if this property
 			///   is true it will be "truncated" to -32536.</remarks>
 			public bool SilentlyTruncateLargeNumbers { get; set; } = false;
+
+			/// <summary>This property requests that if a property is set to null but read as 
+			///   a primitive type, the default value of that type should be returned instead
+			///   of throwing an exception. For example, if <see cref="Reader.Sync(FieldId, int)"/>
+			///   encounters a null, it will return 0 instead if throwing an exception if this
+			///   property is true.</summary>
+			/// <seealso cref="ObjectMode.ReadNullAsDefault"/>
+			public bool ReadNullPrimitivesAsDefault { get; set; } = false;
+
+			/// <summary>When this property is true and the root object has been read successfully,
+			///   the reader checks whether there is additional non-whitespace text beyond the end 
+			///   of what was read, and throws an exception if extra junk is encountered.</summary>
+			public bool VerifyEof { get; set; } = true;
+
 		}
 
 		#endregion
@@ -221,8 +222,12 @@ partial class SyncBinary
 		Objects = ObjectStart | ObjectEnd,
 		ListStart = 4,
 		ListEnd = 8,
-		TypeTag = 16,
-		Default = Objects | TypeTag,
-		All = 31,
+		Lists = ListStart | ListEnd,
+		TupleStart = 16,
+		TupleEnd = 32,
+		Tuples = TupleStart | TupleEnd,
+		TypeTag = 64,
+		Default = Objects | ListStart | TypeTag,
+		All = 127,
 	}
 }

@@ -5,27 +5,34 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Numerics;
 using System.Collections;
+using System.Buffers;
+using Loyc.Compatibility;
 
 namespace Loyc.SyncLib;
 
 /// <summary>
 ///   Convenience methods for a fast pair of <see cref="ISyncManager"/> implementations
-///   intended for binary files/streams. The binary format stores no metadata, so it is
-///   fast and compact but must be used carefully to avoid data corruption (see remarks).
+///   intended for binary files/streams. The binary format is very fast and compact 
+///   because it stores no metadata, but it must be used with care to avoid data 
+///   corruption (see remarks).
 /// </summary>
 /// <remarks>
-///   The binary <see cref="ISyncManager"/> implementations (which are used by the 
-///   static methods in this class) do not support reordering or the <c>NextField</c>
-///   property, and they don't store metadata such as field names in the output. However,
-///   they do support deduplication (including cyclic object graphs).
+///   The binary <see cref="ISyncManager"/> implementations used by the static methods 
+///   in this class do not support reordering or the <c>NextField</c> property, and 
+///   they don't store metadata such as field names in the output. However, they do 
+///   support deduplication (including cyclic object graphs).
 /// <para/>
 ///   Fields must be read/written in the same order they were read, and with the same 
-///   data type (or a "compatible" data type as described below), or at best it will 
-///   not be possible to read the data stream. At worst, the data stream could seem
-///   to be read successfully but produce a garbage result.
+///   data type (or a "compatible" data type as described below), or (at best) it will 
+///   be impossible to read the data stream. At worst, the data stream could seem
+///   to be read successfully but produce a garbage result. 
 /// <para/>
-///   To understand this, suppose that in version 1 of your software, you write a
-///   class with an integer field called "SerialNumber":
+///   For this reason, you'll need to use versioning code (as explained below) if you
+///   can't ensure that the data will be read by the same version of your software that 
+///   originally wrote it.
+/// <para/>
+///   To understand the problem, suppose that in version 1 of your software, you write 
+///   a class with an integer field called "SerialNumber":
 /// <code>
 ///     class MyItem
 ///     {
@@ -61,13 +68,14 @@ namespace Loyc.SyncLib;
 ///   in fact, by coincidence, if you serialize the array <c>new byte[] { 193, 0, 1 }</c>
 ///   the output is exactly the same 4 bytes! This is why you must read a binary data stream 
 ///   with the same schema you used to read it (same fields, same types, same order). If the
-///   schema is not exactly the same (and isn't compatible according to the rules in the 
-///   descriptions of the data type formats below) then reading will either fail or (worse)
-///   produce a garbage answer.
+///   schema is not exactly the same (and isn't compatible according to the rules listed
+///   below) then reading will fail in most cases, and in rare cases could produce a garbage 
+///   answer.
 ///   
 /// <h3>Versioning with SyncBinary</h3>
 ///
-///   Suppose that in version 2 of our software, we change the type of SerialNumber to string.
+///   Suppose that in version 2 of our software, we change the type of SerialNumber to 
+///   string.
 /// <code>
 ///     class MyItem
 ///     {
@@ -83,19 +91,17 @@ namespace Loyc.SyncLib;
 ///   as far as SyncBinary is concerned (of course, the real problem was that the data 
 ///   type changed).
 /// <para/>
-///   Does this mean you can't use <see cref="SyncBinary"/> for data types that may change
-///   over time? Not at all!
-/// <para/>
-///   Rather, you should usually implement versioning manually if you want your 
-///   synchronizer to be compatible with <see cref="SyncBinary"/>. The nice thing about 
-///   manual versioning is that it is still compatible (and useful) in other data formats 
-///   such as JSON. You can be compatible with <see cref="SyncBinary"/>, 
-///   <see cref="SyncJson"/> and protocol buffers all at the same time, but your JSON output 
-///   will have one or more version fields (which is probably a good thing anyway!).
+///   Therefore, in most cases you should use a manual versioning process if you want 
+///   your synchronizer to be compatible with <see cref="SyncBinary"/>. The nice thing 
+///   about manual versioning is that it not only maintains compatibility with other data 
+///   formats such as JSON, but also adds clarification to your JSON output. So you can 
+///   be compatible with <see cref="SyncBinary"/>, <see cref="SyncJson"/> and protocol 
+///   buffers all at the same time, while also allowing your data format to evolve over 
+///   time.
 /// <para/>
 ///   One useful pattern is to write a format version number in a "top-level" object and
 ///   then use that version number in child objects. For example, suppose that <c>MyItem</c>
-///   objects are organized in groups:
+///   objects are always organized in groups:
 /// <code><![CDATA[
 ///     class MyItemGroup
 ///     {
@@ -113,7 +119,7 @@ namespace Loyc.SyncLib;
 ///     	{
 ///     		Version = sm.Sync("Version", Version);
 ///     		if (Version < 1 || Version > 2)
-///     			throw new InvalidOperationException("Invalid version number for item group");
+///     			throw new InvalidOperationException("Item group has unrecognized version number");
 ///     
 ///     		group ??= new MyItemGroup();
 ///     		group.GroupName = sm.Sync("GroupName", group.GroupName);
@@ -215,6 +221,50 @@ namespace Loyc.SyncLib;
 ///   MyItemV1). The idea here is that it is easier to avoid accidentally changing
 ///   the old schema if you avoid changing the old code.
 ///   
+/// <h3>Data type interchangeability</h3>
+/// 
+///   The binary format is designed in such a way that certain data types/values are 
+///   interchangeable. This means that in some cases it is possible to change certain 
+///   data types into certain other data types while retaining backward compatibility 
+///   (ability to read old versions of the format using new code that expects a 
+///   different type than was originally stored).
+///   
+///   1. You can upgrade an integer type to a larger integer type with the same 
+///      signedness, e.g. `short` to `int`, or `uint` to `ulong`, or even `int` to 
+///      `BigInteger`. (This rule does not apply to bitfields, which in general 
+///      cannot change size.)
+///   2. You can change a signed integer type into an unsigned integer type if the
+///      old streams do not contain any negative numbers. Note: DO NOT change unsigned 
+///      numbers into signed numbers, because some unsigned numbers would be interpreted 
+///      as being negative.
+///   3. You can change `bool` to any integer type or nullable integer type.
+///   4. You can change `bool?` to any nullable integer type.
+///   5. You can change any of `byte sbyte ushort short int uint` to `bool` or `bool?`.
+///   6. You can change any of `byte? sbyte? ushort? short? int? uint?` to `bool?`.
+///   7. You can change `char` to `ushort` or vice versa.
+///   8. You can change a string into a byte array.
+///   9. You can change any integer type into its nullable equivalent, e.g. 
+///      `int` to `int?`.
+///   10. You can change a floating-point or decimal field to its nullable equivalent
+///       or vice versa: `float` to `float?`, `double` to `double?`, or `decimal` to 
+///       `decimal?`. Note: floating-point formats cannot be enlarged.
+///   11. Depending on your <see cref="SyncBinary.Options"/>, it may be safe to 
+///       interchange a tuple with the fields it is made of, if you are NOT using the
+///       <see cref="ObjectMode.Deduplicate"/> flag (as explained in the section below
+///       about the Tuple format).
+/// 
+///   All other type changes are unsafe and require you to write versioning code.
+///   
+///   It's important to note, also, that changing the <see cref="ObjectMode"/> of a 
+///   field is unsafe unless otherwise indicated. For exmaple, adding or removing the 
+///   <see cref="ObjectMode.Deduplicate"/> flag is unsafe unless the object, list or 
+///   tuple being written begins with a marker (see <see cref="Options.Markers"/>).
+///   
+///   Finally, you must not change certain settings of <see cref="SyncBinary.Options"/>
+///   between writing a data stream and reading it again. In particular, do not change
+///   <see cref="Options.Markers"/>, and don't change <see cref="Options.RootMode"/> in
+///   ways that affect the file format.
+/// 
 /// <h3>Data encodings</h3>
 /// 
 ///   The following encoding schemes for key data types are "set in stone": they won't
@@ -223,25 +273,98 @@ namespace Loyc.SyncLib;
 /// <h4>Object/array start/end markers</h4>
 /// 
 ///   SyncBinary can optionally output markers at the start/end of an object. Their
-///   purpose is simply to increase the chance that when a data stream is being read
+///   main purpose is simply to increase the chance that when a data stream is being read
 ///   incorrectly (because you are not reading exactly the same fields/types that were 
 ///   written) an exception will occur soon afterward. Markers increase the data size,
 ///   however.
 ///   
-///   All the markers are single ASCII bytes, e.g. if a marker is '{', that means 0x7B.
-///   The start-object marker is '{' when entering an odd-numbered Depth, or '(' if even.
-///   The end-object marker is '}' when exiting an odd-numbered Depth, or ')' otherwise.
+///   All the markers are single ASCII bytes, e.g. if a marker is '{', that means 123.
+///   The start-object marker is '{' when entering an even-numbered Depth, or '(' if odd.
+///   The end-object marker is '}' when exiting an even-numbered Depth, or ')' otherwise.
 ///   The start-list marker is always '['; the end-list marker is always ']'. Please note
-///   that strings count as lists, and will have list markers if they are enabled.
+///   that strings count as lists of bytes, and will have list markers if they are 
+///   enabled.
 ///   
 ///   <see cref="SyncBinary.Options.Markers"/> controls which markers are read/written.
 ///   Markers cannot be auto-detected (for example, if the data stream contains '{' there 
-///   is no way to tell whether it's a marker or whether 0x7B is part of a data value); 
-///   when reading a binary data stream, you must use the same marker mode as when the 
-///   blob was written, or reading will fail.
+///   is no way to tell whether it's a marker or whether 0x7B is part of a data value).
+///   Therefore, when reading a binary data stream, you must use the same marker mode as 
+///   when the blob was written, or reading will fail.
 ///   
-///   The default behavior is to write start/end markers for objects and type tags, but 
-///   not for lists.
+///   The default behavior is to write start/end markers for objects and type tags, and
+///   to write a start marker <i>but no end marker</i> for lists (including strings);
+///   the omitted end marker saves space.
+///   
+///   A side effect of enabling start markers is that you can safely add or remove the 
+///   <see cref="ObjectMode.Deduplicate"/> flag when writing an object that has a marker.
+///   By default, objects and lists have start markers but tuples do not.
+///   
+///   If an object or list reference is null, it is written as a single 255 byte without
+///   any markers. The same thing is written when markers are disabled.
+/// 
+/// <h4>Tuples</h4>
+/// 
+///   Both lists and normal objects can be written in tuple mode by including the
+///   <see cref="ObjectMode.Tuple"/> mode flag. This mode is useful for writing short 
+///   fixed-length sequences of values in a compact way.
+/// 
+///   When writing a list in tuple mode, the list length is omitted from the output in 
+///   order to make the output more compact. You must instead specify a <c>tupleLength</c>
+///   parameter when you call any of the <c>SyncList</c> extension methods.
+///   
+///   Start/end markers can be enabled/disabled separately for tuples, and by default, 
+///   markers are disabled. If you enable markers, the start/end markers are the same
+///   as for lists ('[' and ']'). If markers are disabled, the raw fields of the tuple
+///   are written to the output stream without any indication that the current object
+///   has changed. 
+///   
+///   <b>If markers and deduplication are disabled</b>, it is possible to interchange a 
+///   tuple of length N with N fields that have the same types. For example, if you write 
+///   a tuple with two fields (an integer and a string), the data stream simply contains 
+///   the integer followed by the string. Therefore, it is possible to change a normal 
+///   integer and string field into a tuple without breaking backward compatibility 
+///   (again, only if markers and deduplication are disabled). The same is true for 
+///   ordinary objects, except that markers are enabled by default on ordinary objects.
+/// 
+/// <h4>Deduplication</h4>
+/// 
+///   When deduplication is enabled on a particular subobject or sublist, the object 
+///   will have a deduplication marker right <i>before</i> the start marker (if any),
+///   unless the value written is null. The deduplication marker begins either with 
+///   
+///   1. '#' (35) to indicate that the object is being seen for the first time and 
+///      will follow
+///   2. '@' (64) to indicate that the object has been seen before and no data will
+///      follow (not even start/end markers).
+///   
+///   The `#` or `@` is followed by a variable-length integer which is an object ID.
+///   
+///   For example, suppose you write the same string reference twice using 
+///   deduplication:
+///   
+///       syncManager.SyncList("1", "Hello", ObjectMode.Deduplicate);
+///       syncManager.SyncList("2", "Hello", ObjectMode.Deduplicate);
+///       
+///   Given the default markers, the output bytes would be
+///   
+///       '#', 0x01, '[', 0x05, 'H', 'e', 'l', 'l', 'o', '@', 0x01
+///   
+///   Or in other words
+///   
+///       35, 1, 91, 5, 72, 101, 108, 108, 111, 64, 1
+/// 
+///   If the start marker is enabled (as it is by default), then it is safe to add or 
+///   remove the <see cref="ObjectMode.Deduplicate"/> flag between writing the data 
+///   stream and reading it again. This is because <see cref="SyncBinary.Reader"/> 
+///   can tell whether the Deduplicate mode was originally present when writing the
+///   stream: if it was, the first byte is '#' or '@', otherwise the first byte is '['
+///   or 255 (meaning null). If the start marker is disabled, this doesn't work because
+///   (for example) it would be ambiguous whether '#' represents a deduplication marker
+///   or a list of length 35.
+///   
+///   For strings in particular, you can change <c>syncManager.Sync(fieldId, stringVal)</c> 
+///   to <c>syncManager.SyncList(fieldId, stringVal, ObjectMode.Deduplicate)</c> safely
+///   if <see cref="Markers.ListStart"/> is enabled (as it is by default).
 /// 
 /// <h4>Object type tag</h4>
 /// 
@@ -272,7 +395,7 @@ namespace Loyc.SyncLib;
 ///   there is no limit to the number of bits in the number. However, SyncBinary.Reader 
 ///   and SyncBinary.Writer limit the number size, by default, to 1 MB, large enough 
 ///   for <c>(BigInteger)1 << (8 * 1024 * 1024)</c>. Also, the length prefix is not 
-///   allowed to start with 1111111x.
+///   allowed to start with 1111111x (0xFE or 0xFF).
 /// <para/>
 ///   This format offers several advantages:
 ///   <ul>
@@ -354,6 +477,7 @@ namespace Loyc.SyncLib;
 ///   retaining backward compatibility.
 /// <para/>
 ///   If list markers are enabled, '[' is written before the string and ']' after.
+///   However, if the string is null, the markers are omitted (only 0xFF is written).
 /// <para/>
 ///   Surrogate pairs in the .NET representation are converted to single 4-byte 
 ///   characters in the UTF-8 format.
@@ -362,12 +486,13 @@ namespace Loyc.SyncLib;
 ///   
 ///   An individual <c>char</c> is saved the same way as a <c>ushort</c> (unsigned 
 ///   16-bit integer). This is a variable-size format between 1 and 3 bytes.
+///   For example, the character 'A' is encoded as 0x41.
 ///   
 /// <h4>Booleans</h4>
 ///   
-///   A boolean is encoded as an integer where 0 = false and 1 = true (and as usual,
-///   255 = null). When reading a boolean from the data stream, it is read as a 32-bit 
-///   integer, which is interpreted as `false` if it is 0 and `true` otherwise.
+///   A boolean is encoded as a signed integer where 0 = false and 1 = true (and as 
+///   usual, 255 = null). When reading a boolean from the data stream, it is read as a 
+///   32-bit integer, which is interpreted as `false` if it is 0 and `true` otherwise.
 ///   This means you can safely change an integer field to boolean or vice versa
 ///   between versions.
 ///   
@@ -375,6 +500,25 @@ namespace Loyc.SyncLib;
 ///   
 ///   Floating point numbers are stored in 32-bit or 64-bit little-endian fixed-size 
 ///   IEEE 754 format.
+///   
+///   Nullable floating point numbers are the same size, but use a specific NaN value
+///   to represent null: 0xFFF368E0 for 32-bit floats and 0xFFFE6C6C_756E06FE for 64-bit
+///   floats. 0xFFF36EE0 typically shows up as "àhóÿ" in a hex editor ("ahoy", get it?),
+///   while 0xFFFE6C6C_756E06FE looks something like "þ nullþÿ". Why these particular 
+///   values?
+///   
+///   1. They are different from the standard .NET NaN values (0xFFC00000 and 
+///      0xFFF8000000000000).
+///   2. They are not hard to spot in a hex editor.
+///   3. They are unlikely to be the same as other NaN values that users might use,
+///      as they have the high bit set (making them "quiet" NaNs on x64/ARM) and are
+///      near (but not *too* near) the "top" of the NaN space.
+///   4. If the pattern 0xFFF368E0 is reinterpreted as an integer, it begins with E0 
+///      whose top nibble 0xE marks the integer as being four bytes long. So if you
+///      interpret floating-point null as an integer, it's still a single number.
+///      That number is 0x68F3FF, however, which has no particular meaning. Similarly
+///      0xFFFE6C6C_756E06FE starts with FE 06, which marks the integer as 8 bytes long
+///      (having a meaningless value of 0x6E756C6CFEFF).
 ///   
 /// <h4>Decimal</h4>
 /// 
@@ -390,6 +534,11 @@ namespace Loyc.SyncLib;
 ///   are significant. For example, 7.00m is different from 7m (but equal to it). For 
 ///   7m, the integer part is 7 and the negative exponent is 0; for 7.00m, the integer 
 ///   part is 700 and the negative exponent is 2.
+///   
+///   The null value of `decimal?` is represented by 16 bytes that are all 0xFF. When
+///   reading a `decimal?`, the 13th and 14th bytes are checked to see if they are
+///   0xFF, and if so, the value is treated as null. If they are neither 0xFF nor 0x00,
+///   an exception is thrown.
 /// 
 /// <h4>Arrays/lists/Memory&lt;T></h4>
 ///   
@@ -397,23 +546,46 @@ namespace Loyc.SyncLib;
 /// <para/>
 ///   Arrays/lists are length-prefixed, and the length itself uses the standard integer 
 ///   format laid out above. For example, <c>new[] { 1, 10, 100, 1000 }</c> is encoded 
-///   in six bytes as <c>4, 1, 10, 100, 0b10000011, 0b11101000</c>. Null is encoded in a 
-///   single byte (255). An empty array is also a single byte (0).
+///   in six bytes if markers are disabled (<c>4, 1, 10, 100, 0b10000011, 0b11101000</c>).
+///   Null is encoded in a single byte (255). An empty array is also a single byte (0).
+/// <para/>
+///   When writing null, list markers are omitted (only 0xFF is written).
 ///   
 /// </remarks>
-partial class SyncBinary
+public partial class SyncBinary
 {
 	public static ReadOnlyMemory<byte> Write<T>(T value, SyncObjectFunc<Writer, T> sync, Options? options = null)
 	{
-		throw new NotImplementedException();
+		options ??= _defaultOptions;
+		var output = new ArrayBufferWriter<byte>(options.Write.InitialBufferSize);
+		Writer writer = NewWriter(output, options);
+		SyncManagerExt.Sync(writer, null, value, sync, options.RootMode);
+		writer._s.Flush();
+		return output.WrittenMemory;
 	}
 	public static ReadOnlyMemory<byte> WriteI<T>(T value, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 	{
-		throw new NotImplementedException();
+		options ??= _defaultOptions;
+		var output = new ArrayBufferWriter<byte>(options.Write.InitialBufferSize);
+		Writer writer = NewWriter(output, options);
+		SyncManagerExt.Sync(writer, null, value, sync, options.RootMode);
+		writer._s.Flush();
+		return output.WrittenMemory;
 	}
 	public static ReadOnlyMemory<byte> Write<T, SyncObject>(T value, SyncObject sync, Options? options = null)
 		where SyncObject : ISyncObject<SyncBinary.Writer, T>
 	{
-		throw new NotImplementedException();
+		options ??= _defaultOptions;
+		var output = new ArrayBufferWriter<byte>(options.Write.InitialBufferSize);
+		Writer writer = NewWriter(output, options);
+		SyncManagerExt.Sync(writer, null, value, sync, options.RootMode);
+		writer._s.Flush();
+		return output.WrittenMemory;
 	}
+
+	public static SyncBinary.Writer NewWriter(IBufferWriter<byte> output, Options? options = null)
+		=> new Writer(new WriterState(output ?? new ArrayBufferWriter<byte>(), options ?? _defaultOptions));
+
+	internal const uint FloatNullBitPattern = 0xFFF368E0u;
+	internal const ulong DoubleNullBitPattern = 0xFFFE6C6C_756E06FE;
 }

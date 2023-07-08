@@ -1,4 +1,4 @@
-// Generated from BigStandardModel.ecs by LeMP custom tool. LeMP version: 30.1.0.0
+// Generated from BigStandardModel.ecs by LeMP custom tool. LeMP version: 30.1.91.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -182,7 +182,7 @@ namespace Loyc.SyncLib.Tests
 				"Yarn", "Twine\0", "\u0001\a\b\n\r\t\v•"
 			};
 			StringList = new List<string> { 
-				"Rope", "String", "Thread🧵", "💩¡", "￭\uDCED\uDCB0\uDC80\uDCED\uDCB3\uDCBF\uDCED\uDCBF\uDCBF", "�"
+				"Rope", "String", "Thread🧵", "💩¡", "￭\uDC00\uDCFF\uDFFF", "\uD800"
 			};
 			StringColl = StringList;
 			Uint8Array = new byte[] { 
@@ -390,8 +390,8 @@ namespace Loyc.SyncLib.Tests
 			CharMemory = CharArray.AsMemory();
 		}
 	}
-	
-	
+
+	#pragma warning disable 8601, 8619, 8620	// Disable nullability warnings for generated code
 	struct BigStandardModelSync<S> : ISyncObject<S, StandardFields>, ISyncObject<S, BigStandardModel>, ISyncObject<S, BigStandardModelNoMem> where S: ISyncManager
 	
 	{

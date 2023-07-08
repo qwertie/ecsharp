@@ -18,14 +18,18 @@ namespace Loyc.SyncLib
 		/// <summary>The core logic for writing JSON data in UTF-8 format</summary>
 		internal partial class WriterState : WriterStateBase
 		{
-			internal Options _opt;
-			internal Options.ForWriter _optWrite;
 			internal bool _isInsideList = true;
-			internal InternalList<ObjectMode> _stack = InternalList<ObjectMode>.Empty;
-			internal byte[] _indent;
-			internal byte[] _newline;
-			internal byte _pendingComma;
-			internal int _compactMode;
+			internal Options _opt;
+			protected Options.ForWriter _optWrite;
+
+			/// <summary>Keeps track of objects that the user has started writing with 
+			///   BeginSubObject, but hasn't finished writing.</summary>
+			protected InternalList<ObjectMode> _stack = InternalList<ObjectMode>.Empty;
+
+			protected byte[] _indent;
+			protected byte[] _newline;
+			protected byte _pendingComma;
+			protected int _compactMode;
 			
 			public WriterState(IBufferWriter<byte> output, Options options) : base(output) {
 				_opt = options;
@@ -34,12 +38,7 @@ namespace Loyc.SyncLib
 				_newline = Encoding.UTF8.GetBytes(_optWrite.Newline);
 			}
 
-			// TODO: try GetOutSpan instead
-			protected new Span<byte> FlushAndGetOutSpan(int requiredBytes)
-			{
-				Flush();
-				return _output.GetSpan(requiredBytes);
-			}
+			public int Depth => _stack.Count;
 
 			// Writes the pending comma/newline, if any, and gets a Span for writing.
 			Span<byte> GetNextBuf(int requiredBytes)

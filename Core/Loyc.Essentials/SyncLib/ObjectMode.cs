@@ -21,7 +21,7 @@ namespace Loyc.SyncLib
 		///   methods, this mode will be used implicitly if both the List and Tuple
 		///   flags are missing.</remarks>
 		List = 1,
-		
+
 		/// <summary>A tuple object, in which there are a fixed number of unnamed 
 		/// fields (and the number of fields is known before starting to load the
 		/// tuple). <see cref="ISyncManager.IsInsideList"/> will be true inside 
@@ -33,7 +33,10 @@ namespace Loyc.SyncLib
 		///   Tuple mode (without a list length), Tuple mode must be specified by
 		///   the loading code, and it must already know the list length, as 
 		///   <see cref="ISyncManager.MinimumListLength"/> and 
-		///   <see cref="ISyncManager.ReachedEndOfList"/> will be null.</remarks>
+		///   <see cref="ISyncManager.ReachedEndOfList"/> will be null.
+		///   Many extension methods have a <c>tupleLength</c> parameter which 
+		///   specifies this missing list length.
+		/// </remarks>
 		Tuple = 3,
 
 		/// <summary>Deduplication is performed on the subobject, allowing object graphs 
@@ -49,14 +52,15 @@ namespace Loyc.SyncLib
 		/// reading/writing value types as a hint to the serializer to avoid boxing.
 		/// </summary>
 		NotNull = 8,
-		
+
 		/// <summary>The object can have multiple types or derived classes, so a
 		/// type identifier needs to be saved to make deserialization possible.
 		/// TODO: figure out how it will work and say something about that here</summary>
 		//DynamicType = 16,
-		
+
 		/// <summary>Requests that compact formatting be used when writing this object.
-		/// When using <see cref="SyncJson.Writer"/>, this mode suppresses newlines.</summary>
+		///   When using <see cref="SyncJson.Writer"/>, this mode suppresses newlines.
+		///   When using <see cref="SyncBinary"/>, this mode flag is ignored.</summary>
 		Compact = 128,
 
 		/// <summary>Requests that when there is a null value in the data stream and

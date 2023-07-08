@@ -14,12 +14,10 @@ namespace Loyc.SyncLib;
 
 partial class SyncBinary
 {
-	public static SyncBinary.Writer NewWriter(IBufferWriter<byte> output, Options? options = null)
-		=> new Writer(new WriterState(output ?? new ArrayBufferWriter<byte>(), options ?? _defaultOptions));
-
 	/// <summary>
 	///   The <see cref="ISyncManager"/> implementation for writing <see cref="SyncBinary"/>'s 
-	///   data format.
+	///   data format. Please call <see cref="WriteI"/> or <see cref="Write"/> if you just 
+	///   want to serialize something, or <see cref="NewWriter"/> to create one of these.
 	/// </summary>
 	public struct Writer : ISyncManager
 	{
@@ -34,13 +32,13 @@ partial class SyncBinary
 		public bool SupportsDeduplication => true;
 		public bool NeedsIntegerIds => false;
 
-		public bool IsInsideList => _s._isInsideList;
+		public bool IsInsideList => _s.IsInsideList;
 
 		public bool? ReachedEndOfList => null;
 
 		public int? MinimumListLength => null;
 
-		public int Depth => _s._depth;
+		public int Depth => _s.Depth;
 
 		public object CurrentObject { set { } } // implementation is not needed for a writer
 
@@ -48,14 +46,14 @@ partial class SyncBinary
 
 		public FieldId NextField => FieldId.Missing;
 
-		public (bool Begun, object Object) BeginSubObject(FieldId name, object childKey, ObjectMode mode, int listLength = -1)
+		public (bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1)
 		{
-			throw new NotImplementedException();
+			return _s.BeginSubObject(childKey, mode, listLength);
 		}
 
 		public void EndSubObject()
 		{
-			throw new NotImplementedException();
+			_s.EndSubObject();
 		}
 
 		public SyncType GetFieldType(FieldId name, SyncType expectedType = SyncType.Unknown) => SyncType.Unknown;
@@ -66,11 +64,11 @@ partial class SyncBinary
 
 		public sbyte  Sync(FieldId name, sbyte savable) { _s.Write(savable); return savable; }
 
-		public byte   Sync(FieldId name, byte savable) { _s.Write(savable); return savable; }
+		public byte   Sync(FieldId name, byte savable) { _s.Write((uint) savable); return savable; }
 
 		public short  Sync(FieldId name, short savable) { _s.Write(savable); return savable; }
 
-		public ushort Sync(FieldId name, ushort savable) { _s.Write(savable); return savable; }
+		public ushort Sync(FieldId name, ushort savable) { _s.Write((uint) savable); return savable; }
 
 		public int    Sync(FieldId name, int savable) { _s.Write(savable); return savable; }
 
@@ -90,7 +88,7 @@ partial class SyncBinary
 
 		public char   Sync(FieldId name, char savable) { _s.Write((ushort)savable); return savable; }
 
-		public string Sync(FieldId name, string savable) { _s.Write(savable); return savable; }
+		public string? Sync(FieldId name, string? savable) { _s.Write(savable); return savable; }
 
 		public int Sync(FieldId name, int savable, int bits, bool signed = true)
 		{
@@ -145,7 +143,7 @@ partial class SyncBinary
 			return savable;
 		}
 
-		private static bool MayBeNullable(ObjectMode mode)
+		static bool MayBeNullable(ObjectMode mode)
 			=> (mode & (ObjectMode.NotNull | ObjectMode.Deduplicate)) != ObjectMode.NotNull;
 
 		public List? SyncListBoolImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
@@ -175,6 +173,12 @@ partial class SyncBinary
 			where ListBuilder : IListBuilder<List, char>
 		{
 			throw new NotImplementedException();
+		}
+
+		public IBufferWriter<byte> Flush()
+		{
+			_s.Flush();
+			return _s._output;
 		}
 	}
 }

@@ -24,6 +24,7 @@ namespace Loyc.Tests
 		public static readonly VList<Pair<string, Func<int>>> Menu = new VList<Pair<string, Func<int>>>()
 		{
 			new Pair<string,Func<int>>("Run unit tests of Loyc.Essentials.dll",  Loyc_Essentials),
+			new Pair<string,Func<int>>("Run unit tests of Loyc.SyncLib.dll",     Loyc_SyncLib),
 			new Pair<string,Func<int>>("Run unit tests of Loyc.Math.dll",        Loyc_Math),
 			new Pair<string,Func<int>>("Run unit tests of Loyc.Collections.dll", Loyc_Collections),
 			new Pair<string,Func<int>>("Run unit tests of Loyc.Syntax.dll",      Loyc_Syntax),
@@ -118,7 +119,21 @@ namespace Loyc.Tests
 				SelectDictionaryFromKeysTests.TestObjects[0],
 				SelectDictionaryFromKeysTests.TestObjects[1],
 				new GTests(),
-				new PrintHelpersTests());
+				new PrintHelpersTests()
+			);
+		}
+		public static int Loyc_SyncLib()
+		{
+			return MiniTest.RunTests.RunMany(
+				new SyncBinaryWriterTests(),
+				new SyncBinaryReaderTests(),
+				new SyncJsonWriterTests(),
+				new SyncJsonTests(newtonCompat: true, false, false),
+				new SyncJsonTests(newtonCompat: true, true, false),
+				new SyncJsonTests(newtonCompat: false, false, false),
+				new SyncJsonTests(newtonCompat: false, true, true),
+				new SyncJsonReaderTests()
+			);
 		}
 		public static int Loyc_Collections()
 		{
@@ -170,7 +185,8 @@ namespace Loyc.Tests
 			return MiniTest.RunTests.RunMany(
 				new MathExTests(),
 				new LineMathTests(),
-				new PointMathTests());
+				new PointMathTests()
+			);
 		}
 		public static int Loyc_Syntax()
 		{
@@ -195,7 +211,8 @@ namespace Loyc.Tests
 				new StreamCharSourceTests(),
 				new ParseHelpersTests(),
 				new LexerSourceTests_Calculator(),
-				new ParserSourceTests_Calculator());
+				new ParserSourceTests_Calculator()
+			);
 		}
 		public static int Loyc_Utilities()
 		{
@@ -207,7 +224,8 @@ namespace Loyc.Tests
 				new UGTests(),
 				new GoInterfaceTests(),
 				new CPTrieTests(),
-				new KeylessHashtableTests());
+				new KeylessHashtableTests()
+			);
 		}
 	}
 }

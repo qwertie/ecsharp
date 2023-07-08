@@ -1,9 +1,4 @@
 
-
-
-
-
-
 // This is a generated file
 using Loyc.Math;
 using System.Diagnostics;
@@ -20,9 +15,6 @@ namespace Loyc.Geometry
 		Infinite
 	}
 }
-
-
-
 
 namespace Loyc.Geometry
 {
@@ -44,7 +36,7 @@ namespace Loyc.Geometry
 		/// or infinite line that is nearest to a specified point.</summary>
 		/// <param name="seg">The line segment</param>
 		/// <param name="p">The test point to be projected</param>
-		/// <param name="type">Whether to extend the line segment infinitely.</param>
+		/// <param name="type">Whether to treat the line segment as extended to infinite length.</param>
 		/// <param name="end">Set to 0 if the point is on the line segment (including
 		/// one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
 		/// after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
@@ -443,7 +435,6 @@ namespace Loyc.Geometry
 		}
 	}
 }
-
 namespace Loyc.Geometry
 {
 	using T = System.Double;
@@ -530,8 +521,8 @@ namespace Loyc.Geometry
 		/// fraction where 0 represents the start of the line and 1 represents the 
 		/// end of the line.</summary>
 		/// <param name="type">Whether to return numbers outside the range
-		/// (0, 1) if the projection is outside the line segment. If this is false,
-		/// the result is clamped to (0, 1)</param>
+		/// (0, 1) if the projection is outside the line segment. If this is 
+		/// LineType.Segment, the result is clamped to (0, 1)</param>
 		/// <param name="end">Set to 0 if the point is on the line segment (including
 		/// one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
 		/// after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
@@ -863,5 +854,4 @@ namespace Loyc.Geometry
 		}
 	}
 }
-
 

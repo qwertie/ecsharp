@@ -28,13 +28,18 @@ namespace Loyc.Collections.Impl
 				Assert.AreEqual(list, expected);
 				return;
 			}
-			Assert.AreEqual(expected.Count, list.Count);
 			if (useEnumerator)
-				ExpectList(list, expected);
+				ExpectList((IEnumerable<T>) list, expected);
 			else
 			{
-				for (int i = 0; i < expected.Count; i++)
-					Assert.AreEqual(expected[i], list[i]);
+				for (int i = 0; i < expected.Count; i++) {
+					try {
+						Assert.AreEqual(expected[i], list[i]);
+					} catch (Exception e) {
+						throw new AssertionException($"Lists differ at index {i}:\n{e.Message}");
+					}
+				}
+				Assert.AreEqual(expected.Count, list.Count, "List lengths differ");
 			}
 		}
 		public static void ExpectList<T>(IEnumerable<T> list, IEnumerable<T> expected)
@@ -43,8 +48,12 @@ namespace Loyc.Collections.Impl
 			int i = 0;
 			foreach (T expectedItem in expected)
 			{
-				Assert.That(listE.MoveNext());
-				Assert.AreEqual(expectedItem, listE.Current);
+				try {
+					Assert.That(listE.MoveNext());
+					Assert.AreEqual(expectedItem, listE.Current);
+				} catch (Exception e) {
+					throw new AssertionException($"Lists differ at index {i}: {e.Message}");
+				}
 				i++;
 			}
 			Assert.IsFalse(listE.MoveNext());

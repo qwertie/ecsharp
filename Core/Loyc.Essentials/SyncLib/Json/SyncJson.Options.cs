@@ -47,7 +47,9 @@ namespace Loyc.SyncLib
 			/// ISyncManager.Sync. To use camelCase, set this to <see cref="SyncJson.ToCamelCase"/></summary>
 			public Func<string, string>? NameConverter { get; set; }
 
-			/// <summary>The <see cref="ObjectMode"/> used to read/write the root object</summary>
+			/// <summary>The <see cref="ObjectMode"/> used to read/write the root object.
+			///   This option has no effect if you are using <see cref="NewWriter"/> or 
+			///   <see cref="NewReader"/>.</summary>
 			public ObjectMode RootMode { get; set; } = ObjectMode.Normal;
 
 			/// <summary>When NewtonsoftCompatibility is off, this property controls 
@@ -128,7 +130,7 @@ namespace Loyc.SyncLib
 
 				/// <summary>If the recursion depth exceeds this number when writing JSON, 
 				/// the number of indents stops increasing.</summary>
-				public int MaxIndentDepth { get; set; } = 255;
+				public int MaxIndentDepth { get; set; } = 63;
 
 				/// <summary>If this property is true, or if this property is null and 
 				/// NewtonsoftCompatibility is off, character lists and character arrays 
@@ -157,11 +159,12 @@ namespace Loyc.SyncLib
 				///   (1) a comma before a closing ']' or '}',
 				///   (2) a number with leading '.' or leading '0' (with other digits),
 				///   (3) the \0 (null character) escape sequence,
-				///   (4) invalid escape sequences (instead, \q is read as \\q),
+				///   (4) invalid escape sequences (instead, \q is read as if it were \\q),
 				///   (5) non-string object keys (which are essentially ignored).
 				/// </summary><remarks>
-				///   The legality of comments and EOF garbage is controlled independently 
-				///   via <see cref="AllowComments"/> and <see cref="VerifyEof"/>.
+				///   The legality of comments and garbage after EOF is controlled 
+				///   independently with the <see cref="AllowComments"/> and 
+				///   <see cref="VerifyEof"/> properties.
 				///   <para/>
 				///   Although JSON technically prohibits control characters, I felt it wasn't
 				///   worth the performance cost of detecting control characters when 
@@ -225,7 +228,11 @@ namespace Loyc.SyncLib
 
 				public Func<string, ReadOnlyMemory<byte>, IConvertible>? ObjectToNumber { get; set; } = null;
 
+				/// <summary>When attempting to read a boolean value, a string can be accepted 
+				///   instead if that string has the value specified here.</summary>
 				public string TrueAsString { get; set; } = "true";
+				/// <summary>When attempting to read a boolean value, a string can be accepted 
+				///   instead if that string has the value specified here.</summary>
 				public string FalseAsString { get; set; } = "false";
 
 				/// <summary>When this property is true and the root object has been read successfully,

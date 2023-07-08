@@ -247,7 +247,7 @@ namespace Loyc.SyncLib
 									keySpan = propKey.Text.Span;
 								} else {
 									// Sad!
-									throw NewError(position, "Backreferenced object not found", fatal: false);
+									ThrowError(position, "Backreferenced object not found", fatal: false);
 								}
 							}
 						} else {
@@ -280,7 +280,7 @@ namespace Loyc.SyncLib
 						
 						if (idValue.Type == JsonType.Invalid)
 						{
-							throw SyntaxError(cur.Index, name ?? AsciiToString(keySpan));
+							ThrowSyntaxError(cur.Index, name ?? AsciiToString(keySpan));
 						}
 						else if (idValue.Type < JsonType.FirstCompositeType)
 						{
@@ -313,7 +313,7 @@ namespace Loyc.SyncLib
 						if (isReplay)
 							EndReplay();
 
-						throw NewError(skippedObject.position, "Expected list, got object", fatal: false);
+						ThrowError(skippedObject.position, "Expected list, got object", fatal: false);
 					} else  {
 						Commit(ref cur);
 						return (true, null); // success: object opened
@@ -461,7 +461,7 @@ namespace Loyc.SyncLib
 							return BuildListFromSpan<ListBuilder, List>(output.Value.AsMemory().Span, builder);
 						}
 						// TODO: make this nonfatal by saving skipped value
-						throw SyntaxError((int)(v.position - PositionOfBuf0), name, "BAIS byte array");
+						ThrowSyntaxError((int)(v.position - PositionOfBuf0), name, "BAIS byte array");
 					}
 				}
 				return default;
@@ -704,7 +704,7 @@ namespace Loyc.SyncLib
 
 					case JsonType.Null:
 						if (!nullable && !_optRead.ReadNullPrimitivesAsDefault)
-							throw NewError(v.position, "\"{0}\" is not nullable, but was null".Localized(name));
+							ThrowError(v.position, "\"{0}\" is not nullable, but was null".Localized(name));
 						return null;
 
 					case JsonType.True:
@@ -753,7 +753,7 @@ namespace Loyc.SyncLib
 						v.value = ScanValue(ref cur);
 						
 						if (v.value.Type == JsonType.Invalid)
-							throw SyntaxError(cur.Index, name);
+							ThrowSyntaxError(cur.Index, name);
 
 						BeginNext(ref cur);
 						Commit(ref cur);

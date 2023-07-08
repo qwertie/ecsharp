@@ -1,6 +1,8 @@
+using Loyc.Collections.Impl;
 using Loyc.SyncLib.Impl;
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,24 +11,31 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace Loyc.SyncLib;
 
 partial class SyncBinary
 {
+	const int MaxSizeOfInt32 = 5;
+	const int MaxSizeOfInt64 = 10;
+
 	internal class WriterState : WriterStateBase
 	{
 		internal Options _opt;
 		internal Options.ForWriter _optWrite;
 		
-		internal bool _isInsideList;
-
-		internal int _depth;
-		internal object _currentObject;
-
-		// Number of bits in _buf[_i - 1] that have not yet been used, and which could be
+		// Number of bits in _buf[_i - 1] that have not yet been used, and could be
 		// used by a bitfield.
 		private uint _bitfieldBitsLeftInByte = 0;
+
+		/// <summary>Keeps track of objects that the user has started writing with 
+		///   BeginSubObject, but hasn't finished writing.</summary>
+		protected internal InternalList<ObjectMode> _stack = InternalList<ObjectMode>.Empty;
+
+		internal int Depth => _stack.Count;
+		internal bool IsInsideList 
+			=> _stack.Count != 0 && (_stack.Last & (ObjectMode.List | ObjectMode.Tuple)) != 0;
 
 		public WriterState(IBufferWriter<byte> output, Options options) : base(output)
 		{
@@ -115,7 +124,7 @@ partial class SyncBinary
 			if (num == null)
 				WriteNull();
 			else
-				Write(num.Value);
+				Write((uint) num.Value);
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void WriteNullable(ushort? num)
@@ -123,7 +132,7 @@ partial class SyncBinary
 			if (num == null)
 				WriteNull();
 			else
-				Write(num.Value);
+				Write((uint) num.Value);
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void WriteNullable(uint? num)
@@ -149,11 +158,12 @@ partial class SyncBinary
 			else
 				Write(num.Value);
 		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void WriteNullable(float? num)
 		{
 			if (num == null)
-				WriteNull();
+				WriteLittleEndianBytes(FloatNullBitPattern, 4, GetOutSpan(4));
 			else
 				Write(num.Value);
 		}
@@ -161,16 +171,18 @@ partial class SyncBinary
 		public void WriteNullable(double? num)
 		{
 			if (num == null)
-				WriteNull();
+				WriteLittleEndianBytes(DoubleNullBitPattern, 8, GetOutSpan(8));
 			else
 				Write(num.Value);
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void WriteNullable(decimal? num)
 		{
-			if (num == null)
-				WriteNull();
-			else
+			if (num == null) {
+				var outBuf = GetOutSpan(16);
+				for (int numBytes = 16; numBytes > 0; numBytes--)
+					outBuf[_i++] = 0xFF;
+			} else
 				Write(num.Value);
 		}
 
@@ -181,7 +193,7 @@ partial class SyncBinary
 			if ((uint)num < 64)
 				GetOutSpan(1)[_i++] = (byte)num;
 			else
-				WriteSignedOrUnsigned((uint)num, (uint)(num >= 0 ? num : ~num));
+				WriteSignedOrUnsigned((uint)num, G.PositionOfMostSignificantOne((uint)(num < 0 ? ~num : num)) + 1);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -191,20 +203,21 @@ partial class SyncBinary
 			if (num < 128)
 				GetOutSpan(1)[_i++] = (byte)num;
 			else
-				WriteSignedOrUnsigned(num, num);
+				WriteSignedOrUnsigned(num, G.PositionOfMostSignificantOne(num));
 		}
 
-		public void WriteSignedOrUnsigned(uint num, uint nonNegative)
+		public void WriteSignedOrUnsigned(uint num, int msbPosition)
 		{
-			Debug.Assert(num == nonNegative || ~num == nonNegative);
+			Debug.Assert((1 << msbPosition) > num || msbPosition == 32 || (int)num < 0);
 
 			Span<byte> span;
 			unchecked {
-				switch (G.PositionOfMostSignificantOne(nonNegative)) {
+				switch (msbPosition) {
 				// 29 to 32 significant bits
-				case 31: case 30: case 29: case 28:
+				case 32: case 31: case 30: case 29: case 28:
 					span = GetOutSpan(5);
-					span[_i    ] = (byte)(num == nonNegative ? 0b1111_0000 : 0b1111_1111);
+					bool isSigned = ((int)num & (1 << msbPosition) & ~1) != 0;
+					span[_i] = (byte)((int)num < 0 && isSigned ? 0b1111_1111 : 0b1111_0000);
 					span[_i + 1] = (byte)(num >> 24);
 					span[_i + 2] = (byte)(num >> 16);
 					span[_i + 3] = (byte)(num >> 8);
@@ -250,7 +263,8 @@ partial class SyncBinary
 			if ((uint)num < 64)
 				GetOutSpan(1)[_i++] = (byte)num;
 			else
-				WriteSignedOrUnsigned((uint)num, (uint)(num >= 0 ? num : ~num));
+				// -4 => 3 bits, -5 => 4 bits
+				WriteSignedOrUnsigned((uint)num, G.PositionOfMostSignificantOne((ulong)(num < 0 ? ~num : num)) + 1);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -260,26 +274,26 @@ partial class SyncBinary
 			if (num < 128)
 				GetOutSpan(1)[_i++] = (byte)num;
 			else
-				WriteSignedOrUnsigned(num, num);
+				WriteSignedOrUnsigned(num, G.PositionOfMostSignificantOne(num));
 		}
 
-		public void WriteSignedOrUnsigned(ulong num, ulong nonNegative)
+		public void WriteSignedOrUnsigned(ulong num, int msbPosition)
 		{
-			Debug.Assert(num == nonNegative || ~num == nonNegative);
-			if ((uint)num == num) {
-				WriteSignedOrUnsigned((uint)num, (uint)nonNegative);
+			Debug.Assert((1uL << msbPosition) > num || msbPosition == 64 || (long)num < 0);
+
+			if (msbPosition < 32) {
+				WriteSignedOrUnsigned((uint)num, msbPosition);
 			} else {
 				Span<byte> span;
 				unchecked {
-					var positionOfMostSignificantOne = G.PositionOfMostSignificantOne(nonNegative);
-					switch (positionOfMostSignificantOne) {
+					switch (msbPosition) {
 					// 50 to 64 significant bits
 					default:
-						int numberSize = positionOfMostSignificantOne >= 56 ? 10 : 9;
+						int numberSize = msbPosition >= 56 ? 10 : 9;
 						span = GetOutSpan(numberSize);
 						span[_i    ] = (byte)0b1111_1110;
 						span[_i + 1] = (byte)(numberSize - 1);
-						if (positionOfMostSignificantOne >= 56) {
+						if (msbPosition >= 56) {
 							span[_i + 2] = (byte)(num >> 56);
 							_i++;
 						}
@@ -290,6 +304,7 @@ partial class SyncBinary
 						span[_i + 6] = (byte)(num >> 16);
 						span[_i + 7] = (byte)(num >> 8);
 						span[_i + 8] = (byte)num;
+						_i += 9;
 						break;
 					// 43 to 49 significant bits
 					case 48: case 47: case 46: case 45: case 44: case 43: case 42:
@@ -315,7 +330,7 @@ partial class SyncBinary
 						_i += 6;
 						break;
 					// 29 to 35 significant bits
-					case 34: case 33: case 32: case 31: case 30: case 29: case 28:
+					case 34: case 33: case 32:
 						span = GetOutSpan(5);
 						span[_i    ] = (byte)(0b1111_0000 | ((num >> 32) & 0b0111));
 						span[_i + 1] = (byte)(num >> 24);
@@ -407,29 +422,50 @@ partial class SyncBinary
 			}
 		}
 
+		internal readonly static bool IsReversedEndian = (int)BitConverter.DoubleToInt64Bits(1) != 0;
+
+		public void Write(double num)
+		{
+			// The documentation says "The order of bits in the integer returned by the
+			// DoubleToInt64Bits method depends on whether the computer architecture is
+			// little-endian or big-endian." I doubt this is meaningful:
+			//
+			// - The SingleToInt32Bits method doesn't say the same thing.
+			// - The implementation uses `Unsafe.BitCast<double, long>` so as long as
+			//   the endianness of `double` is the same as `long`, `DoubleToInt64Bits(1.5)`
+			//   should be 0x3FF8_0000_0000_0000 regardless of platform endianness.
+			//
+			// However, I understand there are some ARM chips in which the endianness of
+			// floating-point numbers is opposite to the endianness of integers. So this
+			// code will detect that case and correct for it, just in case. I have no way
+			// to test that code path, though.
+			ulong bytes = (ulong) BitConverter.DoubleToInt64Bits(num);
+			#if !(NETSTANDARD2_0 || NET45 || NET462 || NET472)
+			if (IsReversedEndian)
+				bytes = BinaryPrimitives.ReverseEndianness(bytes);
+			#endif
+			WriteLittleEndianBytes(bytes);
+		}
+
 		public void Write(float num)
 		{
-			// TODO: what about endianness?
 			#if NETSTANDARD2_0 || NET45 || NET462 || NET472
 			// inefficient
 			uint bytes = BitConverter.ToUInt32(BitConverter.GetBytes(num), 0);
 			#else
 			uint bytes = (uint) BitConverter.SingleToInt32Bits(num);
+			if (IsReversedEndian)
+				bytes = BinaryPrimitives.ReverseEndianness(bytes);
 			#endif
-			WriteLittleEndianBytes(bytes);
-		}
-
-		public void Write(double num)
-		{
-			// TODO: MAY BE WRONG: "The order of bits in the integer returned by the DoubleToInt64Bits method depends on whether the computer architecture is little-endian or big-endian."
-			ulong bytes = (ulong) BitConverter.DoubleToInt64Bits(num);
 			WriteLittleEndianBytes(bytes);
 		}
 
 		public void Write(decimal num)
 		{
+			//
 			// TODO: what about endianness?
-			int[] arrayOf4 = Decimal.GetBits(num); // little-endian
+			//
+			int[] arrayOf4 = decimal.GetBits(num); // little-endian on x64
 			Span<byte> outBuf = GetOutSpan(16);
 			WriteLittleEndianBytes(unchecked((uint)arrayOf4[0]), 4, outBuf);
 			WriteLittleEndianBytes(unchecked((uint)arrayOf4[1]), 4, outBuf);
@@ -437,10 +473,16 @@ partial class SyncBinary
 			WriteLittleEndianBytes(unchecked((uint)arrayOf4[3]), 4, outBuf);
 		}
 
-		public void Write(string str) => Write(str.AsSpan());
+		public void Write(string? str)
+		{
+			if (str == null)
+				WriteNull();
+			else
+				Write(str.AsSpan());
+		}
 		public void Write(ReadOnlySpan<char> str)
 		{
-			// Encoding.UTF8 allows unpaired surrogates. Technically this is "WTF-8"
+			// Encoding.UTF8 allows unpaired surrogates. Technically this is called "WTF-8"
 			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
 			var array = str.ToArray();
 			int wtf8size = Encoding.UTF8.GetByteCount(array);
@@ -455,7 +497,7 @@ partial class SyncBinary
 			if ((_opt.Markers & SyncBinary.Markers.ListStart) != 0)
 				outSpan[_i++] = (byte)'[';
 
-			WriteSignedOrUnsigned((uint)wtf8size, (uint)wtf8size); // length prefix
+			Write((uint) wtf8size); // length prefix
 
 			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
 			var outBytes = Encoding.UTF8.GetBytes(array, 0, array.Length);
@@ -580,6 +622,80 @@ partial class SyncBinary
 				GetOutSpan(1)[_i++] = (byte)'T';
 			}
 			Write(tag);
+		}
+
+		public (bool Begun, object? Object) BeginSubObject(object? childKey, ObjectMode mode, int listLength)
+		{
+			if (childKey == null && (mode & (ObjectMode.NotNull | ObjectMode.Deduplicate)) != ObjectMode.NotNull) {
+				WriteNull();
+				return (false, childKey);
+			}
+
+			if (listLength < 0 && (mode & ObjectMode.List) != 0) {
+				throw new ArgumentException("No valid listLength was given to SyncBinary.Writer.BeginSubObject");
+			}
+
+			Span<byte> span;
+			if ((mode & ObjectMode.Deduplicate) != 0)
+			{
+				Debug.Assert(childKey != null);
+				long id = _idGen.GetId(childKey, out bool firstTime);
+
+				if (firstTime) {
+					// Write object ID
+					span = GetOutSpan(MaxSizeOfInt64 + 2);
+					span[_i++] = (byte)'#';
+					Write(id);
+				} else {
+					// Write backreference to object ID
+					span = GetOutSpan(MaxSizeOfInt64 + 1);
+					span[_i++] = (byte)'@';
+					Write(id);
+
+					return (false, childKey); // Skip object that is already written
+				}
+			}
+			else
+			{
+				span = GetOutSpan(1);
+			}
+
+			// Take note than an object has been started
+			_stack.Add(mode);
+
+			// Write start marker (if enabled in the Options)
+			ObjectMode objectKind = mode & (ObjectMode.List | ObjectMode.Tuple);
+			Markers markerMask = objectKind switch {
+				ObjectMode.List => Markers.ListStart,
+				ObjectMode.Tuple => Markers.TupleStart,
+				_ => Markers.ObjectStart,
+			};
+			if ((_opt.Markers & markerMask) != 0) {
+				span[_i++] = objectKind != ObjectMode.Normal
+					? (byte)'['
+					: (Depth & 1) != 0 ? (byte)'(' : (byte)'{';
+			}
+
+			return (true, childKey);
+		}
+
+		public void EndSubObject()
+		{
+			// Write end marker (if enabled in the Options)
+			ObjectMode objectKind = _stack.Last & (ObjectMode.List | ObjectMode.Tuple);
+			Markers markerMask = objectKind switch {
+				ObjectMode.List => Markers.ListEnd,
+				ObjectMode.Tuple => Markers.TupleEnd,
+				_ => Markers.ObjectEnd,
+			};
+			if ((_opt.Markers & markerMask) != 0) {
+				var span = GetOutSpan(1);
+				span[_i++] = objectKind != ObjectMode.Normal
+					? (byte)']'
+					: (Depth & 1) != 0 ? (byte)')' : (byte)'}';
+			}
+
+			_stack.Pop();
 		}
 	}
 }

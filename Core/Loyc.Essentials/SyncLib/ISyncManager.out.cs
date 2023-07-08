@@ -137,9 +137,45 @@ namespace Loyc.SyncLib
 		/// </remarks>
 		int? MinimumListLength { get; }
 
-		/// <summary>Returns the number of parent objects of the current object being
-		/// loaded or saved. This property is zero if the root object is being loaded
-		/// or saved.</summary>
+		/// <summary>Returns the number of objects for which <see cref="BeginSubObject"/>
+		///   opened an object, list or tuple that was not closed <see cref="EndSubObject"/>.
+		///   This property is zero if <see cref="BeginSubObject"/> was never called to 
+		///   start a subobject.</summary>
+		/// <remarks>
+		///   If you use a helper method designed to write a single object, such as 
+		///   <see cref="SyncJson.Write{T, SyncObject}(T, SyncObject, SyncJson.Options?)"/>
+		///   or <see cref="SyncBinary.Write{T, SyncObject}(T, SyncObject, SyncBinary.Options?)"/>,
+		///   these helper methods call <see cref="BeginSubObject"/> so the Depth will be 
+		///   1 inside the synchronizer for your root object.
+		/// <para/>
+		///   Typically it is allowed, but not recommended, to write fields at depth 0. 
+		///   For example, this code writes two JSON primitives at depth 0:
+		/// <pre><![CDATA[
+		///     var writer = SyncJson.NewWriter();
+		///     writer.Sync("a", 1234.5);
+		///     writer.Sync("b", "Hello\t!");
+		///     
+		///     var output = (ArrayBufferWriter<byte>) writer.Flush();
+		///     Console.WriteLine(Encoding.UTF8.GetString(output.WrittenSpan));
+		///     Console.WriteLine();
+		///     
+		///     // Read the data that was just written
+		///     var reader = SyncJson.NewReader(output.WrittenMemory);
+		///     var a = reader.Sync(null, 0.0);
+		///     var b = reader.Sync(null, "");
+		///     Console.WriteLine($"a = {a}, b = {b}");
+		/// ]]></pre>
+		///   The output is pseudo-JSON, formatted like a list without square brackets:
+		///   <pre>
+		///   1234.5,
+		///   "Hello\t!"
+		///   </pre>
+		///   Officially this is not valid JSON, but as the example shows, it is understood 
+		///   by <see cref="SyncJson.Reader"/> which successfully reads it back:
+		///   <pre>
+		///   a = 1234.5, b = Hello	!
+		///   </pre>
+		/// </remarks>
 		int Depth { get; }
 
 		/// <summary>If <see cref="SupportsNextField"/> is true, the end of the current
@@ -516,27 +552,45 @@ namespace Loyc.SyncLib
 		///   there is a third return value, the list length, which is the number 
 		///   of elements you are expected to read or write. 
 		/// </returns>
+		/// <exception cref="ArgumentException">
+		///   <c>mode</c> includes <c>ObjectMode.List</c>, <c>listLength</c> was 
+		///   negative, and <c>Mode is SyncMode.Saving or SyncMode.Query</c>.
+		///   Implementations that don't require the list length in advance do not
+		///   necessarily throw this exception.
+		/// </exception>
+		/// <exception cref="FormatException">
+		///   The <see cref="Mode"/> is Reading or Merge and the input stream is 
+		///   invalid or does not contain an object or list by the specified name,
+		///   so it is impossible to fulfill the request.
+		/// </exception>
 		/// <remarks>
+		///   Typical implementations of <see cref="ISyncManager"/> are used via helper
+		///   methods that call this method and write a single object. For example,
+		///   <see cref="SyncJson.Write"/> and <see cref="SyncManagerExt.Sync{SM, SyncField, T}(SM, FieldId, T?, SyncField)"/>
+		///   call both BeginSubObject and EndSubObject for you automatically.
+		///   Please see the remarks of <see cref="Depth"/> about what happens when 
+		///   this method is <b>not</b> called.
+		/// <para/>
 		///   This method has six possible outcomes:
 		///   (1) The request to read/write is approved. In this case, this method
 		///       returns (true, childKey) and <see cref="Depth"/> increases by one.
 		///       childKey is the same reference you passed to this method.
 		///   (2) You set childKey = null and <see cref="Mode"/> is not Loading.
-		///       This indicates that no child object exists, so this method returns 
-		///       (false, null).
+		///       (also, <c>(mode & (ObjectMode.NotNull | ObjectMode.Deduplicate)) 
+		///       != ObjectMode.NotNull</c>). This indicates that no child object 
+		///       exists, so this method returns (false, null).
 		///   (3) The <see cref="Mode"/> is Loading and the input stream contains a 
 		///       representation of null, so this method returns (false, null).
 		///   (4) The list/tuple being read/write has already been read/written 
-		///       earlier (and you enabled deduplication), so the request to 
+		///       earlier, and you enabled deduplication, so the request to 
 		///       read/write is declined. In this case, this method returns false 
 		///       with a reference to the object that was loaded or saved earlier.
-		///   (5) The <see cref="Mode"/> is Loading or Merge and the input stream
-		///       is invalid or does not contain an object or list by the specified 
-		///       name, so it is impossible to fulfill the request. In this case, 
-		///       an exception is thrown, such as <see cref="FormatException"/>.
-		///   (6) The <see cref="Mode"/> is Query, Schema or Merge and the current 
+		///   (5) The <see cref="Mode"/> is Query, Schema or Merge and the current 
 		///       <see cref="ISyncManager"/> has decided not to traverse into the 
 		///       current field. In this case, this method returns (false, childKey).
+		///   (6) An exception is thrown if the input stream doesn't contain a 
+		///       list/object as expected, or if you're writing a list without 
+		///       providing <c>listLength</c>.
 		///   <para/>
 		///   In Saving mode, and in every case except 4, the returned Object is 
 		///   the same as childKey.

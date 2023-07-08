@@ -681,7 +681,7 @@ namespace Loyc.SyncLib
 			#region Error management
 
 			[MethodImpl(MethodImplOptions.NoInlining)]
-			protected Exception SyntaxError(int index, string? propName, string context = "JSON value")
+			protected void ThrowSyntaxError(int index, string? propName, string context = "JSON value")
 			{
 				// TODO: localize all errors exactly once
 				var cur = CurPointer;
@@ -692,15 +692,18 @@ namespace Loyc.SyncLib
 				}
 				if (propName != null)
 					msg += " \"" + propName + '"';
-				return NewError(index, msg);
+				throw NewError(index, msg);
 			}
 
-			private Exception MaxDepthError(int i)
+			[MethodImpl(MethodImplOptions.NoInlining)]
+			private void ThrowMaxDepthError(int i)
 			{
-				return NewError(i, "Unable to read JSON because it is too deeply nested", fatal: true);
+				throw NewError(i, "Unable to read JSON because it is too deeply nested", fatal: true);
 			}
 
-			protected Exception NewError(int i, string msg, bool fatal = true) => NewError(PositionOfBuf0 + i, msg, fatal);
+			protected Exception NewError(int i, string msg, bool fatal = true)
+				=> NewError(PositionOfBuf0 + i, msg, fatal);
+
 			[MethodImpl(MethodImplOptions.NoInlining)]
 			protected Exception NewError(long position, string msg, bool fatal = true)
 			{
@@ -725,7 +728,10 @@ namespace Loyc.SyncLib
 				return exc;
 			}
 
-			protected void ThrowError(int i, string msg, bool fatal = true) => throw NewError(i, msg, fatal);
+			protected void ThrowError(int i, string msg, bool fatal = true)
+				=> throw NewError(i, msg, fatal);
+			protected void ThrowError(long position, string msg, bool fatal = true)
+				=> throw NewError(position, msg, fatal);
 
 			#endregion
 
@@ -827,7 +833,7 @@ namespace Loyc.SyncLib
 
 						// Avoid stack overflow (it would terminate the process)
 						if (_skipObjectDepth++ + _stack.Count > _optRead.MaxDepth)
-							throw MaxDepthError(cur.Index);
+							ThrowMaxDepthError(cur.Index);
 
 						JsonValue idValue = default;
 
@@ -969,7 +975,7 @@ namespace Loyc.SyncLib
 			{
 				// Avoid stack overflow (which would terminate the process)
 				if (_stack.Count >= _optRead.MaxDepth)
-					throw MaxDepthError(_frame.ValueIndex);
+					ThrowMaxDepthError(_frame.ValueIndex);
 
 				_stack.Add(new StackEntry(objectType));
 				IsInsideList = objectType != JsonType.Object;

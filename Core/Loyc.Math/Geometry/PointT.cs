@@ -23,9 +23,9 @@ namespace Loyc.Geometry
 		T _x, _y;
 		public T X { get { return _x; } set { _x = value; } }
 		public T Y { get { return _y; } set { _y = value; } }
-	
-		public override bool Equals(object other) { return other is Point<T> && ((Point<T>)other) == this; }
-		public override int GetHashCode() { return _x.GetHashCode() ^ (_y.GetHashCode() << 1); }
+
+		public override bool Equals(object? other) { return other is Point<T> v && v == this; }
+		public override int GetHashCode() { return _x.GetHashCode() + _y.GetHashCode() * 127; }
 		public override string ToString() { return string.Format("({0},{1})", _x, _y); }
 		
 		public Point<T> New(T x, T y) { return new Point<T>(x, y); }

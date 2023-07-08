@@ -165,6 +165,7 @@ namespace Loyc.SyncLib.Tests
 		}
 	}
 
+	#rawText("#pragma warning disable 8601, 8619, 8620"); // Disable nullability warnings for generated code
 
 	struct BigStandardModelSync<S> : ISyncObject<S, StandardFields>, ISyncObject<S, BigStandardModel>, ISyncObject<S, BigStandardModelNoMem>
 		where S: ISyncManager

@@ -11,15 +11,15 @@ namespace Loyc
 		/// <summary>Returns <c>new Maybe&lt;T>(value)</c>. (exists for type inference)</summary>
 		public static Maybe<T> Value<T>(T value) { return new Maybe<T>(value); }
 
-		/// <summary>Converts <see cref="Maybe{T}"/> to a <see cref="Nullable{T}"/> having the same HasValue property.</summary>
-		public static T? AsNullable<T>(this Maybe<T> val) where T : struct 
-			{ return val.HasValue ? val.Value : (T?)null; }
 		/// <summary>Creates a <see cref="Maybe{T}"/>, using <see cref="Maybe{T}.NoValue"/> if and only if the input is null.</summary>
 		public static Maybe<T> AsMaybe<T>(this Nullable<T> val) where T : struct 
 			{ return val.HasValue ? val.Value : Maybe<T>.NoValue; }
 		/// <summary>Creates a <see cref="Maybe{T}"/>, using <see cref="Maybe{T}.NoValue"/> if and only if the input is null.</summary>
 		public static Maybe<T> AsMaybe<T>(this T val) where T : class
 			{ return val != null ? val : Maybe<T>.NoValue; }
+		/// <summary>Converts <see cref="Maybe{T}"/> to a <see cref="Nullable{T}"/> having the same HasValue property.</summary>
+		public static T? OrNull<T>(this Maybe<T> val) where T : struct
+			{ return val.HasValue ? val.Value : (T?)null; }
 
 		/// <summary>Converts <see cref="IMaybe{T}"/> to T, returning a default value if <see cref="HasValue"/> is false.</summary>
 		/// <remarks>This is like the <c>??</c> operator of <c>T?</c>.</remarks>
@@ -52,7 +52,7 @@ namespace Loyc
 	/// There is an implicit conversion from T that returns <c>new Maybe{T}(value)</c>,
 	/// and from <see cref="NoValue.Value"/> that returns <see cref="Maybe{T}.NoValue"/>.
 	/// Since C# doesn't allow us to define conversions to/from <c>T?</c>, these
-	/// conversions can be accomplished with the extension methods <see cref="Maybe.AsNullable"/>
+	/// conversions can be accomplished with the extension methods <see cref="Maybe.OrNull"/>
 	/// and <see cref="Maybe.AsMaybe"/>.
 	/// <para/>
 	/// The <see cref="Or"/> method replicates the C# <c>??</c> operator.
