@@ -126,7 +126,7 @@ namespace Loyc.SyncLib
 				static SyncFieldFunc_Ref<SyncManager, T> HelpMakeOpenDelegate<T>(MethodInfo mi)
 				{
 					var sync = (SyncFieldFunc_Ref<SyncManager, T>)Delegate.CreateDelegate(typeof(SyncFieldFunc_Ref<SyncManager, T>), null, mi);
-					return (ref SyncManager syncMan, FieldId name, T savable) => sync(ref syncMan, name, savable);
+					return (ref SyncManager syncMan, FieldId name, T? savable) => sync(ref syncMan, name, savable);
 				}
 			}
 		}

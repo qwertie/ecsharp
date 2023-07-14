@@ -86,19 +86,19 @@ partial class SyncBinary
 
 		public BigInteger Sync(FieldId name, BigInteger savable) { _s.Write(savable); return savable; }
 
-		public char   Sync(FieldId name, char savable) { _s.Write((ushort)savable); return savable; }
+		public char   Sync(FieldId name, char savable) { _s.Write((uint)savable); return savable; }
 
 		public string? Sync(FieldId name, string? savable) { _s.Write(savable); return savable; }
 
 		public int Sync(FieldId name, int savable, int bits, bool signed = true)
 		{
-			_s.WriteBitfield(savable, (uint)bits);
+			_s.WriteBitfield((uint)savable, (uint)bits);
 			return savable;
 		}
 
 		public long Sync(FieldId name, long savable, int bits, bool signed = true)
 		{
-			_s.WriteBitfield(savable, (uint)bits);
+			_s.WriteBitfield((ulong)savable, (uint)bits);
 			return savable;
 		}
 

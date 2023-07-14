@@ -123,6 +123,146 @@ public class SyncBinaryWriterTests : TestHelpers
 		ExpectList(results.ToArray(), results2.ToArray());
 	}
 
+	[Test]
+	public void TestDocumentedClaims_AboutMyItem()
+	{
+		// This test verifies that the binary encodings for MyItem (and a lone float)
+		// mentioned in the documentation of SyncBinary are correct.
+		var result = SyncBinary.Write(
+		    new MyItemV1 { Id = 3, SerialNumber = 65539 },
+		    new MySync<SyncBinary.Writer>());
+
+		ExpectList<byte>(result.ToArray(), Bytes('(', 3, 0b11000001, 0b00000000, 0b00000011, ')'));
+
+		var result2 = SyncBinary.Write(new object(), (sm, _) => {
+			sm.Sync(null, 3.7837386E-37f);
+			return _;
+		});
+
+		ExpectList<byte>(result2.ToArray(), result.ToArray() );
+	}
+
+	[Test]
+	public void TestDocumentedClaims_AboutPrimitiveTypes()
+	{
+		var options = new SyncBinary.Options { Markers = SyncBinary.Markers.ListStart };
+		var result = SyncBinary.Write(new object(), (sm, _) => {
+			sm.Sync("1", 300);
+			sm.Sync("2", 0x12345);
+			
+			sm.Sync("...", 259, 20, true); // 259 = 0b0001_00000011
+			sm.Sync("...",  -1,  4, true); // -1 (as 4 bits) = 0b1111
+
+			// Bonus test: save the same numbers with other overloads
+			sm.Sync("...", (long)259, 20, true);
+			sm.Sync("...", (long) -1,  4, true);
+
+			sm.Sync("...", (BigInteger)259, 20, true);
+			sm.Sync("...", (BigInteger)(-1), 4, true);
+
+			sm.Sync("...", 259, 10, true); // 259 = 0b0001_00000011
+			sm.Sync("...",  -1,  4, true); // -1 (as 4 bits) = 0b1111
+			sm.Sync("...",   7);           // 7 = 0b111
+			return _;
+		}, options);
+
+		ExpectList<byte>(result.ToArray(), Bytes(
+			0x81, 0x2C,
+			0xC1, 0x23, 0x45,
+			0b00000011, 0b00000001, 0b11110000,
+			0b00000011, 0b00000001, 0b11110000,
+			0b00000011, 0b00000001, 0b11110000,
+			0b00000011, 0b00111101, 0b00000111
+		));
+
+		result = SyncBinary.Write(new object(), (sm, _) => {
+			sm.Sync(null, 'A');
+			sm.Sync(null, '•'); // U+2022
+			
+			sm.Sync(null, false);
+			sm.Sync(null, true);
+			sm.Sync(null, (bool?)null);
+			sm.Sync(null, (float?)null);
+			sm.Sync(null, (double?)null);
+			sm.Sync(null, (decimal?)null);
+			return _;
+		}, options);
+
+		ExpectList<byte>(result.ToArray(), Bytes(
+			0x41,
+			0b1010_0000, 0b0010_0010,
+			0,
+			1,
+			255,
+			0xE0, 0x68, 0xF3, 0xFF,
+			0xFE, 0x06, 'n', 'u', 'l', 'l', 0xFE, 0xFF,
+			0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+			0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+		));
+	}
+
+	[Test(Fails = "Sync string with deduplicate is unfinished")]
+	public void TestDocumentedClaims_AboutStrings()
+	{
+		var options = new SyncBinary.Options { Markers = SyncBinary.Markers.ListStart };
+		var result = SyncBinary.Write(new object(), (sm, _) => {
+			sm.Sync("1", "Hello");
+			sm.Sync("2", (string?) null);
+			sm.Sync("3", "😀");
+			return _;
+		}, options);
+
+		ExpectList(result.ToArray(), Bytes(
+			'[', 5, 'H', 'e', 'l', 'l', 'o', 0xFF, '[', 4, 0xF0, 0x9F, 0x98, 0x80
+		));
+
+		result = SyncBinary.Write(new object(), (sm, _) => {
+			sm.Sync("1", "Hello",        ObjectMode.Deduplicate);
+			sm.Sync("2", (string?) null, ObjectMode.Deduplicate);
+			sm.Sync("3", "😀",           ObjectMode.Deduplicate);
+			return _;
+		}, options);
+
+		ExpectList(result.ToArray(),
+			Bytes('#', 1, '[', 5, 'H', 'e', 'l', 'l', 'o', 0xFF, '#', 2, '[', 4, 0xF0, 0x9F, 0x98, 0x80));
+
+		result = SyncBinary.Write(new object(), (sm, _) => {
+			sm.Sync("1", "Hello", ObjectMode.Deduplicate);
+			sm.Sync("2", "Hello", ObjectMode.Deduplicate);
+			return _;
+		}, new SyncBinary.Options { Markers = SyncBinary.Markers.Lists });
+
+		ExpectList(result.ToArray(),
+			Bytes('#', 0x01, '[', 0x05, 'H', 'e', 'l', 'l', 'o', ']', '@', 0x01));
+	}
+
+	[Test]
+	public void TestDocumentedClaims_AboutLists()
+	{
+		// Signed array with start marker
+		var result1 = SyncBinary.Write(new object(), 
+			(sm, _) => {
+				sm.SyncList(null, new[] { 1, 10, 100, 1000 });
+				sm.SyncList(null, (int[]?) null);
+				return _;
+			},
+			new SyncBinary.Options { Markers = SyncBinary.Markers.ListStart });
+
+		// Unsigned array without start marker
+		var result2 = SyncBinary.Write(new object(), 
+			(sm, _) => {
+				sm.SyncList(null, new ulong[] { 1, 10, 100, 1000 });
+				sm.SyncList(null, (ulong[]?) null);
+				return _;
+			},
+			new SyncBinary.Options { Markers = SyncBinary.Markers.None });
+
+		ExpectList(result1.ToArray(), Bytes('[', 4, 1, 10, 0x80, 100, 0b10000011, 0b11101000, 0xFF));
+		ExpectList(result2.ToArray(),      Bytes(4, 1, 10,       100, 0b10000011, 0b11101000, 0xFF));
+	}
+
+	static byte[] Bytes(params int[] ints) => ints.Select(x => (byte)x).ToArray();
+
 	// TODO: Things to test:
 	// - Various values of `SyncBinary.Markers` work properly
 	// - Check all edge cases of integer serialization

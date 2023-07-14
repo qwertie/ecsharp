@@ -5,7 +5,7 @@
     <BaseIntermediateOutputPath>..\Bin\obj.netfx\LoycCore.Tests</BaseIntermediateOutputPath>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>10.0</LangVersion>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}</ProjectGuid>
@@ -181,9 +181,12 @@
     </Compile>
     <Compile Include="SyncLib\FamilySync.cs" />
     <Compile Include="SyncLib\HomePageCalendarExample.cs" />
+    <Compile Include="SyncLib\OtherExampleTypes.cs" />
     <Compile Include="SyncLib\PersonSync.cs" />
     <Compile Include="SyncLib\SmallObjectSync.cs" />
     <Compile Include="SyncLib\StringDictionarySync.cs" />
+    <Compile Include="SyncLib\SyncBinaryReaderTests.cs" />
+    <Compile Include="SyncLib\SyncBinaryWriterTests.cs" />
     <Compile Include="SyncLib\SyncJsonReaderTests.cs" />
     <Compile Include="SyncLib\SyncJsonTests.cs" />
     <Compile Include="SyncLib\SyncJsonWriterTests.cs" />

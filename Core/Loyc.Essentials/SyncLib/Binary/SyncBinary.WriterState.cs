@@ -3,15 +3,10 @@ using Loyc.SyncLib.Impl;
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Xml;
 
 namespace Loyc.SyncLib;
 
@@ -208,7 +203,7 @@ partial class SyncBinary
 
 		public void WriteSignedOrUnsigned(uint num, int msbPosition)
 		{
-			Debug.Assert((1 << msbPosition) > num || msbPosition == 32 || (int)num < 0);
+			Debug.Assert((2 << msbPosition) > num || msbPosition == 31 || (int)num < 0);
 
 			Span<byte> span;
 			unchecked {
@@ -279,7 +274,7 @@ partial class SyncBinary
 
 		public void WriteSignedOrUnsigned(ulong num, int msbPosition)
 		{
-			Debug.Assert((1uL << msbPosition) > num || msbPosition == 64 || (long)num < 0);
+			Debug.Assert((2uL << msbPosition) > num || msbPosition == 63 || (long)num < 0);
 
 			if (msbPosition < 32) {
 				WriteSignedOrUnsigned((uint)num, msbPosition);
@@ -382,21 +377,23 @@ partial class SyncBinary
 
 		public void WriteLittleEndianBytes(uint num, int numBytes = 4) 
 			=> WriteLittleEndianBytes(num, numBytes, GetOutSpan(numBytes));
-		public void WriteLittleEndianBytes(uint num, int numBytes, Span<byte> outBuf)
+		public uint WriteLittleEndianBytes(uint num, int numBytes, Span<byte> outBuf)
 		{
 			for (; numBytes > 0; numBytes--) {
 				outBuf[_i++] = (byte)num;
 				num >>= 8;
 			}
+			return num;
 		}
 		public void WriteLittleEndianBytes(ulong num, int numBytes = 8)
 			=> WriteLittleEndianBytes(num, numBytes, GetOutSpan(numBytes));
-		public void WriteLittleEndianBytes(ulong num, int numBytes, Span<byte> outBuf)
+		public ulong WriteLittleEndianBytes(ulong num, int numBytes, Span<byte> outBuf)
 		{
 			for (; numBytes > 0; numBytes--) {
 				outBuf[_i++] = (byte)num;
 				num >>= 8;
 			}
+			return num;
 		}
 
 		public void WriteLittleEndianBytes(BigInteger num, int numBytes, Span<byte> outBuf)
@@ -535,7 +532,7 @@ partial class SyncBinary
 			int minNumBytesLeft = (int)bitfieldSize >> 3;
 			var span = GetOutSpan(minNumBytesLeft + 1);
 			if (bitfieldSize >= 8) {
-				WriteLittleEndianBytes(value, minNumBytesLeft, span);
+				value = WriteLittleEndianBytes(value, minNumBytesLeft, span);
 				bitfieldSize &= 7;
 			}
 
@@ -569,7 +566,7 @@ partial class SyncBinary
 			int minNumBytesLeft = (int)bitfieldSize >> 3;
 			var span = GetOutSpan(minNumBytesLeft + 1);
 			if (bitfieldSize >= 8) {
-				WriteLittleEndianBytes(value, minNumBytesLeft, span);
+				value = WriteLittleEndianBytes(value, minNumBytesLeft, span);
 				bitfieldSize &= 7;
 			}
 
@@ -605,6 +602,7 @@ partial class SyncBinary
 			var span = GetOutSpan(minNumBytesLeft + 1);
 			if (bitfieldSize >= 8) {
 				WriteLittleEndianBytes(value, minNumBytesLeft, span);
+				value >>= minNumBytesLeft << 3; 
 				bitfieldSize &= 7;
 			}
 
@@ -663,17 +661,24 @@ partial class SyncBinary
 			// Take note than an object has been started
 			_stack.Add(mode);
 
-			// Write start marker (if enabled in the Options)
+			// Write start marker (if enabled in _opt) and list length (if applicable)
 			ObjectMode objectKind = mode & (ObjectMode.List | ObjectMode.Tuple);
-			Markers markerMask = objectKind switch {
-				ObjectMode.List => Markers.ListStart,
-				ObjectMode.Tuple => Markers.TupleStart,
-				_ => Markers.ObjectStart,
-			};
-			if ((_opt.Markers & markerMask) != 0) {
-				span[_i++] = objectKind != ObjectMode.Normal
-					? (byte)'['
-					: (Depth & 1) != 0 ? (byte)'(' : (byte)'{';
+			if (objectKind == ObjectMode.Normal)
+			{
+				if ((_opt.Markers & Markers.ObjectStart) != 0)
+					span[_i++] = (Depth & 1) != 0 ? (byte)'(' : (byte)'{';
+			}
+			else if (objectKind == ObjectMode.List)
+			{
+				if ((_opt.Markers & Markers.ListStart) != 0)
+					span[_i++] = (byte)'[';
+
+				Write(listLength);
+			}
+			else if (objectKind == ObjectMode.Tuple)
+			{
+				if ((_opt.Markers & Markers.TupleStart) != 0)
+					span[_i++] = (byte)'[';
 			}
 
 			return (true, childKey);

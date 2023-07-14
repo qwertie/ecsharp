@@ -56,21 +56,24 @@ namespace Loyc.SyncLib;
 ///     }
 /// ]]></code>
 ///   And you can serialize an example item like this:
-/// <code>
+/// <code><![CDATA[
 ///     var result = SyncBinary.Write(
-///         new MyItem { Id = 3, SerialNumber = 65537 },
+///         new MyItem { Id = 3, SerialNumber = 65539 },
 ///         new MySync<SyncBinary.Writer>());
-/// </code>
-///   The result is simply these 4 bytes: 0b00000011, 0b11000001, 0b00000000, 0b00000001
+/// ]]></code>
+///   The result is these 6 bytes: '(', 3, 0b11000001, 0b00000000, 0b00000011, ')'
 /// <para/>
-///   The first byte represents 3 (Id); the other three represent 65537 (SerialNumber).
-///   It's impossible to tell just by looking at these bytes that they represent two numbers;
-///   in fact, by coincidence, if you serialize the array <c>new byte[] { 193, 0, 1 }</c>
-///   the output is exactly the same 4 bytes! This is why you must read a binary data stream 
-///   with the same schema you used to read it (same fields, same types, same order). If the
-///   schema is not exactly the same (and isn't compatible according to the rules listed
-///   below) then reading will fail in most cases, and in rare cases could produce a garbage 
-///   answer.
+///   The first byte is an object start marker (0x28). The second byte is the Id (0x03).
+///   The next three bytes are the SerialNumber (65539). The last byte is an end marker 
+///   (0x29).
+/// <para/>
+///   It's impossible to know just by looking at these bytes that they represent two numbers;
+///   in fact, by coincidence, if you serialize an object that contains the single floating-
+///   point number <c>3.7837386E-37f</c>, the output is exactly the same 6 bytes! This is why 
+///   you must read a binary data stream with the same schema you used to read it (same 
+///   fields, same types, same order). If the schema is not exactly the same (and isn't 
+///   compatible according to the rules listed below) then reading will fail in most cases, 
+///   and in rare cases could produce a garbage answer.
 ///   
 /// <h3>Versioning with SyncBinary</h3>
 ///
@@ -84,24 +87,22 @@ namespace Loyc.SyncLib;
 ///     }
 /// </code>
 ///   What happens if we naively read an old-format data stream after this type change? 
-///   The outcome depends on the details of the old and new binary formats. In this case, 
-///   the reader expects a length-prefixed string. It would see the number 65537 and 
-///   interpret it as a string length, but the stream ends at that point (without the 
-///   expected 65537 additional bytes) making it seem that the byte stream is too short, 
-///   as far as SyncBinary is concerned (of course, the real problem was that the data 
-///   type changed).
+///   The outcome depends on the details of the old and new binary formats. If you use
+///   default settings, the string reader expects a list-start marker '[' followed by a 
+///   length prefix. Since there is no '[' in the data stream, the reader throws an 
+///   exception.
 /// <para/>
-///   Therefore, in most cases you should use a manual versioning process if you want 
-///   your synchronizer to be compatible with <see cref="SyncBinary"/>. The nice thing 
-///   about manual versioning is that it not only maintains compatibility with other data 
-///   formats such as JSON, but also adds clarification to your JSON output. So you can 
-///   be compatible with <see cref="SyncBinary"/>, <see cref="SyncJson"/> and protocol 
+///   To avoid such an outcome, you should use a manual versioning process to make your 
+///   synchronizer compatible with <see cref="SyncBinary"/>. The nice thing about manual 
+///   versioning is that it not only maintains compatibility with other data formats such 
+///   as JSON, but also adds clarification to your JSON output. So your code can be 
+///   compatible with <see cref="SyncBinary"/>, <see cref="SyncJson"/> and protocol 
 ///   buffers all at the same time, while also allowing your data format to evolve over 
 ///   time.
 /// <para/>
 ///   One useful pattern is to write a format version number in a "top-level" object and
 ///   then use that version number in child objects. For example, suppose that <c>MyItem</c>
-///   objects are always organized in groups:
+///   objects are <b>always</b> organized in groups:
 /// <code><![CDATA[
 ///     class MyItemGroup
 ///     {
@@ -137,7 +138,7 @@ namespace Loyc.SyncLib;
 ///     			// Version 1 serial numbers are integers. Support reading but not writing.
 ///     			if (sm.IsWriting)
 ///     				throw new NotSupportedException();
-///     			entry.SerialNumber = sm.Sync(entry.SerialNumber, (long?)null).ToString();
+///     			entry.SerialNumber = sm.Sync("SerialNumber", 0).ToString();
 ///     		} else {
 ///     			entry.SerialNumber = sm.Sync("SerialNumber", entry.SerialNumber);
 ///     		}
@@ -146,7 +147,7 @@ namespace Loyc.SyncLib;
 ///     	}
 ///     }
 /// ]]></code>
-///   
+/// 
 ///   Here there is no version number in each individual MyItem object. Instead they inherit 
 ///   the version number from the Version property, which, in Reading mode, is normally read 
 ///   by the <c>MyItemGroup Sync</c> method. As usual, the <c>MyItemGroup Sync</c> method 
@@ -342,8 +343,8 @@ namespace Loyc.SyncLib;
 ///   For example, suppose you write the same string reference twice using 
 ///   deduplication:
 ///   
-///       syncManager.SyncList("1", "Hello", ObjectMode.Deduplicate);
-///       syncManager.SyncList("2", "Hello", ObjectMode.Deduplicate);
+///       syncManager.Sync("1", "Hello", ObjectMode.Deduplicate);
+///       syncManager.Sync("2", "Hello", ObjectMode.Deduplicate);
 ///       
 ///   Given the default markers, the output bytes would be
 ///   
@@ -363,7 +364,7 @@ namespace Loyc.SyncLib;
 ///   or a list of length 35.
 ///   
 ///   For strings in particular, you can change <c>syncManager.Sync(fieldId, stringVal)</c> 
-///   to <c>syncManager.SyncList(fieldId, stringVal, ObjectMode.Deduplicate)</c> safely
+///   to <c>syncManager.Sync(fieldId, stringVal, ObjectMode.Deduplicate)</c> safely
 ///   if <see cref="Markers.ListStart"/> is enabled (as it is by default).
 /// 
 /// <h4>Object type tag</h4>
@@ -397,7 +398,12 @@ namespace Loyc.SyncLib;
 ///   for <c>(BigInteger)1 << (8 * 1024 * 1024)</c>. Also, the length prefix is not 
 ///   allowed to start with 1111111x (0xFE or 0xFF).
 /// <para/>
-///   This format offers several advantages:
+///   An example of the length-prefixed format is <c>254, 2, 1, 44</c>. In this 
+///   example, the length prefix is 2, and the number bits are 0x01 0x2C, which 
+///   represents the number 300. However, the normal way of encoding 300 uses only
+///   two bytes (0x81, 0x2C).
+/// <para/>
+///   This set of integer formats offers several advantages:
 ///   <ul>
 ///     <li>Since the format is the same regardless of the integer's size in code,
 ///       you can safely enlarge an integer field, e.g. from `Int32` to `Int64`,
@@ -413,8 +419,8 @@ namespace Loyc.SyncLib;
 ///     <li>A CPU can read numbers in this format faster than it can read numbers
 ///       in the traditional VLQ or LEB128 formats. For integers under 50 bits, it 
 ///       requires only one conditional branch to read one number, rather one branch 
-///       per byte. Also, generally, less bit-fiddling is required to reconstruct 
-///       integers from their serialized form.</li>
+///       per byte. Also, generally, fewer machine instructions are required to 
+///       reconstruct integers from their serialized form.</li>
 ///   </ul>
 ///   Note: although signed and unsigned numbers are stored in a similar way, 
 ///   switching an unsigned field to signed is unsafe. That's because certain positive 
@@ -427,8 +433,19 @@ namespace Loyc.SyncLib;
 ///   Integers in this format can be stored in a larger size than necessary (this can 
 ///   be called "non-canonical encoding"). For example, the number -3 can be stored
 ///   in one byte as 0b01111101 or in two bytes as 0b10111111 0b11111101. 
-///   <see cref="SyncBinary.Writer"/> writes integers in the shortest ("canonical")
-///   possible form.
+///   <see cref="SyncBinary.Writer"/> writes integers in the shortest possible form
+///   (also known as the "canonical" form).
+/// <para/>
+///   By the way, while variable-size integers use big-endian format, fixed-size 
+///   numbers (e.g. floads) use little-endian format. There is a reason for this. 
+///   Little-endian architectures such as x64 are the most common, and on these 
+///   architectures, little-endian format is more natural and could lead to 
+///   slightly higher performance. However, when writing variable-size integers, 
+///   there are fewer than 8 bits in the top byte, so writing it in little-endian 
+///   format would "scramble" it. For example, the number 0x12345 is written as 
+///   hex <c>C1 23 45</c>, but in little-endian format the same number would be 
+///   <c>C5 1A 01</c> which is not only unrecognizable, but potentially could be 
+///   slower to read/write depending on the implementation of the reader/writer.
 ///   
 /// <h4>Bitfields</h4>
 ///   
@@ -450,20 +467,20 @@ namespace Loyc.SyncLib;
 ///   single byte. For example, if you write a 20-bit bitfield followed by a 4-bit
 ///   bitfield like so: 
 ///   <code>
-///       sm.Sync("...", 257, 20, true); // 257 = 0b0001_00000001
+///       sm.Sync("...", 259, 20, true); // 259 = 0b0001_00000011
 ///       sm.Sync("...",  -1,  4, true); // -1 (as 4 bits) = 0b1111
 ///   </code>
-///   Then these three bytes are written: 0b00000000, 0b00000001, 0b11110001.
+///   Then these three bytes are written: 0b00000011, 0b00000001, 0b11110000.
 /// <para/>
 ///   If the total number of bits in a series of bitfields is not a multiple of 8, 
 ///   then the high bits of the final byte are zero, and these high bits are ignored 
 ///   when the stream is read. For example, if your code says
 ///   <code>
-///       sm.Sync("...", 257, 10, true); // 257 = 0b0001_00000001
+///       sm.Sync("...", 259, 10, true); // 259 = 0b0001_00000011
 ///       sm.Sync("...",  -1,  4, true); // -1 (as 4 bits) = 0b1111
 ///       sm.Sync("...",   7);           // 7 = 0b111
 ///   </code>
-///   Then these three bytes are written: 0b00000001, 0b00111101, 0b00000111. When
+///   Then these three bytes are written: 0b00000011, 0b00111101, 0b00000111. When
 ///   reading these fields, the top two bits of the second byte are ignored.
 ///   
 /// <h4>Strings</h4>
@@ -481,12 +498,32 @@ namespace Loyc.SyncLib;
 /// <para/>
 ///   Surrogate pairs in the .NET representation are converted to single 4-byte 
 ///   characters in the UTF-8 format.
+/// <para/>
+///   For example, suppose the string "Hello" is written, followed by a null 
+///   reference, followed by a smiley "😀", using the default marker settings 
+///   (i.e. list-start markers only). The bytes written will be
+///   <code>
+///     '[', 5, 'H', 'e', 'l', 'l', 'o', 0xFF, '[', 4, 0xF0, 0x9F, 0x98, 0x80
+///   </code>
+///   or in hexadecimal:
+///   <code>
+///     5B 05 48 65 6C 6C 6F FF 5B 04 F0 9F 98 80
+///   </code>
+///   In .NET, the smiley "😀" is two UTF-16 code units (0xD83D 0xDE00), which is
+///   treated as a single code point U+1F600 that is converted to UTF-8 format.
+/// <para/>
+///   If deduplication is enabled, the output will look approximately like this 
+///   (object ID bytes may vary):
+///   <code>
+///     '#', 1, '[', 5, 'H', 'e', 'l', 'l', 'o', 0xFF, '#', 2, '[', 4, 0xF0, 0x9F, 0x98, 0x80
+///   </code>
 ///   
 /// <h4>Characters</h4>
 ///   
 ///   An individual <c>char</c> is saved the same way as a <c>ushort</c> (unsigned 
 ///   16-bit integer). This is a variable-size format between 1 and 3 bytes.
-///   For example, the character 'A' is encoded as 0x41.
+///   For example, the character 'A' is encoded as 0x41, and '•' (U+2022) is encoded 
+///   as 0b1010_0000, 0b0010_0010.
 ///   
 /// <h4>Booleans</h4>
 ///   
@@ -503,22 +540,23 @@ namespace Loyc.SyncLib;
 ///   
 ///   Nullable floating point numbers are the same size, but use a specific NaN value
 ///   to represent null: 0xFFF368E0 for 32-bit floats and 0xFFFE6C6C_756E06FE for 64-bit
-///   floats. 0xFFF36EE0 typically shows up as "àhóÿ" in a hex editor ("ahoy", get it?),
+///   floats. 0xFFF368E0 typically shows up as "àhóÿ" in a hex editor ("ahoy", get it?),
 ///   while 0xFFFE6C6C_756E06FE looks something like "þ nullþÿ". Why these particular 
 ///   values?
 ///   
 ///   1. They are different from the standard .NET NaN values (0xFFC00000 and 
 ///      0xFFF8000000000000).
 ///   2. They are not hard to spot in a hex editor.
-///   3. They are unlikely to be the same as other NaN values that users might use,
-///      as they have the high bit set (making them "quiet" NaNs on x64/ARM) and are
-///      near (but not *too* near) the "top" of the NaN space.
+///   3. They are unlikely to be the same as other NaN values that users might use, as
+///      they are close (but not *too* close) to the "top" of the NaN space.
 ///   4. If the pattern 0xFFF368E0 is reinterpreted as an integer, it begins with E0 
 ///      whose top nibble 0xE marks the integer as being four bytes long. So if you
 ///      interpret floating-point null as an integer, it's still a single number.
 ///      That number is 0x68F3FF, however, which has no particular meaning. Similarly
 ///      0xFFFE6C6C_756E06FE starts with FE 06, which marks the integer as 8 bytes long
 ///      (having a meaningless value of 0x6E756C6CFEFF).
+///      
+///   Since these NaNs have the high bit set, they are "quiet" NaNs on x64 and ARM.
 ///   
 /// <h4>Decimal</h4>
 /// 
@@ -546,7 +584,8 @@ namespace Loyc.SyncLib;
 /// <para/>
 ///   Arrays/lists are length-prefixed, and the length itself uses the standard integer 
 ///   format laid out above. For example, <c>new[] { 1, 10, 100, 1000 }</c> is encoded 
-///   in six bytes if markers are disabled (<c>4, 1, 10, 100, 0b10000011, 0b11101000</c>).
+///   in seven bytes if markers are disabled (<c>4, 1, 10, 0x80, 100, 0b10000011, 0b11101000</c>)
+///   and eight bytes with a start marker (<c>'[', 4, 1, 10, 0x80, 100, 0b10000011, 0b11101000</c>).
 ///   Null is encoded in a single byte (255). An empty array is also a single byte (0).
 /// <para/>
 ///   When writing null, list markers are omitted (only 0xFF is written).

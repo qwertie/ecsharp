@@ -43,7 +43,7 @@ partial class SyncBinary
 
 		public FieldId NextField => _s.NextField;
 
-		public (bool Begun, object Object) BeginSubObject(FieldId name, object childKey, ObjectMode mode, int listLength = -1)
+		public (bool Begun, object Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1)
 		{
 			throw new NotImplementedException();
 		}
@@ -128,7 +128,7 @@ partial class SyncBinary
 			throw new NotImplementedException();
 		}
 
-		public string Sync(FieldId name, string savable)
+		public string Sync(FieldId name, string? savable)
 		{
 			throw new NotImplementedException();
 		}
@@ -239,7 +239,7 @@ partial class SyncBinary
 			throw new NotImplementedException();
 		}
 
-		public string SyncTypeTag(string tag)
+		public string SyncTypeTag(string? tag)
 		{
 			throw new NotImplementedException();
 		}

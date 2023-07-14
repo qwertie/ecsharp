@@ -99,6 +99,16 @@ namespace Loyc.SyncLib
 			where SM : ISyncManager
 			=> new SyncTimeSpanAsDays<SM>().Sync(ref sync, name, value);
 
+		public static string? Sync<SyncManager>(this SyncManager sync, 
+			FieldId name, string? savable, ObjectMode listMode, int tupleLength = -1)
+			where SyncManager: ISyncManager
+		{
+			var scanner = default(ScannableEnumerable<char>.Scanner<CharEnumerator>);
+			if (savable != null && sync.IsWriting)
+				scanner = new ScannableEnumerable<char>.Scanner<CharEnumerator>(savable.GetEnumerator());
+			return sync.SyncListCharImpl<ScannableEnumerable<char>.Scanner<CharEnumerator>, string?, SyncLibStringBuilder>(
+				name, scanner, savable, new SyncLibStringBuilder(), listMode, tupleLength);
+		}
 
 		#region SyncList/SyncColl/SyncDict/SyncMemory methods that accept SyncObjectFunc<SM, T>
 
@@ -209,7 +219,7 @@ namespace Loyc.SyncLib
 
 		#endregion
 
-		#region SyncList/SyncColl/SyncDict/SyncMemory methods that accept Symbol and ISyncField<SM, T>
+		#region SyncList/SyncColl/SyncDict/SyncMemory methods that accept ISyncField<SM, T>
 
 		public static List<T>? SyncList<SM, T, SyncField>(this SM sync,
 			FieldId name, List<T>? savable, SyncField syncItem,
@@ -308,7 +318,7 @@ namespace Loyc.SyncLib
 
 		#endregion
 
-		#region SyncList/SyncColl/SyncDict/SyncMemory methods that accept Symbol and ISyncObject<SM, T>
+		#region SyncList/SyncColl/SyncDict/SyncMemory methods that accept ISyncObject<SM, T>
 
 		public static List<T>? SyncList<SM, T, SyncObj>(this SM sync,
 			FieldId name, List<T>? savable, SyncObj syncItem,

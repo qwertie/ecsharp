@@ -116,7 +116,7 @@ namespace Loyc.Collections
 			{
 				_index += skip;
 
-				if (minLength < 0)
+				if (minLength <= 0)
 					minLength = 16;
 
 				// Ensure we've buffered up enough items to fulfill the request

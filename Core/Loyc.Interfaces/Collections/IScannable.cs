@@ -24,16 +24,17 @@ namespace Loyc.Collections
 		/// <param name="minLength">Minimum block size. The scanner must return a memory
 		///   block with a Length at least this high, unless there are not enough
 		///   remaining items in the collection or data stream to achieve this. 
-		///   If minLength is negative (e.g. -1), the scanner must return at least one 
-		///   item, and should choose whatever amount is optimal for the scanner.</param>
+		///   If minLength is zero or negative (e.g. -1), the scanner must return at 
+		///   least one item, and should choose whatever amount is optimal for the 
+		///   scanner.</param>
 		/// <param name="buffer">If the scanner cannot naturally offer a block as large
 		///   as requested, it may need a temporary storage area in which to combine
 		///   multiple blocks. If so, the method can use a buffer provided by the caller 
-		///   if it is large enough. If the caller provides a span that is smaller than
-		///   <c>minLength</c>, and if the scanner also needs to allocate a buffer, the
-		///   scanner allocates a new buffer and returns it in this parameter. Note:
-		///   implementations are allowed to ignore this parameter.</param>
-		/// <exception cref="ArgumentException">skip was negative, and backward 
+		///   if it is large enough. If the caller provides a memory block that is 
+		///   smaller than <c>minLength</c>, and if the scanner also needs to allocate 
+		///   a buffer, the scanner allocates a new buffer and returns it in this 
+		///   parameter. Note: implementations are allowed to ignore this parameter.</param>
+		/// <exception cref="ArgumentException"><c>skip</c> was negative, and backward 
 		///   scanning is not supported or the caller tried to skip backward beyond the
 		///   beginning of the sequence.</exception>
 		/// <returns>A chunk of data, or an empty span. The span is empty if and only 
@@ -44,17 +45,9 @@ namespace Loyc.Collections
 		///   minLength = -1.</remarks>
 		ReadOnlyMemory<T> Read(int skip, int minLength, ref Memory<T> buffer);
 
-		/// <summary>Returns true if the skip parameter is (ever) allowed to be negative 
-		/// when calling <see cref="Read(int, int, ref Memory{T})"/>.</summary>
+		/// <summary>Returns true if the <c>skip</c> parameter is allowed to be 
+		///   negative when calling <see cref="Read(int, int, ref Memory{T})"/>.</summary>
 		bool CanScanBackward { get; }
-	}
-
-	/// <summary>Same as <see cref="IScannable{T}"/> except that it does not implement 
-	/// <see cref="IEnumerable{T}"/>. In most cases <see cref="IScannable{T}"/> should
-	/// be implemented instead.</summary>
-	public interface IScan<T>
-	{
-		IScanner<T> Scan();
 	}
 
 	/// <summary>A sequence of T objects that is meant to be read in chunks. This 
@@ -66,7 +59,7 @@ namespace Loyc.Collections
 	/// <pre><code><![CDATA[
 	/// public static List<T> AddToList<T>(IScannable<T> sequence, List<T> list)
 	/// {
-	///     var scanner = ((IScannable<T>)null!).Scan();
+	///     IScanner<T> scanner = sequence.Scan();
 	///     var current = ReadOnlySpan<T>.Empty;
 	///     var temp = Memory<T>.Empty;
 	///     while ((current = scanner.Read(current.Length, 0, ref temp).Span).Length != 0) {
@@ -83,6 +76,14 @@ namespace Loyc.Collections
 	/// </remarks>
 	public interface IScannable<T> : IEnumerable<T>, IScan<T>
 	{
+	}
+
+	/// <summary>Same as <see cref="IScannable{T}"/> except that it does not implement 
+	///   <see cref="IEnumerable{T}"/>. In most cases <see cref="IScannable{T}"/> should
+	///   be implemented instead.</summary>
+	public interface IScan<T>
+	{
+		IScanner<T> Scan();
 	}
 	
 	public static partial class LCInterfaces

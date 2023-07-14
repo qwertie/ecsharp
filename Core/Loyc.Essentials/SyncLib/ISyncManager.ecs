@@ -58,7 +58,7 @@ namespace Loyc.SyncLib
 	// it is sometimes necessary to use this macro to indicate that a type 
 	// was intended. For example, `Foo[]` is not considered to be an array;
 	// it is considered to be a call to an indexer with no arguments. 
-	// However, `type<Foo[]>` is considered to be an array of `Foo`.
+	// However, `#type<Foo[]>` is considered to be an array of `Foo`.
 	[Passive]
 	define (#type<$T>) { $T; }
 
@@ -481,23 +481,20 @@ namespace Loyc.SyncLib
 		//         public MyClass Sync(SM sm, MyClass data) { ... }
 		//     }
 		//
-		// <summary>This method is used by SyncList() extension methods to read 
-		//   or write a list. Users don't need to call it.</summary>
-		// <param name="list">The list that the caller wants to save.
-		//   This parameter is ignored when not saving.</param>
-		// <param name="saving">The object being saved. This parameter is used to 
-		//   produce an object ID for deduplication, and it can be null if the user 
-		//   actually provided a null reference, or if the mode includes
-		//   ObjectMode.NotNull and not ObjectMode.Deduplicate.</param>
-		// <param name="builder">A builder used to construct a new list when loading.
-		//   This parameter is ignored when not loading.</param>
-		// <returns>Returns default(TList) in Saving, Query and Schema modes. 
-		//   Otherwise, the data that was loaded via the builder is returned.</returns>
 		##unroll($T in (bool, char, byte))
 		{
 			/// <summary>This method is used by Sync() extension methods to read 
 			///   or write an array. Users don't need to call it.</summary>
-			/// <remarks>Full documentation is located in source code (ISyncManager.ecs)</remarks>
+			/// <param name="list">The list that the caller wants to save.
+			///   This parameter is ignored when not saving.</param>
+			/// <param name="saving">The object being saved. This parameter is used to 
+			///   produce an object ID for deduplication, and it can be null if the user 
+			///   actually provided a null reference, or if the mode includes
+			///   ObjectMode.NotNull and not ObjectMode.Deduplicate.</param>
+			/// <param name="builder">A builder used to construct a new list when loading.
+			///   This parameter is ignored when not loading.</param>
+			/// <returns>Returns default(TList) in Saving, Query and Schema modes. 
+			///   Otherwise, the data that was loaded via the builder is returned.</returns>
 			List? $(out NameWithType(SyncList, $T, Impl))<Scanner, List, ListBuilder>
 				(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 				where Scanner : IScanner<$T>

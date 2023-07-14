@@ -77,7 +77,7 @@ namespace Loyc.SyncLib.Impl
 			if (_asInt32)
 				return TimeSpan.FromSeconds(sync.Sync(name, checked((int)value.TotalSeconds)));
 			else
-				return TimeSpan.FromSeconds(sync.Sync(name, (long)value.TotalSeconds));
+				return TimeSpan.FromSeconds(sync.Sync(name, value.TotalSeconds));
 		}
 
 		public TimeSpan? Sync(ref SyncManager sync, FieldId name, TimeSpan? value)
@@ -107,7 +107,7 @@ namespace Loyc.SyncLib.Impl
 			if (_asInt32)
 				return TimeSpan.FromMinutes(sync.Sync(name, checked((int)value.TotalMinutes)));
 			else
-				return TimeSpan.FromMinutes(sync.Sync(name, (long)value.TotalMinutes));
+				return TimeSpan.FromMinutes(sync.Sync(name, value.TotalMinutes));
 		}
 
 		public TimeSpan? Sync(ref SyncManager sync, FieldId name, TimeSpan? value)

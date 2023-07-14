@@ -38,7 +38,7 @@ namespace Loyc.SyncLib
 		///   should be stored into the object. And like Query mode, some objects in 
 		///   the object graph may be ignored (not traversed).</summary>
 		/// <remarks>None of the synchronizers bundled with Loyc.Serialization 
-		///   use this mode.</remarks>
+		///   use this mode, and the way it works hasn't been finalized.</remarks>
 		Merge = Writing | Reading | Query,
 	}
 }

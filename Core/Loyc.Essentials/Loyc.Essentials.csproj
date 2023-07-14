@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <LangVersion>10.0</LangVersion>
     <OutputPath>..\Bin\$(Configuration)\</OutputPath>
-    <NoWarn>1591, 1573, 0419, 1587, 1574</NoWarn>
+    <NoWarn>1591, 1573, 0419, 1587, 1574, 1658</NoWarn>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>OpenSourceKey.snk</AssemblyOriginatorKeyFile>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>

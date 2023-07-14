@@ -15,16 +15,16 @@ namespace Loyc.SyncLib.Impl
 	public interface IListBuilder<out TList, T> : IAdd<T> //, ICount, IReadSpan<T>
 	{
 		/// <summary>A method that is always called once when loading a list.</summary>
-		/// <param name="minLength">Minimum list size (<see cref="ISyncManager.MinimumListLength"/></param>
+		/// <param name="minLength">Minimum list size (<see cref="ISyncManager.MinimumListLength"/>)</param>
 		/// <returns>Returns the list object so that it can be assigned as the 
-		/// <see cref="ISyncManager.CurrentObject"/> in case the list contains
-		/// a cyclic reference to itself. If a cyclic reference is not possible,
-		/// this method can return null.</returns>
+		///   <see cref="ISyncManager.CurrentObject"/> in case the list contains
+		///   a cyclic reference to itself. If a cyclic reference is not possible,
+		///   this method can return null.</returns>
 		object? Alloc(int minLength);
 		/// <summary>When the list being loaded was already read from the data 
-		/// stream earlier, this property is called to convert that existing object 
-		/// to the target list type, skipping the usual calls to Alloc(), Add(T)
-		/// and List.</summary>
+		///   stream earlier, this property is called to convert that existing object 
+		///   to the target list type, skipping the usual calls to Alloc(), Add(T)
+		///   and List.</summary>
 		TList CastList(object value);
 		/// <summary>Called once when done loading to retrieve the list.</summary>
 		TList? List { get; }
@@ -152,14 +152,36 @@ namespace Loyc.SyncLib.Impl
 
 		public void Add(T item) => List!.Add(item);
 
-		//public ReadOnlySpan<T> ReadSpan()
-		//{
-		//	T[] result = new T[_index + 256 < List.Count ? 256 : List.Count - _index];
-		//	for (int i = 0; i < result.Length; i++)
-		//		result[i] = List[_index++];
-		//	return result.AsSpan();
-		//}
-
 		public TList Empty => _alloc(0);
+	}
+
+	/// <summary>Helper type for reading <see cref="StringBuilder"/>. This is actually
+	///   used to help read strings in case they don't have a length prefix.</summary>
+	public struct SyncLibStringBuilder : IListBuilder<string, char>
+	{
+		StringBuilder? _sb;
+
+		public string List => _sb!.ToString();
+
+		public object? Alloc(int minLength)
+		{
+			return _sb = new StringBuilder(minLength);
+		}
+
+		public string CastList(object value)
+		{
+			if (value is string s)
+				return s;
+			else {
+				_sb = new StringBuilder();
+				foreach (var c in (IEnumerable<char>)value)
+					_sb.Append(c);
+				return List;
+			}
+		}
+
+		public void Add(char item) => _sb!.Append(item);
+
+		public string Empty => string.Empty;
 	}
 }

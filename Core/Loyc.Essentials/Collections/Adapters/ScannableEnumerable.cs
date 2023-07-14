@@ -59,7 +59,7 @@ namespace Loyc.Collections
 				Span<T> span;
 				int i;
 
-				if (minLength < 0)
+				if (minLength <= 0)
 					minLength = 32;
 
 				// Are we skipping all items that were previously loaded?
