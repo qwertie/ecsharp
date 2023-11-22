@@ -1,13 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Loyc.Collections.Impl;
 using Loyc.MiniTest;
 
 namespace Loyc.Geometry
 {
 	[TestFixture]
-	public class LineMathTests
+	public class LineMathTests : TestHelpers
 	{
 		[Test]
 		public void LineIntersectionTests()
@@ -142,6 +143,117 @@ namespace Loyc.Geometry
 		{
 			var result = seg.ClipTo(bbox);
 			Assert.AreEqual(expected, result);
+		}
+
+		[Test]
+		public void TestSimplifyPolyline_Example1()
+		{
+			TestSimplifyPolyline(
+				new Point<float>[] {
+					P(0, 0),
+					P(20, 8),
+					P(30, 11),
+					P(50, 0),
+					P(57, 100),
+					P(50, 100),
+				},
+				10,
+				P(0, 0), P(30, 11), P(50, 0), P(50, 100));
+		}
+
+		[Test]
+		public void TestSimplifyPolyline_Example2()
+		{
+			TestSimplifyPolyline(
+				new Point<float>[] {
+					P(10, 0),
+					P(15, 2),
+					P(45, -2),
+					P(50, 0),
+					P(53, 40),
+					P(54, 50),
+					P(50, 100),
+				},
+				2,
+				P(10, 0), P(50, 0), P(54, 50), P(50, 100));
+		}
+
+		[Test]
+		public void TestSimplifyPolyline_ColinearMiddlePointIsAlwaysDeleted()
+		{
+			// A colinear middle point is always deleted
+			foreach (float tolerance in new[] { 1f, 0f }) {
+				TestSimplifyPolyline(
+					new[] { P(10, 20), P(15, 10), P(20,  0) },
+					tolerance,
+					P(10, 20), P(20, 0));
+			}
+		}
+
+		[Test]
+		public void TestSimplifyPolyline_DuplicatePointsArePartiallyDeduplicated()
+		{
+			TestSimplifyPolyline(
+				new Point<float>[] {
+					P(10, -1),
+					P(10, -1),
+					P(10, -1),
+				},
+				2,
+				P(10, -1), P(10, -1));
+
+			TestSimplifyPolyline(
+				new Point<float>[] {
+					P(10, 1),
+					P(10, 1),
+					P(10, 1),
+					P(10, 2),
+					P(10, 2),
+					P(10, 2),
+				},
+				2,
+				P(10, 1), P(10, 2));
+		}
+
+		void TestSimplifyPolyline(Point<float>[] polyline, float tolerance, params Point<float>[] expected)
+		{
+			// Act
+			var output = LineMath.SimplifyPolyline(polyline, tolerance);
+
+			// Assert
+			ExpectList(output, expected);
+
+			// Act 2: the double version behaves the same way as the float version
+			var polylineD = polyline.Select(p => new Point<double>(p.X, p.Y)).ToArray();
+			var expectedD = expected.Select(p => new Point<double>(p.X, p.Y)).ToArray();
+			var outputD = LineMath.SimplifyPolyline(polylineD, tolerance);
+
+			ExpectList(outputD, expectedD);
+
+			// Act 3: After reversing the polyline, the simplification should be the same but reversed
+			Array.Reverse(polyline);
+			Array.Reverse(expected);
+
+			output = LineMath.SimplifyPolyline(polyline, tolerance);
+
+			ExpectList(output, expected);
+		}
+
+		[Test]
+		public void TestSimplifyPolyline_VerySimpleInputsArePassedThrough()
+		{
+			// Two points or fewer are passed through unchanged
+			var output = LineMath.SimplifyPolyline(new[] { P(1, 2), P(-1, -2) }, 10);
+
+			ExpectList(output, P(1, 2), P(-1, -2));
+
+			output = LineMath.SimplifyPolyline(new[] { P(1, 2) }, 10);
+
+			ExpectList(output, P(1, 2));
+
+			output = LineMath.SimplifyPolyline(new Point<float>[] { }, 10);
+
+			ExpectList(output);
 		}
 	}
 }

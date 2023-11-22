@@ -1,4 +1,4 @@
-﻿using Loyc.Collections;
+using Loyc.Collections;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,82 +15,91 @@ namespace Loyc.Geometry
 			return seg.Vector().Length();
 		}
 
-		static readonly Func<Point<float>,  Point<float>,  Point<float>,  float>  _quadranceToLineF = (p, p0, p1) => (p - ProjectOnto(p, p0.To(p1), LineType.Segment)).Quadrance();
-		static readonly Func<Point<double>, Point<double>, Point<double>, double> _quadranceToLineD = (p, p0, p1) => (p - ProjectOnto(p, p0.To(p1), LineType.Segment)).Quadrance();
-
 		/// <summary>Simplifies a polyline using the Douglas-Peucker line 
-		/// simplification algorithm. This algorithm removes points that are 
-		/// deemed unimportant; the output is a subset of the input.</summary>
+		///   simplification algorithm. This algorithm removes points that are 
+		///   deemed unimportant, so the output is a subset of the input.</summary>
 		/// <typeparam name="List">Original unsimplified polyline</typeparam>
 		/// <param name="output">The output polyline is added in order to this collection</param>
 		/// <param name="tolerance">The distance between the input polyline and the 
-		/// output polyline will never exceed this distance. Increase this value to 
-		/// simplify more aggressively.</param>
+		///   output polyline will never exceed this distance. Increase this value to 
+		///   simplify more aggressively.</param>
 		/// <returns>The number of output points.</returns>
 		/// <remarks>
-		/// The average time complexity of this algorithm is O(N log N). 
-		/// The worst-case time complexity is O(N^2).
+		///   The average time complexity of this algorithm is O(N log N). 
+		///   The worst-case time complexity is O(N^2).
 		/// </remarks>
-		public static int SimplifyPolyline<List>(List points, ICollection<Point<float>> output, float tolerance) where List : IListSource<Point<float>>
+		public static int SimplifyPolyline<List>(List points, ICollection<Point<float>> output, float tolerance) where List : IReadOnlyList<Point<float>>
 		{
-			return SimplifyPolyline(points, output, tolerance * tolerance, _quadranceToLineF);
+			return SimplifyPolyline(points, 0, points.Count, output, tolerance * tolerance, _quadranceToLineF);
 		}
-		public static List<Point<float>> SimplifyPolyline<List>(List points, float tolerance) where List : IListSource<Point<float>>
+		public static List<Point<float>> SimplifyPolyline<List>(List points, float tolerance) where List : IReadOnlyList<Point<float>>
 		{
 			var output = new List<Point<float>>();
-			SimplifyPolyline(points, output, tolerance * tolerance, _quadranceToLineF);
+			SimplifyPolyline(points, 0, points.Count, output, tolerance * tolerance, _quadranceToLineF);
 			return output;
 		}
 		/// <inheritdoc cref="SimplifyPolyline{List}(List, ICollection{Point{float}}, float)"/>
-		public static int SimplifyPolyline<List>(List points, ICollection<Point<double>> output, double tolerance) where List : IListSource<Point<double>>
+		public static int SimplifyPolyline<List>(List points, ICollection<Point<double>> output, double tolerance) where List : IReadOnlyList<Point<double>>
 		{
-			return SimplifyPolyline(points, output, tolerance * tolerance, _quadranceToLineD);
+			return SimplifyPolyline(points, 0, points.Count, output, tolerance * tolerance, _quadranceToLineD);
 		}
-		public static List<Point<double>> SimplifyPolyline<List>(List points, double tolerance) where List : IListSource<Point<double>>
+		public static List<Point<double>> SimplifyPolyline<List>(List points, double tolerance) where List : IReadOnlyList<Point<double>>
 		{
 			var output = new List<Point<double>>();
-			SimplifyPolyline(points, output, tolerance * tolerance, _quadranceToLineD);
+			SimplifyPolyline(points, 0, points.Count, output, tolerance * tolerance, _quadranceToLineD);
 			return output;
 		}
-		public static int SimplifyPolyline<List, Point, T>(List points, ICollection<Point> output, T tolerance, Func<Point, Point, Point, T> distanceToLine, bool inRecursion = false)
-			where List : IListSource<Point> where T : IComparable<T>
+
+		static readonly Func<Point<float>, Point<float>, Point<float>, float> _quadranceToLineF
+			= (p, p0, p1) => (p - ProjectOnto(p, p0.To(p1), LineType.Segment)).Quadrance();
+		static readonly Func<Point<double>, Point<double>, Point<double>, double> _quadranceToLineD
+			= (p, p0, p1) => (p - ProjectOnto(p, p0.To(p1), LineType.Segment)).Quadrance();
+
+		public static int SimplifyPolyline<List, Point, T>(List points, int iStart, int iStop, ICollection<Point> output, T tolerance, Func<Point, Point, Point, T> distanceToLine)
+			where List : IReadOnlyList<Point> where T : IComparable<T>
 		{
-			int c = points.Count;
-			if (c <= 2) {
-				// This block is mainly an optimization; it should not affect the 
-				// output, EXCEPT that this code also handles the case that the
-				// input array contains 0 or 1 input points.
-				if (inRecursion)
-					c--;
-				if (c > 0) {
-					output.Add(points[0]);
-					if (c > 1)
-						output.Add(points[1]);
-				}
-				return c;
+			int iLast = iStop - 1;
+			if (iStart >= iLast) {
+				if (iStart == iLast)
+					output.Add(points[iStart]);
+
+				return iStop - iStart;
 			}
 
-			int iFarthest = -1;
-			T maxDist = tolerance;
-			Point from = points[0], to = points[c-1];
-			for (int i = 1; i < c - 1; i++)
+			// Run Douglas-Peucker algorithm
+			int count = SimplifyRecursively(points, iStart, iLast, output, tolerance, distanceToLine);
+
+			// The last point is not included by `SimplifyRecursively`, so add it afterward.
+			output.Add(points[iLast]);
+			return count + 1;
+			
+			static int SimplifyRecursively(List points, int iFirst, int iLast, ICollection<Point> output, T tolerance, Func<Point, Point, Point, T> distanceToLine)
 			{
-				var dist = distanceToLine(points[i], from, to);
-				if (maxDist.CompareTo(dist) < 0) {
-					maxDist = dist;
-					iFarthest = i;
+				Debug.Assert(iFirst < iLast);
+
+				Point first = points[iFirst];
+				int i = iFirst + 1;
+				if (i < iLast) {
+					Point last = points[iLast];
+					T maxDist = tolerance;
+					int iFarthest = -1;
+					do {
+						var dist = distanceToLine(points[i], first, last);
+						if (maxDist.CompareTo(dist) < 0) {
+							maxDist = dist;
+							iFarthest = i;
+						}
+					} while (++i < iLast);
+
+					if (iFarthest != -1) {
+						int count = SimplifyRecursively(points, iFirst, iFarthest, output, tolerance, distanceToLine);
+						count += SimplifyRecursively(points, iFarthest, iLast, output, tolerance, distanceToLine);
+						return count;
+					}
 				}
-			}
-			if (iFarthest == -1) {
-				output.Add(from);
-				if (inRecursion)
-					return 1;
-				output.Add(to);
-				return 2;
-			} else {
-				int count = SimplifyPolyline(points.Slice(0, iFarthest + 1), output, tolerance, distanceToLine, true);
-				count    += SimplifyPolyline(points.Slice(iFarthest), output, tolerance, distanceToLine, inRecursion);
-				return count;
+				
+				output.Add(first);
+				return 1;
 			}
 		}
 	}
