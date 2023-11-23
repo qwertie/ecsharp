@@ -2,8 +2,6 @@
 
 
 
-
-
 // This is a generated file
 using Loyc.Math;
 using System.Diagnostics;
@@ -37,26 +35,26 @@ namespace Loyc.Geometry
 		/// <inheritdoc cref="ProjectOnto(Point, LineSegment, LineType, out int?)"/>
 		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type = LineType.Segment)
 		{
-			int? _;
-			return ProjectOnto(p, seg, type, out _);
+			return ProjectOnto(p, seg, type, out int? _);
 		}
+
 		/// <summary>Performs projection, which finds the point on a line segment 
-		/// or infinite line that is nearest to a specified point.</summary>
+		///   or infinite line that is nearest to a specified point.</summary>
 		/// <param name="seg">The line segment</param>
 		/// <param name="p">The test point to be projected</param>
-		/// <param name="type">Whether to extend the line segment infinitely.</param>
+		/// <param name="type">Whether to treat the line segment as extended to infinite length.</param>
 		/// <param name="end">Set to 0 if the point is on the line segment (including
-		/// one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
-		/// after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
+		///   one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
+		///   after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
 		/// <returns>The projected point.</returns>
 		/// <remarks>
-		/// This algorithm is fast and accurate, and can be easily adapted to 3D.
-		/// A special advantage of this approach is that it runs fastest when the 
-		/// point is projected onto one of the endpoints (when infiniteLine is 
-		/// false).
+		///   This algorithm is fast and accurate, and can be easily adapted to 3D.
+		///   A special advantage of this approach is that it runs fastest when the 
+		///   point is projected onto one of the endpoints (when infiniteLine is 
+		///   false).
 		/// <para/>
-		/// Algorithm comes from: http://geomalgorithms.com/a02-_lines.html
-		/// See section "Distance of a Point to a Ray or Segment"
+		///   Algorithm comes from: http://geomalgorithms.com/a02-_lines.html
+		///   See section "Distance of a Point to a Ray or Segment"
 		/// </remarks>
 		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type, out int? end)
 		{
@@ -87,7 +85,7 @@ namespace Loyc.Geometry
 				return seg.A;
 			}
 
-			T frac = c1 / c2;                    // == |w|/|v|*cos(angle)
+			T frac = c1 / c2;                         // == |w|/|v|*cos(angle)
 			Point projected = seg.A.Add(v.Mul(frac)); // == p0 + v/|v|*|w|*cos(angle)
 			return projected;
 		}
@@ -103,20 +101,18 @@ namespace Loyc.Geometry
 		/// <inheritdoc cref="GetFractionAlong(Point, LineSegment, LineType, out int?)"/>
 		public static T GetFractionAlong(this Point p, LineSegment seg, LineType type = LineType.Segment)
 		{
-			int? _;
-			return GetFractionAlong(p, seg, type, out _);
+			return GetFractionAlong(p, seg, type, out int? _);
 		}
+
 		/// <summary>Gets the projection of a point onto a line, expressed as a 
-		/// fraction where 0 represents the start of the line and 1 represents the 
-		/// end of the line.</summary>
-		/// <param name="type">Whether to return numbers outside the range
-		/// (0, 1) if the projection is outside the line segment. If this is 
-		/// LineType.Segment, the result is clamped to (0, 1)</param>
-		/// <param name="end">Set to 0 if the point is on the line segment (including
-		/// one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
-		/// after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
+		///   fraction where 0 represents the start of the line and 1 represents the 
+		///   end of the line.</summary>
+		/// <param name="type">Whether to return numbers outside the range (0, 1) if 
+		///   the projection is outside the line segment. If this is LineType.Segment,
+		///   the result is clamped to (0, 1)</param>
+		/// <param name="end">Same as for <see cref="ProjectOnto"/>.</param>
 		/// <returns>The fraction of p along seg, as explained already. If seg is
-		/// zero-length, the result is always 0.</returns>
+		///   zero-length, the result is always 0.</returns>
 		/// <remarks>This method uses the same technique as <see cref="ProjectOnto"/>.</remarks>
 		public static T GetFractionAlong(this Point p, LineSegment seg, LineType type, out int? end)
 		{
@@ -457,26 +453,26 @@ namespace Loyc.Geometry
 		/// <inheritdoc cref="ProjectOnto(Point, LineSegment, LineType, out int?)"/>
 		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type = LineType.Segment)
 		{
-			int? _;
-			return ProjectOnto(p, seg, type, out _);
+			return ProjectOnto(p, seg, type, out int? _);
 		}
+
 		/// <summary>Performs projection, which finds the point on a line segment 
-		/// or infinite line that is nearest to a specified point.</summary>
+		///   or infinite line that is nearest to a specified point.</summary>
 		/// <param name="seg">The line segment</param>
 		/// <param name="p">The test point to be projected</param>
 		/// <param name="type">Whether to treat the line segment as extended to infinite length.</param>
 		/// <param name="end">Set to 0 if the point is on the line segment (including
-		/// one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
-		/// after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
+		///   one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
+		///   after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
 		/// <returns>The projected point.</returns>
 		/// <remarks>
-		/// This algorithm is fast and accurate, and can be easily adapted to 3D.
-		/// A special advantage of this approach is that it runs fastest when the 
-		/// point is projected onto one of the endpoints (when infiniteLine is 
-		/// false).
+		///   This algorithm is fast and accurate, and can be easily adapted to 3D.
+		///   A special advantage of this approach is that it runs fastest when the 
+		///   point is projected onto one of the endpoints (when infiniteLine is 
+		///   false).
 		/// <para/>
-		/// Algorithm comes from: http://geomalgorithms.com/a02-_lines.html
-		/// See section "Distance of a Point to a Ray or Segment"
+		///   Algorithm comes from: http://geomalgorithms.com/a02-_lines.html
+		///   See section "Distance of a Point to a Ray or Segment"
 		/// </remarks>
 		public static Point ProjectOnto(this Point p, LineSegment seg, LineType type, out int? end)
 		{
@@ -507,7 +503,7 @@ namespace Loyc.Geometry
 				return seg.A;
 			}
 
-			T frac = c1 / c2;                    // == |w|/|v|*cos(angle)
+			T frac = c1 / c2;                         // == |w|/|v|*cos(angle)
 			Point projected = seg.A.Add(v.Mul(frac)); // == p0 + v/|v|*|w|*cos(angle)
 			return projected;
 		}
@@ -523,20 +519,18 @@ namespace Loyc.Geometry
 		/// <inheritdoc cref="GetFractionAlong(Point, LineSegment, LineType, out int?)"/>
 		public static T GetFractionAlong(this Point p, LineSegment seg, LineType type = LineType.Segment)
 		{
-			int? _;
-			return GetFractionAlong(p, seg, type, out _);
+			return GetFractionAlong(p, seg, type, out int? _);
 		}
+
 		/// <summary>Gets the projection of a point onto a line, expressed as a 
-		/// fraction where 0 represents the start of the line and 1 represents the 
-		/// end of the line.</summary>
-		/// <param name="type">Whether to return numbers outside the range
-		/// (0, 1) if the projection is outside the line segment. If this is false,
-		/// the result is clamped to (0, 1)</param>
-		/// <param name="end">Set to 0 if the point is on the line segment (including
-		/// one of the endpoints), -1 if the point is before seg.A, 1 if the point is 
-		/// after seg.B, and null if the line segment is degenerate (seg.A==seg.B)</param>
+		///   fraction where 0 represents the start of the line and 1 represents the 
+		///   end of the line.</summary>
+		/// <param name="type">Whether to return numbers outside the range (0, 1) if 
+		///   the projection is outside the line segment. If this is LineType.Segment,
+		///   the result is clamped to (0, 1)</param>
+		/// <param name="end">Same as for <see cref="ProjectOnto"/>.</param>
 		/// <returns>The fraction of p along seg, as explained already. If seg is
-		/// zero-length, the result is always 0.</returns>
+		///   zero-length, the result is always 0.</returns>
 		/// <remarks>This method uses the same technique as <see cref="ProjectOnto"/>.</remarks>
 		public static T GetFractionAlong(this Point p, LineSegment seg, LineType type, out int? end)
 		{

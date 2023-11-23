@@ -19,7 +19,7 @@ namespace Loyc.Geometry
 		///   simplification algorithm. This algorithm removes points that are 
 		///   deemed unimportant, so the output is a subset of the input.</summary>
 		/// <typeparam name="List">Original unsimplified polyline</typeparam>
-		/// <param name="output">The output polyline is added in order to this collection</param>
+		/// <param name="output">The output polyline is added (in order) to this collection</param>
 		/// <param name="tolerance">The distance between the input polyline and the 
 		///   output polyline will never exceed this distance. Increase this value to 
 		///   simplify more aggressively.</param>
@@ -38,6 +38,7 @@ namespace Loyc.Geometry
 			SimplifyPolyline(points, 0, points.Count, output, tolerance * tolerance, _quadranceToLineF);
 			return output;
 		}
+
 		/// <inheritdoc cref="SimplifyPolyline{List}(List, ICollection{Point{float}}, float)"/>
 		public static int SimplifyPolyline<List>(List points, ICollection<Point<double>> output, double tolerance) where List : IReadOnlyList<Point<double>>
 		{
@@ -51,11 +52,14 @@ namespace Loyc.Geometry
 		}
 
 		static readonly Func<Point<float>, Point<float>, Point<float>, float> _quadranceToLineF
-			= (p, p0, p1) => (p - ProjectOnto(p, p0.To(p1), LineType.Segment)).Quadrance();
+			= (p, p0, p1) => p.Sub(ProjectOnto(p, new LineSegment<float>(p0, p1), LineType.Segment)).Quadrance();
 		static readonly Func<Point<double>, Point<double>, Point<double>, double> _quadranceToLineD
-			= (p, p0, p1) => (p - ProjectOnto(p, p0.To(p1), LineType.Segment)).Quadrance();
+			= (p, p0, p1) => p.Sub(ProjectOnto(p, new LineSegment<double>(p0, p1), LineType.Segment)).Quadrance();
 
-		public static int SimplifyPolyline<List, Point, T>(List points, int iStart, int iStop, ICollection<Point> output, T tolerance, Func<Point, Point, Point, T> distanceToLine)
+		public static int SimplifyPolyline<List, Point, T>(
+			List points, int iStart, int iStop,
+			ICollection<Point> output, T tolerance,
+			Func<Point, Point, Point, T> distanceToLine)
 			where List : IReadOnlyList<Point> where T : IComparable<T>
 		{
 			int iLast = iStop - 1;

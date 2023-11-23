@@ -179,14 +179,30 @@ namespace Loyc.Geometry
 		}
 
 		[Test]
-		public void TestSimplifyPolyline_ColinearMiddlePointIsAlwaysDeleted()
+		public void TestSimplifyPolyline_Example3()
 		{
-			// A colinear middle point is always deleted
+			// This test verifies that the quadrance/distance calculation uses
+			// "distance to line segment" and not "distance to infinite line".
+			TestSimplifyPolyline(
+				new Point<float>[] {
+					P(10, 20),
+					P(11, 40),
+					P(11, 60),
+					P(10, 50),
+				},
+				5,
+				P(10, 20), P(11, 60), P(10, 50));
+		}
+
+		[Test]
+		public void TestSimplifyPolyline_ColinearMiddlePointsAreAlwaysDeleted()
+		{
+			// Colinear middle points are always deleted
 			foreach (float tolerance in new[] { 1f, 0f }) {
 				TestSimplifyPolyline(
-					new[] { P(10, 20), P(15, 10), P(20,  0) },
+					new[] { P(50, 20), P(55, 10), P(51, 18), P(60,  0) },
 					tolerance,
-					P(10, 20), P(20, 0));
+					P(50, 20), P(60, 0));
 			}
 		}
 
@@ -230,7 +246,15 @@ namespace Loyc.Geometry
 
 			ExpectList(outputD, expectedD);
 
-			// Act 3: After reversing the polyline, the simplification should be the same but reversed
+			// Act 3: After swapping coordinates, the simplification should be the same but swapped
+			polyline = polyline.Select(p => new Point<float>(p.Y, p.X)).ToArray();
+			expected = expected.Select(p => new Point<float>(p.Y, p.X)).ToArray();
+
+			output = LineMath.SimplifyPolyline(polyline, tolerance);
+
+			ExpectList(output, expected);
+
+			// Act 4: After reversing the polyline, the simplification should be the same but reversed
 			Array.Reverse(polyline);
 			Array.Reverse(expected);
 

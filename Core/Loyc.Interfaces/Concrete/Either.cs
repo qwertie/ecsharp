@@ -81,6 +81,11 @@ namespace Loyc
 		public Either<L, R2> MapRight<R2>(Func<R, R2> selectR)
 			=> !_hasLeft ? new Either<L, R2>(selectR(_right)) : new Either<L, R2>(_left);
 
+		/// <summary>Transforms <c>Left</c> or <c>Right</c> with exactly one of the two functions given, 
+		///   returning whatever that function returns.</summary>
+		public T Match<T>(Func<L, T> selectL, Func<R, T> selectR)
+			=> _hasLeft ? selectL(_left) : selectR(_right);
+
 		/// <summary>Runs actionL if <c>Left.HasValue</c>. Equivalent to <c>Left.Then(actionL)</c>, but also returns <c>this</c>.</summary>
 		public Either<L, R> IfLeft(Action<L> actionL) {
 			if (_hasLeft)

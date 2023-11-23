@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +11,9 @@ namespace Loyc.Geometry
 	{
 		public LineSegment(Point<T> a, Point<T> b) { A = a; B = b; }
 		public LineSegment(T ax, T ay, T bx, T by) { A = new Point<T>(ax, ay); B = new Point<T>(bx, by); }
+		
 		public Point<T> A, B;
+		
 		public static implicit operator Pair<Point<T>, Point<T>>(LineSegment<T> seg) { return new Pair<Point<T>, Point<T>>(seg.A, seg.B); }
 		public static implicit operator LineSegment<T>(Pair<Point<T>, Point<T>> seg) { return new LineSegment<T>(seg.A, seg.B); }
 		public static explicit operator LineSegment<int>(LineSegment<T> seg) { return new LineSegment<int>((Point<int>)seg.A, (Point<int>)seg.B); }
