@@ -179,15 +179,9 @@ namespace Loyc.SyncLib
 				where Scanner : IScanner<bool>
 				where ListBuilder : IListBuilder<List, bool>
 			{
-				if (MayBeNullable(mode) && saving == null) {
-					var status = BeginSubObject(name, null, mode, 0);
-					Debug.Assert(!status.Begun && status.Object == null);
-					return default;
-				} else {
-					var saver = new ScannerSaver<SyncJson.Writer, Scanner, bool, SyncPrimitive<SyncJson.Writer>>(new SyncPrimitive<SyncJson.Writer>(), mode);
-					saver.Write(ref this, name, scanner!, saving, tupleLength);
-					return saving;
-				}
+				var saver = new ScannerSaver<Writer, Scanner, bool, SyncPrimitive<Writer>>(new SyncPrimitive<Writer>(), mode);
+				saver.Write(ref this, name, scanner!, saving, tupleLength);
+				return saving;
 			}
 
 			public List? SyncListCharImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)

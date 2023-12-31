@@ -14,9 +14,9 @@ namespace Loyc.SyncLib
 		Normal = 0,
 		
 		/// <summary>A list object, in which there are a variable number of unnamed 
-		/// fields. <see cref="ISyncManager.IsInsideList"/> will be true inside 
-		/// this kind of subobject, and <see cref="ISyncManager.ReachedEndOfList"/>
-		/// will be non-null in the Loading and Schema modes.</summary>
+		///   fields. <see cref="ISyncManager.IsInsideList"/> will be true inside 
+		///   this kind of subobject, and <see cref="ISyncManager.ReachedEndOfList"/>
+		///   will be non-null in the Loading and Schema modes.</summary>
 		/// <remarks>When calling one of the <see cref="ISyncManager.SyncList"/> 
 		///   methods, this mode will be used implicitly if both the List and Tuple
 		///   flags are missing.</remarks>
@@ -40,22 +40,24 @@ namespace Loyc.SyncLib
 		Tuple = 3,
 
 		/// <summary>Deduplication is performed on the subobject, allowing object graphs 
-		/// that contain cycles. If <see cref="ISyncManager.SupportsReordering"/> is 
-		/// true, it's possible in Loading Mode that it is already known whether the 
-		/// input data stream used deduplication or not. In that case, it doesn't make 
-		/// a difference whether this flag is present or not.</summary>
+		///   that contain cycles. If <see cref="ISyncManager.SupportsReordering"/> is 
+		///   true, it's possible in Loading Mode that it is already known whether the 
+		///   input data stream used deduplication or not. In that case, it doesn't make 
+		///   a difference whether this flag is present or not.</summary>
+		/// <remarks><![CDATA[Note: ObjectMode.Deduplicate is incompatible with 
+		///   Memory<T> and ReadOnlyMemory<T>]]>.</remarks>
 		Deduplicate = 4,
 		
 		/// <summary>The object is not allowed to be null. Certain serializers 
-		/// may use the knowledge that a sub-object is never null to save space.
-		/// Also, this flag should be used (without <see cref="Deduplicate"/>) when 
-		/// reading/writing value types as a hint to the serializer to avoid boxing.
+		///   may use the knowledge that a sub-object is never null to save space.
+		///   Also, this flag should be used (without <see cref="Deduplicate"/>) when 
+		///   reading/writing value types as a hint to the serializer to avoid boxing.
 		/// </summary>
 		NotNull = 8,
 
 		/// <summary>The object can have multiple types or derived classes, so a
-		/// type identifier needs to be saved to make deserialization possible.
-		/// TODO: figure out how it will work and say something about that here</summary>
+		///   type identifier needs to be saved to make deserialization possible.
+		///   TODO: figure out how it will work and say something about that here</summary>
 		//DynamicType = 16,
 
 		/// <summary>Requests that compact formatting be used when writing this object.

@@ -1,4 +1,4 @@
-// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 30.1.0.0
+// Generated from MatchCode.ecs by LeMP custom tool. LeMP version: 30.1.91.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -54,8 +54,8 @@ namespace LeMP.ecs
 
 			var patterns = node.Args.Skip(1).Select(UnwrapBraces);
 			var tests = patterns.Aggregate((LNode) null, (tests_, pattern) => {
-				var test = cmc.MakeTopTestExpr(pattern, input)
-				; return LNode.MergeBinary(tests_, test, S.Or);
+				var test = cmc.MakeTopTestExpr(pattern, input);
+				return LNode.MergeBinary(tests_, test, S.Or);
 			});
 
 			return LNode.MergeBinary(tempVarForInput, tests, S.And);

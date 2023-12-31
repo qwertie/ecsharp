@@ -143,36 +143,34 @@ partial class SyncBinary
 			return savable;
 		}
 
-		static bool MayBeNullable(ObjectMode mode)
-			=> (mode & (ObjectMode.NotNull | ObjectMode.Deduplicate)) != ObjectMode.NotNull;
-
-		public List? SyncListBoolImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
+		public List? SyncListBoolImpl<Scanner, List, ListBuilder>(
+			FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 			where Scanner : IScanner<bool>
 			where ListBuilder : IListBuilder<List, bool>
 		{
-			if (MayBeNullable(mode) && saving == null) {
-				var status = BeginSubObject(name, null, mode, 0);
-				Debug.Assert(!status.Begun && status.Object == null);
-				return default;
-			} else {
-				var saver = new ScannerSaver<SyncBinary.Writer, Scanner, bool, SyncPrimitive<SyncBinary.Writer>>(new SyncPrimitive<SyncBinary.Writer>(), mode);
-				saver.Write(ref this, name, scanner!, saving, tupleLength);
-				return saving;
-			}
+			var saver = new ScannerSaver<Writer, Scanner, bool, SyncPrimitive<Writer>>(new SyncPrimitive<Writer>(), mode);
+			saver.Write(ref this, name, scanner!, saving, tupleLength);
+			return saving;
 		}
 
-		public List? SyncListByteImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
+		public List? SyncListByteImpl<Scanner, List, ListBuilder>(
+			FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 			where Scanner : IScanner<byte>
 			where ListBuilder : IListBuilder<List, byte>
 		{
-			throw new NotImplementedException();
+			var saver = new ScannerSaver<Writer, Scanner, byte, SyncPrimitive<Writer>>(new SyncPrimitive<Writer>(), mode);
+			saver.Write(ref this, name, scanner!, saving, tupleLength);
+			return saving;
 		}
 
-		public List? SyncListCharImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
+		public List? SyncListCharImpl<Scanner, List, ListBuilder>(
+			FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 			where Scanner : IScanner<char>
 			where ListBuilder : IListBuilder<List, char>
 		{
-			throw new NotImplementedException();
+			var saver = new ScannerSaver<Writer, Scanner, char, SyncPrimitive<Writer>>(new SyncPrimitive<Writer>(), mode);
+			saver.Write(ref this, name, scanner!, saving, tupleLength);
+			return saving;
 		}
 
 		public IBufferWriter<byte> Flush()

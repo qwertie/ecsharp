@@ -183,109 +183,109 @@ namespace Loyc.SyncLib
 		///   this property returns the name or integer ID of the next field in the 
 		///   input stream. Otherwise, it returns <see cref="FieldId.Missing"/>.</summary>
 		/// <remarks>
-		/// Even if a data stream supports reordering (<see cref="SupportsReordering"/>),
-		/// it may be inefficient to read fields out-of-order. Therefore, if your
-		/// code wants to read as efficiently as possible, and it expects to receive
-		/// data out of order, it can use this property to read the fields in the order 
-		/// they appear. Another reason you might read data this way is if you expect
-		/// to read an extremely large object (e.g. 1 GB or more) and you want to avoid
-		/// the extra memory allocations that occur when reading data out of order.
-		/// <para/>
-		/// Here is an example:
-		/// <example>
-		///     public MyObject Sync(ISyncManager sm, MyObject? obj)
-		///     {
-		///         obj ??= new MyObject();
-		///         if (!sm.SupportsNextField || sm.NeedsIntegerIds) {
-		///             // Synchronize in the normal way
-		///             obj.Field1 = sm.Sync("Field1", obj.Field1);
-		///             obj.Field2 = sm.Sync("Field2", obj.Field2);
-		///             obj.Field3 = sm.Sync("Field3", obj.Field3);
-		///         } else {
-		///             // Synchronize fields in the order they appear in the input.
-		///             FieldId name;
-		///             while ((name = sm.NextField) != FieldId.Missing) {
-		///                 if (name.Name == "Field1") {
-		///                     obj.Field1 = sm.Sync(null, obj.Field1);
-		///                 } else if (name.Name == "Field2") {
-		///                     obj.Field2 = sm.Sync(null, obj.Field2);
-		///                 } else if (name.Name == "Field3") {
-		///                     obj.Field3 = sm.Sync(null, obj.Field3);
-		///                 } else {
-		///                     throw new Exception("Unexpected field: " + name.Name);
-		///                 }
-		///             }
-		///         }
-		///         return obj;
-		///     }
-		/// </example>
-		/// <b>Warning</b>: some readers support name conversion, so that the name 
-		/// passed to the Sync methods is not the same as the name used in the data 
-		/// stream. For example, when <see cref="SyncJson.Options.NameConverter"/> 
-		/// is <see cref="SyncJson.ToCamelCase"/>, a name like "Field1" is stored 
-		/// as "field1". But NextField may report the actual string from the 
-		/// datastream ("field1") which will cause code written this way to fail.
-		/// If the camelcase conversion is the only one you intend to support, you
-		/// can work around this problem in your synchronizer with uppercase 
-		/// comparisons:
-		/// <para/>
-		///     string? name;
-		///     while ((name = sm.NextField.Name?.ToUpperInvariant()) != null) {
-		///         if (name == "FIELD1") {
-		///             obj.Field1 = sm.Sync(null, obj.Field1);
-		///         } else if (name == "FIELD2") {
-		///             obj.Field2 = sm.Sync(null, obj.Field2);
-		///         } else if (name == "FIELD3") {
-		///             obj.Field3 = sm.Sync(null, obj.Field3);
-		///         } else {
-		///             throw new Exception("Unexpected field: " + name);
-		///         }
-		///     }
-		/// <para/>
-		/// However, this workaround reduces the performance advantage of reading 
-		/// fields in order.
-		/// <para/>
-		/// There are three other things worth noticing about this example.
-		/// <para/>
-		/// First, this example is only designed to support string field names, so it
-		/// checks the <see cref="NeedsIntegerIds"/> property and falls back on the
-		/// "normal" synchronization style if it is true. You also need a block of
-		/// "normal" synchronization code when writing an object to an output stream.
-		/// <para/>
-		/// Second, notice that this style of reading also allows you to detect
-		/// unexpected field names and respond to them (in this example, an exception
-		/// is thrown when an unexpected field is encountered).
-		/// <para/>
-		/// Third, notice the use of null field names (sm.Sync(null, ...)). This is
-		/// how you ask <see cref="ISyncManager"/> to synchronize the next field
-		/// without regard for the name of that field.
-		/// <para/>
-		/// Another potential use of this property is to save or load a string 
-		/// dictionary:
-		/// <example><![CDATA[
-		/// public IDictionary<string, string?> Sync(
-		///        ISyncManager sm, IDictionary<string, string?>? dict)
-		/// {
-		///     dict ??= new Dictionary<string, string?>();
-		///     if (sm.IsReading) {
-		///         if (!sm.SupportsNextField || sm.NeedsIntegerIds || sm.IsWriting)
-		///             throw new NotSupportedException(
-		///                 "StringDictionarySync is incompatible with this " + sm.GetType().Name);
-		///         
-		///         string? name;
-		///         while ((name = sm.NextField.Name) != null) {
-		///             dict[name] = sm.Sync(null, "");
-		///         }
-		///     } else { // Writing
-		///         foreach (var pair in dict)
-		///             sm.Sync(pair.Key, pair.Value);
-		///     }
-		///     return dict;
-		/// }
-		/// ]]></example>
-		/// A disadvantage of loading/storing a dictionary this way is that it is 
-		/// not compatible with data formats that don't use string field names, 
-		/// such as protocol buffers.
+		///   Even if a data stream supports reordering (<see cref="SupportsReordering"/>),
+		///   it may be inefficient to read fields out-of-order. Therefore, if your
+		///   code wants to read as efficiently as possible, and it expects to receive
+		///   data out of order, it can use this property to read the fields in the order 
+		///   they appear. Another reason you might read data this way is if you expect
+		///   to read an extremely large object (e.g. 1 GB or more) and you want to avoid
+		///   the extra memory allocations that occur when reading data out of order.
+		///   <para/>
+		///   Here is an example:
+		///   <example>
+		///       public MyObject Sync(ISyncManager sm, MyObject? obj)
+		///       {
+		///           obj ??= new MyObject();
+		///           if (!sm.SupportsNextField || sm.NeedsIntegerIds) {
+		///               // Synchronize in the normal way
+		///               obj.Field1 = sm.Sync("Field1", obj.Field1);
+		///               obj.Field2 = sm.Sync("Field2", obj.Field2);
+		///               obj.Field3 = sm.Sync("Field3", obj.Field3);
+		///           } else {
+		///               // Synchronize fields in the order they appear in the input.
+		///               FieldId name;
+		///               while ((name = sm.NextField) != FieldId.Missing) {
+		///                   if (name.Name == "Field1") {
+		///                       obj.Field1 = sm.Sync(null, obj.Field1);
+		///                   } else if (name.Name == "Field2") {
+		///                       obj.Field2 = sm.Sync(null, obj.Field2);
+		///                   } else if (name.Name == "Field3") {
+		///                       obj.Field3 = sm.Sync(null, obj.Field3);
+		///                   } else {
+		///                       throw new Exception("Unexpected field: " + name.Name);
+		///                   }
+		///               }
+		///           }
+		///           return obj;
+		///       }
+		///   </example>
+		///   <b>Warning</b>: some readers support name conversion, so that the name 
+		///   passed to the Sync methods is not the same as the name used in the data 
+		///   stream. For example, when <see cref="SyncJson.Options.NameConverter"/> 
+		///   is <see cref="SyncJson.ToCamelCase"/>, a name like "Field1" is stored 
+		///   as "field1". But NextField may report the actual string from the 
+		///   datastream ("field1") which will cause code written this way to fail.
+		///   If the camelcase conversion is the only one you intend to support, you
+		///   can work around this problem in your synchronizer with uppercase 
+		///   comparisons:
+		///   <para/>
+		///       string? name;
+		///       while ((name = sm.NextField.Name?.ToUpperInvariant()) != null) {
+		///           if (name == "FIELD1") {
+		///               obj.Field1 = sm.Sync(null, obj.Field1);
+		///           } else if (name == "FIELD2") {
+		///               obj.Field2 = sm.Sync(null, obj.Field2);
+		///           } else if (name == "FIELD3") {
+		///               obj.Field3 = sm.Sync(null, obj.Field3);
+		///           } else {
+		///               throw new Exception("Unexpected field: " + name);
+		///           }
+		///       }
+		///   <para/>
+		///   However, this workaround reduces the performance advantage of reading 
+		///   fields in order.
+		///   <para/>
+		///   There are three other things worth noticing about this example.
+		///   <para/>
+		///   First, this example is only designed to support string field names, so it
+		///   checks the <see cref="NeedsIntegerIds"/> property and falls back on the
+		///   "normal" synchronization style if it is true. You also need a block of
+		///   "normal" synchronization code when writing an object to an output stream.
+		///   <para/>
+		///   Second, notice that this style of reading also allows you to detect
+		///   unexpected field names and respond to them (in this example, an exception
+		///   is thrown when an unexpected field is encountered).
+		///   <para/>
+		///   Third, notice the use of null field names (sm.Sync(null, ...)). This is
+		///   how you ask <see cref="ISyncManager"/> to synchronize the next field
+		///   without regard for the name of that field.
+		///   <para/>
+		///   Another potential use of this property is to save or load a string 
+		///   dictionary:
+		///   <example><![CDATA[
+		///   public IDictionary<string, string?> Sync(
+		///          ISyncManager sm, IDictionary<string, string?>? dict)
+		///   {
+		///       dict ??= new Dictionary<string, string?>();
+		///       if (sm.IsReading) {
+		///           if (!sm.SupportsNextField || sm.NeedsIntegerIds || sm.IsWriting)
+		///               throw new NotSupportedException(
+		///                   "StringDictionarySync is incompatible with this " + sm.GetType().Name);
+		///           
+		///           string? name;
+		///           while ((name = sm.NextField.Name) != null) {
+		///               dict[name] = sm.Sync(null, "");
+		///           }
+		///       } else { // Writing
+		///           foreach (var pair in dict)
+		///               sm.Sync(pair.Key, pair.Value);
+		///       }
+		///       return dict;
+		///   }
+		///   ]]></example>
+		///   A disadvantage of loading/storing a dictionary this way is that it is 
+		///   not compatible with data formats that don't use string field names, 
+		///   such as protocol buffers.
 		/// </remarks>
 		FieldId NextField { get; }
 
@@ -370,12 +370,12 @@ namespace Loyc.SyncLib
 		///   tag stored in the data stream, or null if there is no tag. When 
 		///   <see cref="IsReading"/> is false, the return value is <c>tag</c>.
 		/// <remarks>
-		/// If <see cref="SupportsNextField"/> is false, in order to read a data stream 
-		/// correctly, you must call this method if and only if this method was called 
-		/// when writing the stream.
-		/// <para/>
-		/// No behavior has been defined for this method in <see cref="SyncMode.Merge"/>
-		/// mode, when <see cref="IsReading"/> and <see cref="IsWriting"/> are both true.
+		///   If <see cref="SupportsNextField"/> is false, in order to read a data stream 
+		///   correctly, you must call this method if and only if this method was called 
+		///   when writing the stream.
+		///   <para/>
+		///   No behavior has been defined for this method in <see cref="SyncMode.Merge"/>
+		///   mode, when <see cref="IsReading"/> and <see cref="IsWriting"/> are both true.
 		/// </remarks>
 		string? SyncTypeTag(string? tag);
 		/// <summary>Reads or writes a value of a field on the current object.</summary>
@@ -454,6 +454,9 @@ namespace Loyc.SyncLib
 		///   This parameter is ignored when not loading.</param>
 		/// <returns>Returns default(TList) in Saving, Query and Schema modes. 
 		///   Otherwise, the data that was loaded via the builder is returned.</returns>
+		/// <remarks>If you're trying to implement `ISyncManager`, please see the extra 
+		///   documentation above this method in ISyncManager.ecs in SyncLib's GitHub 
+		///   repo.</remarks>
 		List? SyncListBoolImpl<Scanner, List, ListBuilder>
 		(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 		
@@ -470,6 +473,9 @@ namespace Loyc.SyncLib
 		///   This parameter is ignored when not loading.</param>
 		/// <returns>Returns default(TList) in Saving, Query and Schema modes. 
 		///   Otherwise, the data that was loaded via the builder is returned.</returns>
+		/// <remarks>If you're trying to implement `ISyncManager`, please see the extra 
+		///   documentation above this method in ISyncManager.ecs in SyncLib's GitHub 
+		///   repo.</remarks>
 		List? SyncListCharImpl<Scanner, List, ListBuilder>
 		(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 		
@@ -486,6 +492,9 @@ namespace Loyc.SyncLib
 		///   This parameter is ignored when not loading.</param>
 		/// <returns>Returns default(TList) in Saving, Query and Schema modes. 
 		///   Otherwise, the data that was loaded via the builder is returned.</returns>
+		/// <remarks>If you're trying to implement `ISyncManager`, please see the extra 
+		///   documentation above this method in ISyncManager.ecs in SyncLib's GitHub 
+		///   repo.</remarks>
 		List? SyncListByteImpl<Scanner, List, ListBuilder>
 		(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 		
@@ -494,52 +503,52 @@ namespace Loyc.SyncLib
 		/// <summary>Sets the "current object" reference. This method must be called 
 		///   when deserializing object graphs with cycles (see remarks).</summary>
 		/// <remarks>
-		/// To understand why this property is needed, consider a Person class that 
-		/// has a reference to all the Siblings of the person:
-		/// <code>
-		///   class Person
-		///   {
-		///       public string Name;
-		///       public int Age;
-		///       public Person[] Siblings;
-		///   }
-		/// </code>
-		/// If Jack and Jill are siblings then Jack has a reference to Jill, and Jill 
-		/// has a reference back to Jack. A naive implementation of a synchronization 
-		/// function for Person might look like this:
-		/// <code>
-		///   public Person SyncPerson(ISyncManager sync, Person obj)
-		///   {
-		///       obj ??= new Person();
-		///       obj.Name     = sync.SyncNullable("Name", obj.Name);
-		///       obj.Age      = sync.Sync("Age", obj.Age);
-		///       obj.Siblings = sync.SyncList("Siblings", obj.Siblings, SyncPerson);
-		///   }
-		/// </code>
-		/// But it's impossible for this function to load a Person correctly! To 
-		/// understand why, let's think about what <c>SyncList</c> does: it reads a 
-		/// list of Persons (synchronously), and returns a <c>Person[]</c>. But each 
-		/// Person in that array contains a reference back to the current person. If 
-		/// Jack is being loaded, then the <c>Person[]</c> contains Jill, which has a 
-		/// reference back to Jack.
-		/// <para/>
-		/// But <c>SyncList</c> can't return an array that has a reference to Jack, 
-		/// because the reference to Jack only exists in the local variable <c>obj</c>.
-		/// So as the <c>SyncList</c> method deserializes Jill, Jill's synchronizer 
-		/// must fail while reading Jill's list of siblings.
-		/// <para/>
-		/// To fix this, set <c>CurrentObject</c> before calling <c>SyncList</c>:
-		/// <code>
-		///   public Person SyncPerson(ISyncManager sync, Person obj)
-		///   {
-		///       sync.CurrentObject = obj ??= new Person();
-		///       obj.Name     = sync.SyncNullable("Name", obj.Name);
-		///       obj.Age      = sync.Sync("Age", obj.Age);
-		///       obj.Siblings = sync.SyncList("Siblings", obj.Siblings, SyncPerson);
-		///   }
-		/// </code>
-		/// If the current type cannot contain any objects that may refer back to 
-		/// itself, then setting <see cref="CurrentObject"/> is optional.
+		///   To understand why this property is needed, consider a Person class that 
+		///   has a reference to all the Siblings of the person:
+		///   <code>
+		///     class Person
+		///     {
+		///         public string Name;
+		///         public int Age;
+		///         public Person[] Siblings;
+		///     }
+		///   </code>
+		///   If Jack and Jill are siblings then Jack has a reference to Jill, and Jill 
+		///   has a reference back to Jack. A naive implementation of a synchronization 
+		///   function for Person might look like this:
+		///   <code>
+		///     public Person SyncPerson(ISyncManager sync, Person obj)
+		///     {
+		///         obj ??= new Person();
+		///         obj.Name     = sync.SyncNullable("Name", obj.Name);
+		///         obj.Age      = sync.Sync("Age", obj.Age);
+		///         obj.Siblings = sync.SyncList("Siblings", obj.Siblings, SyncPerson);
+		///     }
+		///   </code>
+		///   But it's impossible for this function to load a Person correctly! To 
+		///   understand why, let's think about what <c>SyncList</c> does: it reads a 
+		///   list of Persons (synchronously), and returns a <c>Person[]</c>. But each 
+		///   Person in that array contains a reference back to the current person. If 
+		///   Jack is being loaded, then the <c>Person[]</c> contains Jill, which has a 
+		///   reference back to Jack.
+		///   <para/>
+		///   But <c>SyncList</c> can't return an array that has a reference to Jack, 
+		///   because the reference to Jack only exists in the local variable <c>obj</c>.
+		///   So as the <c>SyncList</c> method deserializes Jill, Jill's synchronizer 
+		///   must fail while reading Jill's list of siblings.
+		///   <para/>
+		///   To fix this, set <c>CurrentObject</c> before calling <c>SyncList</c>:
+		///   <code>
+		///     public Person SyncPerson(ISyncManager sync, Person obj)
+		///     {
+		///         sync.CurrentObject = obj ??= new Person();
+		///         obj.Name     = sync.SyncNullable("Name", obj.Name);
+		///         obj.Age      = sync.Sync("Age", obj.Age);
+		///         obj.Siblings = sync.SyncList("Siblings", obj.Siblings, SyncPerson);
+		///     }
+		///   </code>
+		///   If the current type cannot contain any objects that may refer back to 
+		///   itself, then setting <see cref="CurrentObject"/> is optional.
 		/// </remarks>
 		object CurrentObject { set; }
 
@@ -597,7 +606,7 @@ namespace Loyc.SyncLib
 		///   call both BeginSubObject and EndSubObject for you automatically.
 		///   Please see the remarks of <see cref="Depth"/> about what happens when 
 		///   this method is <b>not</b> called.
-		/// <para/>
+		///   <para/>
 		///   This method has six possible outcomes:
 		///   (1) The request to read/write is approved. In this case, this method
 		///       returns (true, childKey) and <see cref="Depth"/> increases by one.

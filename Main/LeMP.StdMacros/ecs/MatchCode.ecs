@@ -45,7 +45,7 @@ namespace LeMP.ecs
 			
 			var patterns = node.Args.Skip(1).Select(UnwrapBraces);
 			var tests = patterns.Aggregate((LNode)null, (tests_, pattern) => {
-				var test = cmc.MakeTopTestExpr(pattern, input)
+				var test = cmc.MakeTopTestExpr(pattern, input);
 				return LNode.MergeBinary(tests_, test, S.Or);
 			});
 

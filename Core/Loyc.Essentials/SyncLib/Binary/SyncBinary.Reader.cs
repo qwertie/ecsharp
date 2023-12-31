@@ -218,25 +218,31 @@ partial class SyncBinary
 			throw new NotImplementedException();
 		}
 
-		public List? SyncListBoolImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
+		public List? SyncListBoolImpl<Scanner, List, ListBuilder>(
+			FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 			where Scanner : IScanner<bool>
 			where ListBuilder : IListBuilder<List, bool>
 		{
-			throw new NotImplementedException();
+			var loader = new ListLoader<Reader, List, bool, ListBuilder, SyncPrimitive<Reader>>(new SyncPrimitive<Reader>(), builder, mode, tupleLength);
+			return loader.Sync(ref this, name, saving);
 		}
 
-		public List? SyncListByteImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
+		public List? SyncListByteImpl<Scanner, List, ListBuilder>(
+			FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 			where Scanner : IScanner<byte>
 			where ListBuilder : IListBuilder<List, byte>
 		{
-			throw new NotImplementedException();
+			var loader = new ListLoader<Reader, List, byte, ListBuilder, SyncPrimitive<Reader>>(new SyncPrimitive<Reader>(), builder, mode, tupleLength);
+			return loader.Sync(ref this, name, saving);
 		}
 
-		public List? SyncListCharImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
+		public List? SyncListCharImpl<Scanner, List, ListBuilder>(
+			FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 			where Scanner : IScanner<char>
 			where ListBuilder : IListBuilder<List, char>
 		{
-			throw new NotImplementedException();
+			var loader = new ListLoader<Reader, List, char, ListBuilder, SyncPrimitive<Reader>>(new SyncPrimitive<Reader>(), builder, mode, tupleLength);
+			return loader.Sync(ref this, name, saving);
 		}
 
 		public string SyncTypeTag(string? tag)
