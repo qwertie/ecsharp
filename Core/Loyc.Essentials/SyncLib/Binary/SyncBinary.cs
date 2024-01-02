@@ -319,11 +319,11 @@ namespace Loyc.SyncLib;
 ///   are written to the output stream without any indication that the current object
 ///   has changed. 
 ///   
-///   <b>If markers and deduplication are disabled</b>, it is possible to interchange a 
-///   tuple of length N with N fields that have the same types. For example, if you write 
-///   a tuple with two fields (an integer and a string), the data stream simply contains 
-///   the integer followed by the string. Therefore, it is possible to change a normal 
-///   integer and string field into a tuple without breaking backward compatibility 
+///   <b>If markers and deduplication are both disabled</b>, it's possible to interchange 
+///   a tuple of length N with N fields that have the same types. For example, if you 
+///   write a tuple with two fields (an integer and a string), the data stream simply 
+///   contains the integer followed by the string. Therefore, it is possible to change a 
+///   normal integer and string field into a tuple without breaking backward compatibility 
 ///   (again, only if markers and deduplication are disabled). The same is true for 
 ///   ordinary objects, except that markers are enabled by default on ordinary objects.
 /// 
@@ -339,6 +339,7 @@ namespace Loyc.SyncLib;
 ///      follow (not even start/end markers).
 ///   
 ///   The `#` or `@` is followed by a variable-length integer which is an object ID.
+///   Object IDs are normally numbered starting from 1.
 ///   
 ///   For example, suppose you write the same string reference twice using 
 ///   deduplication:
@@ -370,7 +371,8 @@ namespace Loyc.SyncLib;
 /// <h4>Object type tag</h4>
 /// 
 ///   An object type tag is like a normal string field except that it is additionally 
-///   prefixed with 'T' if the <see cref="Markers.TypeTag"/> option is enabled.
+///   prefixed with 'T' if the <see cref="Markers.TypeTag"/> option is enabled (as it 
+///   is by default)
 /// 
 /// <h4>Integers</h4>
 ///   
@@ -386,7 +388,7 @@ namespace Loyc.SyncLib;
 ///    (5) 11110xxx xxxxxxxx xxxxxxxx xxxxxxxx x... | 5 bytes; 35 number bits
 ///    (6) 111110xx xxxxxxxx xxxxxxxx xxxxxxxx x... | 6 bytes; 42 number bits
 ///    (7) 1111110x xxxxxxxx xxxxxxxx xxxxxxxx x... | 7 bytes; 49 number bits
-///    (8) 11111110 [length prefix "n"] [bytes "x"] | n+2 bytes; (n-1) * 8 number bits
+///    (8) 11111110 [length prefix "n"] [bytes "x"] | (1 + length prefix size + n) bytes
 ///    (9) 11111111                                 | 1 byte for "null"
 ///   </code>
 ///   If the number is signed, the sign bit is always the first 'x' in the 
@@ -529,9 +531,13 @@ namespace Loyc.SyncLib;
 ///   
 ///   A boolean is encoded as a signed integer where 0 = false and 1 = true (and as 
 ///   usual, 255 = null). When reading a boolean from the data stream, it is read as a 
-///   32-bit integer, which is interpreted as `false` if it is 0 and `true` otherwise.
+///   32-bit signed integer, which is interpreted as `false` if it is 0 and `true` 
+///   otherwise.
+///   
 ///   This means you can safely change an integer field to boolean or vice versa
-///   between versions.
+///   between versions. However, something can go wrong when reading an integer larger
+///   than 32 bits as a boolean. For example, if the integer is unsigned 0x8000_0001, 
+///   it doesn't fit in a signed 32-bit integer. 
 ///   
 /// <h4>Floating point</h4>
 ///   
@@ -593,38 +599,6 @@ namespace Loyc.SyncLib;
 /// </remarks>
 public partial class SyncBinary
 {
-	public static ReadOnlyMemory<byte> Write<T>(T value, SyncObjectFunc<Writer, T> sync, Options? options = null)
-	{
-		options ??= _defaultOptions;
-		var output = new ArrayBufferWriter<byte>(options.Write.InitialBufferSize);
-		Writer writer = NewWriter(output, options);
-		SyncManagerExt.Sync(writer, null, value, sync, options.RootMode);
-		writer._s.Flush();
-		return output.WrittenMemory;
-	}
-	public static ReadOnlyMemory<byte> WriteI<T>(T value, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
-	{
-		options ??= _defaultOptions;
-		var output = new ArrayBufferWriter<byte>(options.Write.InitialBufferSize);
-		Writer writer = NewWriter(output, options);
-		SyncManagerExt.Sync(writer, null, value, sync, options.RootMode);
-		writer._s.Flush();
-		return output.WrittenMemory;
-	}
-	public static ReadOnlyMemory<byte> Write<T, SyncObject>(T value, SyncObject sync, Options? options = null)
-		where SyncObject : ISyncObject<SyncBinary.Writer, T>
-	{
-		options ??= _defaultOptions;
-		var output = new ArrayBufferWriter<byte>(options.Write.InitialBufferSize);
-		Writer writer = NewWriter(output, options);
-		SyncManagerExt.Sync(writer, null, value, sync, options.RootMode);
-		writer._s.Flush();
-		return output.WrittenMemory;
-	}
-
-	public static SyncBinary.Writer NewWriter(IBufferWriter<byte> output, Options? options = null)
-		=> new Writer(new WriterState(output ?? new ArrayBufferWriter<byte>(), options ?? _defaultOptions));
-
 	internal const uint FloatNullBitPattern = 0xFFF368E0u;
 	internal const ulong DoubleNullBitPattern = 0xFFFE6C6C_756E06FE;
 }

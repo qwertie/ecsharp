@@ -13,8 +13,6 @@ namespace Loyc.SyncLib;
 
 partial class SyncBinary
 {
-	static Options _defaultOptions = new Options();
-
 	// TODO: remove this. Less flexibility will yield higher performance!
 	public enum IntFormat
 	{
@@ -128,6 +126,8 @@ partial class SyncBinary
 		}
 	}*/
 
+	static Options _defaultOptions = new Options();
+
 	/// <summary>
 	///   Options that control general behavior of <see cref="SyncBinary.Reader"/> and 
 	///   <see cref="SyncBinary.Writer"/>. Note: some behaviors such as deduplication 
@@ -149,18 +149,31 @@ partial class SyncBinary
 	/// </remarks>
 	public class Options
 	{
-		/// <summary>Maximum size of one number, in bytes. The default is 1 MB, i.e. a 
-		///   maximum value of roughly <c>(BigInteger)int.MaxValue << (8 * 1024 * 1024)</c>.
-		///   An exception occurs if you try to serialize/deserialize a number
-		///   larger than this.</summary>
-		public int MaxNumberSize { get; set; } = 1024 * 1024 + 4;
+		/// <summary>Maximum size of large numbers, in bytes. The default is 1 MB, or 
+		///   about <c>(BigInteger)0x7F << (8 * 1024 * 1024)</c>. An exception occurs 
+		///   if you try to serialize or deserialize a number larger than this.</summary>
+		/// <remarks>
+		///   This limit only applies to large-format numbers (i.e. those whose first 
+		///   byte is 0xFE).
+		///   <para/>
+		///   When reading a large-format number, if the length prefix indicates that 
+		///   the number is larger than this, <see cref="FormatException"/> is thrown,
+		///   even if there are so many leading zero bytes in the payload that the 
+		///   number doesn't "really" exceed the limit. In other words, even the 
+		///   number 0 will cause an exception if it is too large.
+		/// </remarks>
+		public int MaxNumberSize { get; set; } = 1024 * 1024 + 1;
 
 		/// <summary>Controls the set of markers that are written or expected in
-		///   the binary data stream. The purpose of markers is simply to increase 
+		///   the binary data stream. The main purpose of markers is simply to increase 
 		///   the chance that when a data stream is being read incorrectly (because 
 		///   you are not reading exactly the same fields/types that were written) 
-		///   an exception will occur soon afterward. Markers increase the data 
-		///   size, however.</summary>
+		///   an exception will occur soon afterward. In addition, list markers allow
+		///   you to toggle the <see cref="ObjectMode.Deduplicate"/> flag on an object
+		///   or list field (but not a tuple field) without breaking compatibility. 
+		///   Markers increase the data size, however.</summary>
+		/// <remarks>Changing this property is, itself, a breaking change to the
+		///   data stream.</remarks>
 		public Markers Markers { get; set; } = Markers.Default;
 
 		/// <summary>The <see cref="ObjectMode"/> used to read/write the root object.
@@ -174,8 +187,9 @@ partial class SyncBinary
 
 		public class ForWriter
 		{
-			/// <summary>Initial size of the output buffer when writing JSON (default: 1024).
-			/// This property is ignored if you provide your own buffer to <see cref="SyncJson.NewWriter"/></summary>
+			/// <summary>Initial size of the output buffer when writing data (default: 512).
+			///   This property is ignored if you provide your own buffer to 
+			///   <see cref="SyncBinary.NewWriter"/>.</summary>
 			public int InitialBufferSize { get; set; } = 512;
 		}
 
@@ -192,28 +206,35 @@ partial class SyncBinary
 			///   large to fit in the requested type are silently truncated. If this
 			///   is false, such large numbers cause <see cref="Reader"/> to throw
 			///   <see cref="OverflowException"/>.</summary>
-			/// <remarks>For example, 33000 is too large for Int16, and if this property
-			///   is true it will be "truncated" to -32536.</remarks>
+			/// <remarks>
+			///   Setting this flag can increase performance.
+			///   
+			///   For example, 33000 is too large for Int16, and if this property
+			///   is true it will be "truncated" to -32536.
+			///   
+			/// </remarks>
 			public bool SilentlyTruncateLargeNumbers { get; set; } = false;
 
 			/// <summary>This property requests that if a property is set to null but read as 
 			///   a primitive type, the default value of that type should be returned instead
-			///   of throwing an exception. For example, if <see cref="Reader.Sync(FieldId, int)"/>
-			///   encounters a null, it will return 0 instead if throwing an exception if this
-			///   property is true.</summary>
+			///   of throwing <see cref="FormatException"/>. For example, if you call
+			///   <see cref="Reader.Sync(FieldId, int)"/> but it encounters a null, it will 
+			///   return 0 instead if throwing an exception if this property is true.</summary>
 			/// <seealso cref="ObjectMode.ReadNullAsDefault"/>
 			public bool ReadNullPrimitivesAsDefault { get; set; } = false;
 
 			/// <summary>When this property is true and the root object has been read successfully,
-			///   the reader checks whether there is additional non-whitespace text beyond the end 
-			///   of what was read, and throws an exception if extra junk is encountered.</summary>
+			///   the reader checks whether there is additional data beyond the end of what was 
+			///   read, and throws an exception if the data stream hasn't ended.</summary>
 			public bool VerifyEof { get; set; } = true;
-
 		}
 
 		#endregion
 	}
 
+	/// <summary>Used to specify which marker bytes will be written or expected in a 
+	///   serialized SyncBinary data stream.</summary>
+	[Flags]
 	public enum Markers
 	{
 		None = 0,

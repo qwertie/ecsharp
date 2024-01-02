@@ -1,13 +1,4 @@
-using Loyc.Collections;
-using Loyc.Collections.Impl;
 using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.Serialization;
 using System.Text;
 
 #nullable enable
@@ -37,14 +28,14 @@ namespace Loyc.SyncLib
 			public Options(bool compactMode = false) => Write.Minify = compactMode;
 
 			/// <summary>If true, Newtonsoft-style special fields "$id" and "$ref" will
-			/// be used for deduplication and resolution of circular references,
-			/// and byte arrays are encoded in Base64. If false, more compact 
-			/// SyncLib-style references and BAIS encoding is used instead. When
-			/// reading </summary>
+			///   be used for deduplication and resolution of circular references,
+			///   and byte arrays are encoded in Base64. If false, more compact 
+			///   SyncLib-style references and BAIS encoding are used instead.</summary>
 			public bool NewtonsoftCompatibility { get; set; } = true;
 
 			/// <summary>A function for altering names used in the first argument of 
-			/// ISyncManager.Sync. To use camelCase, set this to <see cref="SyncJson.ToCamelCase"/></summary>
+			///   ISyncManager.Sync. To use camelCase, set this to 
+			///   <see cref="SyncJson.ToCamelCase"/>.</summary>
 			public Func<string, string>? NameConverter { get; set; }
 
 			/// <summary>The <see cref="ObjectMode"/> used to read/write the root object.
@@ -53,35 +44,35 @@ namespace Loyc.SyncLib
 			public ObjectMode RootMode { get; set; } = ObjectMode.Normal;
 
 			/// <summary>When NewtonsoftCompatibility is off, this property controls 
-			/// the way byte arrays and byte lists are written. In special cases it
-			/// can also affect the way reading happens (see Remarks). When writing 
-			/// with NewtonsoftCompatibility enabled, Base64 is written instead of BAIS.</summary>
+			///   the way byte arrays and byte lists are written. In special cases it
+			///   can also affect the way reading happens (see Remarks). When writing 
+			///   with NewtonsoftCompatibility enabled, Base64 is written instead of BAIS.</summary>
 			/// <remarks>
-			/// The documentation of <see cref="JsonByteArrayMode"/> explains each mode.
-			/// Generally, ByteArrayMode.PrefixedBais mode is recommended for the
-			/// most compact output and best debugging experience (since BIAS preserves 
-			/// long runs of ASCII characters in the output), but Base64 is required
-			/// for Newtonsoft compatibility.
-			/// <para/>
-			/// Therefore, when <see cref="NewtonsoftCompatibility"/> is on, the BAIS
-			/// modes are treated as Base64. In addition, Newtonsoft writes byte lists
-			/// (List&lt;byte>) as JSON arrays, so SyncJson.Writer replicates this
-			/// behavior too.
-			/// <para/>
-			/// When reading a byte array, the encoding is normally autodetected
-			/// and the value of this property is not important. However, if the JSON
-			/// contains a string, and NewtonsoftCompatibility is off, and the string 
-			/// does not start with '!' or '\b' (both of which indicate BAIS encoding),
-			/// it is unclear whether the string is BAIS or Base64. In this case, the 
-			/// string is interpreted as BAIS in <see cref="JsonByteArrayMode.Bais"/> 
-			/// mode, and Base64 otherwise.
-			/// <para/>
-			/// Therefore, from a backward compatibility standpoint, switching from 
-			/// <see cref="JsonByteArrayMode.Bais"/> to <see cref="JsonByteArrayMode.PrefixedBais"/>
-			/// mode is a backward compatibility hazard as <see cref="SyncJson.Reader"/>
-			/// may try to interpret an unprefixed BAIS string as Base64. However, any
-			/// other mode change is safe, because data previously written will 
-			/// contain enough information to detect the data format.
+			///   The documentation of <see cref="JsonByteArrayMode"/> explains each mode.
+			///   Generally, ByteArrayMode.PrefixedBais mode is recommended for the
+			///   most compact output and best debugging experience (since BIAS preserves 
+			///   long runs of ASCII characters in the output), but Base64 is required
+			///   for Newtonsoft compatibility.
+			///   <para/>
+			///   Therefore, when <see cref="NewtonsoftCompatibility"/> is on, the BAIS
+			///   modes are treated as Base64. In addition, Newtonsoft writes byte lists
+			///   (List&lt;byte>) as JSON arrays, so SyncJson.Writer replicates this
+			///   behavior too.
+			///   <para/>
+			///   When reading a byte array, the encoding is normally autodetected
+			///   and the value of this property is not important. However, if the JSON
+			///   contains a string, and NewtonsoftCompatibility is off, and the string 
+			///   does not start with '!' or '\b' (both of which indicate BAIS encoding),
+			///   it is unclear whether the string is BAIS or Base64. In this case, the 
+			///   string is interpreted as Base64 unless the mode is set to 
+			///   <see cref="JsonByteArrayMode.Bais"/>.
+			///   <para/>
+			///   Therefore, from a backward compatibility standpoint, switching from 
+			///   <see cref="JsonByteArrayMode.Bais"/> to <see cref="JsonByteArrayMode.PrefixedBais"/>
+			///   mode is a backward compatibility hazard as <see cref="SyncJson.Reader"/>
+			///   may try to interpret an unprefixed BAIS string as Base64. However, any
+			///   other mode change is safe, because data previously written will 
+			///   contain enough information to detect the data format.
 			/// </remarks>
 			public JsonByteArrayMode ByteArrayMode { get; set; } = JsonByteArrayMode.PrefixedBais;
 
@@ -116,29 +107,30 @@ namespace Loyc.SyncLib
 
 				/// <summary>A string that is used to indent each line for each level of 
 				/// object nesting. This property, which has no effect if Newline == "",
-				/// should be either "\t" or zero or more spaces. Dafault: "\t"</summary>
+				/// should be either "\t" or zero or more spaces. Default: "\t"</summary>
 				public string Indent { get; set; } = "\t";
 
 				/// <summary>Whether to write a space after `:` in a key-value pair.</summary>
 				public bool SpaceAfterColon { get; set; } = false;
 
 				/// <summary>If this is true, Unicode characters above U+009F are written 
-				/// using JSON escapes (e.g. \u00A3 instead of £). Default: false.
-				/// Note: control characters are always written as escape sequences 
-				/// because the JSON standard does not allow control characters.</summary>
+				///   using JSON escapes (e.g. \u00A3 instead of £). Default: false.
+				///   Note: control characters are always written as escape sequences 
+				///   because the JSON standard does not allow control characters.</summary>
 				public bool EscapeUnicode { get; set; } = false;
 
 				/// <summary>If the recursion depth exceeds this number when writing JSON, 
-				/// the number of indents stops increasing.</summary>
+				///   the number of indents stops increasing.</summary>
 				public int MaxIndentDepth { get; set; } = 63;
 
 				/// <summary>If this property is true, or if this property is null and 
-				/// NewtonsoftCompatibility is off, character lists and character arrays 
-				/// are written as strings.</summary>
+				///   NewtonsoftCompatibility is off, character lists and character arrays 
+				///   are written as strings.</summary>
 				public bool? CharListAsString { get; set; } = null;
 
 				/// <summary>Initial size of the output buffer when writing JSON (default: 1024).
-				/// This property is ignored if you provide your own buffer to <see cref="SyncJson.NewWriter"/></summary>
+				///   This property is ignored if you provide your own buffer to 
+				///   <see cref="SyncJson.NewWriter"/>.</summary>
 				public int InitialBufferSize { get; set; } = 1024;
 			}
 

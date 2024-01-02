@@ -30,8 +30,6 @@ namespace Loyc.SyncLib
 			public ReaderState(ReadOnlyMemory<byte> memory, Options options) : base(memory, options) { }
 			public ReaderState(IScanner<byte> scanner,      Options options) : base(scanner, options) { }
 
-
-
 			internal string? ReadTypeTag()
 			{
 				var keySpan = NextFieldKey.Span;

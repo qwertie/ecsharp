@@ -1,6 +1,5 @@
 ///
-/// This file uses Enhanced C# to generate some of the code of SyncJson,
-/// SyncJson.Writer and SyncJson.Reader.
+/// This file uses Enhanced C# to generate some of the code of SyncJson and SyncJson.Writer.
 ///
 using System;
 using System.Linq;
@@ -23,66 +22,86 @@ define isUnsigned($T) {
 	$T `staticMatches` byte || $T `staticMatches` ushort || $T `staticMatches` uint || $T `staticMatches` ulong;
 }
 
-namespace Loyc.SyncLib
+namespace Loyc.SyncLib;
+
+// Here we generate SOME code; the rest of SyncJson is in .cs files.
+/// <summary>
+///   Contains optimized <see cref="ISyncManager"/> implementations for reading and 
+///   writing JSON data (<see cref="SyncJson.Reader"/> and <see cref="SyncJson.Writer"/>)
+///   plus an options type (<see cref="SyncJson.Options"/>) and convenience methods for
+///   reading and writing objects as JSON (Read, ReadI, Write, WriteI and WriteString 
+///   methods.) The JSON format is designed to be compatible with Newtonsoft.Json.
+/// </summary><remarks>
+///   These <see cref="ISyncManager"/> implementations are designed for both 
+///   flexibility and performance, helping you convert your business objects directly 
+///   to or from UTF8 bytes, without the need to allocate temporary strings or DTOs.
+/// <para/>
+///   For best performance, your synchronizers should read the JSON data in the 
+///   same order it was written. Synchronizers written in the usual way naturally 
+///   work this way. Out-of-order reads are supported but are slower and, when
+///   reading large JSON files, may use more memory.
+/// <para/>
+///   You can also make the JSON output more compact by changing options. In 
+///   particular, set <see cref="Options.Write.Minify"/> = true and, if you don't
+///   need Newtonsoft compatibility, <see cref="Options.NewtonsoftCompatibility"/> 
+///   = false.
+/// </remarks>
+public static partial class SyncJson
 {
-	// Here we generate SOME code; the rest of SyncJson is in .cs files.
-	public static partial class SyncJson
+	internal static readonly byte[] _true = stringToBytes("true");
+	internal static readonly byte[] _false = stringToBytes("false");
+	internal static readonly byte[] _null = stringToBytes("null");
+
+	internal static readonly byte[] _ref = stringToBytes(@"""$ref"""); // Newtonsoft-style backreference
+	internal static readonly byte[] _id = stringToBytes(@"""$id"""); // Newtonsoft-style id
+	internal static readonly byte[] _values = stringToBytes(@"""$values"""); // Newtonsoft-style array prop
+	internal static readonly byte[] _f = stringToBytes(@"""\f"""); // SyncJson-style id
+	internal static readonly byte[] _r = stringToBytes(@"""\r"""); // SyncJson-style backreference
+	internal static readonly byte[] _t = stringToBytes(@"""\t"""); // SyncJson-style type tag
+	internal static readonly byte[] _type = stringToBytes(@"""$type"""); // TODO: figure out how Newtonsoft type tags work
+
+	static Options _defaultOptions = new Options();
+
+	public partial struct Writer
 	{
-		internal static readonly byte[] _true = stringToBytes("true");
-		internal static readonly byte[] _false = stringToBytes("false");
-		internal static readonly byte[] _null = stringToBytes("null");
-
-		internal static readonly byte[] _ref = stringToBytes(@"""$ref"""); // Newtonsoft-style backreference
-		internal static readonly byte[] _id = stringToBytes(@"""$id"""); // Newtonsoft-style id
-		internal static readonly byte[] _values = stringToBytes(@"""$values"""); // Newtonsoft-style array prop
-		internal static readonly byte[] _f = stringToBytes(@"""\f"""); // SyncJson-style id
-		internal static readonly byte[] _r = stringToBytes(@"""\r"""); // SyncJson-style backreference
-		internal static readonly byte[] _t = stringToBytes(@"""\t"""); // SyncJson-style type tag
-		internal static readonly byte[] _type = stringToBytes(@"""$type"""); // TODO: figure out how Newtonsoft type tags work
-
-		static Options _defaultOptions = new Options();
-
-		public partial struct Writer
-		{
-			##unroll($T in (sbyte, byte, short, ushort, int, uint, long, ulong)) {
-				public $T Sync(FieldId name, $T savable) {
-					_s.WriteProp(name == null ? "" : name.Name, (long) savable, !isUnsigned($T));
-					return savable;
-				}
+		##unroll($T in (sbyte, byte, short, ushort, int, uint, long, ulong)) {
+			public $T Sync(FieldId name, $T savable) {
+				_s.WriteProp(name == null ? "" : name.Name, (long) savable, !isUnsigned($T));
+				return savable;
 			}
-			##unroll($T in (BigInteger, float, double, decimal, char)) {
-				public $T Sync(FieldId name, $T savable) {
-					_s.WriteProp(name == null ? "" : name.Name, savable);
-					return savable;
-				}
-			}
-			##unroll($T in (bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char)) {
-				public $T? Sync(FieldId name, $T? savable) {
-					string? nameS = name == null ? "" : name.Name;
-					if (savable == null)
-						_s.WriteNull(nameS);
-					else
-						static if (isUnsigned($T)) {
-							_s.WriteProp(nameS, (long) savable.Value, false);
-						} else static if ($T `staticMatches` bool) {
-							_s.WriteLiteralProp(nameS, savable.Value ? _true : _false);
-						} else static if ($T `staticMatches` ReadOnlyMemory<char>) {
-							_s.WriteProp(nameS, savable.Value.Span);
-						} else static if ($T `staticMatches` ReadOnlyMemory<byte>) {
-							_s.WriteProp(nameS, ByteArrayInString.Convert(savable.Value, allowControlChars: false));
-						} else {
-							_s.WriteProp(nameS, savable.Value);
-						}
-					return savable;
-				}
-			}
-			//##unroll($T in (bool, byte, sbyte, short, ushort, int, uint, long, ulong, float, double, BigInteger, char, #type<string? >)) {
-			//	public InternalList<$T> SyncListImpl(FieldId name, ReadOnlySpan<$T> savable, ObjectMode listMode = ObjectMode.List)
-			//	{
-			//		SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-			//		return default;
-			//	}
-			//}
 		}
+		##unroll($T in (BigInteger, float, double, decimal, char)) {
+			public $T Sync(FieldId name, $T savable) {
+				_s.WriteProp(name == null ? "" : name.Name, savable);
+				return savable;
+			}
+		}
+		##unroll($T in (bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char)) {
+			public $T? Sync(FieldId name, $T? savable) {
+				string? nameS = name == null ? "" : name.Name;
+				if (savable == null)
+					_s.WriteNull(nameS);
+				else
+					static if (isUnsigned($T)) {
+						_s.WriteProp(nameS, (long) savable.Value, false);
+					} else static if ($T `staticMatches` bool) {
+						_s.WriteLiteralProp(nameS, savable.Value ? _true : _false);
+					} else static if ($T `staticMatches` ReadOnlyMemory<char>) {
+						_s.WriteProp(nameS, savable.Value.Span);
+					} else static if ($T `staticMatches` ReadOnlyMemory<byte>) {
+						_s.WriteProp(nameS, ByteArrayInString.Convert(savable.Value, allowControlChars: false));
+					} else {
+						_s.WriteProp(nameS, savable.Value);
+					}
+				return savable;
+			}
+		}
+		//##unroll($T in (bool, byte, sbyte, short, ushort, int, uint, long, ulong, float, double, BigInteger, char, #type<string? >)) {
+		//	public InternalList<$T> SyncListImpl(FieldId name, ReadOnlySpan<$T> savable, ObjectMode listMode = ObjectMode.List)
+		//	{
+		//		SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
+		//		return default;
+		//	}
+		//}
 	}
 }

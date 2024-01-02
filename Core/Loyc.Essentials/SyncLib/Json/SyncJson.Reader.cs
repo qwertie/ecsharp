@@ -37,6 +37,40 @@ namespace Loyc.SyncLib
 		internal static T? ReadI<T>(string json, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 			=> ReadI(Encoding.UTF8.GetBytes(json), sync, options);
 
+		/// <summary>
+		///   An implementation of <see cref="ISyncManager"/> for reading JSON objects. 
+		///   Designed to be both fast and flexible, this implementation normally reads 
+		///   UTF8 directly into values without allocating intermediate strings, and
+		///   without requiring the entire JSON file to be loaded into memory at once.
+		///   <see cref="SupportsReordering"/>, <see cref="SupportsDeduplication"/> and
+		///   <see cref="SupportsNextField"/> are all true, and non-strict JSON is 
+		///   allowed (e.g. comments are accepted but ignored, unless you turn off 
+		///   support in the <see cref="Options"/>.)
+		/// </summary><remarks>
+		///   For best performance, your synchronizers should read the JSON data in the 
+		///   same order it was written. Synchronizers written in the usual way naturally 
+		///   work this way. Out-of-order reads are supported but are slower and, when
+		///   reading large JSON files, may use more memory.
+		/// <para/>
+		///   Since the JSON is always read in a single pass from an <see cref="IScanner{byte}"/>,
+		///   trying to read a JSON property that doesn't exist can, in the worst case, 
+		///   cause the whole file to be buffered into memory. However, JSON files that
+		///   are (essentially) large arrays won't have this problem, since you can only 
+		///   read arrays in order.
+		/// <para/>
+		///   This type can read JSON files larger than 2GB, provided that an out-of-
+		///   order read doesn't cause over 2GB of data to be scanned at once.
+		/// <para/>
+		///   While normally you can read properties in any order, metadata properties 
+		///   such as $id and $ref must be located at the beginning of a JSON object in
+		///   order to be detected during deserialization. (Newtonsoft.Json has the same
+		///   restriction, by the way.) In addition, object IDs must always be 
+		///   represented by the same byte sequence, e.g. "3" and "\u0033" are not 
+		///   treated as the same ID even though they both represent "3" in JSON.
+		/// <para/>
+		///   This is a struct rather than a class for performance reasons. Don't try to use
+		///   a <c>default(Reader)</c>; it'll throw <see cref="NullReferenceException"/>. 
+		/// </remarks>
 		public partial struct Reader : ISyncManager
 		{
 			private ReaderState _s;
@@ -61,7 +95,7 @@ namespace Loyc.SyncLib
 
 			public object CurrentObject { set => _s.SetCurrentObject(value); }
 
-			public bool SupportsNextField => true; // TODO: support it!
+			public bool SupportsNextField => true;
 
 			public FieldId NextField => _s.NextField;
 

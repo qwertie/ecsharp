@@ -15,71 +15,73 @@ namespace Loyc.SyncLib
 {
 	partial class SyncJson
 	{
-		/// <summary>
-		///   Low-level UTF8 JSON scanner. This class understands the details of JSON 
-		///   syntax, but is only designed to read JSON linearly (it doesn't track 
-		///   skipped values).
-		/// </summary><remarks>
-		///   Let's go through an example to understand how the parser is designed to
-		///   work:
-		///     <code>
-		///           { "array": [123, 456], "bool": true }
-		///     </code>
-		///   The initial state will point to the '{' (the JSON file itself is treated
-		///   as if it were the contents of an array, i.e. IsInsideList == true, so
-		///   '{' is the beginning of the first value of that aray. Of course, normally
-		///   a JSON file will simply end rather than have a comma and a second value.)
-		/// <para/>
-		///   The derived class, <see cref="ReaderState"/>, will get the initial 
-		///   position from the CurPosition property (cur = CurPosition) and then call 
-		///   TryToBeginObject(ref cur, _) to enter the object, at which point cur will 
-		///   point to the '['. This brings us to three notables thing to keep in mind 
-		///   about the Parser: 
-		/// <ol>
-		///   <li>First, it "prefers" to stop scanning at the beginning of each value, 
-		///     which is why TryToBeginObject scans forward to '[' rather than stopping 
-		///     at the first '"' (i.e. the "array" key). The `cur` variable contains 
-		///     enough information to get the bytes of the key so that the key can be 
-		///     extracted to a string if necessary. </li>
-		///   <li>Second, the current position is designed to be stored in a stack 
-		///     variable (called `cur` by convention) so that the buffer can have type 
-		///     <see cref="Span{byte}"/> (which cannot be stored on the heap). 
-		///     Therefore, while `cur` is the "current" position, that position is not 
-		///     saved on the heap until `Commit(ref cur)` is called. Thus, backtracking 
-		///     to the last value is as simple as not committing `cur`, UNLESS there 
-		///     has been a change to the object stack (if TryToBeginObject was called
-		///     and it succeeded, the stack changed, but it can be undone by calling
-		///     <see cref="UndoBeginObject"/>).</li>
-		///   <li>Third, there is list called _stack that has a stack entry for each 
-		///     JSON object or list that is entered. There is a special case for 
-		///     deduplicated lists, which (in the Newtonsoft mode) have the form 
-		///     `{ "$id": NNN, "$values": [list items] }`. In this case there is only
-		///     a single entry on the _stack for both the outer object and the inner 
-		///     list. The derived class calls <see cref="TryOpenListValuesAndCommit"/>
-		///     when it detects the special list-of-values prop.</li>
-		/// </ul>
-		///   If the end user is expecting an array called "array", the derived class 
-		///   will then call `TryToBeginObject(ref cur, true)` to enter it, after which
-		///   cur will point to '1'. Primitive list items are read using 
-		///   <see cref="ScanValue"/> followed by <see cref="BeginNext"/>, which skips 
-		///   the comma and whitespace (when not reading a list, it also skips over the
-		///   next key). As before, <see cref="Commit"/> must be called to save the new
-		///   byte position.
-		/// <para/>
-		///   If the end user is expecting some prop other than "array", the derived
-		///   class will skip over the value of "array" by calling ScanValue() and 
-		///   BeginNext() (or BeginProp()) and then it will save the 
-		///   <see cref="JsonValue"/> associated with "array" (which includes the
-		///   memory block of `[123, 456]`) in a dictionary in _stack.Last for later 
-		///   retrieval.
-		/// <para/>
-		///   If, later on, the user wants to read "array", the derived class can begin
-		///   scanning it by calling <see cref="BeginReplay"/> and return to the 
-		///   original location in the stream (with the corresponding original state) by 
-		///   calling <see cref="EndReplay"/>. Note: these methods don't affect the 
-		///   `_stack` of objects; there is a separate stack for replays.
-		/// </remarks>
-		internal abstract class Parser
+        /// <summary>
+        ///   Low-level UTF8 JSON scanner. This class understands the details of JSON 
+        ///   syntax, but is only designed to read JSON linearly (it doesn't track 
+        ///   skipped values).
+        /// </summary><remarks>
+        ///   Let's go through an example to understand how the parser is designed to
+        ///   work:
+        ///     <code>
+        ///           { "array": [123, 456], "bool": true }
+        ///     </code>
+        ///   The initial state will point to the '{' (the JSON file itself is treated
+        ///   as if it were the contents of an array, i.e. IsInsideList == true, so
+        ///   '{' is the beginning of the first value of that aray. Of course, normally
+        ///   a JSON file will simply end rather than have a comma and a second value.)
+        /// <para/>
+        ///   The derived class, <see cref="ReaderState"/>, will get the initial 
+        ///   position from the CurPosition property (cur = CurPosition) which is a 
+        ///   <see cref="JsonPointer"/> value that points to '{'. It then calls 
+        ///   `TryToBeginObject(ref cur, _)` to enter the object, at which point cur 
+        ///   will point to the '['. This brings us to three notable things to keep in 
+        ///   mind about the Parser: 
+        /// <ol>
+        ///   <li>First, it "prefers" to stop scanning at the beginning of each value, 
+        ///     which is why TryToBeginObject scans forward to '[' rather than stopping 
+        ///     at the first '"' (i.e. the "array" key). The `cur` variable contains 
+        ///     enough information to get the bytes of the key also (i.e. "array").</li>
+        ///   <li>Second, we use <see cref="Span{byte}"/> in an effort to maximize 
+        ///     performance. We have a Span pointing to a block of JSON that is being 
+        ///     scanned, and this Span is stored in the ref struct type mentioned above,
+        ///     <see cref="JsonPointer"/>. Since a Span must be stored on the stack, the
+        ///     current position (called `cur` by convention) only exists in that stack 
+        ///     variable until `Commit(ref cur)` is called. Thus, backtracking to the 
+        ///     last value can be done simply by not committing `cur`, UNLESS there has 
+        ///     been a change to the object stack. If TryToBeginObject was called and it 
+        ///     succeeded, the stack changed, but this can be undone by calling <see 
+        ///     cref="UndoBeginObject"/>). There's only one level of "undo" though, just
+        ///     enough to peek inside the beginning of an object and immediately undo.</li>
+        ///   <li>Third, there is a list called _stack that has a stack entry for each 
+        ///     JSON object or list that is entered. There is a special case for 
+        ///     deduplicated lists, which (in the Newtonsoft mode) have the form 
+        ///     `{ "$id": NNN, "$values": [list items] }`. In this case there is only
+        ///     a single entry on the _stack for both the outer object and the inner 
+        ///     list. The derived class calls <see cref="TryOpenListValuesAndCommit"/>
+        ///     when it detects the special list-of-values prop.</li>
+        /// </ul>
+        ///   If the end user is expecting an array called "array", the derived class 
+        ///   will then call `TryToBeginObject(ref cur, true)` to enter it, after which
+        ///   cur will point to the '1' in `123`. Primitive list items are read using 
+        ///   <see cref="ScanValue"/> followed by <see cref="BeginNext"/>, which skips 
+        ///   the comma and whitespace (when not reading a list, it also skips over the
+        ///   next key). As before, <see cref="Commit"/> must be called to save the new
+        ///   byte position.
+        /// <para/>
+        ///   If the end user is expecting some prop other than "array", the derived
+        ///   class will skip over the value of "array" by calling ScanValue() and 
+        ///   BeginNext() (or BeginProp()) and then it will save the 
+        ///   <see cref="JsonValue"/> associated with "array" (which includes the
+        ///   memory block of `[123, 456]`) in a dictionary in _stack.Last for later 
+        ///   retrieval.
+        /// <para/>
+        ///   If, later on, the user wants to read "array", the derived class can begin
+        ///   scanning it by calling <see cref="BeginReplay"/> and, later, return to the 
+        ///   original location in the stream (with the corresponding original state) by 
+        ///   calling <see cref="EndReplay"/>. Note: these methods don't affect the 
+        ///   `_stack` of objects; there is a separate stack for replays.
+        /// </remarks>
+        internal abstract class Parser
 		{
 			internal enum JsonType {
 				Invalid = -1,
@@ -129,9 +131,12 @@ namespace Loyc.SyncLib
 			/// </summary>
 			protected ref struct JsonPointer
 			{
+				/// <summary>The part of the file that is currently loaded.</summary>
 				public ReadOnlySpan<byte> Buf;
+				/// <summary>The currrent position as an index into Buf.</summary>
 				public int Index;
 
+				/// <summary>Returns the byte at the current position.</summary>
 				public byte Byte => Buf[Index];
 				public byte this[int offs] => Buf[Index + offs];
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -151,38 +156,38 @@ namespace Loyc.SyncLib
 				}
 			}
 
-			/// <summary>Scanning of multiple JSON objects can be in progress 
-			/// simultaneously; a JsonFrame is created for each nesting level
-			/// being scanned.</summary>
+			/// <summary>Scanning of multiple JSON objects can be in progress simultaneously,
+			///   and a JsonFrame is created for each "replay" being scanned. The replay
+			///   system allows a JSON file to be read "laterally", rather than in the usual 
+			///   start-to-end, outside-to-inside order.</summary>
 			/// <remarks>
-			/// For example, suppose we have some JSON like this:
-			/// <code>
-			/// {
-			///     "items": [9, 8, 7, 6, {"\f":1,"name":"Joe"}]
-			///     "favorite": {"\r":1}
-			///     "size": 5,
-			///     "total": 30
-			/// }
-			/// </code>
-			/// If the caller reads "size" first, the "items" and "favorite" props are
-			/// skipped, so SkippedProps and SkippedDefs will have 2 and 1 items in 
-			/// them respectively. If the user reads "favorite" next by calling 
-			/// BeginSubObject, it is read from the skipped prop {"\r":1}, causing a 
-			/// new and empty JsonFrame to be created on the frame stack for the 
-			/// subobject. Since the subobject is a backreference, the new frame is 
-			/// converted into a reader for the object {"\f":1,"name":"Joe"} that was 
-			/// encountered earlier. After the user is done reading this subobject, 
-			/// the JsonFrame that was created for it can be discarded, returning to 
-			/// the outer frame.
-			/// <para/>
-			/// For performance, the SkippedProps and SkippedDefs dictionaries
-			/// are not created unless properties/definitions are actually skipped.
+			///   For example, suppose we have some JSON like this:
+			///   <code>
+			///   {
+			///       "items": [9, 8, 7, 6, {"\f":1,"name":"Joe"}]
+			///       "favorite": {"\r":1}
+			///       "size": 5,
+			///       "total": 30
+			///   }
+			///   </code>
+			///   If the caller reads "size" first, the "items" and "favorite" props are
+			///   skipped by <see cref="ReaderState"/>, so SkippedProps will have 2 items 
+			///   in it in the _stack entry for the outer object. If the user reads 
+			///   "favorite" next by calling `BeginSubObject`, it is read from the skipped 
+			///   prop {"\r":1}, causing a new and empty `JsonFrame` to be created on the 
+			///   _frameStack for the subobject. Since the subobject is a backreference, 
+			///   the new frame is converted into a reader for the object 
+			///   {"\f":1,"name":"Joe"} that was encountered earlier. After the user is 
+			///   done reading this subobject, the JsonFrame that was created for it can 
+			///   be discarded, returning to the outer frame.
 			/// </remarks>
 			private struct JsonFrame
 			{
 				// The buffer being read from (replayed buffer, or something from _mainScanner)
 				public ReadOnlyMemory<byte> Buf;
-				// True iff this frame is reading a memory region rather than _mainScanner
+				// True iff this frame is reading a memory region rather than _mainScanner.
+				// Note: if _mainScanner is null, this is true and, in the context of the 
+				// current JSON file, every frame's Buf points to the same memory region.
 				public bool IsReplaying;
 				// Location within the JSON file of Buf.Span[0] (used for error reporting)
 				public long PositionOfBuf0;
@@ -199,7 +204,7 @@ namespace Loyc.SyncLib
 					CurPropKey = CurPropKey,
 				};
 
-				// updated during Commit: Position.Byte, or ']' at EOF. ']' is used as the
+				// updated during Commit: Pointer.Byte, or ']' at EOF. ']' is used as the
 				// EOF indicator so ReachedEndOfList is detected efficiently in that case.
 				public int CurrentByte;
 				// Location where a current or ancestor object starts in Buf, if this
@@ -210,24 +215,21 @@ namespace Loyc.SyncLib
 				// Name of current property in the current object (type JsonType.Invalid at end of object)
 				public JsonValue CurPropKey;
 
+				// For use in debugger only. Gets the buffer starting from the current value at ValueIndex.
 				public string ValueDebugString => Encoding.UTF8.GetString(Buf.Slice(ValueIndex).ToArray());
+				// For use in debugger only. Gets Buf converted to a string.
 				public string BufDebugString => Encoding.UTF8.GetString(Buf.ToArray());
-				
-				// This seems wrong because JsonFrame doesn't correspond to a single nesting level
-					// List of properties that were skipped earlier (immediate children)
-					// Note: the keys here never use JsonType.SimpleString
-					//public Dictionary<JsonValue, (JsonValue value, long position)>? SkippedProps;
 			}
 
 			public Parser(IScanner<byte> scanner, Options options)
 			{
-				_mainScanner = scanner;
+				_scanner = scanner;
 
 				Init(options);
 			}
 			public Parser(ReadOnlyMemory<byte> memory, Options options)
 			{
-				_mainScanner = null;
+				_scanner = null;
 				_frame.Buf = memory;
 				_frame.IsReplaying = true;
 
@@ -249,8 +251,8 @@ namespace Loyc.SyncLib
 
 			private JsonFrame _frame;
 
-			protected IScanner<byte>? _mainScanner;
-			protected Memory<byte> _mainScannerBuf; // not used by ReaderState; it's passed to _mainScanner.Read()
+			protected IScanner<byte>? _scanner;
+			private Memory<byte> _scannerBuf; // not used by Parser; it's passed to _mainScanner.Read()
 
 			internal Options _opt;
 			internal Options.ForReader _optRead;
@@ -262,8 +264,10 @@ namespace Loyc.SyncLib
 			{
 				public JsonValue Id;
 				public JsonType Type;
-				
+
 				// Not used by Parser. Used by ReaderState to track skipped values.
+				// For performance, the SkippedProps dictionary is not created unless
+				// properties/definitions are actually skipped.
 				public Dictionary<JsonValue, (JsonValue value, long position)>? SkippedProps;
 
 				public StackEntry(JsonType objectType)
@@ -341,6 +345,7 @@ namespace Loyc.SyncLib
 
 			protected void Commit(ref JsonPointer cur)
 			{
+                Debug.Assert(_frame.Buf.Span == cur.Buf);
 				_frame.ValueIndex = cur.Index;
 				_frame.PropKeyIndex = cur.PropKeyIndex;
 				_frame.CurPropKey = cur.CurPropKey;
@@ -348,20 +353,19 @@ namespace Loyc.SyncLib
 			}
 
 			/// <summary>
-			/// Checks if cur points to an object or list value and if so, "begins" the 
-			/// object by 
-			/// (1) skipping the opening '[' or '{', 
-			/// (2) pushing the object type onto _stack, which throws if
-			///     _optRead.MaxDepth is exceeded.
-			/// (3) advancing cur to the beginning of the first value in the object, 
-			/// (4) updating ReachedEndOfList, and 
-			/// (5) committing cur because there's no mechanism to undo all the prior 
-			///     operations. 
+			///   Checks if cur points to an object or list value and if so, "begins" the 
+			///   object by 
+			///   (1) skipping the opening '[' or '{', 
+			///   (2) pushing the object type onto _stack, which updates `IsInsideList`
+			///       and throws if `_optRead.MaxDepth` is exceeded
+			///   (3) advancing cur to the beginning of the first value in the object, or
+			///       to the closing ']' or '}' if the object is empty.
 			/// </summary>
 			/// <param name="allowList">If this is true and the input is a list, the 
 			///   operation is aborted (JsonType.List is still returned).</param>
-			/// <returns>JsonType.List or JsonType.Object if a subobject was detected;
-			///   otherwise, returns JsonType.NotParsed.</returns>
+			/// <returns>If a subobject was detected (i.e. '{' or '['), returns 
+			///   JsonType.List or JsonType.Object; otherwise, returns JsonType.NotParsed.
+			/// </returns>
 			protected JsonType TryToBeginObject(ref JsonPointer cur, bool allowList)
 			{
 				bool isList;
@@ -385,17 +389,22 @@ namespace Loyc.SyncLib
 				}
 			}
 
-			// Undo action(s) taken by TryToBeginObject, under the assumption that
-			// CurPointer points at the first byte of the object ('{' or '['), which
-			// means that setting `cur = CurPosition` takes us back there.
-			//
-			// NOTE: often TryToBeginObject is called after BeginReplay. In that
-			// case, the derived class must call EndReplay after UndoBeginObject.
+			/// <summary>
+			///   Undoes action(s) taken by <see cref="TryToBeginObject"/>, under the 
+			///   assumption that <see cref="Commit"/> was not been called afterward, so 
+			///   that <see cref="CurPointer"/> still points at the first byte of the 
+			///   object ('{' or '['), and `cur = CurPosition` will take us back there.
+			/// </summary>
+			/// <remarks>
+			///   NOTE: often TryToBeginObject is called after <see cref="BeginReplay"/>.
+			///   In that case, the derived class must call <see cref="EndReplay"/> 
+			///   after <see cref="UndoBeginObject"/>.
+			/// </remarks>
 			protected void UndoBeginObject(ref JsonPointer cur)
 			{
 				Pop();
+				Debug.Assert((char)CurPointer.ByteOr('!') is '{' or '[');
 				cur = CurPointer;
-				Debug.Assert((char) cur.ByteOr('!') is '{' or '[');
 			}
 
 			/// <summary>
@@ -740,35 +749,41 @@ namespace Loyc.SyncLib
 			// The scanner could choose a much larger size, but this is the minimum we'll tolerate
 			const int DefaultMinimumScanSize = 32;
 
-			// Ensures that the _i < _buf.Length by reading more if necessary
+			// Ensures that at least `extraLookahead + 1` bytes are available in cur.Buf
+			// starting at cur.Index. On return, _i < _buf.Length if it returns true.
+			// Returns false if the request could not be satisfied.
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			private bool AutoRead(ref JsonPointer cur, int extraLookahead = 0)
 			{
 				Debug.Assert(cur.Buf == _frame.Buf.Span);
 				if ((uint)(cur.Index + extraLookahead) < (uint)cur.Buf.Length)
 					return true;
-				cur.Index = Read(cur.Index, extraLookahead + 1);
-				cur.Buf = _frame.Buf.Span;
-				return (uint)(cur.Index + extraLookahead) < (uint)cur.Buf.Length;
+
+				return ReadMoreBytes(ref cur, extraLookahead + 1);
 			}
-			// Reads new data into Frame.Buf if possible
-			private int Read(int index, int lookaheadNeeded)
+
+			// Reads new data into _frame.Buf if possible
+			private bool ReadMoreBytes(ref JsonPointer cur, int lookaheadNeeded)
 			{
-				if (_frame.IsReplaying)
-					return index;
+                Debug.Assert(cur.Buf.Length - cur.Index < lookaheadNeeded);
+                if (_frame.IsReplaying)
+					return false;
 
 				int requestSize = Max(lookaheadNeeded, DefaultMinimumScanSize);
-				int skip = Min(_frame.ObjectStartIndex, Min(_frame.ValueIndex, index));
-				
-				_frame.Buf = _mainScanner!.Read(skip, (index -= skip) + requestSize, ref _mainScannerBuf);
+				int skip = Min(Min(cur.Index, _frame.ObjectStartIndex), _frame.ValueIndex);
+
+				// TODO/FIXME: detect whether re-using _scannerBuf between calls to Read() 
+				// is unsafe due to the buffer being in-use on the `_frameStack`.
+				_frame.Buf = _scanner!.Read(skip, (cur.Index -= skip) + requestSize, ref _scannerBuf);
 
 				_frame.ValueIndex -= skip;
 				_frame.PropKeyIndex -= skip;
 				if (_frame.ObjectStartIndex != int.MaxValue)
 					_frame.ObjectStartIndex -= skip;
-				
-				return index;
-			}
+
+                cur.Buf = _frame.Buf.Span;
+                return (uint)(cur.Index + lookaheadNeeded) <= (uint)cur.Buf.Length;
+            }
 
 			#endregion
 

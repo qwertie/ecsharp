@@ -1,4 +1,4 @@
-// Generated from SyncJson.ecs by LeMP custom tool. LeMP version: 30.1.0.0
+// Generated from SyncJson.ecs by LeMP custom tool. LeMP version: 30.1.91.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -6,8 +6,7 @@
 // --macros=FileName.dll Load macros from FileName.dll, path relative to this file 
 // Use #importMacros to use macros in a given namespace, e.g. #importMacros(Loyc.LLPG);
 ///
-/// This file uses Enhanced C# to generate some of the code of SyncJson,
-/// SyncJson.Writer and SyncJson.Reader.
+/// This file uses Enhanced C# to generate some of the code of SyncJson and SyncJson.Writer.
 ///
 using System;
 using System.Linq;
@@ -20,7 +19,29 @@ using Loyc.SyncLib.Impl;
 
 namespace Loyc.SyncLib
 {
+
 	// Here we generate SOME code; the rest of SyncJson is in .cs files.
+	/// <summary>
+	///   Contains optimized <see cref="ISyncManager"/> implementations for reading and 
+	///   writing JSON data (<see cref="SyncJson.Reader"/> and <see cref="SyncJson.Writer"/>)
+	///   plus an options type (<see cref="SyncJson.Options"/>) and convenience methods for
+	///   reading and writing objects as JSON (Read, ReadI, Write, WriteI and WriteString 
+	///   methods.) The JSON format is designed to be compatible with Newtonsoft.Json.
+	/// </summary><remarks>
+	///   These <see cref="ISyncManager"/> implementations are designed for both 
+	///   flexibility and performance, helping you convert your business objects directly 
+	///   to or from UTF8 bytes, without the need to allocate temporary strings or DTOs.
+	/// <para/>
+	///   For best performance, your synchronizers should read the JSON data in the 
+	///   same order it was written. Synchronizers written in the usual way naturally 
+	///   work this way. Out-of-order reads are supported but are slower and, when
+	///   reading large JSON files, may use more memory.
+	/// <para/>
+	///   You can also make the JSON output more compact by changing options. In 
+	///   particular, set <see cref="Options.Write.Minify"/> = true and, if you don't
+	///   need Newtonsoft compatibility, <see cref="Options.NewtonsoftCompatibility"/> 
+	///   = false.
+	/// </remarks>
 	public static partial class SyncJson
 	{
 		internal static readonly byte[] _true = new byte[] { 

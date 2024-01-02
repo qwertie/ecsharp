@@ -67,6 +67,14 @@ namespace Loyc.SyncLib
 		private static bool MayBeNullable(ObjectMode mode)
 			=> (mode & (ObjectMode.NotNull | ObjectMode.Deduplicate)) != ObjectMode.NotNull;
 
+		/// <summary>
+		///   An optimized implementation of <see cref="ISyncManager"/> for writing JSON 
+		///   objects. <see cref="SupportsReordering"/> and <see cref="SupportsDeduplication"/>
+		///   are both true.
+		/// </summary><remarks>
+		///   This is a struct rather than a class for performance reasons. Don't try to use
+		///   a <c>default(Writer)</c>; it'll throw <see cref="NullReferenceException"/>. 
+		/// </remarks>
 		public partial struct Writer : ISyncManager
 		{
 			internal WriterState _s;
@@ -131,21 +139,6 @@ namespace Loyc.SyncLib
 			}
 
 			public BigInteger Sync(FieldId name, BigInteger savable, int bits, bool signed = true) => Sync(name, savable);
-
-			//public InternalList<byte> SyncListImpl(FieldId name, ReadOnlySpan<byte> savable, ObjectMode listMode = ObjectMode.List)
-			//{
-			//	var name2 = name == null ? "" : name.Name;
-			//	if (savable == default)
-			//		_s.WriteNull(name2);
-			//	else {
-			//		if (_s._opt.UseBais ?? !_s._opt.NewtonsoftCompatibility) {
-			//			_s.WriteProp(name2, ByteArrayInString.ConvertFromBytes(savable, allowControlChars: false));
-			//		} else {
-			//			SyncManagerHelper.SaveList(ref this, name, savable, new Helper(), listMode);
-			//		}
-			//	}
-			//	return default;
-			//}
 
 			public string? Sync(FieldId name, string? savable) {
 				_s.WriteProp(name == null ? "" : name.Name, savable);

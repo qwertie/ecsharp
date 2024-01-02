@@ -14,11 +14,47 @@ namespace Loyc.SyncLib;
 
 partial class SyncBinary
 {
+	public static ReadOnlyMemory<byte> Write<T>(T value, SyncObjectFunc<Writer, T> sync, Options? options = null)
+	{
+		options ??= _defaultOptions;
+		var output = new ArrayBufferWriter<byte>(options.Write.InitialBufferSize);
+		Writer writer = NewWriter(output, options);
+		SyncManagerExt.Sync(writer, null, value, sync, options.RootMode);
+		writer._s.Flush();
+		return output.WrittenMemory;
+	}
+	public static ReadOnlyMemory<byte> WriteI<T>(T value, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
+	{
+		options ??= _defaultOptions;
+		var output = new ArrayBufferWriter<byte>(options.Write.InitialBufferSize);
+		Writer writer = NewWriter(output, options);
+		SyncManagerExt.Sync(writer, null, value, sync, options.RootMode);
+		writer._s.Flush();
+		return output.WrittenMemory;
+	}
+	public static ReadOnlyMemory<byte> Write<T, SyncObject>(T value, SyncObject sync, Options? options = null)
+		where SyncObject : ISyncObject<SyncBinary.Writer, T>
+	{
+		options ??= _defaultOptions;
+		var output = new ArrayBufferWriter<byte>(options.Write.InitialBufferSize);
+		Writer writer = NewWriter(output, options);
+		SyncManagerExt.Sync(writer, null, value, sync, options.RootMode);
+		writer._s.Flush();
+		return output.WrittenMemory;
+	}
+
+	public static SyncBinary.Writer NewWriter(IBufferWriter<byte> output, Options? options = null)
+		=> new Writer(new WriterState(output ?? new ArrayBufferWriter<byte>(), options ?? _defaultOptions));
+
 	/// <summary>
-	///   The <see cref="ISyncManager"/> implementation for writing <see cref="SyncBinary"/>'s 
-	///   data format. Please call <see cref="WriteI"/> or <see cref="Write"/> if you just 
+	///   The <see cref="ISyncManager"/> implementation for writing SyncLib's compact,
+	///   high-performance binary data format (see <see cref="SyncBinary"/> for details and 
+	///   guidelines). Please call <see cref="WriteI"/> or <see cref="Write"/> if you just 
 	///   want to serialize something, or <see cref="NewWriter"/> to create one of these.
-	/// </summary>
+	/// </summary><remarks>
+	///   This is a struct rather than a class for performance reasons. Don't try to use 
+	///   a <c>default(Writer)</c>; it'll just throw <see cref="NullReferenceException"/>. 
+	/// </remarks>
 	public struct Writer : ISyncManager
 	{
 		internal WriterState _s;

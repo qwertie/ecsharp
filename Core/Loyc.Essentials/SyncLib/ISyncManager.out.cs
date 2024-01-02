@@ -65,14 +65,19 @@ namespace Loyc.SyncLib
 		bool IsWriting { get; }
 
 		/// <summary>Indicates that the serialized format has some kind of schema that 
-		/// enables fields to be read in a different order than they were written
-		/// (e.g. JSON, Protobuf). If this field is false, fields must be read in
-		/// the same order they were written, and omitting fields is not allowed
-		/// (e.g. you cannot skip over a null field without saving it, nor skip
-		/// over a field and then read it later).</summary>
+		///   enables fields to be read in a different order than they were written
+		///   (e.g. JSON, Protobuf). If this field is false, fields must be read in
+		///   the same order they were written, and omitting fields is not allowed
+		///   (e.g. you cannot skip over a null field without saving it, nor skip
+		///   over a field and then read it later).</summary>
 		/// <remarks>If this property is false, the data may not have any recorded 
-		/// structure, and failure to read the correct fields in the correct order 
-		/// tends to give you "garbage" results.</remarks>
+		///   structure, and failure to read the correct fields in the correct order 
+		///   tends to give you "garbage" results.
+		///   <para/>
+		///   This property should be false for incomplete reader implementations in
+		///   which the data format can support reordering physically, but the reader 
+		///   does not.
+		/// </remarks>
 		bool SupportsReordering { get; }
 
 		/// <summary>Indicates that this implementation of <see cref="ISyncManager"/>
@@ -283,9 +288,8 @@ namespace Loyc.SyncLib
 		///       return dict;
 		///   }
 		///   ]]></example>
-		///   A disadvantage of loading/storing a dictionary this way is that it is 
-		///   not compatible with data formats that don't use string field names, 
-		///   such as protocol buffers.
+		///   However, loading/storing a dictionary this way is not compatible with data 
+		///   formats that don't use string field names, such as protocol buffers.
 		/// </remarks>
 		FieldId NextField { get; }
 
