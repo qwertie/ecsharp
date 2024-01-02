@@ -182,6 +182,7 @@
     <Compile Include="Collections\BaseClasses\SetWrapper.cs" />
     <Compile Include="Collections\Implementations\MultiMap.cs" />
     <Compile Include="Compatibility\ArrayBufferWriter.cs" />
+    <Compile Include="Compatibility\ArraySegment.cs" />
     <Compile Include="Graphs\GraphMethods.cs" />
     <Compile Include="Graphs\LGExt.cs" />
     <Compile Include="MessageSinks\LogMessage.cs" />
@@ -313,6 +314,7 @@
     <Compile Include="Utilities\SavedValue.cs" />
     <Compile Include="Utilities\RunTests.cs" />
     <Compile Include="Strings\StringExt.cs" />
+    <Compile Include="Utilities\StreamScanner.cs" />
     <Compile Include="Utilities\ThreadEx.cs" />
     <Compile Include="Utilities\Traits.cs" />
     <Compile Include="Utilities\Triplet.cs" />

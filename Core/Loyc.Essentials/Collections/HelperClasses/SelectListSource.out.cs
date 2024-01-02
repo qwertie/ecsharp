@@ -1,4 +1,4 @@
-// Generated from SelectListSource.ecs by LeMP custom tool. LeMP version: 2.9.1.0
+// Generated from SelectListSource.ecs by LeMP custom tool. LeMP version: 30.1.91.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -40,8 +40,8 @@ namespace Loyc.Collections
 		{
 			get { return _selector(_list[index]); }
 		}
-
-		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
+		[return: MaybeNull] 
+		// There's no attribute like [return: MaybeNullIf("fail")]
 		public override TResult TryGet(int index, out bool fail)
 		{
 			if (!(fail = ((uint) index >= (uint) _list.Count)))
@@ -80,8 +80,8 @@ namespace Loyc.Collections
 		{
 			get { return _selector(_list[index]); }
 		}
-
-		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
+		[return: MaybeNull] 
+		// There's no attribute like [return: MaybeNullIf("fail")]
 		public override TResult TryGet(int index, out bool fail)
 		{
 			if (!(fail = ((uint) index >= (uint) _list.Count)))
@@ -108,8 +108,8 @@ namespace Loyc.Collections
 	
 	{
 		public SelectListSource(ListT list, Func<T, TResult> selector) : base(list, selector) { }
-
-		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
+		[return: MaybeNull] 
+		
 		public override TResult TryGet(int index, out bool fail)
 		{
 			T? t = _list.TryGet(index, out fail);

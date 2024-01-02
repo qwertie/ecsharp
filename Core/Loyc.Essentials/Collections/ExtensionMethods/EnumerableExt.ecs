@@ -197,13 +197,13 @@ namespace Loyc.Collections
 			}
 		}
 
-		public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T> list) where T : class
+		public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T? > list) where T : class
 		{
 			foreach (var item in list)
 				if (item != null)
 					yield return item;
 		}
-		public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<@`'?`<T>> list) where T : struct
+		public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T? > list) where T : struct
 		{
 			foreach (var item in list)
 				if (item != null)
@@ -257,7 +257,8 @@ namespace Loyc.Collections
 			// I am no expert in hash functions.
 			int hc = 517617279; // a random number
 			foreach (T item in list)
-				hc = hc * 257 ^ comp.GetHashCode(item);
+				// GetHashCode(null) works (returns 0) but gives us a warning anyway
+				hc = hc * 257 ^ comp.GetHashCode([@`%trailing`(@`%rawText`("!"))] item);
 			return hc;
 		}
 

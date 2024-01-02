@@ -48,6 +48,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>ISyncManager.ecs</DependentUpon>
     </Compile>
+    <Compile Update="SyncLib\Json\SyncJson.out.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SyncJson.ecs</DependentUpon>
+    </Compile>
     <Compile Update="SyncLib\SyncJson.out.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -91,6 +96,10 @@
     <None Update="SyncLib\ISyncManager.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>ISyncManager.out.cs</LastGenOutput>
+    </None>
+    <None Update="SyncLib\Json\SyncJson.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>SyncJson.out.cs</LastGenOutput>
     </None>
     <None Update="SyncLib\SyncJson.ecs">
       <Generator>LeMP</Generator>

@@ -1,29 +1,36 @@
 using Loyc.Collections;
 using Loyc.Collections.Impl;
+using Loyc.Essentials;
 using Loyc.MiniTest;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 
 namespace Loyc.Collections.Tests
 {
 	/// <summary>
-	/// A generic test fixture for testing ny implementation of <see cref="IScannable{T}"/>.
-	/// Just override the abstract members for your particular implementation.
+	///   A generic test fixture for testing any implementation of <see cref="IScannable{T}"/>.
+	///   Just override the abstract members for your particular implementation.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	public abstract class ScannableTests<T>
 	{
 		/// <summary>Creates a scannable version of a list with the same sequence of items.</summary>
-		public abstract IScannable<T> ToScannable(List<T> list);
+		public abstract IScan<T> ToScannable(List<T> list);
 		
 		/// <summary>Returns any T value (the value should vary on repeated calls).</summary>
 		public abstract T NextValue();
 
 		protected Memory<T> _buf;
 		protected Random _r;
-		protected readonly int BaseSize;
+		protected readonly int BaseSize; // standard list size to test with
+		protected int _hugeMinLength = 1 << 28; // Max minLength to test. Must exceed BaseSize.
+		// ScannableTests.RandomizedTest assumes that attempting to skip beyond the end
+        // of the stream is allowed and sets the stream position to the end of the stream.
+        // If that's not true, the derived class should set this to false.
+		protected bool _allowSeekBeyondEndOfStream = true;
 
 		// `baseSize` is the default list size in some tests.
 		// It must be at least 50 or the tests will break.
@@ -50,6 +57,7 @@ namespace Loyc.Collections.Tests
 			var list = NewList(BaseSize);
 			var scannable = ToScannable(list);
 
+			// Read it all in one segment
 			var scanner = scannable.Scan();
 			var index = 0;
 			ReadAndCheck(scanner, 0, BaseSize, list, ref index);
@@ -61,7 +69,7 @@ namespace Loyc.Collections.Tests
 
 			foreach (int firstSize in new[] { 2, 20, BaseSize / 2 + 1 }) {
 				foreach (int overlapSize in new[] { 0, 1, 2 }) {
-					foreach (int secondSize in new[] { BaseSize, int.MaxValue, BaseSize - (firstSize - overlapSize) }) {
+					foreach (int secondSize in new[] { BaseSize, _hugeMinLength, BaseSize - (firstSize - overlapSize) }) {
 						scanner = scannable.Scan();
 						index = 0;
 						ReadAndCheck(scanner, 0, firstSize, list, ref index);
@@ -96,14 +104,14 @@ namespace Loyc.Collections.Tests
 
 			var scanner = scannable.Scan();
 			var index = 0;
-			ReadAndCheck(scanner, int.MaxValue, 0, list, ref index);
+			ReadAndCheck(scanner, _hugeMinLength, 0, list, ref index);
 			Assert.AreEqual(list.Count, index);
 
 			foreach (var initialSkip in new[] { 0, 1, 2, 50 }) {
 				scanner = scannable.Scan();
 				index = 0;
 				ReadAndCheck(scanner, initialSkip, 10, list, ref index);
-				ReadAndCheck(scanner, int.MaxValue, 10, list, ref index);
+				ReadAndCheck(scanner, _hugeMinLength, 10, list, ref index);
 				Assert.AreEqual(list.Count, index);
 			}
 		}
@@ -166,6 +174,9 @@ namespace Loyc.Collections.Tests
 
 					var itemsToRead = _r.Next(4) << _r.Next(maxShift + 1);
 
+					if (!_allowSeekBeyondEndOfStream && index + skip > list.Count)
+						continue;
+
 					ReadAndCheck(scanner, skip, itemsToRead, list, ref index);
 					//Console.Write(index + " ");
 				}
@@ -176,28 +187,57 @@ namespace Loyc.Collections.Tests
 
 	public class ScannableEnumerableTests : ScannableTests<int>
 	{
-		public ScannableEnumerableTests(int randomSeed = 0, int baseSize = 1000) : base(randomSeed, baseSize) { }
+		public ScannableEnumerableTests(int randomSeed = 0, int baseSize = 1000)
+			: base(randomSeed, baseSize) => _hugeMinLength = int.MaxValue;
 
 		int _next;
 		public override int NextValue() => _next++;
-		public override IScannable<int> ToScannable(List<int> list) => new ScannableEnumerable<int>(list);
+		public override IScan<int> ToScannable(List<int> list) => new ScannableEnumerable<int>(list);
 	}
 
 	public class InternalListScannerTests : ScannableTests<int>
 	{
-		public InternalListScannerTests(int randomSeed = 0, int baseSize = 1000) : base(randomSeed, baseSize) { }
+		public InternalListScannerTests(int randomSeed = 0, int baseSize = 1000)
+			: base(randomSeed, baseSize) => _hugeMinLength = int.MaxValue;
 
 		int _next;
 		public override int NextValue() => _next++;
-		public override IScannable<int> ToScannable(List<int> list) => new InternalList<int>(list);
+		public override IScan<int> ToScannable(List<int> list) => new InternalList<int>(list);
 	}
 
 	public class BufferedSequenceScannerTests : ScannableTests<int>
 	{
-		public BufferedSequenceScannerTests(int randomSeed = 0, int baseSize = 1000) : base(randomSeed, baseSize) { }
+		public BufferedSequenceScannerTests(int randomSeed = 0, int baseSize = 1000)
+			: base(randomSeed, baseSize) => _hugeMinLength = int.MaxValue;
 
 		int _next;
 		public override int NextValue() => _next++;
-		public override IScannable<int> ToScannable(List<int> list) => new BufferedSequence<int>(list);
+		public override IScan<int> ToScannable(List<int> list) => new BufferedSequence<int>(list);
+	}
+
+	public class StreamScannerTests : ScannableTests<byte>
+	{
+        public StreamScannerTests(int randomSeed = 0, int baseSize = 1000)
+            : base(randomSeed, baseSize) => _allowSeekBeyondEndOfStream = false;
+
+		byte _next;
+		public override byte NextValue() => _next++;
+		
+		public override IScan<byte> ToScannable(List<byte> list) => new StreamScan(list, 10);
+
+		class StreamScan : IScan<byte>
+		{
+			List<byte> _list;
+			int _minBlockSize;
+
+			public StreamScan(List<byte> list, int minBlockSize)
+				=> (_list, _minBlockSize) = (list, minBlockSize);
+
+			public IScanner<byte> Scan()
+			{
+				Stream stream = new MemoryStream(_list.ToArray());
+				return new StreamScanner(stream, _minBlockSize);
+			}
+		}
 	}
 }

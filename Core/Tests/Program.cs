@@ -95,6 +95,7 @@ namespace Loyc.Tests
 				new ScannableEnumerableTests(_seed),
 				new ScannableEnumerableTests(_seed, 200_000),
 				new BufferedSequenceScannerTests(_seed),
+				new StreamScannerTests(_seed),
 				new MultiMapTests(_seed),
 				new EitherTests(),
 				new BaisTests(),

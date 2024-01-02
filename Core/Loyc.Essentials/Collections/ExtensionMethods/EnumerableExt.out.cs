@@ -1,4 +1,4 @@
-// Generated from EnumerableExt.ecs by LeMP custom tool. LeMP version: 2.9.1.0
+// Generated from EnumerableExt.ecs by LeMP custom tool. LeMP version: 30.1.91.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -79,7 +79,7 @@ namespace Loyc.Collections
 
 		/// <summary>Finds the minimum element's index in the list</summary>
 		public static int IndexOfMin<T>(this IEnumerable<T> source, Func<T, int> selector) => 
-		IndexOfMin < T > (source, selector, out T _);
+		  IndexOfMin < T > (source, selector, out T _);
 
 		/// <summary>Finds the minimum element's index in the list, and returns it with the item itself</summary>
 		public static int IndexOfMin<T>(this IEnumerable<T> source, Func<T, int> selector, [MaybeNull] out T min)
@@ -125,7 +125,7 @@ namespace Loyc.Collections
 
 		/// <summary>Finds the minimum element's index in the list</summary>
 		public static int IndexOfMin<T, R>(this IEnumerable<T> source, Func<T, R> selector) => 
-		IndexOfMin<T, R>(source, selector, out T _);
+		  IndexOfMin<T, R>(source, selector, out T _);
 		/// <summary>Finds the minimum element's index in the list</summary>
 		public static int IndexOfMin<T, R>(this IEnumerable<T> source, Func<T, R> selector, [MaybeNull] out T min)
 		{
@@ -178,7 +178,7 @@ namespace Loyc.Collections
 		
 		[Obsolete("This has been renamed to MinItemOrDefault")] 
 		public static T MinOrDefault<T>(this IEnumerable<T> list, Func<T, int> selector, [AllowNull] T defaultValue = default(T)) => 
-		MinItemOrDefault(list, selector, defaultValue);
+		  MinItemOrDefault(list, selector, defaultValue);
 
 		#pragma warning disable 8604	// Can't use ! suffix (issue #139)
 		/// <summary>Finds the minimum element (as determined by the selector) and returns it.
@@ -213,7 +213,7 @@ namespace Loyc.Collections
 
 		/// <summary>Finds the maximum element's index in the list</summary>
 		public static int IndexOfMax<T>(this IEnumerable<T> source, Func<T, int> selector) => 
-		IndexOfMax < T > (source, selector, out T _);
+		  IndexOfMax < T > (source, selector, out T _);
 
 		/// <summary>Finds the maximum element's index in the list, and returns it with the item itself</summary>
 		public static int IndexOfMax<T>(this IEnumerable<T> source, Func<T, int> selector, [MaybeNull] out T min)
@@ -259,7 +259,7 @@ namespace Loyc.Collections
 
 		/// <summary>Finds the maximum element's index in the list</summary>
 		public static int IndexOfMax<T, R>(this IEnumerable<T> source, Func<T, R> selector) => 
-		IndexOfMin<T, R>(source, selector, out T _);
+		  IndexOfMin<T, R>(source, selector, out T _);
 		/// <summary>Finds the maximum element's index in the list</summary>
 		public static int IndexOfMax<T, R>(this IEnumerable<T> source, Func<T, R> selector, [MaybeNull] out T min)
 		{
@@ -312,7 +312,7 @@ namespace Loyc.Collections
 		
 		[Obsolete("This has been renamed to MaxItemOrDefault")] 
 		public static T MaxOrDefault<T>(this IEnumerable<T> list, Func<T, int> selector, [AllowNull] T defaultValue = default(T)) => 
-		MaxItemOrDefault(list, selector, defaultValue);
+		  MaxItemOrDefault(list, selector, defaultValue);
 
 		#pragma warning disable 8604	// Can't use ! suffix (issue #139)
 		/// <summary>Finds the maximum element (as determined by the selector) and returns it.

@@ -216,11 +216,16 @@ namespace Loyc
 		public static readonly NullMessageSink Null = NullMessageSink.Value;
 		
 		/// <summary>Sends all messages to a user-defined method.</summary>
-		public static MessageSinkFromDelegate FromDelegate(WriteMessageFn writer, Func<Severity, bool>? isEnabled = null)
+		public static MessageSinkFromDelegate FromDelegate(WriteMessageFn<object? > writer, Func<Severity, bool>? isEnabled = null)
 		{
 			return new MessageSinkFromDelegate(writer, isEnabled);
 		}
 
+		/// <summary>Sends all messages to a user-defined method.</summary>
+		public static MessageSinkFromDelegate<TContext> FromDelegate<TContext>(WriteMessageFn<TContext> writer, Func<Severity, bool>? isEnabled = null)
+		{
+			return new MessageSinkFromDelegate<TContext>(writer, isEnabled);
+		}
 		/// <summary>Creates a message sink that writes to <see cref="MessageSink.Default"/> with a default context to be used
 		/// when <c>Write</c> is called with <c>context: null</c>, so that you 
 		/// can use extension methods like <c>Error(string)</c> that do not 
