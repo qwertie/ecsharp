@@ -140,7 +140,7 @@ namespace Loyc.SyncLib
 
 			public BigInteger Sync(FieldId name, BigInteger savable, int bits, bool signed = true) => Sync(name, savable);
 
-			public string? Sync(FieldId name, string? savable) {
+			public string? Sync(FieldId name, string? savable, ObjectMode mode = ObjectMode.Normal) {
 				_s.WriteProp(name == null ? "" : name.Name, savable);
 				return savable;
 			}

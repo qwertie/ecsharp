@@ -207,11 +207,10 @@ partial class SyncBinary
 			///   is false, such large numbers cause <see cref="Reader"/> to throw
 			///   <see cref="OverflowException"/>.</summary>
 			/// <remarks>
-			///   Setting this flag can increase performance.
-			///   
 			///   For example, 33000 is too large for Int16, and if this property
 			///   is true it will be "truncated" to -32536.
-			///   
+			///   <para/>
+			///   Setting this flag may increase performance slightly.
 			/// </remarks>
 			public bool SilentlyTruncateLargeNumbers { get; set; } = false;
 

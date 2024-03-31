@@ -410,8 +410,11 @@ namespace Loyc.SyncLib
 		BigInteger Sync(FieldId name, BigInteger savable);
 		/// <summary>Reads or writes a value of a field on the current object.</summary>
 		char Sync(FieldId name, char savable);
+
 		/// <summary>Reads or writes a value of a field on the current object.</summary>
-		string? Sync(FieldId name, string? savable);
+		/// <remarks>Set mode to ObjectMode.Deduplicate to deduplicate the string, if supported 
+		///   by the current instance of ISyncManager.</remarks>
+		string? Sync(FieldId name, string? savablem, ObjectMode mode = ObjectMode.Normal);
 		/// <summary>Reads or writes a value of an integer bitfield on the current object.</summary>
 		int Sync(FieldId name, int savable, int bits, bool signed = true);
 		/// <summary>Reads or writes a value of an integer bitfield on the current object.</summary>

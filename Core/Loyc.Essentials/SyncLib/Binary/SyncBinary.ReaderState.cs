@@ -1,19 +1,20 @@
 using static System.Math;
 using Loyc.Collections;
+using Loyc.Collections.Impl;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Loyc.Collections.Impl;
 using System.Buffers.Binary;
+using System.Numerics;
 
 namespace Loyc.SyncLib;
 
 partial class SyncBinary
 {
-	internal class ReaderState
+	internal partial class ReaderState
 	{
-		const string UnexpectedDataStreamFormat = "Unexpected format in binary data stream";
+		const string UnexpectedDataStreamFormat = "Unexpected binary data format";
 
 		public ReaderState(IScanner<byte> scanner, Options options)
 		{
@@ -41,6 +42,8 @@ partial class SyncBinary
 
 		// An error that left the stream unreadable
 		protected Exception? _fatalError;
+
+		#region Helper types
 
 		private struct ReadingFrame
 		{
@@ -82,6 +85,8 @@ partial class SyncBinary
 			public bool IsList;
 		}
 
+		#endregion
+
 		#region Input buffer management: AutoRead, ExpectBytes, Commit
 
 		// The scanner could choose a much larger size, but this is the minimum we'll tolerate
@@ -104,10 +109,11 @@ partial class SyncBinary
 			if ((uint)(cur.Index + requiredBytes) <= (uint)cur.Buf.Length)
 				return true;
 
-			return ReadMoreBytes(ref cur, requiredBytes);
+			return ReadMoreBytes(ref cur, (int)requiredBytes);
 		}
 
 		// Reads new data into _frame.Buf if possible
+		[MethodImpl(MethodImplOptions.NoInlining)]
 		private bool ReadMoreBytes(ref ReadingPointer cur, int requiredBytes)
 		{
 			Debug.Assert(cur.BytesLeft < requiredBytes);
@@ -126,7 +132,8 @@ partial class SyncBinary
 			return cur.BytesLeft >= requiredBytes;
 		}
 
-		private void Commit(ref ReadingPointer cur)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private void Commit(in ReadingPointer cur)
 		{
 			Debug.Assert(_frame.Buf.Span == cur.Buf);
 			_frame.Index = cur.Index;
@@ -134,16 +141,7 @@ partial class SyncBinary
 
 		#endregion
 
-		internal void SetCurrentObject(object value)
-		{
-			if (_stack.Count != 0) {
-				var topOfStack = _stack.Last;
-				if (topOfStack.HasId) {
-					_objects ??= new Dictionary<int, object>();
-					_objects[topOfStack.Id] = value;
-				}
-			}
-		}
+		#region BeginSubObject/EndSubObject
 
 		internal (bool Begun, object? Object) BeginSubObject(ObjectMode mode, int tupleLength)
 		{
@@ -200,140 +198,129 @@ partial class SyncBinary
 			throw new NotImplementedException();
 		}
 
+		#endregion
+
+		#region Variable-length integer readers
+		// Here we assume the JIT optimizes away tests like `if (typeof(TInt) == typeof(int))`.
+
+		// Reads an integer from the data stream. `TInt` MUST be int, uint, long or ulong.
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public sbyte? ReadInt8OrNull()
+		internal TInt ReadNormalInt<TInt>() where TInt : struct
 		{
 			var cur = _frame.Pointer;
-			int? number = DecodeInt32OrNull(ref cur);
-			if (number == null) {
-				Commit(ref cur);
-				return null;
+			TInt? value = DecodeIntOrNull<TInt>(ref cur);
+			Commit(cur);
+			return value.HasValue ? value.Value : UnexpectedNull<TInt>();
+		}
+
+		// Reads an integer/null from the data stream. `TInt` MUST be int, uint, long or ulong.
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal TInt? ReadNormalIntOrNull<TInt>() where TInt : struct
+		{
+			var cur = _frame.Pointer;
+			TInt? value = DecodeIntOrNull<TInt>(ref cur);
+			Commit(cur);
+			return value;
+		}
+
+		// Reads a small integer/null from the data stream. `TInt` MUST be byte, sbyte, short or ushort.
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal TShort? ReadSmallIntOrNull<TShort>() where TShort : struct
+		{
+			var cur = _frame.Pointer;
+			int? value = DecodeIntOrNull<int>(ref cur);
+
+			if (value.HasValue) {
+				MaybeThrowIntegerOverflowIf(
+					typeof(TShort) == typeof(short) && (short)value.Value != value ||
+					typeof(TShort) == typeof(ushort) && (ushort)value.Value != value ||
+					typeof(TShort) == typeof(sbyte) && (sbyte)value.Value != value ||
+					typeof(TShort) == typeof(byte) && (byte)value.Value != value,
+					// TODO: check whether using typeof(TShort).Name harms performance
+					typeof(TShort).Name, _frame.Index);
+				Commit(cur);
+				return ShortenInt<TShort>(value.Value);
 			} else {
-				sbyte truncated = (sbyte)number.Value;
-				if (truncated != number.Value && !_opt.Read.SilentlyTruncateLargeNumbers)
-					ThrowError(cur.Index, $"{UnexpectedDataStreamFormat}; number is too large (expected 8 bits)", fatal: false);
-				Commit(ref cur);
-				return truncated;
+				Commit(cur);
+				return null;
 			}
 		}
 
+		// Reads a small integer from the data stream. `TInt` MUST be byte, sbyte, short or ushort.
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public short? ReadInt16OrNull()
+		internal TShort ReadSmallInt<TShort>() where TShort : struct
 		{
 			var cur = _frame.Pointer;
-			int? number = DecodeInt32OrNull(ref cur);
-			if (number == null) {
-				Commit(ref cur);
-				return null;
+			int? value = DecodeIntOrNull<int>(ref cur);
+
+			if (value.HasValue) {
+				MaybeThrowIntegerOverflowIf(
+					typeof(TShort) == typeof(short) && (short)value.Value != value ||
+					typeof(TShort) == typeof(ushort) && (ushort)value.Value != value ||
+					typeof(TShort) == typeof(sbyte) && (sbyte)value.Value != value ||
+					typeof(TShort) == typeof(byte) && (byte)value.Value != value,
+					typeof(TShort).Name, _frame.Index);
+				Commit(cur);
+				return ShortenInt<TShort>(value.Value);
 			} else {
-				short truncated = (short)number.Value;
-				if (truncated != number.Value && !_opt.Read.SilentlyTruncateLargeNumbers)
-					ThrowError(cur.Index, $"{UnexpectedDataStreamFormat}; number is too large (expected 16 bits)", fatal: false);
-				Commit(ref cur);
-				return truncated;
+				Commit(cur);
+				return UnexpectedNull<TShort>();
 			}
 		}
 
+		// Decodes an integer from the data stream. `TInt` MUST be int, uint, long or ulong.
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public int? ReadInt32OrNull()
-		{
-			var cur = _frame.Pointer;
-			int? number = DecodeInt32OrNull(ref cur);
-			Commit(ref cur);
-			return number;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public long? ReadInt64OrNull()
-		{
-			var cur = _frame.Pointer;
-			long? number = DecodeInt64OrNull(ref cur);
-			Commit(ref cur);
-			return number;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public short ReadInt16()
-		{
-			int number = DecodeInt32(out var cur);
-			short truncated = (short)number;
-			ThrowSmallIntegerOverflowIf(truncated != number, "16 bits", cur.Index);
-			Commit(ref cur);
-			return truncated;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private void ThrowSmallIntegerOverflowIf(bool overflow, string expected, int curIndex)
-		{
-			if (overflow && !_opt.Read.SilentlyTruncateLargeNumbers)
-				ThrowError(curIndex, $"{UnexpectedDataStreamFormat}; number is too large (expected {expected})", fatal: false);
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public int ReadInt32()
-		{
-			int number = DecodeInt32(out var cur);
-			Commit(ref cur);
-			return number;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public long ReadInt64()
-		{
-			var cur = _frame.Pointer;
-			long? value = DecodeInt64OrNull(ref cur);
-			long number = value is null ? UnexpectedNull() : value.Value;
-			Commit(ref cur);
-			return number;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		int DecodeInt32(out ReadingPointer cur)
-		{
-			cur = _frame.Pointer;
-			int? value = DecodeInt32OrNull(ref cur);
-			return value is null ? UnexpectedNull() : value.Value;
-		}
-
-		int? DecodeInt32OrNull(ref ReadingPointer cur)
-		{
-			// TODO: optimize this by duplicating code of ReadInt64OrNull
-			long? value = DecodeInt64OrNull(ref cur);
-			if (value is null)
-				return null;
-			
-			int truncated = unchecked((int)value);
-			if (truncated != value && !_opt.Read.SilentlyTruncateLargeNumbers)
-				ThrowError(cur.Index, $"{UnexpectedDataStreamFormat}; number is too large: {value}", fatal: false);
-
-			return truncated;
-		}
-
-		long? DecodeInt64OrNull(ref ReadingPointer cur)
+		TInt? DecodeIntOrNull<TInt>(ref ReadingPointer cur) where TInt : struct
 		{
 			ExpectBytes(ref cur, 1);
 
-			var firstByte = cur.Byte;
+			byte firstByte = cur.Byte;
 			if (firstByte < 0xFE)
 			{
 				cur.Index++;
 				if (firstByte < 0x80)
 				{
-					return firstByte;
+					// Simply return firstByte if TInt is unsigned, otherwise sign-extend it
+					if (typeof(TInt) == typeof(uint))
+						return (uint)firstByte is TInt r ? r : default;
+					else if (typeof(TInt) == typeof(ulong))
+						return (ulong)firstByte is TInt r ? r : default;
+					else if (typeof(TInt) == typeof(int))
+						return ((int)firstByte << 25) >> 25 is TInt r ? r : default;
+					else if (typeof(TInt) == typeof(long))
+						return (long)(((int)firstByte << 25) >> 25) is TInt r ? r : default;
+					Debug.Fail("unreachable");
+					return default;
 				}
 				else
 				{
-					// Read small-format variable-length number
-					int integerSize = LeadingOneCount(firstByte) + 1;
-					long highBitsOfNumber = (firstByte & (0xFF >> integerSize)) << (integerSize * 8);
+					// Read small-format variable-length number (sizeOfRest <= 7). We
+					// always read it as `long` because if sizeOfRest >= 4, a 32-bit
+					// version of this would require more branches. Any speed advantage of
+					// using 32-bit math would probably be negated by branch misprediction,
+					// even on mobile processors.
+					int sizeOfRest = LeadingOneCount(firstByte);
+					
+					ExpectBytes(ref cur, sizeOfRest);
 
-					if (AutoRead(ref cur, integerSize)) {
-						return highBitsOfNumber |
-							ReadRemainingBytesAsBigEndianInt64(ref cur, integerSize);
-					} else {
-						ThrowUnexpectedEOF(_frame.Index);
-						return 0;
+					int extraBits = firstByte & (0x7F >> sizeOfRest);
+
+					long highBitsOfNumber;
+					if (typeof(TInt) == typeof(int) || typeof(TInt) == typeof(long)) {
+						int shift = sizeOfRest + 57;
+						highBitsOfNumber = (long)extraBits << shift >> (shift - sizeOfRest * 8);
+					} else { // unsigned
+						highBitsOfNumber = (long)extraBits << sizeOfRest * 8;
 					}
+						
+					long number = highBitsOfNumber | (long)ReadRemainingBytesAsBigEndian(ref cur, sizeOfRest);
+
+					if (typeof(TInt) == typeof(int))
+						MaybeThrowIntegerOverflowIf((int)number != number, "Int32", cur.Index);
+					if (typeof(TInt) == typeof(uint))
+						MaybeThrowIntegerOverflowIf((uint)number != number, "UInt32", cur.Index);
+
+					return FromLong<TInt>(number);
 				}
 			}
 			else if (firstByte == 0xFF)
@@ -342,24 +329,28 @@ partial class SyncBinary
 			}
 			else
 			{
-				return ReadLargeFormatInt64(ref cur);
+				long number = DecodeLargeFormatInt64(ref cur, typeof(TInt) == typeof(int) || typeof(TInt) == typeof(long));
+				return FromLong<TInt>(number);
 			}
 		}
 
-		long ReadLargeFormatInt64(ref ReadingPointer cur)
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		long DecodeLargeFormatInt64(ref ReadingPointer cur, bool signed)
 		{
 			// Read length prefix
 			Debug.Assert(cur.Byte == 0xFE);
 			cur.Index++;
 
-			if (AutoRead(ref cur, 1) && cur.Byte >= 0xFE) {
+			if (!AutoRead(ref cur, 2)) {
+				ThrowUnexpectedEOF(_frame.Index);
+			}
+			if (cur.Byte >= 0xFE) {
 				ThrowError(cur.Index, cur.Byte == 0xFF
 					? $"{UnexpectedDataStreamFormat}; number length is null"
 					: $"{UnexpectedDataStreamFormat}; length prefix is itself length-prefixed");
 			}
 
-			int integerSize = DecodeInt32OrNull(ref cur).Value;
-
+			int integerSize = (int) DecodeIntOrNull<uint>(ref cur)!.Value;
 			if (integerSize > _opt.MaxNumberSize) {
 				ThrowError(_frame.Pointer.Index, $"{UnexpectedDataStreamFormat}; length prefix is too large: {integerSize}");
 			}
@@ -375,32 +366,44 @@ partial class SyncBinary
 				integerSize = 8;
 			}
 
-			long number = ReadRemainingBytesAsBigEndianInt64(ref cur, integerSize);
+			long number = (long) ReadRemainingBytesAsBigEndian(ref cur, integerSize);
 			cur.Index += integerSize;
-			return number;
+
+			if (signed) {
+				// Sign-extend the number
+				int shiftAmount = 64 - integerSize * 8;
+				return number << shiftAmount >> shiftAmount;
+			} else {
+				return number;
+			}
 		}
 		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		long ReadRemainingBytesAsBigEndianInt64(ref ReadingPointer cur, int integerSize)
+		static ulong ReadRemainingBytesAsBigEndian(ref ReadingPointer cur, int sizeOfRemaining)
 		{
-			Debug.Assert(integerSize <= 8);
-			Debug.Assert(cur.BytesLeft >= integerSize);
+			Debug.Assert(sizeOfRemaining <= 8);
+			Debug.Assert(cur.BytesLeft >= sizeOfRemaining);
 
-			if (cur.BytesLeft >= 8) {
+			if (cur.BytesLeft >= 8)
+			{
 				// Fast branchless path: read 8 bytes, then discard any that
-				// are not part of the number.
-				long number = BigEndianBytesToInt64(cur.Span);
-				cur.Index += integerSize;
+				// are not part of the number. However, special logic is needed when
+				// reading a 32-bit number if the number size is 5 bytes or more...
+				ulong number = BigEndianBytesToUInt64(cur.Span) >> ((8 - sizeOfRemaining) << 3);
+				cur.Index += sizeOfRemaining;
+				return number;
+			}
+			return ReadInLoop(ref cur, sizeOfRemaining);
 
-				return number >> (64 - integerSize * 8);
-			} else {
+			[MethodImpl(MethodImplOptions.NoInlining)]
+			static ulong ReadInLoop(ref ReadingPointer cur, int sizeOfRemaining)
+			{
 				// Slow path for tiny buffer: read bytes in a loop
-				long number = 0;
-				for (int i = 0; i < integerSize; i++) {
+				ulong number = 0;
+				for (int i = 0; i < sizeOfRemaining; i++) {
 					number = (number << 8) + cur.Byte;
 					cur.Index++;
 				}
-
 				return number;
 			}
 		}
@@ -413,27 +416,114 @@ partial class SyncBinary
 			}
 		}
 
-		int BigEndianBytesToInt32(ReadOnlySpan<byte> span)
+		TInt UnexpectedNull<TInt>(bool fatal = false)
+		{
+			if (!_opt.Read.ReadNullPrimitivesAsDefault)
+				ThrowError(_frame.Index, $"{UnexpectedDataStreamFormat}; unexpected null", fatal);
+
+			return default;
+		}
+
+		static uint BigEndianBytesToUInt32(ReadOnlySpan<byte> span)
 		{
 			#if NETSTANDARD2_0 || NET45 || NET46 || NET47 || NET48
-			return span[3] + (span[2] << 8) + (span[1] << 16) + (span[0] << 24);
+			return (uint)(span[3] + (span[2] << 8) + (span[1] << 16) + (span[0] << 24));
 			#else
-			return BinaryPrimitives.ReadInt32BigEndian(span);
+			return (uint)BinaryPrimitives.ReadInt32BigEndian(span);
 			#endif
 		}
 
-		long BigEndianBytesToInt64(ReadOnlySpan<byte> span)
+		static ulong BigEndianBytesToUInt64(ReadOnlySpan<byte> span)
 		{
 			#if NETSTANDARD2_0 || NET45 || NET46 || NET47 || NET48
-			return unchecked((long)BigEndianBytesToInt32(span) << 32) + BigEndianBytesToInt32(span.Slice(4));
+			return unchecked((ulong)BigEndianBytesToUInt32(span) << 32) + BigEndianBytesToUInt32(span.Slice(4));
 			#else
-			return BinaryPrimitives.ReadInt64BigEndian(span);
+			return (ulong)BinaryPrimitives.ReadInt64BigEndian(span);
 			#endif
 		}
+
+		//[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		//static TInt BigEndianBytesToUInt<TInt>(ReadOnlySpan<byte> span, int integerSize)
+		//{
+		//	if (typeof(TInt) == typeof(int)) {
+		//		return (int)(BigEndianBytesToUInt32(span) >> (32 - integerSize * 8)) is TInt r ? r : default;
+		//	} else if (typeof(TInt) == typeof(uint)) {
+		//		return (uint)(BigEndianBytesToUInt32(span) >> (32 - integerSize * 8)) is TInt r ? r : default;
+		//	} else if (typeof(TInt) == typeof(long)) {
+		//		return (long)(BigEndianBytesToUInt64(span) >> (64 - integerSize * 8)) is TInt r ? r : default;
+		//	} else if (typeof(TInt) == typeof(ulong)) {
+		//		return (ulong)(BigEndianBytesToUInt64(span) >> (64 - integerSize * 8)) is TInt r ? r : default;
+		//	}
+		//	Debug.Fail("Unreachable");
+		//	return default;
+		//}
+
+		#endregion
+
+		#region Generic math functions
+		// When increase the minimum .NET version to .NET 7, we can switch to generic
+		// numerics instead (but will have to retest performance)
+
+		//[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		//static int SizeOf<TInt>()
+		//{
+		//	if (typeof(TInt) == typeof(int) || typeof(TInt) == typeof(uint))
+		//		return 4;
+		//	else if (typeof(TInt) == typeof(long) || typeof(TInt) == typeof(ulong))
+		//		return 8;
+		//	else
+		//		return System.Runtime.InteropServices.Marshal.SizeOf<TInt>();
+		//}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static TInt FromLong<TInt>(long number) where TInt: struct
+		{
+			if (typeof(TInt) == typeof(int))
+				return (int)number is TInt r ? r : default;
+			else if (typeof(TInt) == typeof(uint))
+				return (uint)number is TInt r ? r : default;
+			else if (typeof(TInt) == typeof(long))
+				return (long)number is TInt r ? r : default;
+			else if (typeof(TInt) == typeof(ulong))
+				return (ulong)number is TInt r ? r : default;
+			Debug.Fail("Unreachable");
+			return default;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static TInt ShortenInt<TInt>(int number) where TInt: struct
+		{
+			if (typeof(TInt) == typeof(short))
+				return (short)number is TInt r ? r : default;
+			else if (typeof(TInt) == typeof(ushort))
+				return (ushort)number is TInt r ? r : default;
+			else if (typeof(TInt) == typeof(sbyte))
+				return (sbyte)number is TInt r ? r : default;
+			else if (typeof(TInt) == typeof(byte))
+				return (byte)number is TInt r ? r : default;
+			Debug.Fail("Unreachable");
+			return default;
+		}
+
+		//[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		//static TInt ShiftRight<TInt>(TInt num, int amount)
+		//{
+		//	if (num is int i32) {
+		//		return (i32 >> amount) is TInt r ? r : default;
+		//	} else if (num is uint u32) {
+		//		return (u32 >> amount) is TInt r ? r : default;
+		//	} else if (num is long i64) {
+		//		return (i64 >> amount) is TInt r ? r : default;
+		//	} else if (num is ulong u64) {
+		//		return (u64 >> amount) is TInt r ? r : default;
+		//	}
+		//	Debug.Fail("Unreachable");
+		//	return default;
+		//}
 
 		public static int LeadingOneCount(byte b)
 		{
-			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NETCOREAPP3_1 || NET45 || NET46 || NET47 || NET48
+			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47 || NET48
 				int result = 0;
 				int i = b << 24;
 				if (i >> 28 == 0b1111)
@@ -455,16 +545,25 @@ partial class SyncBinary
 				}
 				return result;
 			#else
-				return BitOperations.LeadingZeroCount(~(b << 24));
+				return BitOperations.LeadingZeroCount((uint)~(b << 24));
 			#endif
 		}
 
-		private int UnexpectedNull(bool fatal = false)
-		{
-			if (!_opt.Read.ReadNullPrimitivesAsDefault)
-				ThrowError(_frame.Index, $"{UnexpectedDataStreamFormat}; unexpected null", fatal);
+		#endregion
 
-			return 0;
+		#region Error throwers
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		void MaybeThrowIntegerOverflowIf(bool overflow, string expectedSize, int curIndex)
+		{
+			if (!_opt.Read.SilentlyTruncateLargeNumbers && overflow)
+				ThrowIntegerOverflow(expectedSize, curIndex);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		void ThrowIntegerOverflow(string expectedSize, int curIndex)
+		{
+			ThrowError(curIndex, $"{UnexpectedDataStreamFormat}; number is too large (expected {expectedSize})", fatal: false);
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
@@ -504,6 +603,19 @@ partial class SyncBinary
 			if (fatal)
 				_fatalError = exc;
 			return exc;
+		}
+
+		#endregion
+
+		internal void SetCurrentObject(object value)
+		{
+			if (_stack.Count != 0) {
+				var topOfStack = _stack.Last;
+				if (topOfStack.HasId) {
+					_objects ??= new Dictionary<int, object>();
+					_objects[topOfStack.Id] = value;
+				}
+			}
 		}
 	}
 }

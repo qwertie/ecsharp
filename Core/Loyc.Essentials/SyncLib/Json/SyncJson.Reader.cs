@@ -250,7 +250,7 @@ namespace Loyc.SyncLib
 
 			public char? Sync(FieldId name, char? savable) => _s.ReadChar(name, true);
 
-			public string? Sync(FieldId name, string? savable) => _s.ReadString(name.Name);
+			public string? Sync(FieldId name, string? savable, ObjectMode mode = ObjectMode.Normal) => _s.ReadString(name.Name);
 		}
 	}
 }

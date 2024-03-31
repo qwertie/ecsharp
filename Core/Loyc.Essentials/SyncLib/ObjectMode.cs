@@ -5,7 +5,7 @@ using System.Text;
 namespace Loyc.SyncLib
 {
 	/// <summary>Lists the kinds of child objects supported by <see cref="ISyncManager"/>.
-	///   The three basic kinds are Normal, Tuple and List, which are mutually 
+	///   The three basic kinds are Normal, List and Tuple, which are mutually 
 	///   exclusive; Nullable and Deduplicate are flags that can be combined 
 	///   with the three basic kinds.</summary>
 	[Flags]

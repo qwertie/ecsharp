@@ -124,7 +124,10 @@ partial class SyncBinary
 
 		public char   Sync(FieldId name, char savable) { _s.Write((uint)savable); return savable; }
 
-		public string? Sync(FieldId name, string? savable) { _s.Write(savable); return savable; }
+		public string? Sync(FieldId name, string? savable, ObjectMode mode = ObjectMode.Normal) {
+			_s.Write(savable, mode);
+			return savable;
+		}
 
 		public int Sync(FieldId name, int savable, int bits, bool signed = true)
 		{

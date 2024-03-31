@@ -1,4 +1,5 @@
 using Loyc.Collections;
+using Loyc.Collections.Impl;
 using Loyc.SyncLib.Impl;
 using System;
 using System.Collections;
@@ -98,17 +99,6 @@ namespace Loyc.SyncLib
 		public static TimeSpan? SyncTimeAsDays<SM>(this SM sync, FieldId name, TimeSpan? value)
 			where SM : ISyncManager
 			=> new SyncTimeSpanAsDays<SM>().Sync(ref sync, name, value);
-
-		public static string? Sync<SyncManager>(this SyncManager sync, 
-			FieldId name, string? savable, ObjectMode listMode, int tupleLength = -1)
-			where SyncManager: ISyncManager
-		{
-			var scanner = default(ScannableEnumerable<char>.Scanner<CharEnumerator>);
-			if (savable != null && sync.IsWriting)
-				scanner = new ScannableEnumerable<char>.Scanner<CharEnumerator>(savable.GetEnumerator());
-			return sync.SyncListCharImpl<ScannableEnumerable<char>.Scanner<CharEnumerator>, string?, SyncLibStringBuilder>(
-				name, scanner, savable, new SyncLibStringBuilder(), listMode, tupleLength);
-		}
 
 		#region SyncList/SyncColl/SyncDict/SyncMemory methods that accept SyncObjectFunc<SM, T>
 

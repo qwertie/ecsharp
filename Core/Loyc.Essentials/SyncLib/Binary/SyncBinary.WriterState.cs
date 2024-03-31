@@ -470,7 +470,7 @@ partial class SyncBinary
 			WriteLittleEndianBytes(unchecked((uint)arrayOf4[3]), 4, outBuf);
 		}
 
-		public void Write(string? str)
+		public void Write(string? str, ObjectMode mode = ObjectMode.Normal)
 		{
 			if (str == null)
 				WriteNull();

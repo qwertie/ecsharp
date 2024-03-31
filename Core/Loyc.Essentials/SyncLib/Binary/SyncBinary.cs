@@ -397,8 +397,8 @@ namespace Loyc.SyncLib;
 ///   If there is a length prefix "n", it is encoded in the same way, so in principle 
 ///   there is no limit to the number of bits in the number. However, SyncBinary.Reader 
 ///   and SyncBinary.Writer limit the number size, by default, to 1 MB, large enough 
-///   for <c>(BigInteger)1 << (8 * 1024 * 1024)</c>. Also, the length prefix is not 
-///   allowed to start with 1111111x (0xFE or 0xFF).
+///   for <c>(BigInteger)1 << (8 * 1024 * 1024)</c>. The length prefix is always 8 or
+///   more if produced by SyncLib. It can legally be smaller than 8, but not zero.
 /// <para/>
 ///   An example of the length-prefixed format is <c>254, 2, 1, 44</c>. In this 
 ///   example, the length prefix is 2, and the number bits are 0x01 0x2C, which 
@@ -418,7 +418,7 @@ namespace Loyc.SyncLib;
 ///       can switch a signed number to be unsigned and retain backward compaibility
 ///       if (and only if) the field is never negative in any of the old data streams.
 ///       However, you cannot switch unsigned to signed (see explanation below).
-///     <li>A CPU can read numbers in this format faster than it can read numbers
+///     <li>A CPU can read numbyners in this format faster than it can read numbers
 ///       in the traditional VLQ or LEB128 formats. For integers under 50 bits, it 
 ///       requires only one conditional branch to read one number, rather one branch 
 ///       per byte. Also, generally, fewer machine instructions are required to 
@@ -530,14 +530,17 @@ namespace Loyc.SyncLib;
 /// <h4>Booleans</h4>
 ///   
 ///   A boolean is encoded as a signed integer where 0 = false and 1 = true (and as 
-///   usual, 255 = null). When reading a boolean from the data stream, it is read as a 
-///   32-bit signed integer, which is interpreted as `false` if it is 0 and `true` 
-///   otherwise.
+///   usual, a 255 byte means "null"). When reading a boolean from the data stream, it 
+///   is read as a 32-bit signed integer, which is interpreted as `false` if it is 0 and 
+///   `true` otherwise.
 ///   
 ///   This means you can safely change an integer field to boolean or vice versa
 ///   between versions. However, something can go wrong when reading an integer larger
-///   than 32 bits as a boolean. For example, if the integer is unsigned 0x8000_0001, 
-///   it doesn't fit in a signed 32-bit integer. 
+///   than 32 bits as a boolean. For example, if the integer is unsigned 0xFFFF_FFFF, 
+///   it doesn't fit in a signed 32-bit integer. The reader's behavior then depends on
+///   the <see cref="Options.ForReader.SilentlyTruncateLargeNumbers"/> option. If it's
+///   true, it will be "truncated" to -1 and then converted to boolean true; otherwise, 
+///   FormatException is thrown.
 ///   
 /// <h4>Floating point</h4>
 ///   

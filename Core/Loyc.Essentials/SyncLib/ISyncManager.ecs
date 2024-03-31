@@ -65,9 +65,7 @@ namespace Loyc.SyncLib
 	// Primitive types that a synchronizer must support "out of the box"
 	define basicTypes => #splice(bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char);
 
-	define standardTypes => #splice(bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char, string);
-
-	define standardItemTypes => #splice(bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char, #type<string? >);
+	define standardTypes => #splice(bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char, #type<string? >);
 
 	// Bitfield types include a size-in-bits parameter and a signedness boolean
 	define bitfieldTypes => #splice(int, long, BigInteger);
@@ -430,11 +428,16 @@ namespace Loyc.SyncLib
 		/// </remarks>
 		string? SyncTypeTag(string? tag);
 
-		##unroll($T in standardItemTypes)
+		##unroll($T in basicTypes)
 		{
 			/// <summary>Reads or writes a value of a field on the current object.</summary>
 			$T Sync(FieldId name, $T savable);
 		}
+
+		/// <summary>Reads or writes a value of a field on the current object.</summary>
+		/// <remarks>Set mode to ObjectMode.Deduplicate to deduplicate the string, if supported 
+		///   by the current instance of ISyncManager.</remarks>
+		string? Sync(FieldId name, string? savablem, ObjectMode mode = ObjectMode.Normal);
 
 		##unroll($T in bitfieldTypes)
 		{
@@ -721,14 +724,14 @@ namespace Loyc.SyncLib
 
 	public static partial class SyncManagerExt
 	{
-		##unroll($T in standardItemTypes)
+		##unroll($T in standardTypes)
 		{
 			public static $T SyncRef<SyncManager>(this SyncManager sync, FieldId name, ref $T field) 
 				where SyncManager : ISyncManager
 				=> field = sync.Sync(name, field);
 		}
 
-		##unroll($T in standardItemTypes)
+		##unroll($T in standardTypes)
 		{
 			static if ($T `staticMatches` byte || $T `staticMatches` char || $T `staticMatches` bool) {
 
@@ -810,7 +813,7 @@ namespace Loyc.SyncLib
 		}
 	}
 
-	##unroll($T in standardItemTypes)
+	##unroll($T in standardTypes)
 	{
 		/// <summary>The methods in this class belong in <see cref="SyncManagerExt"/> but they 
 		/// must be put in a different class to avoid C# compiler error CS0111, 

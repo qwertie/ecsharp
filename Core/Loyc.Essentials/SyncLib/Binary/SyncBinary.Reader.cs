@@ -81,23 +81,23 @@ partial class SyncBinary
 
 		public SyncType GetFieldType(FieldId name, SyncType expectedType = SyncType.Unknown) => SyncType.Unknown;
 
-		public bool Sync(FieldId name, bool savable) => _s.ReadInt32() != 0;
+		public bool Sync(FieldId name, bool savable) => _s.ReadNormalInt<int>() != 0;
 
-		public sbyte Sync(FieldId name, sbyte savable) => throw new NotImplementedException();
+		public sbyte Sync(FieldId name, sbyte savable) => _s.ReadSmallInt<sbyte>();
 
-		public byte Sync(FieldId name, byte savable) => throw new NotImplementedException();
+		public byte Sync(FieldId name, byte savable) => _s.ReadSmallInt<byte>();
 
-		public short Sync(FieldId name, short savable) => throw new NotImplementedException();
+		public short Sync(FieldId name, short savable) => _s.ReadSmallInt<short>();
 
-		public ushort Sync(FieldId name, ushort savable) => throw new NotImplementedException();
+		public ushort Sync(FieldId name, ushort savable) => _s.ReadSmallInt<ushort>();
 
-		public int Sync(FieldId name, int savable) => _s.ReadInt32();
+		public int Sync(FieldId name, int savable) => _s.ReadNormalInt<int>();
 
-		public uint Sync(FieldId name, uint savable) => throw new NotImplementedException();
+		public uint Sync(FieldId name, uint savable) => _s.ReadNormalInt<uint>();
 
-		public long Sync(FieldId name, long savable) => _s.ReadInt64();
+		public long Sync(FieldId name, long savable) => _s.ReadNormalInt<long>();
 
-		public ulong Sync(FieldId name, ulong savable) => throw new NotImplementedException();
+		public ulong Sync(FieldId name, ulong savable) => _s.ReadNormalInt<ulong>();
 
 		public float Sync(FieldId name, float savable) => throw new NotImplementedException();
 
@@ -107,36 +107,27 @@ partial class SyncBinary
 
 		public BigInteger Sync(FieldId name, BigInteger savable) => throw new NotImplementedException();
 
-		public char Sync(FieldId name, char savable) => throw new NotImplementedException();
+		public char Sync(FieldId name, char savable) => (char) _s.ReadSmallInt<ushort>();
 
-		public string Sync(FieldId name, string? savable) => throw new NotImplementedException();
-
-		public int Sync(FieldId name, int savable, int bits, bool signed = true)
-			=> throw new NotImplementedException();
-
-		public long Sync(FieldId name, long savable, int bits, bool signed = true)
-			=> throw new NotImplementedException();
-
-		public BigInteger Sync(FieldId name, BigInteger savable, int bits, bool signed = true)
-			=> throw new NotImplementedException();
+		public string Sync(FieldId name, string? savable, ObjectMode mode = ObjectMode.Normal) => throw new NotImplementedException();
 
 		public bool? Sync(FieldId name, bool? savable) => throw new NotImplementedException();
 
-		public sbyte? Sync(FieldId name, sbyte? savable) => throw new NotImplementedException();
+		public sbyte? Sync(FieldId name, sbyte? savable) => _s.ReadSmallIntOrNull<sbyte>();
 
-		public byte? Sync(FieldId name, byte? savable) => throw new NotImplementedException();
+		public byte? Sync(FieldId name, byte? savable) => _s.ReadSmallIntOrNull<byte>();
 
-		public short? Sync(FieldId name, short? savable) => throw new NotImplementedException();
+		public short? Sync(FieldId name, short? savable) => _s.ReadSmallIntOrNull<short>();
 
-		public ushort? Sync(FieldId name, ushort? savable) => throw new NotImplementedException();
+		public ushort? Sync(FieldId name, ushort? savable) => _s.ReadSmallIntOrNull<ushort>();
 
-		public int? Sync(FieldId name, int? savable) => _s.ReadInt32OrNull();
+		public int? Sync(FieldId name, int? savable) => _s.ReadNormalIntOrNull<int>();
 
-		public uint? Sync(FieldId name, uint? savable) => throw new NotImplementedException();
+		public uint? Sync(FieldId name, uint? savable) => _s.ReadNormalIntOrNull<uint>();
 
-		public long? Sync(FieldId name, long? savable) => _s.ReadInt64OrNull();
+		public long? Sync(FieldId name, long? savable) => _s.ReadNormalIntOrNull<long>();
 
-		public ulong? Sync(FieldId name, ulong? savable) => throw new NotImplementedException();
+		public ulong? Sync(FieldId name, ulong? savable) => _s.ReadNormalIntOrNull<ulong>();
 
 		public float? Sync(FieldId name, float? savable) => throw new NotImplementedException();
 
@@ -146,7 +137,16 @@ partial class SyncBinary
 
 		public BigInteger? Sync(FieldId name, BigInteger? savable) => throw new NotImplementedException();
 
-		public char? Sync(FieldId name, char? savable) => throw new NotImplementedException();
+		public char? Sync(FieldId name, char? savable) => (char) _s.ReadSmallIntOrNull<ushort>();
+
+		public int Sync(FieldId name, int savable, int bits, bool signed = true)
+			=> throw new NotImplementedException();
+
+		public long Sync(FieldId name, long savable, int bits, bool signed = true)
+			=> throw new NotImplementedException();
+
+		public BigInteger Sync(FieldId name, BigInteger savable, int bits, bool signed = true)
+			=> throw new NotImplementedException();
 
 		public List? SyncListBoolImpl<Scanner, List, ListBuilder>(
 			FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
