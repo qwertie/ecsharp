@@ -7,6 +7,7 @@
     <owners>David Piepgrass</owners>
     <projectUrl>http://core.loyc.net</projectUrl>
     <iconUrl>http://core.loyc.net/res/favicon.ico</iconUrl>
+    <readme>readme.md</readme>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>Core libraries to "fill in the gaps" in the .NET Base Class Library.</summary>
     <description>A set of useful libraries for many kinds of .NET developers, starting with Loyc.Essentials, a library that "fills in the gaps" in the core of the .NET Base Class Library. LoycCore is especially focused on collections: classes, interfaces, adapters, and extension methods. Plus, Loyc.Syntax.dll parses LES, a superset of JSON that resembles C/C#/Java/Ecmascript/D, and runtime helper classes for the Loyc LL(k) parser generator.
@@ -25,7 +26,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="readme.md" target="readme.txt" />
+    <file src="Readme.md" target="readme.md" />
 
     <!-- The LoycCore package is a meta-package: it references other packages as
          dependencies, but does not have any files of its own other than

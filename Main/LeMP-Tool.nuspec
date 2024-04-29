@@ -8,6 +8,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">LGPL-2.1-or-later</license>
     <projectUrl>http://ecsharp.net/lemp/</projectUrl>
+    <readme>Readme.md</readme>
     <description>This is the command-line version of the LeMP macro processor (and LLLPG parser generator) which can be installed with (for example) `dotnet tool install -g lemp-tool`. It helps you avoid writing boilerplate and repetitive code, and it provides a framework in which you can run code-generation algorithms at compile-time. Once installed, invoke it with `LeMP filename.ecs`.
     
     To integrate LeMP and LLLPG into Visual Studio, please download a release from https://github.com/qwertie/ecsharp/releases</description>
@@ -30,6 +31,7 @@
     </packageTypes>
   </metadata>
   <files>
+    <file src="..\Readme.md" />
     <file src="LeMP\DotnetToolSettings.xml" target="tools\netcoreapp2.1\any\" />
     <!-- Building LeMP.dll (.NET Core 2.1) does not make nuget dependencies appear in the 
          output folder.  This is particularly annoying for indirect dependencies.

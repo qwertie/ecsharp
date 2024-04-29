@@ -7,6 +7,7 @@
     <owners>David Piepgrass</owners>
     <projectUrl>http://core.loyc.net</projectUrl>
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
+    <readme>Readme.md</readme>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>Defines a number of sophisticated data structures.</summary>
     <description>Loyc.Collections is a library of sophisticated data structures that implement standard .NET collection interfaces. It includes ALists, VLists, hash tree types (Set&lt;T&gt;, MSet&lt;T&gt;, Map&lt;K,V&gt; and MMap&lt;K,V&gt;), and min/max heaps.</description>
@@ -25,7 +26,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="readme.md" />
+    <file src="Readme.md" />
     
     <file src="Bin\Release\netstandard2.0\Loyc.Collections.*" target="lib\netstandard2.0\" />
     <file src="Bin\Release\Loyc.Collections.*" target="lib\net45\" />

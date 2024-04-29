@@ -7,6 +7,7 @@
     <owners>David Piepgrass</owners>
     <projectUrl>http://ecsharp.net/lllpg/</projectUrl>
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
+    <readme>readme.md</readme>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>A recursive-decent parser generator for C#.</summary>
     <description>LLLPG is a recursive-decent parser generator for C#, with Visual Studio integration and a feature set better than ANTLR version 2. This package contains the core LLLPG executable, which can be run from the command-line. Visual Studio users should typically download a release of LeMP from https://github.com/qwertie/ecsharp/releases instead of using this package.</description>
@@ -14,17 +15,28 @@
     <copyright>Copyright 2020</copyright>
     <tags>Loyc LL Parser Generator LLLPG</tags>
     <dependencies>
-      <dependency id="Loyc.Interfaces" version="$version$"/>
-      <dependency id="Loyc.Essentials" version="$version$"/>
-      <dependency id="Loyc.Collections" version="$version$"/>
-      <dependency id="Loyc.Syntax" version="$version$"/>
-      <dependency id="Loyc.Utilities" version="$version$"/>
-      <dependency id="LeMP" version="$version$"/>
-      <dependency id="Loyc.Ecs" version="$version$"/>
+      <group targetFramework=".NETFramework4.7.2">
+        <dependency id="Loyc.Interfaces" version="$version$"/>
+        <dependency id="Loyc.Essentials" version="$version$"/>
+        <dependency id="Loyc.Collections" version="$version$"/>
+        <dependency id="Loyc.Syntax" version="$version$"/>
+        <dependency id="Loyc.Utilities" version="$version$"/>
+        <dependency id="LeMP" version="$version$"/>
+        <dependency id="Loyc.Ecs" version="$version$"/>
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Loyc.Interfaces" version="$version$"/>
+        <dependency id="Loyc.Essentials" version="$version$"/>
+        <dependency id="Loyc.Collections" version="$version$"/>
+        <dependency id="Loyc.Syntax" version="$version$"/>
+        <dependency id="Loyc.Utilities" version="$version$"/>
+        <dependency id="LeMP" version="$version$"/>
+        <dependency id="Loyc.Ecs" version="$version$"/>
+      </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="..\readme.md" target="readme.txt" />
+    <file src="..\Readme.md" target="readme.md" />
     <file src="..\Bin\Release\netstandard2.0\LLLPG.*" target="lib\netstandard2.0\" />
     <file src="..\Bin\Release\LLLPG.*" target="lib\net472\" />
     <file src="LLLPG\**\*.cs" target="src" />

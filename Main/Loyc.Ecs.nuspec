@@ -7,6 +7,7 @@
     <owners>David Piepgrass</owners>
     <projectUrl>http://ecsharp.net</projectUrl>
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
+    <readme>Readme.md</readme>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>Enhanced C# parser and printer</summary>
     <description>Enhanced C# (or EC#) is a liberalization and regularization of the C# language.
@@ -17,14 +18,22 @@
     <copyright>Copyright 2020</copyright>
     <tags>Loyc CodeGen CodeGeneration Enhanced C# EC# ECSharp Parser</tags>
     <dependencies>
-      <dependency id="Loyc.Interfaces" version="$version$"/>
-      <dependency id="Loyc.Essentials" version="$version$"/>
-      <dependency id="Loyc.Collections" version="$version$"/>
-      <dependency id="Loyc.Syntax" version="$version$"/>
+      <group targetFramework=".NETFramework4.7.2">
+        <dependency id="Loyc.Interfaces" version="$version$"/>
+        <dependency id="Loyc.Essentials" version="$version$"/>
+        <dependency id="Loyc.Collections" version="$version$"/>
+        <dependency id="Loyc.Syntax" version="$version$"/>
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Loyc.Interfaces" version="$version$"/>
+        <dependency id="Loyc.Essentials" version="$version$"/>
+        <dependency id="Loyc.Collections" version="$version$"/>
+        <dependency id="Loyc.Syntax" version="$version$"/>
+      </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="..\readme.md" />
+    <file src="..\Readme.md" />
     <file src="..\Bin\Release\netstandard2.0\Loyc.Ecs.*" target="lib\netstandard2.0\" />
     <file src="..\Bin\Release\Loyc.Ecs.*" target="lib\net472\" />
     <file src="Ecs\**\*.cs" target="src" />
