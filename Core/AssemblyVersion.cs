@@ -14,5 +14,5 @@ using System.Reflection;
 // command to change the version number which, I guess, produces an incompatible 
 // assembly in the presence of strong names (strong naming prevents two assemblies 
 // from linking together without an exact match.)
-[assembly: AssemblyVersion("30.1.0")]
-[assembly: AssemblyFileVersion("30.1.0")]
+[assembly: AssemblyVersion("30.1.1")]
+[assembly: AssemblyFileVersion("30.1.1")]

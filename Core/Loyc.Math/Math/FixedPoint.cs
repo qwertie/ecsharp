@@ -1,4 +1,4 @@
-﻿//
+//
 // Fixed-point math structures produced with the help of T4 (FixedPoint.tt)
 // NOTE: THIS CODE HAS NOT BEEN WELL-TESTED AND DOES NOT YET HAVE A TEST SUITE.
 // 
@@ -200,7 +200,7 @@ namespace Loyc.Math
 		public FPI8 Abs() { return Prescaled(N >= 0 ? N : -N); }
 
 		public FPI8 Floor() { return Prescaled(N & ~Mask); }
-		public FPI8 Ceiling()  { return Prescaled((N & ~Mask) + Unit); }
+		public FPI8 Ceiling()  { return Prescaled((N + (Unit - 1)) & ~Mask); }
 
 		public int CountOnes() { return MathEx.CountOnes(N); }
 		public int Log2Floor()
@@ -507,7 +507,7 @@ namespace Loyc.Math
 		public FPI16 Abs() { return Prescaled(N >= 0 ? N : -N); }
 
 		public FPI16 Floor() { return Prescaled(N & ~Mask); }
-		public FPI16 Ceiling()  { return Prescaled((N & ~Mask) + Unit); }
+		public FPI16 Ceiling()  { return Prescaled((N + (Unit - 1)) & ~Mask); }
 
 		public int CountOnes() { return MathEx.CountOnes(N); }
 		public int Log2Floor()
@@ -809,7 +809,7 @@ namespace Loyc.Math
 		public FPI23 Abs() { return Prescaled(N >= 0 ? N : -N); }
 
 		public FPI23 Floor() { return Prescaled(N & ~Mask); }
-		public FPI23 Ceiling()  { return Prescaled((N & ~Mask) + Unit); }
+		public FPI23 Ceiling()  { return Prescaled((N + (Unit - 1)) & ~Mask); }
 
 		public int CountOnes() { return MathEx.CountOnes(N); }
 		public int Log2Floor()
@@ -1125,7 +1125,7 @@ namespace Loyc.Math
 		public FPL16 Abs() { return Prescaled(N >= 0 ? N : -N); }
 
 		public FPL16 Floor() { return Prescaled(N & ~Mask); }
-		public FPL16 Ceiling()  { return Prescaled((N & ~Mask) + Unit); }
+		public FPL16 Ceiling()  { return Prescaled((N + (Unit - 1)) & ~Mask); }
 
 		public int CountOnes() { return MathEx.CountOnes(N); }
 		public int Log2Floor()
@@ -1441,7 +1441,7 @@ namespace Loyc.Math
 		public FPL32 Abs() { return Prescaled(N >= 0 ? N : -N); }
 
 		public FPL32 Floor() { return Prescaled(N & ~Mask); }
-		public FPL32 Ceiling()  { return Prescaled((N & ~Mask) + Unit); }
+		public FPL32 Ceiling()  { return Prescaled((N + (Unit - 1)) & ~Mask); }
 
 		public int CountOnes() { return MathEx.CountOnes(N); }
 		public int Log2Floor()
