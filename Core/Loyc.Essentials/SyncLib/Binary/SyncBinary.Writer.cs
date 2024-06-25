@@ -82,7 +82,7 @@ partial class SyncBinary
 
 		public FieldId NextField => FieldId.Missing;
 
-		public (bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1)
+		public (bool Begun, int Length, object? Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1)
 		{
 			return _s.BeginSubObject(childKey, mode, listLength);
 		}

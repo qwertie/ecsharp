@@ -175,7 +175,7 @@ partial class SyncBinary
 			return loader.Sync(ref this, name, saving);
 		}
 
-		public (bool Begun, object Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1)
+		public (bool Begun, int Length, object Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1)
 		{
 			return _s.BeginSubObject(mode, listLength);
 		}

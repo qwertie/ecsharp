@@ -158,6 +158,9 @@ namespace Loyc.SyncLib
 	{
 		// System.ValueTuple synchronizers
 
+		// TODO: this is buggy! there's no way BeginSubObject should be called without
+		// checking the result.
+
 		public static ValueTuple<Item1> Sync<Item1>(ref SyncManager sync, FieldId name, ValueTuple<Item1> value)
 		{
 			sync.BeginSubObject(name, null, ObjectMode.NotNull | ObjectMode.Tuple, 8);

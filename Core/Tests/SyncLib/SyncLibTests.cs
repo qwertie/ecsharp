@@ -1,10 +1,8 @@
+using Loyc.Collections.Impl;
 using Loyc.MiniTest;
 using Loyc.SyncLib;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Linq;
-using Loyc.Collections.Impl;
+using System.Text;
 
 namespace Loyc.SyncLib.Tests
 {

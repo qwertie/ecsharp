@@ -87,7 +87,7 @@ namespace Loyc.SyncLib.Impl
 		{
 			Debug.Assert(!sync.IsReading);
 			
-			var (begunList, obj) = sync.BeginSubObject(name, list, _listMode, listCount);
+			var (begunList, length, obj) = sync.BeginSubObject(name, list, _listMode, listCount);
 			if (begunList) {
 				Debug.Assert(sync.IsInsideList);
 				Debug.Assert(scanner != null);

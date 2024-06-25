@@ -622,11 +622,11 @@ partial class SyncBinary
 			Write(tag);
 		}
 
-		public (bool Begun, object? Object) BeginSubObject(object? childKey, ObjectMode mode, int listLength)
+		public (bool Begun, int Length, object? Object) BeginSubObject(object? childKey, ObjectMode mode, int listLength)
 		{
 			if (childKey == null && (mode & (ObjectMode.NotNull | ObjectMode.Deduplicate)) != ObjectMode.NotNull) {
 				WriteNull();
-				return (false, childKey);
+				return (false, 0, childKey);
 			}
 
 			if (listLength < 0 && (mode & ObjectMode.List) != 0) {
@@ -650,7 +650,7 @@ partial class SyncBinary
 					span[_i++] = (byte)'@';
 					Write(id);
 
-					return (false, childKey); // Skip object that is already written
+					return (false, 0, childKey); // Skip object that is already written
 				}
 			}
 			else
@@ -667,8 +667,11 @@ partial class SyncBinary
 			{
 				if ((_opt.Markers & Markers.ObjectStart) != 0)
 					span[_i++] = (Depth & 1) != 0 ? (byte)'(' : (byte)'{';
+
+				return (true, 1, childKey);
 			}
-			else if (objectKind == ObjectMode.List)
+
+			if (objectKind == ObjectMode.List)
 			{
 				if ((_opt.Markers & Markers.ListStart) != 0)
 					span[_i++] = (byte)'[';
@@ -681,7 +684,7 @@ partial class SyncBinary
 					span[_i++] = (byte)'[';
 			}
 
-			return (true, childKey);
+			return (true, listLength, childKey);
 		}
 
 		public void EndSubObject()

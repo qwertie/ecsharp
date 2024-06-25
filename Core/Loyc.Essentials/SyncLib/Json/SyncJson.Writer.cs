@@ -102,7 +102,7 @@ namespace Loyc.SyncLib
 
 			public FieldId NextField => FieldId.Missing;
 
-			public (bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1)
+			public (bool Begun, int Length, object? Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1)
 			{
 				return _s.BeginSubObject(name.Name, childKey, mode);
 			}

@@ -30,18 +30,19 @@ namespace Loyc.SyncLib.Impl
 		{
 			Debug.Assert((sync.Mode & SyncMode.Reading) != 0);
 
-			var (begunList, obj) = sync.BeginSubObject(propName, null, _listMode);
+			var (begunList, listLength, obj) = sync.BeginSubObject(propName, null, _listMode);
 			if (begunList) {
 				Debug.Assert(sync.IsInsideList);
 				try {
 					if ((_listMode & ObjectMode.Tuple) == ObjectMode.Tuple) {
 						Debug.Assert(_tupleLength > -1);
 						_builder.Alloc(_tupleLength);
-						for (int index = _tupleLength; index != 0 && sync.ReachedEndOfList != false; index--)
+						for (int index = _tupleLength; sync.ReachedEndOfList != true && index >= 0; index--)
 							_builder.Add(_syncItem.Sync(ref sync, null, default(T))!);
 					} else {
 						_builder.Alloc(sync.MinimumListLength!.Value);
-						while (sync.ReachedEndOfList != true)
+						// Edge case, More than 2 billion items?
+						for (int index = listLength; sync.ReachedEndOfList != true && index >= 0; index--)
 							_builder.Add(_syncItem.Sync(ref sync, null, default(T))!);
 					}
 					return _builder.List;

@@ -32,7 +32,7 @@ namespace Loyc.SyncLib.Impl
 		public T? Sync(ref SyncManager sync, FieldId propName, T? item)
 		{
 			bool avoidBoxing = (_mode & (ObjectMode.Deduplicate | ObjectMode.NotNull)) == ObjectMode.NotNull;
-			var (begun, existingItem) = sync.BeginSubObject(propName, avoidBoxing ? null : item, _mode);
+			var (begun, length, existingItem) = sync.BeginSubObject(propName, avoidBoxing ? null : item, _mode);
 			if (begun) {
 				try {
 					var result = _syncObj.Sync(sync, item);
@@ -63,7 +63,7 @@ namespace Loyc.SyncLib.Impl
 		public void Write(ref SyncManager sync, FieldId propName, T? item)
 		{
 			bool avoidBoxing = (_mode & (ObjectMode.Deduplicate | ObjectMode.NotNull)) == ObjectMode.NotNull;
-			var (begun, existingItem) = sync.BeginSubObject(propName, avoidBoxing ? null : item, _mode);
+			var (begun, length, existingItem) = sync.BeginSubObject(propName, avoidBoxing ? null : item, _mode);
 			if (begun) {
 				try {
 					_syncObj.Sync(sync, item);

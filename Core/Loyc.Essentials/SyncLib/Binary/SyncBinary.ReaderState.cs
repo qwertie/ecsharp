@@ -143,7 +143,7 @@ partial class SyncBinary
 
 		#region BeginSubObject/EndSubObject
 
-		internal (bool Begun, object? Object) BeginSubObject(ObjectMode mode, int tupleLength)
+		internal (bool Begun, int Length, object? Object) BeginSubObject(ObjectMode mode, int tupleLength)
 		{
 			//if (childKey == null && (mode & (ObjectMode.NotNull | ObjectMode.Deduplicate)) != ObjectMode.NotNull) {
 			//	WriteNull();
