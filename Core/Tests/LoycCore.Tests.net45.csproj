@@ -186,6 +186,7 @@
     <Compile Include="SyncLib\SmallObjectSync.cs" />
     <Compile Include="SyncLib\StringDictionarySync.cs" />
     <Compile Include="SyncLib\SyncBinaryReaderTests.cs" />
+    <Compile Include="SyncLib\SyncBinaryTests.cs" />
     <Compile Include="SyncLib\SyncBinaryWriterTests.cs" />
     <Compile Include="SyncLib\SyncJsonReaderTests.cs" />
     <Compile Include="SyncLib\SyncJsonTests.cs" />

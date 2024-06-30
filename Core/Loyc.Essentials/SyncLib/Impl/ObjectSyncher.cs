@@ -38,9 +38,15 @@ namespace Loyc.SyncLib.Impl
 					var result = _syncObj.Sync(sync, item);
 					if (!avoidBoxing)
 						sync.CurrentObject = result!;
-					return result;
-				} finally {
 					sync.EndSubObject();
+					return result;
+				} catch(Exception e) {
+					try {
+						sync.EndSubObject();
+					} catch {
+						// This exception is probably caused by the previous failure, so ignore it.
+					}
+					throw;
 				}
 			} else {
 				if (avoidBoxing) {

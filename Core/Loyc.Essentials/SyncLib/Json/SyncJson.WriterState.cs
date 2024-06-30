@@ -251,12 +251,30 @@ namespace Loyc.SyncLib
 			}
 			public float WriteProp(string? propName, float num)
 			{
-				WriteLiteralProp(propName, num.ToString(CultureInfo.InvariantCulture));
+				var str = num.ToString("R", CultureInfo.InvariantCulture);
+				#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+				if (float.IsNaN(num) || float.IsInfinity(num))
+					WriteProp(propName, str);
+				#else
+				if (!float.IsFinite(num))
+					WriteProp(propName, str);
+				#endif
+				else 
+					WriteLiteralProp(propName, str);
 				return num;
 			}
 			public double WriteProp(string? propName, double num)
 			{
-				WriteLiteralProp(propName, num.ToString(CultureInfo.InvariantCulture));
+				var str = num.ToString("R", CultureInfo.InvariantCulture);
+				#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+				if (double.IsNaN(num) || double.IsInfinity(num))
+					WriteProp(propName, str);
+				#else
+				if (!double.IsFinite(num))
+					WriteProp(propName, str);
+				#endif
+				else
+					WriteLiteralProp(propName, str);
 				return num;
 			}
 			public decimal WriteProp(string? propName, decimal num)

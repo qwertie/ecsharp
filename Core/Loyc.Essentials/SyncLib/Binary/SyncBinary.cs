@@ -10,7 +10,7 @@ using Loyc.Compatibility;
 
 namespace Loyc.SyncLib;
 
-/// <summary>
+/// <summary>f
 ///   Convenience methods for a fast pair of <see cref="ISyncManager"/> implementations
 ///   intended for binary files/streams. The binary format is very fast and compact 
 ///   because it stores no metadata, but it must be used with care to avoid data 
@@ -257,7 +257,7 @@ namespace Loyc.SyncLib;
 ///   All other type changes are unsafe and require you to write versioning code.
 ///   
 ///   It's important to note, also, that changing the <see cref="ObjectMode"/> of a 
-///   field is unsafe unless otherwise indicated. For exmaple, adding or removing the 
+///   field is unsafe unless otherwise indicated. For example, adding or removing the 
 ///   <see cref="ObjectMode.Deduplicate"/> flag is unsafe unless the object, list or 
 ///   tuple being written begins with a marker (see <see cref="Options.Markers"/>).
 ///   
@@ -415,10 +415,10 @@ namespace Loyc.SyncLib;
 ///       nullable or not, you can safely "upgrade" an integer field to be nullable
 ///       without breaking backward compatibility.</li>
 ///     <li>Because signed and unsigned numbers are stored in a similar way, you
-///       can switch a signed number to be unsigned and retain backward compaibility
+///       can switch a signed number to be unsigned and retain backward compatibility
 ///       if (and only if) the field is never negative in any of the old data streams.
 ///       However, you cannot switch unsigned to signed (see explanation below).
-///     <li>A CPU can read numbyners in this format faster than it can read numbers
+///     <li>A CPU can read numbers in this format faster than it can read numbers
 ///       in the traditional VLQ or LEB128 formats. For integers under 50 bits, it 
 ///       requires only one conditional branch to read one number, rather one branch 
 ///       per byte. Also, generally, fewer machine instructions are required to 
@@ -439,7 +439,7 @@ namespace Loyc.SyncLib;
 ///   (also known as the "canonical" form).
 /// <para/>
 ///   By the way, while variable-size integers use big-endian format, fixed-size 
-///   numbers (e.g. floads) use little-endian format. There is a reason for this. 
+///   numbers (e.g. floats) use little-endian format. There is a reason for this. 
 ///   Little-endian architectures such as x64 are the most common, and on these 
 ///   architectures, little-endian format is more natural and could lead to 
 ///   slightly higher performance. However, when writing variable-size integers, 
@@ -571,7 +571,7 @@ namespace Loyc.SyncLib;
 /// 
 ///   Decimals are stored in the 128-bit fixed-size format defined by Microsoft for 
 ///   decimal numbers, but little-endian, so: the 96-bit "integer part" is stored 
-///   first (it's analagous to the "mantissa" in floating-point, but is actually an 
+///   first (it's analogous to the "mantissa" in floating-point, but is actually an 
 ///   integer), followed by 16 unused bits that are zero, followed by 8 bits for
 ///   the negative base-10 exponent (which is limited to a range of 0 to 28) 
 ///   followed by the most significant byte, which is 0 if the number is positive 

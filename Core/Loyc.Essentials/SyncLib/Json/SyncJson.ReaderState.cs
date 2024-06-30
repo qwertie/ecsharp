@@ -604,7 +604,7 @@ namespace Loyc.SyncLib
 					case JsonType.SimpleString:
 					case JsonType.String:
 						var str = DecodeString(v.value);
-						return double.Parse(str, NumberStyles.Float);
+						return double.Parse(str, NumberStyles.Float, CultureInfo.InvariantCulture);
 
 					case JsonType.PlainInteger:
 						return (double) DecodeInteger(v.value.Text.Span);

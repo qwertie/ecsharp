@@ -665,9 +665,9 @@ namespace Loyc.SyncLib
 		/// <returns>
 		///   The boolean value is true if the request to read/write is approved.
 		///   In this case you are expected to write the contents of the object and 
-		///   then call <see cref="FinishSubObject()"/>. If the boolean is false, 
+		///   then call <see cref="EndSubObject()"/>. If the boolean is false, 
 		///   the request was declined and you MUST NOT write the fields of the 
-		///   sub-object, and you MUST NOT call <see cref="FinishSubObject()"/>.
+		///   sub-object, and you MUST NOT call <see cref="EndSubObject()"/>.
 		///   <para/>
 		///   The second return value, the Length, is relevant only when reading,
 		///   and only when Begun is true. If Begun is false, you should always

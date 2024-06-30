@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Buffers.Binary;
 using System.Numerics;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Loyc.SyncLib;
 
@@ -33,12 +35,12 @@ partial class SyncBinary
 		private Memory<byte> _scannerBuf; // not used by ReaderState; it's passed to _scanner.Read()
 		private ReadingFrame _frame;
 		private InternalList<StackEntry> _stack = new InternalList<StackEntry>(4);
-		public bool IsInsideList;
-		public int Depth { get; internal set; }
+		public bool IsInsideList => _stack.Last.Type != ObjType.Normal;
+		public int Depth => _stack.Count;
 		
 		// This is only created if an object with an ID (marked with '#') is encountered.
 		// It maps previously-encountered object IDs to objects.
-		private Dictionary<int, object>? _objects { get; set; }
+		private Dictionary<long, object>? _objects { get; set; }
 
 		// An error that left the stream unreadable
 		protected Exception? _fatalError;
@@ -49,7 +51,7 @@ partial class SyncBinary
 		{
 			// The buffer being read from (something returned by _scanner if it isn't null)
 			public ReadOnlyMemory<byte> Buf;
-			// The currrent position as an index into Buf.
+			// The current position as an index into Buf.
 			public int Index;
 			// Location within the JSON file of Buf.Span[0] (used for error reporting)
 			public long PositionOfBuf0;
@@ -78,11 +80,18 @@ partial class SyncBinary
 			//public ReadOnlySpan<byte> FromOffset(int offset) => Buf.Slice(Index + offset);
 		}
 
+		protected enum ObjType : byte
+		{
+			Normal = ObjectMode.Normal,
+			List = ObjectMode.List,
+			Tuple = ObjectMode.Tuple
+		}
+
 		protected struct StackEntry
 		{
-			public int Id;
+			public long Id;
 			public bool HasId;
-			public bool IsList;
+			public ObjType Type;
 		}
 
 		#endregion
@@ -109,7 +118,7 @@ partial class SyncBinary
 			if ((uint)(cur.Index + requiredBytes) <= (uint)cur.Buf.Length)
 				return true;
 
-			return ReadMoreBytes(ref cur, (int)requiredBytes);
+			return ReadMoreBytes(ref cur, requiredBytes);
 		}
 
 		// Reads new data into _frame.Buf if possible
@@ -143,66 +152,248 @@ partial class SyncBinary
 
 		#region BeginSubObject/EndSubObject
 
-		internal (bool Begun, int Length, object? Object) BeginSubObject(ObjectMode mode, int tupleLength)
+		internal (bool Begun, int Length, object? Object) BeginSubObject(ObjectMode mode, int listLength)
 		{
-			//if (childKey == null && (mode & (ObjectMode.NotNull | ObjectMode.Deduplicate)) != ObjectMode.NotNull) {
-			//	WriteNull();
-			//	return (false, childKey);
-			//}
+			var cur = _frame.Pointer;
+			ExpectBytes(ref cur, 1);
 
-			//if (listLength < 0 && (mode & ObjectMode.List) != 0) {
-			//	throw new ArgumentException("No valid listLength was given to SyncBinary.Writer.BeginSubObject");
-			//}
+			// Check for null
+			byte firstByte = cur.Byte;
+			if (firstByte == 0xFF)
+			{
+				if ((mode & ObjectMode.NotNull) != 0)
+					ThrowError(cur.Index, "unexpected null value");
 
-			//Span<byte> span;
-			//if ((mode & ObjectMode.Deduplicate) != 0) {
-			//	Debug.Assert(childKey != null);
-			//	long id = _idGen.GetId(childKey, out bool firstTime);
+				cur.Index++;
+				Commit(cur);
+				return (false, 0, null);
+			}
 
-			//	if (firstTime) {
-			//		// Write object ID
-			//		span = GetOutSpan(MaxSizeOfInt64 + 2);
-			//		span[_i++] = (byte)'#';
-			//		Write(id);
-			//	} else {
-			//		// Write backreference to object ID
-			//		span = GetOutSpan(MaxSizeOfInt64 + 1);
-			//		span[_i++] = (byte)'@';
-			//		Write(id);
+			ObjectMode objectKind = mode & (ObjectMode.List | ObjectMode.Tuple);
+			Markers markerMask = (Markers)(1 << (int)objectKind);
 
-			//		return (false, childKey); // Skip object that is already written
-			//	}
-			//} else {
-			//	span = GetOutSpan(1);
-			//}
+			long? refId = null;
+			byte? expectedStartMarker = null;
+			bool isPossibleBackRef = firstByte == (byte)'@';
 
-			//// Take note than an object has been started
-			//_stack.Add(mode);
+			if ((_opt.Markers & markerMask) != 0)
+				expectedStartMarker = objectKind == ObjectMode.Normal
+					? ((Depth & 1) != 0 ? (byte)'{' : (byte)'(')
+					: (byte)'[';
 
-			//// Write start marker (if enabled in _opt) and list length (if applicable)
-			//ObjectMode objectKind = mode & (ObjectMode.List | ObjectMode.Tuple);
-			//if (objectKind == ObjectMode.Normal) {
-			//	if ((_opt.Markers & Markers.ObjectStart) != 0)
-			//		span[_i++] = (Depth & 1) != 0 ? (byte)'(' : (byte)'{';
-			//} else if (objectKind == ObjectMode.List) {
-			//	if ((_opt.Markers & Markers.ListStart) != 0)
-			//		span[_i++] = (byte)'[';
+			// Check for deduplicated objects
+			if (((mode & ObjectMode.Deduplicate) != 0 || expectedStartMarker.HasValue) &&
+				(firstByte == (byte)'#' || isPossibleBackRef))
+			{
+				cur.Index++;
+				refId = DecodeIntOrNull<long>(ref cur) ??
+					throw NewError(cur.Index, "missing reference id for deduplicated object");
 
-			//	Write(listLength);
-			//} else if (objectKind == ObjectMode.Tuple) {
-			//	if ((_opt.Markers & Markers.TupleStart) != 0)
-			//		span[_i++] = (byte)'[';
-			//}
+				// Return back-reference
+				if (isPossibleBackRef)
+				{
+					if (_objects is not null && 
+						_objects.TryGetValue(refId.Value, out var obj)) 
+					{
+						Commit(cur);
+						return (false, 0, obj);
+					}
 
-			//return (true, childKey);
-			throw new NotImplementedException();
+					ThrowError(cur.Index, "no object found for back-reference");
+				}
+			}
+
+			// Check for start marker
+			if (expectedStartMarker.HasValue) 
+			{
+				if (cur.Byte != expectedStartMarker)
+					ThrowError(cur.Index, "invalid start marker");
+				cur.Index++;
+			}
+
+			// Get valid length
+			if (objectKind == ObjectMode.List)
+				listLength = DecodeIntOrNull<int>(ref cur)
+					?? throw NewError(cur.Index, "missing prefixed length for list");
+			else if (objectKind == ObjectMode.Normal)
+				listLength = 1;
+
+			Commit(cur);
+			_stack.Add(new()
+			{
+				Id = refId.GetValueOrDefault(),
+				HasId = refId.HasValue,
+				Type = (ObjType)objectKind,
+			});
+
+			return (true, listLength, null);
+		}
+
+		public void EndSubObject()
+		{
+			var last = _stack.Last;
+			Markers markerMask = (Markers)(16 << (int)last.Type);
+
+			if ((_opt.Markers & markerMask) != 0)
+			{
+				var cur = _frame.Pointer;
+				var endMarker = last.Type == ObjType.Normal
+				   ? ((Depth & 1) != 0 ? (byte)')' : (byte)'}')
+				   : (byte)']';
+
+				if (cur.Byte != endMarker)
+					ThrowError(cur.Index, "invalid end marker");
+
+				cur.Index++;
+				Commit(cur);
+			}
+
+			_stack.Pop();
+		}
+
+		#endregion
+
+		#region String reader
+		internal string? ReadStringOrNull()
+		{
+			var (begun, strLength, obj) = BeginSubObject(ObjectMode.List, -1);
+			if (!begun)
+				return (string?) obj;
+
+			var cur = _frame.Pointer;
+			ExpectBytes(ref cur, strLength);
+
+			var span = cur.Buf.Slice(cur.Index, strLength);
+			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+			var str = Encoding.UTF8.GetString(span.ToArray());
+			#else
+			var str = Encoding.UTF8.GetString(span);
+			#endif
+
+			cur.Index += strLength;
+			Commit(cur);
+			EndSubObject();
+			return str;
+		}
+
+		#endregion
+
+		#region Floating-point reader
+
+		internal float? ReadFloatOrNull()
+		{
+			var cur = _frame.Pointer;
+			ExpectBytes(ref cur, 4);
+
+			var num = LittleEndianBytesToUInt32(cur.Span);
+			cur.Index += 4;
+			Commit(cur);
+
+			if (num == FloatNullBitPattern)
+				return null;
+
+			#if NETSTANDARD2_0 || NET45 || NET46 || NET47 || NET48
+			return BitConverter.ToSingle(BitConverter.GetBytes(num), 0);
+			#else
+			return BitConverter.Int32BitsToSingle((int) num);
+			#endif
+		}
+
+		internal double? ReadDoubleOrNull()
+		{
+			var cur = _frame.Pointer;
+			ExpectBytes(ref cur, 8);
+
+			var num = LittleEndianBytesToUInt64(cur.Span);
+			cur.Index += 8;
+			Commit(cur);
+
+			if (num == DoubleNullBitPattern)
+				return null;
+
+			return BitConverter.Int64BitsToDouble((long) num);
+		}
+
+		internal decimal? ReadDecimalOrNull()
+		{
+			var cur = _frame.Pointer;
+			ExpectBytes(ref cur, 16);
+
+			var i = cur.Index;
+			var the13thByte = cur.Buf[i + 12];
+			var the14thByte = cur.Buf[i + 13];
+			decimal? value = null;
+
+			if (the13thByte != 0xFF && the14thByte != 0xFF)
+			{
+				var bits = new int[4] {
+					unchecked((int) LittleEndianBytesToUInt32(cur.Span)),
+					unchecked((int) LittleEndianBytesToUInt32(cur.Buf.Slice(i + 4))),
+					unchecked((int) LittleEndianBytesToUInt32(cur.Buf.Slice(i + 8))),
+					unchecked((int) LittleEndianBytesToUInt32(cur.Buf.Slice(i + 12)))
+				};
+				value = new decimal(bits);
+			}
+			else if (the13thByte != 0x00 && the14thByte != 0x00)
+				ThrowError(cur.Index, "invalid data for decimal");
+
+			cur.Index += 16;
+			Commit(cur);
+			return value;
+		}
+
+		internal float ReadFloat() 
+			=> ReadFloatOrNull() ?? UnexpectedNull<float>();
+
+		internal double ReadDouble() 
+			=> ReadDoubleOrNull() ?? UnexpectedNull<float>();
+
+		internal decimal ReadDecimal() 
+			=> ReadDecimalOrNull() ?? UnexpectedNull<decimal>();
+
+		static uint LittleEndianBytesToUInt32(ReadOnlySpan<byte> span)
+		{
+			#if NETSTANDARD1_6 || NET45 || NET46 || NET47 || NET48
+			return (uint)(span[0] + (span[1] << 8) + (span[2] << 16) + (span[3] << 24));
+			#else
+			return BinaryPrimitives.ReadUInt32LittleEndian(span);
+			#endif
+		}
+
+		static ulong LittleEndianBytesToUInt64(ReadOnlySpan<byte> span)
+		{
+			#if NETSTANDARD1_6 || NET45 || NET46 || NET47 || NET48
+			return LittleEndianBytesToUInt32(span) + unchecked((ulong)LittleEndianBytesToUInt32(span.Slice(4)) << 32);
+			#else
+			return BinaryPrimitives.ReadUInt64LittleEndian(span);
+			#endif
 		}
 
 		#endregion
 
 		#region Variable-length integer readers
-		// Here we assume the JIT optimizes away tests like `if (typeof(TInt) == typeof(int))`.
 
+		internal BigInteger? ReadBigIntegerOrNull()
+		{
+			var cur = _frame.Pointer;
+			if (cur.Byte == 0xFE)
+			{
+				BigInteger value = DecodeLargestIntFormat(ref cur);
+				Commit(cur);
+				return value;
+			} 
+			else
+			{
+				BigInteger? value = (BigInteger?)DecodeIntOrNull<long>(ref cur);
+				Commit(cur);
+				return value;
+			}
+		}
+
+		internal BigInteger ReadBigInteger()
+			=> ReadBigIntegerOrNull() ?? UnexpectedNull<BigInteger>();
+
+		// Here we assume the JIT optimizes away tests like `if (typeof(TInt) == typeof(int))`.
 		// Reads an integer from the data stream. `TInt` MUST be int, uint, long or ulong.
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal TInt ReadNormalInt<TInt>() where TInt : struct
@@ -228,22 +419,37 @@ partial class SyncBinary
 		internal TShort? ReadSmallIntOrNull<TShort>() where TShort : struct
 		{
 			var cur = _frame.Pointer;
-			int? value = DecodeIntOrNull<int>(ref cur);
-
-			if (value.HasValue) {
-				MaybeThrowIntegerOverflowIf(
-					typeof(TShort) == typeof(short) && (short)value.Value != value ||
-					typeof(TShort) == typeof(ushort) && (ushort)value.Value != value ||
-					typeof(TShort) == typeof(sbyte) && (sbyte)value.Value != value ||
-					typeof(TShort) == typeof(byte) && (byte)value.Value != value,
-					// TODO: check whether using typeof(TShort).Name harms performance
-					typeof(TShort).Name, _frame.Index);
-				Commit(cur);
-				return ShortenInt<TShort>(value.Value);
-			} else {
-				Commit(cur);
-				return null;
+			int value;
+			if (typeof(TShort) == typeof(byte) || typeof(TShort) == typeof(ushort))
+			{
+				var uvalue = DecodeIntOrNull<uint>(ref cur);
+				if (!uvalue.HasValue)
+				{
+					Commit(cur);
+					return null;
+				}
+				value = (int)uvalue.Value;
 			}
+			else
+			{
+				var ivalue = DecodeIntOrNull<int>(ref cur);
+				if (!ivalue.HasValue)
+				{
+					Commit(cur);
+					return null;
+				}
+				value = ivalue.Value;
+			}
+
+			MaybeThrowIntegerOverflowIf(
+				typeof(TShort) == typeof(short) && (short)value != value ||
+				typeof(TShort) == typeof(ushort) && (ushort)value != value ||
+				typeof(TShort) == typeof(sbyte) && (sbyte)value != value ||
+				typeof(TShort) == typeof(byte) && (byte)value != value,
+				typeof(TShort).Name, _frame.Index);
+
+			Commit(cur);
+			return ShortenInt<TShort>(value);
 		}
 
 		// Reads a small integer from the data stream. `TInt` MUST be byte, sbyte, short or ushort.
@@ -251,24 +457,34 @@ partial class SyncBinary
 		internal TShort ReadSmallInt<TShort>() where TShort : struct
 		{
 			var cur = _frame.Pointer;
-			int? value = DecodeIntOrNull<int>(ref cur);
-
-			if (value.HasValue) {
-				MaybeThrowIntegerOverflowIf(
-					typeof(TShort) == typeof(short) && (short)value.Value != value ||
-					typeof(TShort) == typeof(ushort) && (ushort)value.Value != value ||
-					typeof(TShort) == typeof(sbyte) && (sbyte)value.Value != value ||
-					typeof(TShort) == typeof(byte) && (byte)value.Value != value,
-					typeof(TShort).Name, _frame.Index);
-				Commit(cur);
-				return ShortenInt<TShort>(value.Value);
-			} else {
-				Commit(cur);
-				return UnexpectedNull<TShort>();
+			int value;
+			if (typeof(TShort) == typeof(byte) || typeof(TShort) == typeof(ushort))
+			{
+				var uvalue = DecodeIntOrNull<uint>(ref cur);
+				if (!uvalue.HasValue)
+					return UnexpectedNull<TShort>();
+				value = (int)uvalue.Value;
 			}
+			else
+			{
+				var ivalue = DecodeIntOrNull<int>(ref cur);
+				if (!ivalue.HasValue)
+					return UnexpectedNull<TShort>();
+				value = ivalue.Value;
+			}
+
+			MaybeThrowIntegerOverflowIf(
+				typeof(TShort) == typeof(short) && (short)value != value ||
+				typeof(TShort) == typeof(ushort) && (ushort)value != value ||
+				typeof(TShort) == typeof(sbyte) && (sbyte)value != value ||
+				typeof(TShort) == typeof(byte) && (byte)value != value,
+				typeof(TShort).Name, _frame.Index);
+
+			Commit(cur);
+			return ShortenInt<TShort>(value);
 		}
 
-		// Decodes an integer from the data stream. `TInt` MUST be int, uint, long or ulong.
+		// Decodes an integer from the data stream. `TInt` MUST be int, uint, long, ulong or BigInteger.
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		TInt? DecodeIntOrNull<TInt>(ref ReadingPointer cur) where TInt : struct
 		{
@@ -299,7 +515,7 @@ partial class SyncBinary
 					// version of this would require more branches. Any speed advantage of
 					// using 32-bit math would probably be negated by branch misprediction,
 					// even on mobile processors.
-					int sizeOfRest = LeadingOneCount(firstByte);
+					int sizeOfRest = LeadingOneCount(firstByte) + 1;
 					
 					ExpectBytes(ref cur, sizeOfRest);
 
@@ -325,6 +541,7 @@ partial class SyncBinary
 			}
 			else if (firstByte == 0xFF)
 			{
+				cur.Index++;
 				return null;
 			}
 			else
@@ -337,27 +554,7 @@ partial class SyncBinary
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		long DecodeLargeFormatInt64(ref ReadingPointer cur, bool signed)
 		{
-			// Read length prefix
-			Debug.Assert(cur.Byte == 0xFE);
-			cur.Index++;
-
-			if (!AutoRead(ref cur, 2)) {
-				ThrowUnexpectedEOF(_frame.Index);
-			}
-			if (cur.Byte >= 0xFE) {
-				ThrowError(cur.Index, cur.Byte == 0xFF
-					? $"{UnexpectedDataStreamFormat}; number length is null"
-					: $"{UnexpectedDataStreamFormat}; length prefix is itself length-prefixed");
-			}
-
-			int integerSize = (int) DecodeIntOrNull<uint>(ref cur)!.Value;
-			if (integerSize > _opt.MaxNumberSize) {
-				ThrowError(_frame.Pointer.Index, $"{UnexpectedDataStreamFormat}; length prefix is too large: {integerSize}");
-			}
-
-			// Read the integer itself
-			ExpectBytes(ref cur, integerSize);
-
+			int integerSize = ReadIntLengthPrefix(ref cur);
 			if (integerSize > 8) {
 				if (!_opt.Read.SilentlyTruncateLargeNumbers)
 					ExpectZeroes(cur.Index, cur.Slice(0, integerSize - 8));
@@ -377,11 +574,55 @@ partial class SyncBinary
 				return number;
 			}
 		}
-		
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		BigInteger DecodeLargestIntFormat(ref ReadingPointer cur)
+		{
+			int integerSize = ReadIntLengthPrefix(ref cur);
+			var span = cur.Buf.Slice(cur.Index, integerSize);
+			cur.Index += integerSize;
+
+			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+			var bytesArray = span.ToArray();
+			Array.Reverse(bytesArray);
+			return new BigInteger(bytesArray);
+			#else
+			return new BigInteger(span, isUnsigned: false, isBigEndian: true);
+			#endif
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		int ReadIntLengthPrefix(ref ReadingPointer cur)
+		{
+			// Read length prefix
+			Debug.Assert(cur.Byte == 0xFE);
+			cur.Index++;
+
+			if (!AutoRead(ref cur, 2))
+			{
+				ThrowUnexpectedEOF(_frame.Index);
+			}
+			if (cur.Byte >= 0xFE)
+			{
+				ThrowError(cur.Index, cur.Byte == 0xFF
+					? $"{UnexpectedDataStreamFormat}; number length is null"
+					: $"{UnexpectedDataStreamFormat}; length prefix is itself length-prefixed");
+			}
+
+			int integerSize = (int)DecodeIntOrNull<uint>(ref cur)!.Value;
+			if (integerSize > _opt.MaxNumberSize)
+			{
+				ThrowError(_frame.Pointer.Index, $"{UnexpectedDataStreamFormat}; length prefix is too large: {integerSize}");
+			}
+
+			ExpectBytes(ref cur, integerSize);
+			return integerSize;
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static ulong ReadRemainingBytesAsBigEndian(ref ReadingPointer cur, int sizeOfRemaining)
 		{
-			Debug.Assert(sizeOfRemaining <= 8);
+			Debug.Assert(sizeOfRemaining <= 8 && sizeOfRemaining > 0);
 			Debug.Assert(cur.BytesLeft >= sizeOfRemaining);
 
 			if (cur.BytesLeft >= 8)
@@ -416,7 +657,7 @@ partial class SyncBinary
 			}
 		}
 
-		TInt UnexpectedNull<TInt>(bool fatal = false)
+		TInt UnexpectedNull<TInt>(bool fatal = false) where TInt : struct
 		{
 			if (!_opt.Read.ReadNullPrimitivesAsDefault)
 				ThrowError(_frame.Index, $"{UnexpectedDataStreamFormat}; unexpected null", fatal);
@@ -571,10 +812,12 @@ partial class SyncBinary
 			=> ThrowError(index, "Data stream ended unexpectedly");
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
+		[DoesNotReturn]
 		protected void ThrowError(int i, string msg, bool fatal = false)
 			=> throw NewError(i, msg, fatal);
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
+		[DoesNotReturn]
 		protected void ThrowError(long position, string msg, bool fatal = false)
 			=> throw NewError(position, msg, fatal);
 
@@ -596,7 +839,7 @@ partial class SyncBinary
 				msg2 = "{0} (at byte {1} '{2}')".Localized(msg, position, b < 32 || b >= 127 ? "0x" + b.ToString("X") : (char)b);
 			}
 
-			var exc = new FormatException(msg);
+			var exc = new FormatException(msg2);
 			exc.Data["position"] = position;
 			exc.Data["recoverable"] = false;
 
@@ -612,7 +855,7 @@ partial class SyncBinary
 			if (_stack.Count != 0) {
 				var topOfStack = _stack.Last;
 				if (topOfStack.HasId) {
-					_objects ??= new Dictionary<int, object>();
+					_objects ??= new Dictionary<long, object>();
 					_objects[topOfStack.Id] = value;
 				}
 			}

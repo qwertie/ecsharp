@@ -37,12 +37,11 @@ namespace Loyc.SyncLib.Impl
 					if ((_listMode & ObjectMode.Tuple) == ObjectMode.Tuple) {
 						Debug.Assert(_tupleLength > -1);
 						_builder.Alloc(_tupleLength);
-						for (int index = _tupleLength; sync.ReachedEndOfList != true && index >= 0; index--)
+						for (int index = _tupleLength; sync.ReachedEndOfList != true && index > 0; index--)
 							_builder.Add(_syncItem.Sync(ref sync, null, default(T))!);
 					} else {
 						_builder.Alloc(sync.MinimumListLength!.Value);
-						// Edge case, More than 2 billion items?
-						for (int index = listLength; sync.ReachedEndOfList != true && index >= 0; index--)
+						for (int index = listLength; sync.ReachedEndOfList != true && index > 0; index--)
 							_builder.Add(_syncItem.Sync(ref sync, null, default(T))!);
 					}
 					return _builder.List;
