@@ -68,7 +68,7 @@ namespace Loyc.SyncLib.Impl
 	}
 
 	/// <summary>Contains a sync function for saving an <see cref="IScanner{T}"/>.
-	///   Requires and assumes that IsSaving is true in the ISyncManager provided.</summary>
+	///   Requires and assumes that IsWriting is true in the ISyncManager provided.</summary>
 	public struct ScannerSaver<SyncManager, Scanner, T, SyncItem>
 		where SyncManager : ISyncManager
 		where Scanner : IScanner<T>
@@ -85,7 +85,7 @@ namespace Loyc.SyncLib.Impl
 
 		public void Write(ref SyncManager sync, FieldId name, Scanner scanner, object? list, int listCount)
 		{
-			Debug.Assert(!sync.IsReading);
+			Debug.Assert(sync.IsWriting);
 			
 			var (begunList, obj) = sync.BeginSubObject(name, list, _listMode, listCount);
 			if (begunList) {
