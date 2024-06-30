@@ -25,7 +25,8 @@ namespace Loyc.SyncLib
 		/// <summary>A tuple object, in which there are a fixed number of unnamed 
 		/// fields (and the number of fields is known before starting to load the
 		/// tuple). <see cref="ISyncManager.IsInsideList"/> will be true inside 
-		/// this kind of subobject.</summary>
+		/// this kind of subobject. This mode is used together with a constant
+		/// `tupleLength` parameter that is greater than 0.</summary>
 		/// <remarks>Some implementations of <see cref="ISyncManager"/> treat this
 		///   mode identically to <see cref="List"/> mode, but Tuple mode gives 
 		///   permission not to store the list length in the data stream, in order 

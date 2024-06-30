@@ -503,32 +503,32 @@ namespace Loyc.SyncLib
 		// is `SyncMode.Writing`, replacing `Writer` with the name of your writer type:
 		//
 		//  public List? SyncListBoolImpl<Scanner, List, ListBuilder>(
-		//  	FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
+		//  	FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleOrListLength = -1)
 		//  	where Scanner : IScanner<bool>
 		//  	where ListBuilder : IListBuilder<List, bool>
 		//  {
 		//  	var saver = new ScannerSaver<Writer, Scanner, bool, SyncPrimitive<Writer>>(new SyncPrimitive<Writer>(), mode);
-		//  	saver.Write(ref this, name, scanner!, saving, tupleLength);
+		//  	saver.Write(ref this, name, scanner!, saving, tupleOrListLength);
 		//  	return saving;
 		//  }
 		//  
 		//  public List? SyncListByteImpl<Scanner, List, ListBuilder>(
-		//  	FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
+		//  	FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleOrListLength = -1)
 		//  	where Scanner : IScanner<byte>
 		//  	where ListBuilder : IListBuilder<List, byte>
 		//  {
 		//  	var saver = new ScannerSaver<Writer, Scanner, byte, SyncPrimitive<Writer>>(new SyncPrimitive<Writer>(), mode);
-		//  	saver.Write(ref this, name, scanner!, saving, tupleLength);
+		//  	saver.Write(ref this, name, scanner!, saving, tupleOrListLength);
 		//  	return saving;
 		//  }
 		//  
 		//  public List? SyncListCharImpl<Scanner, List, ListBuilder>(
-		//  	FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
+		//  	FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleOrListLength = -1)
 		//  	where Scanner : IScanner<char>
 		//  	where ListBuilder : IListBuilder<List, char>
 		//  {
 		//  	var saver = new ScannerSaver<Writer, Scanner, char, SyncPrimitive<Writer>>(new SyncPrimitive<Writer>(), mode);
-		//  	saver.Write(ref this, name, scanner!, saving, tupleLength);
+		//  	saver.Write(ref this, name, scanner!, saving, tupleOrListLength);
 		//  	return saving;
 		//  }
 		//
@@ -563,7 +563,7 @@ namespace Loyc.SyncLib
 		//  }
 		##unroll($T in (bool, char, byte))
 		{
-			/// <summary>This method is used by Sync() extension methods to read 
+			/// <summary>This method is used by SyncList() extension methods to read 
 			///   or write an array. Users don't need to call it.</summary>
 			/// <param name="list">The list that the caller wants to save.
 			///   This parameter is ignored when not saving.</param>
@@ -573,13 +573,18 @@ namespace Loyc.SyncLib
 			///   ObjectMode.NotNull and not ObjectMode.Deduplicate.</param>
 			/// <param name="builder">A builder used to construct a new list when loading.
 			///   This parameter is ignored when not loading.</param>
+			/// <param name="tupleOrListLength">When `mode` includes `ObjectMode.Tuple`, this
+			///   is a constant specifying the tuple length (which, if <see cref="IsWriting"/>,
+			///   must match the list length). Otherwise, if `IsWriting`, this parameter must 
+			///   specify the number of items that the `scanner` will return (i.e.
+			///   `saving.Count`). Otherwise, this parameter is ignored.</param>
 			/// <returns>Returns default(TList) in Saving, Query and Schema modes. 
 			///   Otherwise, the data that was loaded via the builder is returned.</returns>
 			/// <remarks>If you're trying to implement `ISyncManager`, please see the extra 
 			///   documentation above this method in ISyncManager.ecs in SyncLib's GitHub 
 			///   repo.</remarks>
 			List? $(out NameWithType(SyncList, $T, Impl))<Scanner, List, ListBuilder>
-				(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
+				(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleOrListLength = -1)
 				where Scanner : IScanner<$T>
 				where ListBuilder : IListBuilder<List, $T>;
 		}
@@ -752,16 +757,22 @@ namespace Loyc.SyncLib
 
 		##unroll($T in standardTypes)
 		{
+			// Generate a call to SyncListByteImpl, SyncListBoolImpl or SyncListCharImpl if 
+			// applicable; otherwise sync using SyncList<SM, $T, SyncPrimitive<SM>>.
 			static if ($T `staticMatches` byte || $T `staticMatches` char || $T `staticMatches` bool) {
 
 				[@`%newline`, @`%SLComment`(concat(NameWithType(" SyncList methods for ", $T)))]
 				public static $T[]? SyncList<SyncManager>(this SyncManager sync,
-					FieldId name, $T[]? savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
+					FieldId name, $T[]? savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1)
 					where SyncManager : ISyncManager
 				{
-					var scanner = new InternalList.Scanner<$T>(savable.AsMemory());
+					InternalList.Scanner<$T> scanner = default;
+					if (savable != null) {
+						scanner = new InternalList.Scanner<$T>(savable.AsMemory());
+						tupleOrListLength = savable.Length;
+					}
 					return sync.$(out NameWithType(SyncList, $T, Impl))<InternalList.Scanner<$T>, $T[], ArrayBuilder<$T>>(
-						name, scanner, savable, new ArrayBuilder<$T>(), listMode, tupleLength);
+						name, scanner, savable, new ArrayBuilder<$T>(), listMode, tupleOrListLength);
 				}
 				##unroll(($List, $SyncList) in (
 					(#type<List<$T>? >, SyncList),
@@ -771,46 +782,54 @@ namespace Loyc.SyncLib
 					(#type<IReadOnlyCollection<$T>? >, SyncColl)
 				)) {
 					public static $List SyncList<SyncManager>(this SyncManager sync,
-						FieldId name, $List savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
+						FieldId name, $List savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1)
 						where SyncManager : ISyncManager
 					{
 						var scanner = default(ScannableEnumerable<$T>.Scanner<IEnumerator<$T>>);
-						if (savable != null && sync.IsWriting)
+						if (savable != null && sync.IsWriting) {
 							scanner = new ScannableEnumerable<$T>.Scanner<IEnumerator<$T>>(savable.GetEnumerator());
+							tupleOrListLength = savable.Count;
+						}
 						return sync.$(out NameWithType(SyncList, $T, Impl))<ScannableEnumerable<$T>.Scanner<IEnumerator<$T>>, $List, ListBuilder<$T>>(
-							name, scanner, savable, new ListBuilder<$T>(), listMode, tupleLength);
+							name, scanner, savable, new ListBuilder<$T>(), listMode, tupleOrListLength);
 					}
 				}
 				public static Memory<$T> SyncList<SyncManager>(this SyncManager sync,
-					FieldId name, Memory<$T> savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
+					FieldId name, Memory<$T> savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1)
 					where SyncManager : ISyncManager
 				{
 					if ((listMode & ObjectMode.Deduplicate) != 0)
 						throw new ArgumentException("ObjectMode.Deduplicate is incompatible with Memory<T>");
+					if (tupleOrListLength <= -1)
+						tupleOrListLength = savable.Length;
 					var scanner = new InternalList.Scanner<$T>(savable);
 					return sync.$(out NameWithType(SyncList, $T, Impl))<InternalList.Scanner<$T>, Memory<$T>, MemoryBuilder<$T>>(
-						name, scanner, null, new MemoryBuilder<$T>(), listMode | ObjectMode.NotNull, tupleLength);
+						name, scanner, null, new MemoryBuilder<$T>(), listMode | ObjectMode.NotNull, tupleOrListLength);
 				}
 				public static ReadOnlyMemory<$T> SyncList<SyncManager>(this SyncManager sync,
-					FieldId name, ReadOnlyMemory<$T> savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
+					FieldId name, ReadOnlyMemory<$T> savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1)
 					where SyncManager : ISyncManager
 				{
 					if ((listMode & ObjectMode.Deduplicate) != 0)
 						throw new ArgumentException("ObjectMode.Deduplicate is incompatible with ReadOnlyMemory<T>");
+					if (tupleOrListLength <= -1)
+						tupleOrListLength = savable.Length;
 					var scanner = new InternalList.Scanner<$T>(savable);
 					return sync.$(out NameWithType(SyncList, $T, Impl))<InternalList.Scanner<$T>, ReadOnlyMemory<$T>, MemoryBuilder<$T>>(
-						name, scanner, null, new MemoryBuilder<$T>(), listMode | ObjectMode.NotNull, tupleLength);
+						name, scanner, null, new MemoryBuilder<$T>(), listMode | ObjectMode.NotNull, tupleOrListLength);
 				}
 				public static IListSource<$T> SyncList<SyncManager>(this SyncManager sync,
-					FieldId name, IListSource<$T> savable, ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
+					FieldId name, IListSource<$T> savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1)
 					where SyncManager : ISyncManager
 				{
 					var scanner = default(ScannableEnumerable<$T>.Scanner<IEnumerator<$T>>);
-					if (savable != null && sync.IsWriting)
+					if (savable != null && sync.IsWriting) {
 						scanner = new ScannableEnumerable<$T>.Scanner<IEnumerator<$T>>(savable.GetEnumerator());
+						tupleOrListLength = savable.Count;
+					}
 					var builder = new CollectionBuilder<DList<$T>, $T>(minLen => minLen > 0 ? new DList<$T>(minLen) : new DList<$T>());
 					return sync.$(out NameWithType(SyncList, $T, Impl))<ScannableEnumerable<$T>.Scanner<IEnumerator<$T>>, IListSource<$T>, CollectionBuilder<DList<$T>, $T>>(
-						name, scanner, savable, builder, listMode, tupleLength);
+						name, scanner, savable, builder, listMode, tupleOrListLength);
 				}
 			} else {
 				[@`%newline`, @`%SLComment`(concat(NameWithType(" SyncList methods for ", $T)))] #rawText("");
@@ -824,9 +843,10 @@ namespace Loyc.SyncLib
 				)) {
 					public static $List SyncList<SM>(this SM sync,
 						FieldId name, $List savable,
-						ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
+						ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1)
 							where SM : ISyncManager
-						=> new SyncList<SM, $T, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleLength).Sync(ref sync, name, savable);
+						=> new SyncList<SM, $T, SyncPrimitive<SM>>(new SyncPrimitive<SM>(), listMode, tupleOrListLength)
+						    .Sync(ref sync, name, savable);
 				}
 			}
 		}
