@@ -1,7 +1,7 @@
 version: 30.1.{build}
 
 # Try to fix "The project file ... is not supported by MSBuild and cannot be built."
-image: Visual Studio 2019
+image: Visual Studio 2022
 
 before_build:
     # enable RDP (session ends when build ends!)
@@ -14,7 +14,7 @@ before_build:
 build_script:
     # First, set some environment variables.
     # SEMVER is set manually. Not sure how this can be automated.
-    - set SEMVER=30.1.1
+    - set SEMVER=30.1.2
     - echo %APPVEYOR_REPO_TAG%
     # Build packages as SEMVER-ci{build}
     - ps: if ($env:APPVEYOR_REPO_TAG -eq $True) { $env:PKG_VERSION = $env:SEMVER; } else { $env:PKG_VERSION = "$($env:SEMVER)-ci$($env:APPVEYOR_BUILD_NUMBER)"; }

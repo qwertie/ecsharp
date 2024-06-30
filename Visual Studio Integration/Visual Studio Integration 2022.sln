@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26430.14
+# Visual Studio Version 17
+VisualStudioVersion = 17.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeMP_VisualStudio", "LoycForVS2017\LeMP_VisualStudio.csproj", "{FA6768BC-5ECA-4D36-95E5-EF8F07A4C37F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeMP_VisualStudio", "LoycForVS2022\LeMP_VisualStudio.csproj", "{FA6768BC-5ECA-4D36-95E5-EF8F07A4C37F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
