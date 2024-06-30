@@ -32,15 +32,21 @@ namespace Loyc.SyncLib.Impl
 		public T? Sync(ref SyncManager sync, FieldId propName, T? item)
 		{
 			bool avoidBoxing = (_mode & (ObjectMode.Deduplicate | ObjectMode.NotNull)) == ObjectMode.NotNull;
-			var (begun, existingItem) = sync.BeginSubObject(propName, avoidBoxing ? null : item, _mode);
+			var (begun, length, existingItem) = sync.BeginSubObject(propName, avoidBoxing ? null : item, _mode);
 			if (begun) {
 				try {
 					var result = _syncObj.Sync(sync, item);
 					if (!avoidBoxing)
 						sync.CurrentObject = result!;
-					return result;
-				} finally {
 					sync.EndSubObject();
+					return result;
+				} catch(Exception e) {
+					try {
+						sync.EndSubObject();
+					} catch {
+						// This exception is probably caused by the previous failure, so ignore it.
+					}
+					throw;
 				}
 			} else {
 				if (avoidBoxing) {
@@ -63,7 +69,7 @@ namespace Loyc.SyncLib.Impl
 		public void Write(ref SyncManager sync, FieldId propName, T? item)
 		{
 			bool avoidBoxing = (_mode & (ObjectMode.Deduplicate | ObjectMode.NotNull)) == ObjectMode.NotNull;
-			var (begun, existingItem) = sync.BeginSubObject(propName, avoidBoxing ? null : item, _mode);
+			var (begun, length, existingItem) = sync.BeginSubObject(propName, avoidBoxing ? null : item, _mode);
 			if (begun) {
 				try {
 					_syncObj.Sync(sync, item);

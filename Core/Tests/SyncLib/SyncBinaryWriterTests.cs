@@ -22,7 +22,7 @@ namespace Loyc.SyncLib.Tests;
 [TestFixture]
 public class SyncBinaryWriterTests : TestHelpers
 {
-	public List<byte> GetExpectedBinaryEncodingForStandardFieldsWithSeed110(SyncBinary.Markers markers)
+	public static List<byte> GetExpectedBinaryEncodingForStandardFieldsWithSeed110(SyncBinary.Markers markers)
 	{
 		var standardFieldsBinary = new List<byte> {
 			// object start marker

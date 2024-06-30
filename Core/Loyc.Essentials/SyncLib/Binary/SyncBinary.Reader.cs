@@ -67,15 +67,14 @@ partial class SyncBinary
 
 		public bool IsInsideList => _s.IsInsideList;
 
-		public bool? ReachedEndOfList => null;// _s.IsInsideList ? _s.ReachedEndOfList : null;
-
+		public bool? ReachedEndOfList => null;
 		public int? MinimumListLength => 0;
 
 		public int Depth => _s.Depth;
 
 		public object CurrentObject { set => _s.SetCurrentObject(value); }
 
-		public bool SupportsNextField => true; // TODO: support it!
+		public bool SupportsNextField => false;
 
 		public FieldId NextField => FieldId.Missing;
 
@@ -99,19 +98,23 @@ partial class SyncBinary
 
 		public ulong Sync(FieldId name, ulong savable) => _s.ReadNormalInt<ulong>();
 
-		public float Sync(FieldId name, float savable) => throw new NotImplementedException();
+		public float Sync(FieldId name, float savable) => _s.ReadFloat();
 
-		public double Sync(FieldId name, double savable) => throw new NotImplementedException();
+		public double Sync(FieldId name, double savable) => _s.ReadDouble();
 
-		public decimal Sync(FieldId name, decimal savable) => throw new NotImplementedException();
+		public decimal Sync(FieldId name, decimal savable) => _s.ReadDecimal();
 
-		public BigInteger Sync(FieldId name, BigInteger savable) => throw new NotImplementedException();
+		public BigInteger Sync(FieldId name, BigInteger savable) => _s.ReadBigInteger();
 
 		public char Sync(FieldId name, char savable) => (char) _s.ReadSmallInt<ushort>();
 
-		public string Sync(FieldId name, string? savable, ObjectMode mode = ObjectMode.Normal) => throw new NotImplementedException();
+		public string? Sync(FieldId name, string? savable, ObjectMode mode = ObjectMode.Normal) => _s.ReadStringOrNull();
 
-		public bool? Sync(FieldId name, bool? savable) => throw new NotImplementedException();
+		public bool? Sync(FieldId name, bool? savable) 
+		{
+			var value = _s.ReadNormalIntOrNull<int>();
+			return value.HasValue ? value.Value != 0 : null;
+		}
 
 		public sbyte? Sync(FieldId name, sbyte? savable) => _s.ReadSmallIntOrNull<sbyte>();
 
@@ -129,15 +132,15 @@ partial class SyncBinary
 
 		public ulong? Sync(FieldId name, ulong? savable) => _s.ReadNormalIntOrNull<ulong>();
 
-		public float? Sync(FieldId name, float? savable) => throw new NotImplementedException();
+		public float? Sync(FieldId name, float? savable) => _s.ReadFloatOrNull();
 
-		public double? Sync(FieldId name, double? savable) => throw new NotImplementedException();
+		public double? Sync(FieldId name, double? savable) => _s.ReadDoubleOrNull();
 
-		public decimal? Sync(FieldId name, decimal? savable) => throw new NotImplementedException();
+		public decimal? Sync(FieldId name, decimal? savable) => _s.ReadDecimalOrNull();
 
-		public BigInteger? Sync(FieldId name, BigInteger? savable) => throw new NotImplementedException();
+		public BigInteger? Sync(FieldId name, BigInteger? savable) => _s.ReadBigIntegerOrNull();
 
-		public char? Sync(FieldId name, char? savable) => (char) _s.ReadSmallIntOrNull<ushort>();
+		public char? Sync(FieldId name, char? savable) => (char?) _s.ReadSmallIntOrNull<ushort>();
 
 		public int Sync(FieldId name, int savable, int bits, bool signed = true)
 			=> throw new NotImplementedException();
@@ -175,15 +178,10 @@ partial class SyncBinary
 			return loader.Sync(ref this, name, saving);
 		}
 
-		public (bool Begun, object Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1)
-		{
-			return _s.BeginSubObject(mode, listLength);
-		}
+		public (bool Begun, int Length, object? Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1) =>
+			_s.BeginSubObject(mode, listLength);
 
-		public void EndSubObject()
-		{
-			throw new NotImplementedException();
-		}
+		public void EndSubObject() => _s.EndSubObject();
 
 		public string SyncTypeTag(string? tag) => throw new NotImplementedException();
 	}

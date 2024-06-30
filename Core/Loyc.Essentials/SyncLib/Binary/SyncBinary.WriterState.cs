@@ -78,7 +78,7 @@ partial class SyncBinary
 
 		public void WriteNullable(bool? value)
 		{
-			GetOutSpan(1)[_i++] = (byte)(value == null ? 255 : value.Value ? 1 : 0);
+			GetOutSpan(1)[_i++] = (byte)(!value.HasValue ? 255 : value.Value ? 1 : 0);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -158,7 +158,7 @@ partial class SyncBinary
 		public void WriteNullable(float? num)
 		{
 			if (num == null)
-				WriteLittleEndianBytes(FloatNullBitPattern, 4, GetOutSpan(4));
+				WriteLittleEndianUInt32(FloatNullBitPattern, GetOutSpan(4));
 			else
 				Write(num.Value);
 		}
@@ -255,11 +255,11 @@ partial class SyncBinary
 		public void Write(long num)
 		{
 			// Fast path for small non-negative numbers
-			if ((uint)num < 64)
+			if ((ulong)num < 64)
 				GetOutSpan(1)[_i++] = (byte)num;
 			else
 				// -4 => 3 bits, -5 => 4 bits
-				WriteSignedOrUnsigned((uint)num, G.PositionOfMostSignificantOne((ulong)(num < 0 ? ~num : num)) + 1);
+				WriteSignedOrUnsigned((ulong)num, G.PositionOfMostSignificantOne((ulong)(num < 0 ? ~num : num)) + 1);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -372,24 +372,38 @@ partial class SyncBinary
 				#else
 				G.Verify(num.TryWriteBytes(span, out int bytesWritten, false, isBigEndian: true));
 				#endif
+				_i += numNumberBytes;
 			}
+		}
+		
+		public void WriteLittleEndianUInt32(uint num, Span<byte> outBuf)
+		{
+			#if NETSTANDARD1_6 || NET45 || NET46 || NET47 || NET48
+			outBuf[_i] = (byte)num;
+			outBuf[_i + 1] = (byte)(num >> 8);
+			outBuf[_i + 2] = (byte)(num >> 16);
+			outBuf[_i + 3] = (byte)(num >> 24);
+			#else
+			BinaryPrimitives.WriteUInt32LittleEndian(outBuf.Slice(_i), num);
+			#endif
+			_i += 4;
 		}
 
-		public void WriteLittleEndianBytes(uint num, int numBytes = 4) 
-			=> WriteLittleEndianBytes(num, numBytes, GetOutSpan(numBytes));
-		public uint WriteLittleEndianBytes(uint num, int numBytes, Span<byte> outBuf)
+		public void WriteLittleEndianUInt64(ulong num, Span<byte> outBuf)
 		{
-			for (; numBytes > 0; numBytes--) {
-				outBuf[_i++] = (byte)num;
-				num >>= 8;
-			}
-			return num;
+			#if NETSTANDARD1_6 || NET45 || NET46 || NET47 || NET48
+			WriteLittleEndianUInt32((uint) num, outBuf);
+			WriteLittleEndianUInt32((uint)(num >> 32), outBuf);
+			#else
+			BinaryPrimitives.WriteUInt64LittleEndian(outBuf.Slice(_i), num);
+			_i += 8;
+			#endif
 		}
-		public void WriteLittleEndianBytes(ulong num, int numBytes = 8)
-			=> WriteLittleEndianBytes(num, numBytes, GetOutSpan(numBytes));
+
 		public ulong WriteLittleEndianBytes(ulong num, int numBytes, Span<byte> outBuf)
 		{
-			for (; numBytes > 0; numBytes--) {
+			for (; numBytes > 0; numBytes--)
+			{
 				outBuf[_i++] = (byte)num;
 				num >>= 8;
 			}
@@ -441,7 +455,7 @@ partial class SyncBinary
 			if (IsReversedEndian)
 				bytes = BinaryPrimitives.ReverseEndianness(bytes);
 			#endif
-			WriteLittleEndianBytes(bytes);
+			WriteLittleEndianUInt64(bytes, GetOutSpan(8));
 		}
 
 		public void Write(float num)
@@ -454,7 +468,7 @@ partial class SyncBinary
 			if (IsReversedEndian)
 				bytes = BinaryPrimitives.ReverseEndianness(bytes);
 			#endif
-			WriteLittleEndianBytes(bytes);
+			WriteLittleEndianUInt32(bytes, GetOutSpan(4));
 		}
 
 		public void Write(decimal num)
@@ -464,10 +478,10 @@ partial class SyncBinary
 			//
 			int[] arrayOf4 = decimal.GetBits(num); // little-endian on x64
 			Span<byte> outBuf = GetOutSpan(16);
-			WriteLittleEndianBytes(unchecked((uint)arrayOf4[0]), 4, outBuf);
-			WriteLittleEndianBytes(unchecked((uint)arrayOf4[1]), 4, outBuf);
-			WriteLittleEndianBytes(unchecked((uint)arrayOf4[2]), 4, outBuf);
-			WriteLittleEndianBytes(unchecked((uint)arrayOf4[3]), 4, outBuf);
+			WriteLittleEndianUInt32(unchecked((uint)arrayOf4[0]), outBuf);
+			WriteLittleEndianUInt32(unchecked((uint)arrayOf4[1]), outBuf);
+			WriteLittleEndianUInt32(unchecked((uint)arrayOf4[2]), outBuf);
+			WriteLittleEndianUInt32(unchecked((uint)arrayOf4[3]), outBuf);
 		}
 
 		public void Write(string? str, ObjectMode mode = ObjectMode.Normal)
@@ -532,7 +546,7 @@ partial class SyncBinary
 			int minNumBytesLeft = (int)bitfieldSize >> 3;
 			var span = GetOutSpan(minNumBytesLeft + 1);
 			if (bitfieldSize >= 8) {
-				value = WriteLittleEndianBytes(value, minNumBytesLeft, span);
+				value = (uint) WriteLittleEndianBytes(value, minNumBytesLeft, span);
 				bitfieldSize &= 7;
 			}
 
@@ -622,11 +636,11 @@ partial class SyncBinary
 			Write(tag);
 		}
 
-		public (bool Begun, object? Object) BeginSubObject(object? childKey, ObjectMode mode, int listLength)
+		public (bool Begun, int Length, object? Object) BeginSubObject(object? childKey, ObjectMode mode, int listLength)
 		{
 			if (childKey == null && (mode & (ObjectMode.NotNull | ObjectMode.Deduplicate)) != ObjectMode.NotNull) {
 				WriteNull();
-				return (false, childKey);
+				return (false, 0, childKey);
 			}
 
 			if (listLength < 0 && (mode & ObjectMode.List) != 0) {
@@ -650,7 +664,7 @@ partial class SyncBinary
 					span[_i++] = (byte)'@';
 					Write(id);
 
-					return (false, childKey); // Skip object that is already written
+					return (false, 0, childKey); // Skip object that is already written
 				}
 			}
 			else
@@ -658,7 +672,7 @@ partial class SyncBinary
 				span = GetOutSpan(1);
 			}
 
-			// Take note than an object has been started
+			// Take note that an object has been started
 			_stack.Add(mode);
 
 			// Write start marker (if enabled in _opt) and list length (if applicable)
@@ -667,8 +681,11 @@ partial class SyncBinary
 			{
 				if ((_opt.Markers & Markers.ObjectStart) != 0)
 					span[_i++] = (Depth & 1) != 0 ? (byte)'(' : (byte)'{';
+
+				return (true, 1, childKey);
 			}
-			else if (objectKind == ObjectMode.List)
+
+			if (objectKind == ObjectMode.List)
 			{
 				if ((_opt.Markers & Markers.ListStart) != 0)
 					span[_i++] = (byte)'[';
@@ -681,18 +698,14 @@ partial class SyncBinary
 					span[_i++] = (byte)'[';
 			}
 
-			return (true, childKey);
+			return (true, listLength, childKey);
 		}
 
 		public void EndSubObject()
 		{
 			// Write end marker (if enabled in the Options)
 			ObjectMode objectKind = _stack.Last & (ObjectMode.List | ObjectMode.Tuple);
-			Markers markerMask = objectKind switch {
-				ObjectMode.List => Markers.ListEnd,
-				ObjectMode.Tuple => Markers.TupleEnd,
-				_ => Markers.ObjectEnd,
-			};
+			Markers markerMask = (Markers)(16 << (int) objectKind);
 			if ((_opt.Markers & markerMask) != 0) {
 				var span = GetOutSpan(1);
 				span[_i++] = objectKind != ObjectMode.Normal

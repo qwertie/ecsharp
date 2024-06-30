@@ -372,7 +372,7 @@ namespace Loyc.SyncLib.Tests
 		public void VerifiesEof()
 		{
 			var sm = SyncJson.NewReader("{}, 456")!;
-			AreEqual((true, (object?) null), sm.BeginSubObject(null, null, ObjectMode.NotNull));
+			AreEqual((true, 1, (object?) null), sm.BeginSubObject(null, null, ObjectMode.NotNull));
 			var error = ThrowsAny<FormatException>(() => sm.EndSubObject());
 			IsTrue(error.Message.Contains("Expected EOF"));
 		}

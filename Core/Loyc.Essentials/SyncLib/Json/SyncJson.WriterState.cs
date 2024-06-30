@@ -55,11 +55,11 @@ namespace Loyc.SyncLib
 				}
 			}
 
-			public (bool Begun, object? Object) BeginSubObject(string? name, object? childKey, ObjectMode mode)
+			public (bool Begun, int Length, object? Object) BeginSubObject(string? name, object? childKey, ObjectMode mode)
 			{
 				if (childKey == null && MayBeNullable(mode)) {
 					WriteNull(name);
-					return (false, childKey);
+					return (false, 0, childKey);
 				}
 
 				var buf = BeginProp(name, 25); // Reserve extra bytes for refs: {"$ref":"12345678901"}
@@ -68,7 +68,7 @@ namespace Loyc.SyncLib
 					long id = _idGen.GetId(childKey, out bool firstTime);
 					if (!firstTime) {
 						WriteBackReference(buf, id);
-						return (false, childKey);
+						return (false, 0, childKey);
 					} else {
 						OpenBraceOrBrack(mode & ~ObjectMode.List);
 						if (_opt.NewtonsoftCompatibility)
@@ -80,7 +80,7 @@ namespace Loyc.SyncLib
 							BeginProp(valuesProp, 10);
 							OpenBraceOrBrack(mode);
 						}
-						return (true, childKey);
+						return (true, int.MaxValue, childKey);
 					}
 				} else {
 					OpenBraceOrBrack(mode);
@@ -88,7 +88,7 @@ namespace Loyc.SyncLib
 
 				if ((mode & ObjectMode.Compact) != 0)
 					_compactMode++;
-				return (true, childKey);
+				return (true, int.MaxValue, childKey);
 			}
 
 			private void WriteBackReference(Span<byte> buf, long id)
@@ -251,12 +251,30 @@ namespace Loyc.SyncLib
 			}
 			public float WriteProp(string? propName, float num)
 			{
-				WriteLiteralProp(propName, num.ToString(CultureInfo.InvariantCulture));
+				var str = num.ToString("R", CultureInfo.InvariantCulture);
+				#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+				if (float.IsNaN(num) || float.IsInfinity(num))
+					WriteProp(propName, str);
+				#else
+				if (!float.IsFinite(num))
+					WriteProp(propName, str);
+				#endif
+				else 
+					WriteLiteralProp(propName, str);
 				return num;
 			}
 			public double WriteProp(string? propName, double num)
 			{
-				WriteLiteralProp(propName, num.ToString(CultureInfo.InvariantCulture));
+				var str = num.ToString("R", CultureInfo.InvariantCulture);
+				#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+				if (double.IsNaN(num) || double.IsInfinity(num))
+					WriteProp(propName, str);
+				#else
+				if (!double.IsFinite(num))
+					WriteProp(propName, str);
+				#endif
+				else
+					WriteLiteralProp(propName, str);
 				return num;
 			}
 			public decimal WriteProp(string? propName, decimal num)

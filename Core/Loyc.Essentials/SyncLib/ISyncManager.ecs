@@ -154,14 +154,22 @@ namespace Loyc.SyncLib
 		/// </summary>
 		bool NeedsIntegerIds { get; }
 
-		/// <summary>If a list is being scanned and the current object can detect
-		/// the end of the list (e.g. the mode is <see cref="SyncMode.Loading"/>),
-		/// this property returns a boolean value: true at the end of the list and
-		/// false otherwise. In all other cases, null is returned.</summary>
+		/// <summary>
+		///   This is a low-level property that most code should not call directly.
+		///   If a list is being scanned and the current object can detect
+		///   the end of the list (e.g. the mode is <see cref="SyncMode.Loading"/> and
+		///   BeginSubObject returned a length of int.MaxValue), this property returns 
+		///   a boolean value: true at the end of the list and false otherwise. In all 
+		///   other cases, null is returned.</summary>
 		/// <remarks>
 		/// <ul>
-		/// <li>In Loading mode, the manager knows when the end of the list is reached,
-		///     so true or false is returned if a list is being scanned.</li>
+		/// <li>In Loading mode, the manager may detect when the end of the list is 
+		///     reached (e.g. in JSON it looks for a closing brace '}'), so true or 
+		///     false is returned if a list is being scanned. However, in certain data
+		///     formats (e.g. SyncBinary) the data stream uses a length prefix at the 
+		///     beginning of the list and doesn't contain a clear indication when the 
+		///     list ends, so BeginSubObject returns the Length and this property 
+		///     returns null.</li>
 		/// <li>In Saving mode, the caller knows the list length but the manager does 
 		///     not, so this property always returns null.</li>
 		/// <li>In Schema mode, no list actually exists, but the manager typically 
@@ -581,7 +589,7 @@ namespace Loyc.SyncLib
 				where ListBuilder : IListBuilder<List, $T>;
 		}
 
-		/// <summary>Sets the "current object" reference. This method must be called 
+		/// <summary>Sets the "current object" reference. This property must be set
 		///   when deserializing object graphs with cycles (see remarks).</summary>
 		/// <remarks>
 		///   To understand why this property is needed, consider a Person class that 
@@ -634,7 +642,7 @@ namespace Loyc.SyncLib
 		object CurrentObject { set; }
 
 		/// <summary>Attempts to begin reading or writing a sub-object. This is a
-		///   low-level method; end-users normally should not call it. Be sure to 
+		///   low-level method; end-users normally should not call it! Be sure to 
 		///   fully read the documentation before use.</summary>
 		/// <param name="name">The name of the property being loaded or saved in
 		///   the current object.</param>
@@ -657,11 +665,22 @@ namespace Loyc.SyncLib
 		/// <returns>
 		///   The boolean value is true if the request to read/write is approved.
 		///   In this case you are expected to write the contents of the object and 
-		///   then call <see cref="FinishSubObject()"/>. If the boolean is false, 
-		///   the request was declined and you must not write the fields of the 
-		///   sub-object, and you must not call <see cref="FinishSubObject()"/>.
+		///   then call <see cref="EndSubObject()"/>. If the boolean is false, 
+		///   the request was declined and you MUST NOT write the fields of the 
+		///   sub-object, and you MUST NOT call <see cref="EndSubObject()"/>.
 		///   <para/>
-		///   The second return value is a reference to a deduplicated object,
+		///   The second return value, the Length, is relevant only when reading,
+		///   and only when Begun is true. If Begun is false, you should always
+		///   ignore the value. When reading a normal object, Length will be 1.
+		///   When reading a tuple, Length will be equal to the listLength parameter 
+		///   that the caller provided. When reading a list, the return value is 
+		///   either 
+		///   (1) int.MaxValue, if the list length is unknown when the process of 
+		///       reading the list begins (e.g. JSON).
+		///   (2) some other value indicating the list length that was read from 
+		///       the input stream (e.g. SyncBinary).
+		///   <para/>
+		///   The third return value is a reference to a deduplicated object,
 		///   a reference to childKey, or null, depending on the situation (see
 		///   remarks).
 		///   <para/>
@@ -712,7 +731,7 @@ namespace Loyc.SyncLib
 		///   In Saving mode, and in every case except 4, the returned Object is 
 		///   the same as childKey.
 		/// </remarks>
-		(bool Begun, object? Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1);
+		(bool Begun, int Length, object? Object) BeginSubObject(FieldId name, object? childKey, ObjectMode mode, int listLength = -1);
 
 		/// <summary>
 		/// If you called <see cref="BeginSubObject"/> and it returned true, you 

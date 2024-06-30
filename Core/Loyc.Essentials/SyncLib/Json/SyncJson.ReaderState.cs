@@ -167,11 +167,11 @@ namespace Loyc.SyncLib
 				tos.SkippedProps[propName] = (skippedValue, position);
 			}
 
-			internal (bool Begun, object? Object) BeginSubObject(string? name, ObjectMode mode)
+			internal (bool Begun, int Length, object? Object) BeginSubObject(string? name, ObjectMode mode)
 			{
 				if (!FindProp(name, out (JsonValue value, long position) skippedObject)) {
 					if (_optRead.AllowMissingFields)
-						return (false, null); 
+						return (false, 0, null); 
 					ThrowError(CurPointer.Index, "Property \"{0}\" was missing".Localized(name), fatal: false);
 				}
 
@@ -196,7 +196,7 @@ namespace Loyc.SyncLib
 					if (type == JsonType.List) {
 						if (expectList) {
 							Commit(ref cur);
-							return (true, null); // Success! List opened.
+							return (true, int.MaxValue, null); // Success! List opened.
 						} else {
 							// Unexpected list!
 							// TryToBeginObject() did NOT enter the list, so we need not
@@ -228,7 +228,7 @@ namespace Loyc.SyncLib
 							// Now try to get the already-read deduplicated object.
 							if (_objects != null && _objects.TryGetValue(value, out object? existing)) {
 								// Good! Return it.
-								return (false, existing);
+								return (false, 0, existing);
 							} else {
 								// The object wasn't read earlier. Was it skipped?
 								if (_skippedObjects != null && _skippedObjects.TryGetValue(value, out skippedObject) 
@@ -273,7 +273,7 @@ namespace Loyc.SyncLib
 							// to `items[0]`, so when "items" is read later, the object with ID 1
 							// has already been loaded and is normally stored in the _objects table.
 							EndSubObjectAndCommit(ref cur);
-							return (false, existing);
+							return (false, 0, existing);
 						}
 						
 						if (idValue.Type == JsonType.Invalid)
@@ -291,7 +291,7 @@ namespace Loyc.SyncLib
 							if (expectList) {
 								if (keySpan.Length == 2 || AreEqual(keySpan, _values)) {
 									if (TryOpenListValuesAndCommit(ref cur))
-										return (true, null);
+										return (true, int.MaxValue, null);
 								}
 								// No list found. An error will be thrown below.
 							}
@@ -314,7 +314,7 @@ namespace Loyc.SyncLib
 						ThrowError(skippedObject.position, "Expected list, got object", fatal: false);
 					} else  {
 						Commit(ref cur);
-						return (true, null); // success: object opened
+						return (true, 1, null); // success: object opened
 					}
 				}
 
@@ -325,7 +325,7 @@ namespace Loyc.SyncLib
 				{
 					if ((mode & ObjectMode.NotNull) != 0)
 						ThrowError(cur.Index, "\"{0}\" is not nullable, but was null".Localized(name));
-					return (false, null);
+					return (false, 0, null);
 				}
 
 				throw NewError(cur.Index, "\"{0}\" was expected to be a {1}, but it was a {2}"
@@ -604,7 +604,7 @@ namespace Loyc.SyncLib
 					case JsonType.SimpleString:
 					case JsonType.String:
 						var str = DecodeString(v.value);
-						return double.Parse(str, NumberStyles.Float);
+						return double.Parse(str, NumberStyles.Float, CultureInfo.InvariantCulture);
 
 					case JsonType.PlainInteger:
 						return (double) DecodeInteger(v.value.Text.Span);

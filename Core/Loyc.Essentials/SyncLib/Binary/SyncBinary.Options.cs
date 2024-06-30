@@ -237,17 +237,17 @@ partial class SyncBinary
 	public enum Markers
 	{
 		None = 0,
-		ObjectStart = 1,
-		ObjectEnd = 2,
+		ObjectStart = 1 << ObjectMode.Normal,
+		ObjectEnd = 16 << ObjectMode.Normal,
 		Objects = ObjectStart | ObjectEnd,
-		ListStart = 4,
-		ListEnd = 8,
+		ListStart = 1 << ObjectMode.List,
+		ListEnd = 16 << ObjectMode.List,
 		Lists = ListStart | ListEnd,
-		TupleStart = 16,
-		TupleEnd = 32,
+		TupleStart = 1 << ObjectMode.Tuple,
+		TupleEnd = 16 << ObjectMode.Tuple,
 		Tuples = TupleStart | TupleEnd,
-		TypeTag = 64,
+		TypeTag = 256,
 		Default = Objects | ListStart | TypeTag,
-		All = 127,
+		All = Objects | Lists | Tuples | TypeTag,
 	}
 }
