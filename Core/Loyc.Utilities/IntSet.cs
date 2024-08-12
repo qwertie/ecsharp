@@ -301,6 +301,7 @@ namespace Loyc.LLParserGenerator
 		
 		static InternalList<IntRange> UnionCore(IntSet l, IntSet r)
 		{
+			bool e0ok = true, e1ok = true;
 			var e0 = l._ranges.GetEnumerator();
 			if (!e0.MoveNext())
 				return r._ranges;
@@ -309,34 +310,31 @@ namespace Loyc.LLParserGenerator
 				return l._ranges;
 			
 			var result = new InternalList<IntRange>(l._ranges.Count + r._ranges.Count);
-			while (e0 != null && e1 != null)
-			{
+			do {
 				var r0 = e0.Current;
 				var r1 = e1.Current;
 				if (r0 < r1)
-					e0 = AddAndMoveNext(ref result, r0, e0);
+					e0ok = AddAndMoveNext(ref result, r0, ref e0);
 				else
-					e1 = AddAndMoveNext(ref result, r1, e1);
-			}
+					e1ok = AddAndMoveNext(ref result, r1, ref e1);
+			} while (e0ok && e1ok);
 
-			if (e0 != null) do
-				e0 = AddAndMoveNext(ref result, e0.Current, e0);
-			while (e0 != null);
+			while (e0ok)
+				e0ok = AddAndMoveNext(ref result, e0.Current, ref e0);
 			
-			if (e1 != null) do
-				e1 = AddAndMoveNext(ref result, e1.Current, e1);
-			while (e1 != null);
+			while (e1ok)
+				e1ok = AddAndMoveNext(ref result, e1.Current, ref e1);
 
 			return result;
 		}
-		private static IEnumerator<IntRange> AddAndMoveNext(ref InternalList<IntRange> result, IntRange r, IEnumerator<IntRange> e)
+		private static bool AddAndMoveNext(ref InternalList<IntRange> result, IntRange r, ref InternalList.Enumerator<IntRange> e)
 		{
 			IntRange last;
 			if (result.Count > 0 && (last = result.Last).CanMerge(r))
 				result.Last = last.Merged(r);
 			else
 				result.Add(r);
-			return e.MoveNext() ? e : null;
+			return e.MoveNext();
 		}
 
 		static InternalList<IntRange> IntersectCore(IntSet l, IntSet r)

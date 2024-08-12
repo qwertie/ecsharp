@@ -81,5 +81,7 @@ namespace Loyc.Collections
 		public InternalDArray<T> Clone() => new InternalDArray<T> { 
 			_list = _list.Clone(), _startIndex = _startIndex 
 		};
+
+		public InternalDList<T> InternalList => _list;
 	}
 }

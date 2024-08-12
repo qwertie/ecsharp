@@ -385,14 +385,11 @@ namespace Loyc.Collections.Impl
 			RemoveAt(i);
 			return true;
 		}
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-		public IEnumerator<T> GetEnumerator()
-		{
-			return new InternalList.Enumerator<T>(_array, 0, _count);
-		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+		IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+		public InternalList.Enumerator<T> GetEnumerator() 
+			=> new InternalList.Enumerator<T>(_array, 0, _count);
 
 		#endregion
 
