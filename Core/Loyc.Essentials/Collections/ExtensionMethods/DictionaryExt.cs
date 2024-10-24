@@ -67,24 +67,21 @@ namespace Loyc.Collections
 		/// if no value is associated with the key.</returns>
 		public static V TryGetValue<K, V>(this Dictionary<K, V> dict, K key, V defaultValue)
 		{
-			V value;
-			if (key == null || !dict.TryGetValue(key, out value))
+			if (key == null || !dict.TryGetValue(key, out V value))
 				return defaultValue;
 			return value;
 		}
 		/// <inheritdoc cref="TryGetValue{K,V}(Dictionary{K,V},K,V)"/>
 		public static V TryGetValue<K, V>(this IDictionary<K, V> dict, K key, V defaultValue)
 		{
-			V value;
-			if (key == null || !dict.TryGetValue(key, out value))
+			if (key == null || !dict.TryGetValue(key, out V value))
 				return defaultValue;
 			return value;
 		}
 		/// <inheritdoc cref="TryGetValue{K,V}(Dictionary{K,V},K,V)"/>
 		public static V TryGetValue<K, V>(this IReadOnlyDictionary<K, V> dict, K key, V defaultValue)
 		{
-			V value;
-			if (key == null || !dict.TryGetValue(key, out value))
+			if (key == null || !dict.TryGetValue(key, out V value))
 				return defaultValue;
 			return value;
 		}

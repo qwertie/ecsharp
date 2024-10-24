@@ -83,14 +83,14 @@ namespace Loyc
 					msg.Append(lineSeparator);
 					msg.Append("Inner exception: ".Localized());
 				}
-				msg.AppendFormat("{0} ({1})", ex.Message, ex.GetType().Name);
+				msg.AppendFormat("{0} ({1})", inner.Message, inner.GetType().Name);
 				if (inner.InnerException == null)
 					break;
 				inner = inner.InnerException;
 			} while (true);
 			msg.Append(lineSeparator);
 			if (addStackTrace)
-				msg.Append(ex.StackTrace);
+				msg.Append(inner.StackTrace);
 			return msg.ToString();
 		}
 
