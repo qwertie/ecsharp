@@ -110,7 +110,8 @@ namespace Loyc.SyncLib.Impl
 						}
 					} else {
 						Debug.Assert(sync.Mode == SyncMode.Merge);
-						throw new NotImplementedException();
+						// The design of Merge mode hasn't been finalized (see SyncMode.Merge)
+						throw new NotSupportedException("SyncLib does not support Merge mode in this version");
 					}
 				} finally {
 					sync.EndSubObject();

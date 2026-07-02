@@ -37,8 +37,11 @@ namespace Loyc.SyncLib
 		///   mode, the values returned from Sync methods in <see cref="ISyncManager"/>
 		///   should be stored into the object. And like Query mode, some objects in 
 		///   the object graph may be ignored (not traversed).</summary>
-		/// <remarks>None of the synchronizers bundled with Loyc.Serialization 
-		///   use this mode, and the way it works hasn't been finalized.</remarks>
+		/// <remarks>None of the synchronizers bundled with Loyc.Serialization
+		///   use this mode, and the way it works hasn't been finalized. This mode
+		///   is not supported in the current version of SyncLib: the list
+		///   synchronization helpers throw <see cref="NotSupportedException"/>
+		///   when it is used.</remarks>
 		Merge = Writing | Reading | Query,
 	}
 }
