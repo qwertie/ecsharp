@@ -1115,6 +1115,7 @@ namespace Loyc.SyncLib
 				if ((uint)++cp_i >= (uint)curProp.Length)
 					return -1; // invalid escape sequence
 				switch (curProp[cp_i]) {
+					case (byte) '"':  ++cp_i; return '"';
 					case (byte) '/':  ++cp_i; return '/';
 					case (byte) '\\': ++cp_i; return '\\';
 					case (byte) 'b':  ++cp_i; return '\b';

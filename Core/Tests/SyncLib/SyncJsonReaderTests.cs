@@ -471,6 +471,52 @@ namespace Loyc.SyncLib.Tests
 			}
 		}
 
+		[Test]
+		public void RoundTripStringWithEscapedQuotes()
+		{
+			// Regression test: the '\"' escape sequence was decoded as two characters
+			// (backslash and quote), and rejected outright in Strict mode.
+			foreach (bool strict in new[] { false, true }) {
+				var options = new SyncJson.Options { Read = { Strict = strict } };
+				var strings = new[] { "\"", "say \"hi\" \\ \"bye\"", "\\\"", "a\tb\nc" };
+				foreach (string s in strings) {
+					var json = SyncJson.Write(s, SyncString, options);
+					var readBack = SyncJson.Read<string>(json.ToArray(), SyncString, options);
+					Assert.AreEqual(s, readBack);
+				}
+			}
+
+			static string SyncString<SM>(SM sm, string? value) where SM : ISyncManager
+				=> sm.Sync("str", value)!;
+		}
+
+		[Test]
+		public void RoundTripByteArrayAsBais()
+		{
+			// Regression test: BAIS strings that contain JSON escape sequences (e.g.
+			// a literal backslash or double-quote byte, or the leading '\b' of
+			// PrefixedBais mode) must have their escapes decoded before the BAIS
+			// format is interpreted.
+			var arrays = new List<byte[]> {
+				new byte[] { (byte)'\\' },
+				new byte[] { (byte)'"', (byte)'\\', (byte)'"' },
+				Encoding.ASCII.GetBytes(@"c:\dir\file ""quoted"""),
+				new byte[] { 0, 1, 2, 8, 92, 34, 255, 128, 92 },
+				Enumerable.Range(0, 256).Select(i => (byte)i).ToArray(),
+				new byte[0],
+			};
+			foreach (var mode in new[] { JsonByteArrayMode.Bais, JsonByteArrayMode.PrefixedBais, JsonByteArrayMode.Base64 }) {
+				var options = new SyncJson.Options { NewtonsoftCompatibility = false, ByteArrayMode = mode };
+				foreach (byte[] array in arrays) {
+					var json = SyncJson.Write(array, SyncByteArray, options);
+					var readBack = SyncJson.Read<byte[]>(json.ToArray(), SyncByteArray, options)!;
+					ExpectList(readBack, array);
+				}
+			}
+
+			static byte[] SyncByteArray<SM>(SM sm, byte[]? value) where SM : ISyncManager
+				=> sm.SyncList("bytes", value)!;
+		}
 
 		// TODO: syntax error tests
 		//   These were being handled weirdly:

@@ -447,11 +447,16 @@ namespace Loyc.SyncLib
 							return BuildListFromSpan<ListBuilder, List>(bytes.AsSpan(), builder);
 						}
 						
-						// ***********************************************************
-						// TODO: THIS IS BROKEN. WE MUST DECODE ESCAPE SEQUENCES FIRST: \b => 8, \\ => \
-						// ***********************************************************
 						// Interpret as BAIS
-						var output = ByteArrayInString.TryConvertToBytes(text.Span.Slice(1, text.Length - 2));
+						ArraySlice<byte>? output;
+						if (v.value.Type == JsonType.SimpleString) {
+							// Fast path: an ASCII string with no escape sequences
+							output = ByteArrayInString.TryConvertToBytes(text.Span.Slice(1, text.Length - 2));
+						} else {
+							// The string contains JSON escape sequences (e.g. \b, \\, )
+							// which must be decoded before interpreting the BAIS format
+							output = ByteArrayInString.TryConvertToBytes(DecodeString(v.value));
+						}
 						if (output.HasValue) {
 							if (output.Value.AsMemory() is List memory)
 								return memory;
