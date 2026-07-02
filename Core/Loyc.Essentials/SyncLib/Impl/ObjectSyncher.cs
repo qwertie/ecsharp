@@ -40,7 +40,7 @@ namespace Loyc.SyncLib.Impl
 						sync.CurrentObject = result!;
 					sync.EndSubObject();
 					return result;
-				} catch(Exception e) {
+				} catch(Exception) {
 					try {
 						sync.EndSubObject();
 					} catch {

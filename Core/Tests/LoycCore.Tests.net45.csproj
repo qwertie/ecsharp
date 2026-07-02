@@ -185,6 +185,7 @@
     <Compile Include="SyncLib\PersonSync.cs" />
     <Compile Include="SyncLib\SmallObjectSync.cs" />
     <Compile Include="SyncLib\StringDictionarySync.cs" />
+    <Compile Include="SyncLib\SyncBinaryGoldenTests.cs" />
     <Compile Include="SyncLib\SyncBinaryReaderTests.cs" />
     <Compile Include="SyncLib\SyncBinaryTests.cs" />
     <Compile Include="SyncLib\SyncBinaryWriterTests.cs" />
@@ -192,6 +193,9 @@
     <Compile Include="SyncLib\SyncJsonTests.cs" />
     <Compile Include="SyncLib\SyncJsonWriterTests.cs" />
     <Compile Include="SyncLib\SyncLibTests.cs" />
+    <Compile Include="SyncLib\SyncLibTests.Fuzz.cs" />
+    <Compile Include="SyncLib\SyncLibTests.Values.cs" />
+    <Compile Include="SyncLib\SyncMalformedInputTests.cs" />
     <Compile Include="Syntax\StandardLiteralHandlersTests.cs" />
     <Compile Include="Syntax\IndentTokenGeneratorTests.cs" />
     <Compile Include="Syntax\IndexPositionMapperTests.cs" />

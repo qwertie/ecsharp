@@ -17,22 +17,22 @@ partial class SyncBinary
 		=> new Reader(new ReaderState(input, options ?? _defaultOptions));
 	public static SyncBinary.Reader NewReader(byte[] input, Options? options = null) => NewReader(input.AsMemory(), options);
 
-	internal static T? Read<T>(ReadOnlyMemory<byte> input, SyncObjectFunc<Reader, T> sync, Options? options = null)
+	public static T? Read<T>(ReadOnlyMemory<byte> input, SyncObjectFunc<Reader, T> sync, Options? options = null)
 	{
 		options ??= _defaultOptions;
 		Reader reader = NewReader(input, options);
 		return SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
 	}
-	internal static T? ReadI<T>(ReadOnlyMemory<byte> input, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
+	public static T? ReadI<T>(ReadOnlyMemory<byte> input, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 	{
 		options ??= _defaultOptions;
 		Reader reader = NewReader(input, options);
 		return SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
 	}
 
-	internal static T? Read<T>(byte[] input, SyncObjectFunc<Reader, T> sync, Options? options = null)
+	public static T? Read<T>(byte[] input, SyncObjectFunc<Reader, T> sync, Options? options = null)
 		=> Read(input.AsMemory(), sync, options);
-	internal static T? ReadI<T>(byte[] input, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
+	public static T? ReadI<T>(byte[] input, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 		=> ReadI(input.AsMemory(), sync, options);
 
 	/// <summary>

@@ -36,12 +36,12 @@ namespace Loyc.SyncLib.Tests
 					// The template tree is the schema on both sides, so it is passed via
 					// closure (on the read side the savable parameter arrives as null)
 					FuzzNode template = tree;
-					var data = Write<FuzzNode>(tree, (sm, _) => FuzzNode.Sync(sm, template), 0);
-					var tree2 = Read<FuzzNode>(data, (sm, _) => FuzzNode.Sync(sm, template))!;
+					var data = Write<FuzzNode>(tree, (Writer sm, FuzzNode? _) => FuzzNode.Sync(sm, template), 0);
+					var tree2 = Read<FuzzNode>(data, (Reader sm, FuzzNode? _) => FuzzNode.Sync(sm, template))!;
 					FuzzNode.AssertEqual(tree, tree2, "root");
 
 					// Write stability: serializing what we read must be byte-identical
-					var data2 = Write<FuzzNode>(tree2, (sm, _) => FuzzNode.Sync(sm, tree2), 0);
+					var data2 = Write<FuzzNode>(tree2, (Writer sm, FuzzNode? _) => FuzzNode.Sync(sm, tree2!), 0);
 					ExpectList(data2, data);
 				} catch (Exception e) when (!(e is Loyc.MiniTest.IgnoreException)) {
 					Fail("Fuzz seed {0} failed{1}: {2}", caseSeed,

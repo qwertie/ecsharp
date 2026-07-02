@@ -19,22 +19,22 @@ namespace Loyc.SyncLib
 		public static SyncJson.Reader NewReader(string input, Options? options = null)
 			=> NewReader(Encoding.UTF8.GetBytes(input), options);
 
-		internal static T? Read<T>(ReadOnlyMemory<byte> json, SyncObjectFunc<Reader, T> sync, Options? options = null)
+		public static T? Read<T>(ReadOnlyMemory<byte> json, SyncObjectFunc<Reader, T> sync, Options? options = null)
 		{
 			options ??= _defaultOptions;
 			Reader reader = NewReader(json, options);
 			return SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
 		}
-		internal static T? ReadI<T>(ReadOnlyMemory<byte> json, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
+		public static T? ReadI<T>(ReadOnlyMemory<byte> json, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 		{
 			options ??= _defaultOptions;
 			Reader reader = NewReader(json, options);
 			return SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
 		}
 
-		internal static T? Read<T>(string json, SyncObjectFunc<Reader, T> sync, Options? options = null)
+		public static T? Read<T>(string json, SyncObjectFunc<Reader, T> sync, Options? options = null)
 			=> Read(Encoding.UTF8.GetBytes(json), sync, options);
-		internal static T? ReadI<T>(string json, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
+		public static T? ReadI<T>(string json, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 			=> ReadI(Encoding.UTF8.GetBytes(json), sync, options);
 
 		/// <summary>

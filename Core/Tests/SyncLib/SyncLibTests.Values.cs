@@ -137,7 +137,7 @@ namespace Loyc.SyncLib.Tests
 		[Test]
 		public void RoundTripEmptyAndNullLists()
 		{
-			RoundTripTest<int[], int>(new int[0], SyncIntList<Writer>, SyncIntList<Reader>);
+			RoundTripTest<int[], int>(new int[0], LInt<Writer>, LInt<Reader>);
 			RoundTripTest<int[]?>(null, SyncIntList<Writer>, SyncIntList<Reader>);
 
 			static int[]? SyncIntList<SM>(SM sm, int[]? value) where SM : ISyncManager

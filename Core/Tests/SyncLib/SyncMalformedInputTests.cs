@@ -204,13 +204,13 @@ namespace Loyc.SyncLib.Tests
 					d => SyncBinary.Read<Person>(d, new PersonSync<SyncBinary.Reader>().Sync, options));
 
 			// A corrupt list length must fail fast rather than allocate or loop
-			var truncatedBigList = SyncBinary.Write(new int[] { 1, 2, 3 }, (sm, v) => sm.SyncList("l", v)!, options)
+			var truncatedBigList = SyncBinary.Write(new int[] { 1, 2, 3 }, (SyncBinary.Writer sm, int[]? v) => sm.SyncList("l", v)!, options)
 				.ToArray();
 			// Patch the length byte (value 3, following '{' '[') to 0x7F = 127
 			int lengthIndex = Array.IndexOf(truncatedBigList, (byte)3);
 			truncatedBigList[lengthIndex] = 0x7F;
 			CheckReadContract("SyncBinary(evil)", 1, truncatedBigList,
-				d => SyncBinary.Read<int[]>(d, (sm, v) => sm.SyncList("l", v)!, options));
+				d => SyncBinary.Read<int[]>(d, (SyncBinary.Reader sm, int[]? v) => sm.SyncList("l", v)!, options));
 		}
 
 		[Test]
