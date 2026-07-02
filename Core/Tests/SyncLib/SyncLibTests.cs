@@ -124,6 +124,31 @@ namespace Loyc.SyncLib.Tests
 			}
 		}
 
+		[Test]
+		public void RoundTripValueTuples()
+		{
+			RoundTripTest(ValueTuple.Create(42), SyncTuple<Writer, ValueTuple<int>>, SyncTuple<Reader, ValueTuple<int>>);
+			RoundTripTest((42, "hi"), SyncTuple<Writer, (int, string)>, SyncTuple<Reader, (int, string)>);
+			RoundTripTest((1, 2.5, "three"), SyncTuple<Writer, (int, double, string)>, SyncTuple<Reader, (int, double, string)>);
+			RoundTripTest((1, 2, 3, 4, 5, 6, 7), SyncTuple<Writer, (int, int, int, int, int, int, int)>, SyncTuple<Reader, (int, int, int, int, int, int, int)>);
+			// Arity 8+ uses a nested ValueTuple in `Rest`
+			RoundTripTest((1, 2, 3, 4, 5, 6, 7, 8, 9), SyncTuple<Writer, (int, int, int, int, int, int, int, int, int)>, SyncTuple<Reader, (int, int, int, int, int, int, int, int, int)>);
+			// Nested tuple as a tuple item
+			RoundTripTest((1, (2.5, "deep")), SyncTuple<Writer, (int, (double, string))>, SyncTuple<Reader, (int, (double, string))>);
+		}
+
+		[Test]
+		public void RoundTripReferenceTuples()
+		{
+			RoundTripTest(Tuple.Create(42, "hi"), SyncTuple<Writer, Tuple<int, string>>, SyncTuple<Reader, Tuple<int, string>>);
+			RoundTripTest(Tuple.Create(1.5f, 2.5, "three", 4L), SyncTuple<Writer, Tuple<float, double, string, long>>, SyncTuple<Reader, Tuple<float, double, string, long>>);
+			// A null Tuple should round-trip as null
+			RoundTripTest<Tuple<int, string>?>(null, SyncTuple<Writer, Tuple<int, string>?>, SyncTuple<Reader, Tuple<int, string>?>);
+		}
+
+		protected static T SyncTuple<SM, T>(SM sm, T? value) where SM : ISyncManager
+			=> DefaultSynchronizer.Sync(ref sm, "tuple", value)!;
+
 		protected void RoundTripTest<List, T>(List value, SyncObjectFunc<Writer, List> writer, SyncObjectFunc<Reader, List> reader, ObjectMode saveMode = 0) where List: IEnumerable<T>
 			=> RoundTripTest(value, writer, reader, saveMode, (a, b) => ExpectList(a!, b));
 
