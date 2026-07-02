@@ -121,6 +121,7 @@ namespace Loyc.Tests
 		{
 			return MiniTest.RunTests.RunMany(
 				new SyncBinaryWriterTests(),
+				new SyncBinaryGoldenTests(),
 				new SyncBinaryTests(false),
 				new SyncBinaryTests(true),
 				new SyncBinaryReaderTests(),
