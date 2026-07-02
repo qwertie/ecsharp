@@ -129,7 +129,8 @@ namespace Loyc.Tests
 				new SyncJsonTests(newtonCompat: true, true, false),
 				new SyncJsonTests(newtonCompat: false, false, false),
 				new SyncJsonTests(newtonCompat: false, true, true),
-				new SyncJsonReaderTests()
+				new SyncJsonReaderTests(),
+				new SyncMalformedInputTests()
 			);
 		}
 		public static int Loyc_Collections()

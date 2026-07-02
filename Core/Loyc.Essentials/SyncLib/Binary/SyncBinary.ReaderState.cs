@@ -218,17 +218,22 @@ partial class SyncBinary
 			}
 
 			// Check for start marker
-			if (expectedStartMarker.HasValue) 
+			if (expectedStartMarker.HasValue)
 			{
+				ExpectBytes(ref cur, 1); // the stream could end after a dedup marker
 				if (cur.Byte != expectedStartMarker)
 					ThrowError(cur.Index, "invalid start marker");
 				cur.Index++;
 			}
 
 			// Get valid length (written unsigned: lengths >= 8192 must not go negative)
-			if (objectKind == ObjectMode.List)
-				listLength = (int?)DecodeIntOrNull<uint>(ref cur)
+			if (objectKind == ObjectMode.List) {
+				uint length = DecodeIntOrNull<uint>(ref cur)
 					?? throw NewError(cur.Index, "missing prefixed length for list");
+				if (length > int.MaxValue)
+					ThrowError(cur.Index, "list length is too large");
+				listLength = (int)length;
+			}
 			else if (objectKind == ObjectMode.Normal)
 				listLength = 1;
 
@@ -251,6 +256,7 @@ partial class SyncBinary
 			if ((_opt.Markers & markerMask) != 0)
 			{
 				var cur = _frame.Pointer;
+				ExpectBytes(ref cur, 1); // fail properly if the stream ends before the marker
 				var endMarker = last.Type == ObjType.Normal
 				   ? ((Depth & 1) != 0 ? (byte)')' : (byte)'}')
 				   : (byte)']';
@@ -630,9 +636,9 @@ partial class SyncBinary
 			}
 
 			int integerSize = (int)DecodeIntOrNull<uint>(ref cur)!.Value;
-			if (integerSize > _opt.MaxNumberSize)
+			if (integerSize > _opt.MaxNumberSize || integerSize <= 0)
 			{
-				ThrowError(_frame.Pointer.Index, $"{UnexpectedDataStreamFormat}; length prefix is too large: {integerSize}");
+				ThrowError(_frame.Pointer.Index, $"{UnexpectedDataStreamFormat}; invalid number length: {integerSize}");
 			}
 
 			ExpectBytes(ref cur, integerSize);

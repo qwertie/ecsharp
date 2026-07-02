@@ -467,6 +467,8 @@ namespace Loyc.SyncLib
 			private void EndObjectCore(ref JsonPointer cur)
 			{
 				bool isList;
+				if (!AutoRead(ref cur))
+					goto missingCloser; // the file ended before the closing bracket
 				if (!((isList = cur.Byte == ']') || cur.Byte == '}')) {
 					// Skip any remaining properties of the object
 
@@ -695,10 +697,8 @@ namespace Loyc.SyncLib
 				// TODO: localize all errors exactly once
 				var cur = CurPointer;
 				var msg = "Syntax error in {0}".Localized(context.Localized());
-				if (index >= cur.Buf.Length) {
-					Debug.Assert(!AutoRead(ref cur));
+				if (index >= cur.Buf.Length)
 					msg = "Unexpected end-of-file in {0}".Localized(context.Localized());
-				}
 				if (propName != null)
 					msg += " \"" + propName + '"';
 				throw NewError(index, msg);
