@@ -414,23 +414,16 @@ partial class SyncBinary
 		{
 			Debug.Assert(outBuf.Length - _i >= numBytes);
 
-			#if !(NETSTANDARD2_0 || NET45 || NET46 || NET47)
-			if (num.TryWriteBytes(outBuf.Slice(_i), out int bytesWritten, false, isBigEndian: false)) {
-				Debug.Assert(bytesWritten == numBytes);
-				return;
+			// Write exactly numBytes bytes of num's two's complement form, low bytes
+			// first. Sign extension is automatic: `num & ulong.MaxValue` yields the
+			// low 64 bits of the infinite two's complement representation, and the
+			// arithmetic shift preserves the sign.
+			// (Truncating BigInteger: https://stackoverflow.com/questions/74989790)
+			for (; numBytes > 8; numBytes -= 8) {
+				WriteLittleEndianBytes((ulong)(num & ulong.MaxValue), 8, outBuf);
+				num >>= 64;
 			}
-			#endif
-
-			if (numBytes <= 8) {
-				// Truncate BigInteger: https://stackoverflow.com/questions/74989790/how-to-truncate-a-biginteger-to-int-long-uint-ulong
-				WriteLittleEndianBytes((ulong)(num & ulong.MaxValue), numBytes, outBuf);
-			} else {
-				// Allocating an array here isn't efficient, but I don't know a better way
-				var numSpan = num.ToByteArray().AsSpan();
-				if (numBytes < numSpan.Length)
-					numSpan = numSpan.Slice(0, numBytes);
-				numSpan.CopyTo(outBuf.Slice(_i));
-			}
+			WriteLittleEndianBytes((ulong)(num & ulong.MaxValue), numBytes, outBuf);
 		}
 
 		internal readonly static bool IsReversedEndian = (int)BitConverter.DoubleToInt64Bits(1) != 0;

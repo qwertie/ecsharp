@@ -45,6 +45,14 @@ partial class SyncBinary
 		// An error that left the stream unreadable
 		protected Exception? _fatalError;
 
+		// Number of bits of the most recently read byte that have not yet been
+		// consumed, and could be consumed by a subsequent bitfield read (mirrors
+		// WriterState._bitfieldBitsLeftInByte). The unconsumed bits are stored in
+		// the low bits of _bitfieldPartialByte; any other read operation discards
+		// them (by way of Commit(), which resets _bitfieldBitsLeft).
+		private uint _bitfieldBitsLeft;
+		private uint _bitfieldPartialByte;
+
 		#region Helper types
 
 		private struct ReadingFrame
@@ -146,6 +154,9 @@ partial class SyncBinary
 		{
 			Debug.Assert(_frame.Buf.Span == cur.Buf);
 			_frame.Index = cur.Index;
+			// Any non-bitfield read ends the current bitfield byte (ReadBitfield
+			// itself restores this state after committing, when appropriate)
+			_bitfieldBitsLeft = 0;
 		}
 
 		#endregion
@@ -157,9 +168,12 @@ partial class SyncBinary
 			var cur = _frame.Pointer;
 			ExpectBytes(ref cur, 1);
 
-			// Check for null
+			// Check for null. The writer only emits a null byte when the mode permits
+			// null (mirroring WriterState.BeginSubObject); in NotNull mode, 0xFF must
+			// be part of the object's data (e.g. a bitfield), so fall through.
 			byte firstByte = cur.Byte;
-			if (firstByte == 0xFF)
+			if (firstByte == 0xFF &&
+				(mode & (ObjectMode.NotNull | ObjectMode.Deduplicate)) != ObjectMode.NotNull)
 			{
 				if ((mode & ObjectMode.NotNull) != 0)
 					ThrowError(cur.Index, "unexpected null value");
@@ -700,6 +714,123 @@ partial class SyncBinary
 		//	Debug.Fail("Unreachable");
 		//	return default;
 		//}
+
+		#endregion
+
+		#region Bitfield reader
+
+		/// <summary>Reads a little-endian bitfield of up to 64 bits, as written by
+		///   <see cref="WriterState.WriteBitfield(ulong, uint)"/>. Adjacent bitfield
+		///   reads share bytes; any other read operation discards leftover bits of
+		///   a partially-consumed byte, matching writer behavior.</summary>
+		internal ulong ReadBitfield(uint bits)
+		{
+			if (bits > 64)
+				throw new ArgumentOutOfRangeException(nameof(bits));
+
+			ulong result = 0;
+			int shift = 0;
+
+			// Consume bits left over from the previously read byte
+			uint bitsLeft = _bitfieldBitsLeft;
+			if (bitsLeft != 0) {
+				uint take = Min(bitsLeft, bits);
+				result = _bitfieldPartialByte & ((1u << (int)take) - 1);
+				_bitfieldPartialByte >>= (int)take;
+				_bitfieldBitsLeft = bitsLeft - take;
+				if ((bits -= take) == 0)
+					return result;
+				shift = (int)take;
+			}
+
+			var cur = _frame.Pointer;
+			int wholeBytes = (int)bits >> 3;
+			uint endBits = bits & 7u;
+			ExpectBytes(ref cur, wholeBytes + (endBits != 0 ? 1 : 0));
+
+			// Read the middle (whole) bytes of the bitfield
+			for (int i = 0; i < wholeBytes; i++) {
+				result |= (ulong)cur.Byte << shift;
+				cur.Index++;
+				shift += 8;
+			}
+
+			// Read the ending bits of the bitfield, leaving unused high bits of the
+			// final byte available to the next bitfield read
+			uint partialByte = 0, partialBits = 0;
+			if (endBits != 0) {
+				uint b = cur.Byte;
+				cur.Index++;
+				result |= (ulong)(b & ((1u << (int)endBits) - 1)) << shift;
+				partialByte = b >> (int)endBits;
+				partialBits = 8 - endBits;
+			}
+
+			Commit(cur); // note: Commit sets _bitfieldBitsLeft = 0
+			_bitfieldPartialByte = partialByte;
+			_bitfieldBitsLeft = partialBits;
+			return result;
+		}
+
+		internal long ReadBitfieldSigned(uint bits)
+		{
+			ulong value = ReadBitfield(bits);
+			return SignExtend(value, bits);
+		}
+
+		static long SignExtend(ulong value, uint bits)
+		{
+			if (bits < 64 && (value & (1uL << (int)(bits - 1))) != 0)
+				value |= ~0uL << (int)bits;
+			return (long)value;
+		}
+
+		internal BigInteger ReadBitfield(uint bits, bool signed)
+		{
+			if (bits <= 64) {
+				ulong value = ReadBitfield(bits);
+				return signed ? SignExtend(value, bits) : (BigInteger)value;
+			}
+
+			// Assemble a little-endian two's complement byte array (the extra byte
+			// keeps the number non-negative unless sign extension overwrites it)
+			int numBytes = (int)(bits + 7) >> 3;
+			var bytes = new byte[numBytes + 1];
+			int i = 0;
+			for (uint remaining = bits; remaining > 0; ) {
+				uint chunk = Min(remaining, 32u);
+				ulong v = ReadBitfield(chunk);
+				for (uint b = 0; b < chunk; b += 8)
+					bytes[i++] = (byte)(v >> (int)b);
+				remaining -= chunk;
+			}
+
+			int topBitIndex = (int)(bits - 1);
+			if (signed && (bytes[topBitIndex >> 3] & (1 << (topBitIndex & 7))) != 0) {
+				// Sign-extend: fill everything above the top data bit with ones
+				bytes[topBitIndex >> 3] |= (byte)(0xFF << ((topBitIndex & 7) + 1));
+				for (int j = (topBitIndex >> 3) + 1; j < bytes.Length; j++)
+					bytes[j] = 0xFF;
+			}
+			return new BigInteger(bytes);
+		}
+
+		#endregion
+
+		#region Type tag reader
+
+		internal string? ReadTypeTag()
+		{
+			if ((_opt.Markers & Markers.TypeTag) != 0) {
+				var cur = _frame.Pointer;
+				ExpectBytes(ref cur, 1);
+				if (cur.Byte != (byte)'T')
+					ThrowError(cur.Index, "expected type tag marker 'T'");
+				cur.Index++;
+				Commit(cur);
+			}
+			return ReadStringOrNull();
+		}
 
 		#endregion
 

@@ -143,13 +143,13 @@ partial class SyncBinary
 		public char? Sync(FieldId name, char? savable) => (char?) _s.ReadSmallIntOrNull<ushort>();
 
 		public int Sync(FieldId name, int savable, int bits, bool signed = true)
-			=> throw new NotImplementedException();
+			=> signed ? (int)_s.ReadBitfieldSigned((uint)bits) : (int)_s.ReadBitfield((uint)bits);
 
 		public long Sync(FieldId name, long savable, int bits, bool signed = true)
-			=> throw new NotImplementedException();
+			=> signed ? _s.ReadBitfieldSigned((uint)bits) : (long)_s.ReadBitfield((uint)bits);
 
 		public BigInteger Sync(FieldId name, BigInteger savable, int bits, bool signed = true)
-			=> throw new NotImplementedException();
+			=> _s.ReadBitfield((uint)bits, signed);
 
 		public List? SyncListBoolImpl<Scanner, List, ListBuilder>(
 			FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
@@ -183,6 +183,6 @@ partial class SyncBinary
 
 		public void EndSubObject() => _s.EndSubObject();
 
-		public string SyncTypeTag(string? tag) => throw new NotImplementedException();
+		public string? SyncTypeTag(string? tag) => _s.ReadTypeTag();
 	}
 }
