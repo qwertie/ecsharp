@@ -188,7 +188,7 @@ partial class SyncBinary
 			if ((uint)num < 64)
 				GetOutSpan(1)[_i++] = (byte)num;
 			else
-				WriteSignedOrUnsigned((uint)num, G.PositionOfMostSignificantOne((uint)(num < 0 ? ~num : num)) + 1);
+				WriteSignedOrUnsigned((uint)num, G.PositionOfMostSignificantOne((uint)(num < 0 ? ~num : num)) + 1, num < 0);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -198,12 +198,13 @@ partial class SyncBinary
 			if (num < 128)
 				GetOutSpan(1)[_i++] = (byte)num;
 			else
-				WriteSignedOrUnsigned(num, G.PositionOfMostSignificantOne(num));
+				WriteSignedOrUnsigned(num, G.PositionOfMostSignificantOne(num), false);
 		}
 
-		public void WriteSignedOrUnsigned(uint num, int msbPosition)
+		public void WriteSignedOrUnsigned(uint num, int msbPosition, bool negative)
 		{
-			Debug.Assert((2 << msbPosition) > num || msbPosition == 31 || (int)num < 0);
+			// (the shift must be done in 64 bits: 2 << 30 overflows in int arithmetic)
+			Debug.Assert((2uL << msbPosition) > num || (int)num < 0);
 
 			Span<byte> span;
 			unchecked {
@@ -211,8 +212,11 @@ partial class SyncBinary
 				// 29 to 32 significant bits
 				case 32: case 31: case 30: case 29: case 28:
 					span = GetOutSpan(5);
-					bool isSigned = ((int)num & (1 << msbPosition) & ~1) != 0;
-					span[_i] = (byte)((int)num < 0 && isSigned ? 0b1111_1111 : 0b1111_0000);
+					// The three x-bits of 0b11110xxx hold bits 32-34 of the number,
+					// which are sign bits: 111 for a negative number, otherwise 000.
+					// (This cannot be inferred from `num` itself: a negative int and a
+					// uint with the top bit set have identical low 32 bits.)
+					span[_i] = (byte)(negative ? 0b1111_0111 : 0b1111_0000);
 					span[_i + 1] = (byte)(num >> 24);
 					span[_i + 2] = (byte)(num >> 16);
 					span[_i + 3] = (byte)(num >> 8);
@@ -259,7 +263,7 @@ partial class SyncBinary
 				GetOutSpan(1)[_i++] = (byte)num;
 			else
 				// -4 => 3 bits, -5 => 4 bits
-				WriteSignedOrUnsigned((ulong)num, G.PositionOfMostSignificantOne((ulong)(num < 0 ? ~num : num)) + 1);
+				WriteSignedOrUnsigned((ulong)num, G.PositionOfMostSignificantOne((ulong)(num < 0 ? ~num : num)) + 1, num < 0);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -269,15 +273,15 @@ partial class SyncBinary
 			if (num < 128)
 				GetOutSpan(1)[_i++] = (byte)num;
 			else
-				WriteSignedOrUnsigned(num, G.PositionOfMostSignificantOne(num));
+				WriteSignedOrUnsigned(num, G.PositionOfMostSignificantOne(num), false);
 		}
 
-		public void WriteSignedOrUnsigned(ulong num, int msbPosition)
+		public void WriteSignedOrUnsigned(ulong num, int msbPosition, bool negative)
 		{
 			Debug.Assert((2uL << msbPosition) > num || msbPosition == 63 || (long)num < 0);
 
 			if (msbPosition < 32) {
-				WriteSignedOrUnsigned((uint)num, msbPosition);
+				WriteSignedOrUnsigned((uint)num, msbPosition, negative);
 			} else {
 				Span<byte> span;
 				unchecked {
@@ -287,7 +291,9 @@ partial class SyncBinary
 						int numberSize = msbPosition >= 56 ? 10 : 9;
 						span = GetOutSpan(numberSize);
 						span[_i    ] = (byte)0b1111_1110;
-						span[_i + 1] = (byte)(numberSize - 1);
+						// Length prefix: the number of payload bytes that follow
+						// (numberSize includes the 0xFE byte and this length byte)
+						span[_i + 1] = (byte)(numberSize - 2);
 						if (msbPosition >= 56) {
 							span[_i + 2] = (byte)(num >> 56);
 							_i++;

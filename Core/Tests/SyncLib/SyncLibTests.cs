@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Loyc.SyncLib.Tests
 {
-	public abstract class SyncLibTests<Reader, Writer> : TestHelpers
+	public abstract partial class SyncLibTests<Reader, Writer> : TestHelpers
 		where Writer : ISyncManager
 		where Reader : ISyncManager
 	{

@@ -225,9 +225,9 @@ partial class SyncBinary
 				cur.Index++;
 			}
 
-			// Get valid length
+			// Get valid length (written unsigned: lengths >= 8192 must not go negative)
 			if (objectKind == ObjectMode.List)
-				listLength = DecodeIntOrNull<int>(ref cur)
+				listLength = (int?)DecodeIntOrNull<uint>(ref cur)
 					?? throw NewError(cur.Index, "missing prefixed length for list");
 			else if (objectKind == ObjectMode.Normal)
 				listLength = 1;
@@ -336,11 +336,13 @@ partial class SyncBinary
 			ExpectBytes(ref cur, 16);
 
 			var i = cur.Index;
+			// Bytes 12-13 are the low half of the flags word, which is always zero in
+			// a valid decimal; the null marker (16 bytes of 0xFF) has 0xFF there.
 			var the13thByte = cur.Buf[i + 12];
 			var the14thByte = cur.Buf[i + 13];
 			decimal? value = null;
 
-			if (the13thByte != 0xFF && the14thByte != 0xFF)
+			if (the13thByte == 0x00 && the14thByte == 0x00)
 			{
 				var bits = new int[4] {
 					unchecked((int) LittleEndianBytesToUInt32(cur.Span)),
@@ -350,7 +352,7 @@ partial class SyncBinary
 				};
 				value = new decimal(bits);
 			}
-			else if (the13thByte != 0x00 && the14thByte != 0x00)
+			else if (the13thByte != 0xFF || the14thByte != 0xFF)
 				ThrowError(cur.Index, "invalid data for decimal");
 
 			cur.Index += 16;
@@ -526,12 +528,14 @@ partial class SyncBinary
 				}
 				else
 				{
-					// Read small-format variable-length number (sizeOfRest <= 7). We
+					// Read small-format variable-length number (sizeOfRest <= 6). We
 					// always read it as `long` because if sizeOfRest >= 4, a 32-bit
 					// version of this would require more branches. Any speed advantage of
 					// using 32-bit math would probably be negated by branch misprediction,
 					// even on mobile processors.
-					int sizeOfRest = LeadingOneCount(firstByte) + 1;
+					// The number of leading ones equals the number of bytes that follow
+					// the first byte (e.g. 110xxxxx means two more bytes follow).
+					int sizeOfRest = LeadingOneCount(firstByte);
 					
 					ExpectBytes(ref cur, sizeOfRest);
 
@@ -579,8 +583,8 @@ partial class SyncBinary
 				integerSize = 8;
 			}
 
+			// (ReadRemainingBytesAsBigEndian advances cur.Index itself)
 			long number = (long) ReadRemainingBytesAsBigEndian(ref cur, integerSize);
-			cur.Index += integerSize;
 
 			if (signed) {
 				// Sign-extend the number
@@ -898,8 +902,10 @@ partial class SyncBinary
 		public static int LeadingOneCount(byte b)
 		{
 			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47 || NET48
+				// Note: this must use unsigned arithmetic; with `int`, the right-shifts
+				// sign-extend and the comparisons fail for any byte >= 0b1100_0000
 				int result = 0;
-				int i = b << 24;
+				uint i = (uint)b << 24;
 				if (i >> 28 == 0b1111)
 				{
 					i <<= 4;
@@ -914,12 +920,12 @@ partial class SyncBinary
 				{
 					i <<= 1;
 					result += 1;
-					if (result == 7 && i == 1)
-						return 8;
+					if (i >> 31 == 1)
+						result += 1; // b was 0xFF (8 leading ones)
 				}
 				return result;
 			#else
-				return BitOperations.LeadingZeroCount((uint)~(b << 24));
+				return BitOperations.LeadingZeroCount(~((uint)b << 24));
 			#endif
 		}
 
