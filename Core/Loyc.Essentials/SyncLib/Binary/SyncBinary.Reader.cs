@@ -108,7 +108,7 @@ partial class SyncBinary
 
 		public char Sync(FieldId name, char savable) => (char) _s.ReadSmallInt<ushort>();
 
-		public string? Sync(FieldId name, string? savable, ObjectMode mode = ObjectMode.Normal) => _s.ReadStringOrNull();
+		public string? Sync(FieldId name, string? savable, ObjectMode mode = ObjectMode.Normal) => _s.ReadStringOrNull(mode);
 
 		public bool? Sync(FieldId name, bool? savable) 
 		{

@@ -254,9 +254,10 @@ partial class SyncBinary
 		#endregion
 
 		#region String reader
-		internal string? ReadStringOrNull()
+		internal string? ReadStringOrNull(ObjectMode mode = ObjectMode.Normal)
 		{
-			var (begun, strLength, obj) = BeginSubObject(ObjectMode.List, -1);
+			var (begun, strLength, obj) = BeginSubObject(
+				ObjectMode.List | (mode & (ObjectMode.Deduplicate | ObjectMode.NotNull)), -1);
 			if (!begun)
 				return (string?) obj;
 
@@ -272,6 +273,7 @@ partial class SyncBinary
 
 			cur.Index += strLength;
 			Commit(cur);
+			SetCurrentObject(str); // in case a '#' marker gave the string an ID
 			EndSubObject();
 			return str;
 		}

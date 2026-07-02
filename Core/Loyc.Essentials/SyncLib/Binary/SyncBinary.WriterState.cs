@@ -486,10 +486,24 @@ partial class SyncBinary
 
 		public void Write(string? str, ObjectMode mode = ObjectMode.Normal)
 		{
-			if (str == null)
+			if (str == null) {
+				// A null is written as 0xFF without any deduplication marker
 				WriteNull();
-			else
+			} else if ((mode & ObjectMode.Deduplicate) != 0) {
+				long id = _idGen.GetId(str, out bool firstTime);
+				var span = GetOutSpan(MaxSizeOfInt64 + 1);
+				if (firstTime) {
+					// The deduplication marker goes before the start marker (if any)
+					span[_i++] = (byte)'#';
+					Write(id);
+					Write(str.AsSpan());
+				} else {
+					span[_i++] = (byte)'@';
+					Write(id);
+				}
+			} else {
 				Write(str.AsSpan());
+			}
 		}
 		public void Write(ReadOnlySpan<char> str)
 		{

@@ -201,7 +201,7 @@ public class SyncBinaryWriterTests : TestHelpers
 		));
 	}
 
-	[Test(Fails = "Sync string with deduplicate is unfinished")]
+	[Test]
 	public void TestDocumentedClaims_AboutStrings()
 	{
 		var options = new SyncBinary.Options { Markers = SyncBinary.Markers.ListStart };
