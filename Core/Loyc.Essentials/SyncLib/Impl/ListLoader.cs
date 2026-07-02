@@ -49,8 +49,9 @@ namespace Loyc.SyncLib.Impl
 					sync.EndSubObject();
 				}
 			} else {
-				Debug.Assert(obj != null);
-				return _builder.CastList(obj);
+				// obj is null if the stream contained a null list; otherwise it is a
+				// deduplicated list that was read earlier (a back-reference)
+				return obj == null ? default : _builder.CastList(obj);
 			}
 		}
 	}
