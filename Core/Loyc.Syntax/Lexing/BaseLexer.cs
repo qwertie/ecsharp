@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
@@ -101,6 +102,7 @@ namespace Loyc.Syntax.Lexing
 		/// This method can be used to avoid memory allocations when you
 		/// need to parse many small strings in a row. If that's your goal, you 
 		/// should set the <c>newSourceFile</c> parameter to false if possible.</remarks>
+		[MemberNotNull(nameof(_charSource), nameof(_fileName))]
 		public virtual void Reset(CharSrc chars, string fileName = "", int inputPosition = 0, bool newSourceFile = true)
 		{
 			CheckParam.IsNotNull<object>("source", chars);
@@ -140,10 +142,11 @@ namespace Loyc.Syntax.Lexing
 					MessageSink.Default.Write(sev, location, fmt, args);
 			});
 
-		private IMessageSink _errorSink;
+		private IMessageSink? _errorSink;
 		/// <summary>Gets or sets the object to which error messages are sent. The
 		/// default object is <see cref="LogExceptionErrorSink"/>, which throws
 		/// an exception if an error occurs.</summary>
+		[AllowNull]
 		public IMessageSink ErrorSink
 		{
 			get { return _errorSink ?? LogExceptionErrorSink; }
@@ -194,8 +197,8 @@ namespace Loyc.Syntax.Lexing
 				LA0 = -1;
 		}
 
-		LexerSourceFile<CharSrc> _sourceFile;
-		protected LexerSourceFile<CharSrc> SourceFile
+		LexerSourceFile<CharSrc>? _sourceFile;
+		protected LexerSourceFile<CharSrc>? SourceFile
 		{
 			get { return _sourceFile; }
 		}

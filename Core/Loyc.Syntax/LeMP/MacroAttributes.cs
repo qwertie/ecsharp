@@ -78,12 +78,12 @@ namespace LeMP
 		/// <summary>A list of names of the macro that have been deprecated. If a name is 
 		/// included in this list, it is not necessary to also include it in the list of 
 		/// Names, but doing so is allowed and won't make a difference.</summary>
-		public string[] DeprecatedNames { get; set; }
+		public string[]? DeprecatedNames { get; set; }
 		/// <summary>A message to show when the deprecated macro is used. It is not
 		/// necessary to set this property if the macro was simply renamed, as LeMP 
 		/// can automatically tell the user about the new name if both versions use
 		/// the same method.</summary>
-		public string DeprecationMessage { get; set; }
+		public string? DeprecationMessage { get; set; }
 	}
 
 	/// <summary>Flags that affect the way that <see cref="LeMP.MacroProcessor"/>
@@ -164,9 +164,9 @@ namespace LeMP
 	/// <summary>Data returned from <see cref="IMacroContext.AllKnownMacros"/></summary>
 	public class MacroInfo : LexicalMacroAttribute
 	{
-		public MacroInfo(Symbol @namespace, string name, LexicalMacro macro) 
+		public MacroInfo(Symbol? @namespace, string name, LexicalMacro macro)
 			: this(@namespace, new LexicalMacroAttribute("", "", name), macro) { }
-		public MacroInfo(Symbol @namespace, LexicalMacroAttribute a, LexicalMacro macro, bool deprecateAllNames = false)
+		public MacroInfo(Symbol? @namespace, LexicalMacroAttribute a, LexicalMacro macro, bool deprecateAllNames = false)
 			: base(a.Syntax, a.Description, a.Names)
 		{
 			DeprecatedNames = a.DeprecatedNames;
@@ -185,7 +185,7 @@ namespace LeMP
 			Macro = macro;
 			Mode = a.Mode;
 		}
-		public Symbol Namespace { get; private set; }
+		public Symbol? Namespace { get; private set; }
 		public LexicalMacro Macro { get; private set; }
 
 		#region GetMacros(Type)
@@ -193,8 +193,8 @@ namespace LeMP
 		// This cache decreases time spent in LeMP tests by about 40%. It only helps 
 		// when the macro processor is reinitialized many times, so in "production"
 		// it's unimportant.
-		public static ConcurrentDictionary<Pair<Type, Symbol>, List<MacroInfo>> _macroCache 
-		        = new ConcurrentDictionary<Pair<Type, Symbol>, List<MacroInfo>>();
+		public static ConcurrentDictionary<Pair<Type, Symbol?>, List<MacroInfo>> _macroCache
+		        = new ConcurrentDictionary<Pair<Type, Symbol?>, List<MacroInfo>>();
 
 		/// <summary>Uses reflection to find a list of macros within the specified 
 		/// type by searching for (static) methods that
@@ -219,11 +219,11 @@ namespace LeMP
 		///   `Delegate.CreateDelegate` and especially `MethodInfo.GetCustomAttributes`.
 		///   Note: caching is not supported when instance != null.</param>
 		/// <returns></returns>
-		public static IEnumerable<MacroInfo> GetMacros(Type type, IMessageSink errorSink = null, Symbol @namespace = null, object instance = null, bool permaCache = true)
+		public static IEnumerable<MacroInfo> GetMacros(Type type, IMessageSink? errorSink = null, Symbol? @namespace = null, object? instance = null, bool permaCache = true)
 		{
-			@namespace = @namespace ?? (Symbol)type.Namespace;
+			@namespace = @namespace ?? (Symbol?)type.Namespace;
 
-			if (instance == null && _macroCache.TryGetValue(Pair.Create(type, @namespace), out List<MacroInfo> results))
+			if (instance == null && _macroCache.TryGetValue(Pair.Create(type, @namespace), out List<MacroInfo>? results))
 				return results;
 
 			results = new List<MacroInfo>();
@@ -261,9 +261,9 @@ namespace LeMP
 
 			return results;
 
-			LexicalMacro AsDelegate(MethodInfo method) {
+			LexicalMacro? AsDelegate(MethodInfo method) {
 				try {
-					return (LexicalMacro)Delegate.CreateDelegate(typeof(LexicalMacro), method.IsStatic ? null : instance, method,
+					return (LexicalMacro?)Delegate.CreateDelegate(typeof(LexicalMacro), method.IsStatic ? null : instance, method,
 						throwOnBindFailure: true);
 				} catch (Exception e) {
 					errorSink.Warning(method.DeclaringType, "Macro '{0}' is uncallable: {1}",

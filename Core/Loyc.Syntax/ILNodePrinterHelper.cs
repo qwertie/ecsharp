@@ -104,13 +104,13 @@ namespace Loyc.Syntax.Impl
 		/// there are also bracket indents on the stack, then the Subexpression indents 
 		/// have no effect.
 		/// </remarks>
-		Self Indent(PrinterIndentHint hint = null);
+		Self Indent(PrinterIndentHint? hint = null);
 		/// <summary>Decreases the current indent level.</summary>
 		/// <param name="mode">If the hint is not null, the writer may be able to check 
 		/// that it was the same hint that was passed to <see cref="Indent"/> and
 		/// throw an exception if not.</param>
 		/// <exception cref="ArgumentException">Hint provided doesn't match Indent hint</exception>
-		Self Dedent(PrinterIndentHint hint = null);
+		Self Dedent(PrinterIndentHint? hint = null);
 
 		/// <summary>Returns true iff nothing has been written since the last call to 
 		/// <see cref="Newline"/> or <see cref="NewlineIsRequiredHere"/>.</summary>

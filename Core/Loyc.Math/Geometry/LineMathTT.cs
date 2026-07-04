@@ -1,4 +1,9 @@
 
+
+
+
+
+
 // This is a generated file
 using Loyc.Math;
 using System.Diagnostics;
@@ -15,6 +20,9 @@ namespace Loyc.Geometry
 		Infinite
 	}
 }
+
+
+
 
 namespace Loyc.Geometry
 {
@@ -435,6 +443,7 @@ namespace Loyc.Geometry
 		}
 	}
 }
+
 namespace Loyc.Geometry
 {
 	using T = System.Double;
@@ -854,4 +863,5 @@ namespace Loyc.Geometry
 		}
 	}
 }
+
 

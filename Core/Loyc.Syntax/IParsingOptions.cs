@@ -32,7 +32,7 @@ namespace Loyc.Syntax
 		/// the parser may choose to use this parser only for type markers for which
 		/// it does not have built-in support, or it may use it for all literals.
 		/// </remarks>
-		ILiteralParser LiteralParser { get; }
+		ILiteralParser? LiteralParser { get; }
 	}
 
 	/// <summary>A simple implementation of <see cref="IParsingOptions"/>.</summary>
@@ -46,6 +46,6 @@ namespace Loyc.Syntax
 		
 		public int SpacesPerTab { get; set; } = 4;
 		
-		public ILiteralParser LiteralParser { get; set; }
+		public ILiteralParser? LiteralParser { get; set; }
 	}
 }

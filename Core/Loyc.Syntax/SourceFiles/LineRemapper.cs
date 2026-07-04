@@ -47,8 +47,8 @@ namespace Loyc.Syntax
 		}
 		public int LineToIndex(ILineAndColumn pos)
 		{
-			if (pos is LineColumnFileAndIndex)
-				return (pos as LineColumnFileAndIndex).OriginalIndex;
+			if (pos is LineColumnFileAndIndex lcfi)
+				return lcfi.OriginalIndex;
 			return _obj.LineToIndex(pos);
 		}
 		ILineColumnFile IIndexToLine.IndexToLine(int index) => IndexToLine(index);
@@ -93,20 +93,20 @@ namespace Loyc.Syntax
 	{
 		public LineRemapper() { }
 
-		BDictionary<int, Pair<int, string>> _map = new BDictionary<int,Pair<int,string>>();
+		BDictionary<int, Pair<int, string?>> _map = new BDictionary<int,Pair<int,string?>>();
 
 		/// <summary>Adds a mapping that starts on the specified real line.</summary>
 		/// <remarks>In C++ and C#, a directive like "#line 200" affects the line 
 		/// after the preprocessor directive. So if "#line 200" is on line 10, 
 		/// you'd call AddRemap(11, 200) or possibly AddRemap(10, 199).</remarks>
-		public void AddRemap(int realLine, int reportLine, string reportFileName = null)
+		public void AddRemap(int realLine, int reportLine, string? reportFileName = null)
 		{
 			_map[realLine] = Pair.Create(reportLine, reportFileName);
 		}
 		/// <summary>Corresponds to <c>#line default</c> in C#.</summary>
 		public void EndRemap(int realLine)
 		{
-			_map[realLine] = Pair.Create(realLine, (string)null);
+			_map[realLine] = Pair.Create(realLine, (string?)null);
 		}
 
 		/// <summary>Remaps the specified line number, if a remapping has been created that applies to it.</summary>
@@ -119,7 +119,7 @@ namespace Loyc.Syntax
 			int i = _map.FindUpperBound(line) - 1;
 			if (i == -1)
 				return false;
-			var kvp = ((AListBase<int, KeyValuePair<int, Pair<int, string>>>)_map)[i];
+			var kvp = ((AListBase<int, KeyValuePair<int, Pair<int, string?>>>)_map)[i];
 			if (kvp.Value.B != null)
 				fileName = kvp.Value.B;
 			else if (kvp.Key == kvp.Value.A)

@@ -1,4 +1,4 @@
-// Generated from Les2LexerGrammar.les by LeMP custom tool. LeMP version: 2.9.1.0
+﻿// Generated from Les2LexerGrammar.les by LeMP custom tool. LeMP version: 2.9.1.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -18,6 +18,8 @@ namespace Loyc.Syntax.Les
 {
 	using TT = TokenType;
 	using S = CodeSymbols;
+
+	#pragma warning disable 162, 642, 8600, 8602, 8603, 8604, 8625
 
 	public partial class Les2Lexer
 	{

@@ -170,37 +170,37 @@ namespace Loyc.Syntax
 		public Either<Symbol, ILogMessage> TryPrint(ILNode literal, StringBuilder sb)
 		{
 			CheckParam.IsNotNull(nameof(sb), sb);
-			ILogMessage firstError = null;
-			
+			ILogMessage? firstError = null;
+
 			var tm = literal.TypeMarker;
 			if (tm != null && TryPrint(literal, tm, sb, ref tm, ref firstError))
-				return tm;
-			
+				return tm!; // TryPrint leaves tm non-null on success
+
 			if (literal.Value == null) {
-				return tm;
+				return tm!; // historically returns TypeMarker even when null; Either stores it in an [AllowNull] field
 			}
-			
+
 			Type type = literal.Value.GetType();
 			if (TryPrint(literal, type, sb, ref tm, ref firstError))
-				return tm;
+				return tm!;
 
 			for (var type2 = type; type2.BaseType != null; type2 = type2.BaseType)
 			{
 				var @base = type2.BaseType;
 				if (TryPrint(literal, @base, sb, ref tm, ref firstError))
-					return tm;
+					return tm!;
 			}
 			foreach (var iface in type.GetInterfaces())
 			{
 				if (TryPrint(literal, iface, sb, ref tm, ref firstError))
-					return tm;
+					return tm!;
 			}
 
 			return new Either<Symbol, ILogMessage>(firstError ??
 				new LogMessage(Severity.Error, literal, 
 					"There is no printer for type '{0}'".Localized(literal.Value.GetType())));
 		}
-		private bool TryPrint(ILNode literal, object key, StringBuilder sb, ref Symbol typeMarker, ref ILogMessage firstError)
+		private bool TryPrint(ILNode literal, object key, StringBuilder sb, ref Symbol? typeMarker, ref ILogMessage? firstError)
 		{
 			if (_printers.TryGetValue(key, out var printer))
 			{

@@ -84,7 +84,7 @@ namespace Loyc.Syntax.Lexing
 		/// <param name="length">Value of <see cref="Length"/></param>
 		/// <param name="style">Value of <see cref="Style"/></param>
 		/// <param name="value">Value of <see cref="Value"/></param>
-		public Token(int type, int startIndex, int length, NodeStyle style = 0, object value = null)
+		public Token(int type, int startIndex, int length, NodeStyle style = 0, object? value = null)
 		{
 			_typeInt = type;
 			_stuff = (int)style;
@@ -94,7 +94,7 @@ namespace Loyc.Syntax.Lexing
 		}
 
 		/// <inheritdoc cref="Token(int, int, int, NodeStyle, object)"/>
-		public Token(int type, int startIndex, int length, object value)
+		public Token(int type, int startIndex, int length, object? value)
 		{
 			_typeInt = type;
 			_stuff = 0;
@@ -247,13 +247,13 @@ namespace Loyc.Syntax.Lexing
 		/// reference to <c>textValue</c> (the optimization is described in more 
 		/// detail in the other constructor's documentation.)
 		/// </remarks>
-		public Token(int type, int startIndex, UString sourceText, NodeStyle style, object valueOrTypeMarker, UString textValue)
+		public Token(int type, int startIndex, UString sourceText, NodeStyle style, object? valueOrTypeMarker, UString textValue)
 		{
 			_typeInt = type;
 			_startIndex = startIndex;
 			_length = sourceText.Length;
 			_value = valueOrTypeMarker;
-			Symbol typeMarker;
+			Symbol? typeMarker;
 			if (!textValue.IsNull && (typeMarker = valueOrTypeMarker as Symbol) == valueOrTypeMarker)
 			{
 				if (ReferenceEquals(sourceText.InternalString, textValue.InternalString))
@@ -267,7 +267,7 @@ namespace Loyc.Syntax.Lexing
 					}
 				}
 				_stuff = Stuff(style, 0xFF, 0xFF, true);
-				_value = new Tuple<Symbol, UString>(typeMarker, textValue);
+				_value = new Tuple<Symbol, UString>(typeMarker!, textValue); // typeMarker != null in this branch unless valueOrTypeMarker was null
 			}
 			else
 			{
@@ -279,7 +279,7 @@ namespace Loyc.Syntax.Lexing
 		private int _startIndex;
 		private int _length;
 		private int _stuff; // JIT somehow uses 3 words for 4 bytes of info, so pack manualy
-		private object _value;
+		private object? _value;
 
 		/// <summary>Token type.</summary>
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -325,23 +325,23 @@ namespace Loyc.Syntax.Lexing
 		/// <li>When no value is needed (because the Type() is enough): null</li>
 		/// </ul>
 		/// </remarks>
-		public object Value => IsUninterpretedLiteral ? null : _value;
+		public object? Value => IsUninterpretedLiteral ? null : _value;
 
 		/// <summary>Gets the type marker stored in this token, if this token was 
 		/// initialized with one of the constructors that accepts a type marker.</summary>
-		public Symbol TypeMarker {
+		public Symbol? TypeMarker {
 			get {
 				if (IsUninterpretedLiteral) {
 					if (SubstringOffset == 0xFF)
-						return ((Tuple<Symbol, UString>)_value).Item1;
-					return (Symbol)_value;
+						return ((Tuple<Symbol, UString>)_value!).Item1;
+					return (Symbol)_value!;
 				}
 				return null;
 			}
 		}
 
 		/// <summary>Returns Value as TokenTree (null if not a TokenTree).</summary>
-		public TokenTree Children { get { return _value as TokenTree; } }
+		public TokenTree? Children { get { return _value as TokenTree; } }
 
 		private byte SubstringOffset => (byte)(_stuff >> 8);
 		private byte SubstringOffsetFromEnd => (byte)(_stuff >> 16);
@@ -406,7 +406,7 @@ namespace Loyc.Syntax.Lexing
 		public UString TextValue(ICharSource source)
 		{
 			if (SubstringOffset == 0xFF)
-				return ((Tuple<Symbol, UString>)_value).Item2;
+				return ((Tuple<Symbol, UString>)_value!).Item2;
 			return source.Slice(StartIndex + SubstringOffset, Length - SubstringOffset - SubstringOffsetFromEnd);
 		}
 		/// <inheritdoc cref="TextValue(ICharSource)"/>
@@ -415,7 +415,7 @@ namespace Loyc.Syntax.Lexing
 		internal LiteralNode UninterpretedTokenToLNode(ISourceFile file, object value)
 		{
 			if (SubstringOffset == 0xFF) {
-				var lv = new LiteralValue(value, TypeMarker, TextValue(file.Text));
+				var lv = new LiteralValue(value, TypeMarker!, TextValue(file.Text)); // SubstringOffset==0xFF implies non-null TypeMarker
 				return new StdLiteralNode<LiteralValue>(lv, SourceRange.New(file, this), Style);
 			} else {
 				var lfp = new LiteralFromParser(value, _startIndex + SubstringOffset, _length - SubstringOffset - SubstringOffsetFromEnd, TypeMarker);
@@ -440,14 +440,14 @@ namespace Loyc.Syntax.Lexing
 		/// token, since the <see cref="ToStringStrategy"/> does not have access to
 		/// the original source file.
 		/// </remarks>
-		public override string ToString() => ToStringStrategy(this, null);
+		public override string ToString() => ToStringStrategy(this, null!); // ToStringStrategy accepts a null ICharSource
 		
 		/// <summary>Gets the original text of the token, if you provide a reference
 		/// to the original source code text. Note: the method used to convert the
 		/// token to a string can be overridden with <see cref="SetToStringStrategy"/>.</summary>
 		public string ToString(ICharSource sourceText) => ToStringStrategy(this, sourceText);
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return obj is Token && Equals((Token)obj);
 		}
@@ -471,7 +471,7 @@ namespace Loyc.Syntax.Lexing
 
 		public Token this[int index]
 		{
-			get { return Children[index]; }
+			get { return Children![index]; }
 		}
 		public Token TryGet(int index, out bool fail)
 		{
@@ -518,7 +518,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			Token newT = this;
 			if (SubstringOffset == 0xFF)
-				newT._value = new Tuple<Symbol, UString>((Symbol)value, ((Tuple<Symbol, UString>)_value).Item2);
+				newT._value = new Tuple<Symbol, UString>((Symbol)value, ((Tuple<Symbol, UString>)_value!).Item2);
 			else
 				newT._value = value;
 			return newT;
@@ -541,7 +541,7 @@ namespace Loyc.Syntax.Lexing
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		IListSource<IToken<int>> IToken<int>.Children
 		{
-			get { return new UpCastListSource<Token, IToken<int>>(Children); }
+			get { return new UpCastListSource<Token, IToken<int>>(Children!); } // preserves prior behavior when Children is null
 		}
 		IToken<int> ICloneable<IToken<int>>.Clone()
 		{
@@ -565,7 +565,7 @@ namespace Loyc.Syntax.Lexing
 		public LNode ToLNode(ISourceFile file) => TokenTree.TokenToLNode(this, file);
 
 		[Obsolete("This doesn't appear to be used will be removed if no one complains")]
-		public static Symbol GetParenPairSymbol(TokenKind k, TokenKind k2)
+		public static Symbol? GetParenPairSymbol(TokenKind k, TokenKind k2)
 		{
 			Symbol both;
 			if (k == TokenKind.LParen && k2 == TokenKind.RParen)
@@ -598,7 +598,7 @@ namespace Loyc.Syntax.Lexing
 	/// a token <see cref="Type"/>, which is the type of a "word" in the program 
 	/// (string, identifier, plus sign, etc.), a value (e.g. the name of an 
 	/// identifier), and an index where the token starts in the source file.</summary>
-	public interface ISimpleToken<TokenType> : IValue<object>
+	public interface ISimpleToken<TokenType> : IValue<object?>
 	{
 		/// <summary>The category of the token (integer, keyword, etc.) used as
 		/// the primary value for identifying the token in a parser.</summary>

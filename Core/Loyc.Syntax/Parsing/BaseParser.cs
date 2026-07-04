@@ -29,7 +29,7 @@ namespace Loyc.Syntax
 		/// messages will only show the character index instead of the file, line 
 		/// number and column number.</param>
 		/// <param name="startIndex">The initial value of <see cref="InputPosition"/>.</param>
-		protected BaseParser(ISourceFile file = null, int startIndex = 0) { 
+		protected BaseParser(ISourceFile? file = null, int startIndex = 0) {
 			EOF = EofInt();
 			_sourceFile = file;
 			_inputPosition = startIndex;
@@ -56,7 +56,7 @@ namespace Loyc.Syntax
 					MessageSink.Default.Write(sev, location, fmt, args);
 			});
 
-		private IMessageSink _errorSink;
+		private IMessageSink? _errorSink;
 		/// <summary>Gets or sets the object to which error messages are sent. The
 		/// default object is <see cref="LogExceptionErrorSink"/>, which throws
 		/// an exception if an error occurs.</summary>
@@ -67,10 +67,10 @@ namespace Loyc.Syntax
 		}
 
 		/// <summary>The <see cref="ISourceFile"/> object that was provided to the constructor, if any.</summary>
-		protected ISourceFile SourceFile { get { return _sourceFile; } }
-		protected ISourceFile _sourceFile;
+		protected ISourceFile? SourceFile { get { return _sourceFile; } }
+		protected ISourceFile? _sourceFile;
 
-		protected Token _lt0;
+		protected Token _lt0 = default!; // set by the InputPosition setter
 		/// <summary>Next token to parse (cached; is set to LT(0) whenever InputPosition is changed).</summary>
 		public Token LT0 { [DebuggerStepThrough] get { return _lt0; } }
 
@@ -124,7 +124,7 @@ namespace Loyc.Syntax
 				else 
 					for (int li = lookaheadIndex; li > lookaheadIndex-100;  li--) {
 						var token2 = LT(li) as ISimpleToken<MatchType>;
-						if (!token2.Type.Equals(EOF)) {
+						if (!token2!.Type.Equals(EOF)) {
 							charIdx = System.Math.Max(charIdx, token2.StartIndex);
 							break;
 						}
@@ -162,7 +162,7 @@ namespace Loyc.Syntax
 			ErrorSink.Write(Severity.Error, LaIndexToMsgContext(lookaheadIndex), message);
 		}
 		/// <inheritdoc cref="Error(int,string)"/>
-		protected virtual void Error(int lookaheadIndex, string format, params object[] args)
+		protected virtual void Error(int lookaheadIndex, string format, params object?[] args)
 		{
 			ErrorSink.Write(Severity.Error, LaIndexToMsgContext(lookaheadIndex), format, args);
 		}
@@ -427,6 +427,6 @@ namespace Loyc.Syntax
 	/// </summary>
 	public abstract class BaseParser<Token> : BaseParser<Token, Int32>
 	{
-		protected BaseParser(ISourceFile file = null, int startIndex = 0) : base(file, startIndex) {} 
+		protected BaseParser(ISourceFile? file = null, int startIndex = 0) : base(file, startIndex) {}
 	}
 }

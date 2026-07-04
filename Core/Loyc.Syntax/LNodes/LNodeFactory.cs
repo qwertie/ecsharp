@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc.Utilities;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Loyc.Collections;
 using Loyc.Collections.MutableListExtensionMethods;
 using S = Loyc.Syntax.CodeSymbols;
@@ -20,15 +21,16 @@ namespace Loyc.Syntax
 	{
 		public static readonly LNode Missing_ = new StdIdNode(S.Missing, new SourceRange(EmptySourceFile.Unknown));
 		
-		private LNode _emptyList, _emptySplice, _emptyTuple;
+		private LNode? _emptyList, _emptySplice, _emptyTuple;
 		public LNode Missing { get { return Missing_; } } // allow access through class reference
 
 		ISourceFile _file;
 		public ISourceFile File { get { return _file; } set { _file = value; } }
 		
-		IMessageSink<LNode> _errorSink;
+		IMessageSink<LNode>? _errorSink;
 		/// <summary>Where errors should be sent if there is an error parsing a literal.</summary>
 		/// <remarks>Attempting to set this to null makes the getter return <see cref="MessageSink.Default"/>.</remarks>
+		[AllowNull] // setting null makes the getter return MessageSink.Default
 		public IMessageSink<LNode> ErrorSink
 		{
 			get => _errorSink ?? MessageSink.Default;
@@ -36,7 +38,7 @@ namespace Loyc.Syntax
 		}
 
 		public LNodeFactory() : this(EmptySourceFile.Unknown) { }
-		public LNodeFactory(ISourceFile file, IMessageSink sink = null)
+		public LNodeFactory(ISourceFile file, IMessageSink? sink = null)
 		{
 			_file = file;
 			ErrorSink = sink;
@@ -47,7 +49,7 @@ namespace Loyc.Syntax
 		// Common literals
 		public LNode @true { get { return Literal(true); } }
 		public LNode @false { get { return Literal(false); } }
-		public LNode @null { get { return Literal((object)null); } }
+		public LNode @null { get { return Literal((object?)null); } }
 		public LNode @void { get { return Literal(@void.Value); } }
 		public LNode int_0 { get { return Literal(0); } }
 		public LNode int_1 { get { return Literal(1); } }
@@ -85,9 +87,9 @@ namespace Loyc.Syntax
 
 		public LNode True { get { return Literal(true); } }
 		public LNode False { get { return Literal(false); } }
-		public LNode Null { get { return Literal((object)null); } }
+		public LNode Null { get { return Literal((object?)null); } }
 
-		LNode _newline = null;
+		LNode? _newline = null;
 		public LNode TriviaNewline { get { return _newline = _newline ?? Id(S.TriviaNewline); } }
 		
 		/// <summary>Adds a leading newline to the node if the first attribute isn't a newline.</summary>
@@ -123,7 +125,7 @@ namespace Loyc.Syntax
 		}
 		public LNode Id(Token t)
 		{
-			return new StdIdNode(t.Value as Symbol ?? GSymbol.Get((t.Value ?? "").ToString()),
+			return new StdIdNode(t.Value as Symbol ?? GSymbol.Get((t.Value ?? "").ToString()!),
 				new SourceRange(_file, t.StartIndex, t.Length), t.Style);
 		}
 
@@ -163,7 +165,7 @@ namespace Loyc.Syntax
 				if (parser != null)
 				{
 					var textValue = t.TextValue(_file.Text);
-					var parsed = parser.TryParse(textValue, t.TypeMarker);
+					var parsed = parser.TryParse(textValue, t.TypeMarker!); // uninterpreted literals have a TypeMarker
 					if (parsed.Right.HasValue) {
 						var result = UninterpretedLiteral(t);
 						var lm = parsed.Right.Value;
@@ -182,7 +184,7 @@ namespace Loyc.Syntax
 		/// <summary>Creates a literal whose <see cref="LNode.Value"/> is the same as the value of <c>t</c>.</summary>
 		public LiteralNode LiteralFromValueOf(Token t)
 		{
-			return new StdLiteralNode<SimpleValue<object>>(new SimpleValue<object>(t.Value), new SourceRange(_file, t.StartIndex, t.Length), t.Style);
+			return new StdLiteralNode<SimpleValue<object>>(new SimpleValue<object>(t.Value!), new SourceRange(_file, t.StartIndex, t.Length), t.Style); // t.Value may be null (e.g. the null literal), which SimpleValue stores fine
 		}
 		
 		/// <summary>This method produces a literal by assuming that the provided token 
@@ -194,7 +196,7 @@ namespace Loyc.Syntax
 		public LiteralNode UninterpretedLiteral(Token t)
 		{
 			Debug.Assert(t.IsUninterpretedLiteral);
-			var litVal = new UninterpretedLiteral(t.TextValue(_file.Text), t.TypeMarker);
+			var litVal = new UninterpretedLiteral(t.TextValue(_file.Text), t.TypeMarker!); // uninterpreted literals have a TypeMarker (asserted above)
 			return new StdLiteralNode<UninterpretedLiteral>(litVal, SourceRange.New(_file, t));
 		}
 
@@ -409,10 +411,10 @@ namespace Loyc.Syntax
 		// 1. the left-hand side of each expression has a valid range but the right-hand side might be Missing.
 		// 2. If a token represents an operator, Value is its Symbol
 
-		public LNode CallPrefixOp(Token target, LNode rhs, Symbol opName = null, NodeStyle style = NodeStyle.Operator) =>
-			CallPrefixOp(opName ?? (Symbol)target.Value, target, rhs, style);
-		public LNode CallPrefixOp(Token target, LNodeList args, Symbol opName = null, NodeStyle style = NodeStyle.Default) =>
-			CallPrefixOp(opName ?? (Symbol)target.Value, target, args, style);
+		public LNode CallPrefixOp(Token target, LNode rhs, Symbol? opName = null, NodeStyle style = NodeStyle.Operator) =>
+			CallPrefixOp(opName ?? (Symbol)target.Value!, target, rhs, style);
+		public LNode CallPrefixOp(Token target, LNodeList args, Symbol? opName = null, NodeStyle style = NodeStyle.Default) =>
+			CallPrefixOp(opName ?? (Symbol)target.Value!, target, args, style);
 		public LNode CallPrefixOp(Symbol target, IndexRange targetRange, LNode rhs, NodeStyle style = NodeStyle.Operator) =>
 			Call(target, rhs, targetRange.StartIndex, Max(rhs.Range.EndIndex, targetRange.EndIndex), targetRange.StartIndex, targetRange.EndIndex, style);
 		public LNode CallPrefixOp(Symbol target, IndexRange targetRange, LNodeList args, NodeStyle style = NodeStyle.Default) =>
@@ -422,27 +424,27 @@ namespace Loyc.Syntax
 		public LNode CallPrefixOp(LNode target, LNodeList args, NodeStyle style = NodeStyle.Default) =>
 			Call(target, args, target.Range.StartIndex, Max(args[args.Count - 1, Missing].Range.EndIndex, target.Range.EndIndex), style);
 
-		public LNode CallPrefix(Token target, LNode rhs, IndexRange closingBracket, Symbol opName = null, NodeStyle style = NodeStyle.Default) =>
-			CallPrefix(opName ?? (Symbol)target.Value, target, LNode.List(rhs), closingBracket, style);
-		public LNode CallPrefix(Token target, LNodeList args, IndexRange closingBracket, Symbol opName = null, NodeStyle style = NodeStyle.Default) =>
-			CallPrefix(opName ?? (Symbol)target.Value, target, args, closingBracket, style);
+		public LNode CallPrefix(Token target, LNode rhs, IndexRange closingBracket, Symbol? opName = null, NodeStyle style = NodeStyle.Default) =>
+			CallPrefix(opName ?? (Symbol)target.Value!, target, LNode.List(rhs), closingBracket, style);
+		public LNode CallPrefix(Token target, LNodeList args, IndexRange closingBracket, Symbol? opName = null, NodeStyle style = NodeStyle.Default) =>
+			CallPrefix(opName ?? (Symbol)target.Value!, target, args, closingBracket, style);
 		public LNode CallPrefix(LNode target, LNodeList args, IndexRange closingBracket, NodeStyle style = NodeStyle.Default) =>
 			Call(target, args, target.Range.StartIndex, Max(closingBracket.EndIndex, (args.IsEmpty ? target : args.Last).Range.EndIndex), style);
 		public LNode CallPrefix(Symbol target, IndexRange targetRange, LNodeList args, IndexRange closingBracket, NodeStyle style = NodeStyle.Operator) =>
 			Call(target, args, targetRange.StartIndex, Max(closingBracket.EndIndex, args.IsEmpty ? targetRange.EndIndex : args.Last.Range.EndIndex), targetRange.StartIndex, targetRange.EndIndex, style);
 
-		public LNode CallInfixOp(LNode lhs, Token target, LNode rhs, Symbol opName = null, NodeStyle style = NodeStyle.Operator) =>
-			CallInfixOp(lhs, opName ?? (Symbol)target.Value, target, rhs, style);
+		public LNode CallInfixOp(LNode lhs, Token target, LNode rhs, Symbol? opName = null, NodeStyle style = NodeStyle.Operator) =>
+			CallInfixOp(lhs, opName ?? (Symbol)target.Value!, target, rhs, style);
 		public LNode CallInfixOp(LNode lhs, Symbol target, IndexRange targetRange, LNode rhs, NodeStyle style = NodeStyle.Operator) =>
 			Call(target, lhs, rhs, lhs.Range.StartIndex, Max(rhs.Range.EndIndex, targetRange.EndIndex), targetRange.StartIndex, targetRange.EndIndex, style);
 
-		public LNode CallSuffixOp(LNode lhs, Token target, Symbol opName = null, NodeStyle style = NodeStyle.Operator) =>
-			CallSuffixOp(lhs, opName ?? (Symbol)target.Value, target, style);
+		public LNode CallSuffixOp(LNode lhs, Token target, Symbol? opName = null, NodeStyle style = NodeStyle.Operator) =>
+			CallSuffixOp(lhs, opName ?? (Symbol)target.Value!, target, style);
 		public LNode CallSuffixOp(LNode lhs, Symbol target, IndexRange targetRange, NodeStyle style = NodeStyle.Operator) =>
 			Call(target, lhs, lhs.Range.StartIndex, targetRange.EndIndex, targetRange.StartIndex, targetRange.EndIndex, style);
 
-		public LNode CallInfixOp(LNode lhs, Token target, LNode middle, LNode rhs, Symbol opName = null, NodeStyle style = NodeStyle.Operator) =>
-			CallInfixOp(lhs, opName ?? (Symbol)target.Value, target, middle, rhs, style);
+		public LNode CallInfixOp(LNode lhs, Token target, LNode middle, LNode rhs, Symbol? opName = null, NodeStyle style = NodeStyle.Operator) =>
+			CallInfixOp(lhs, opName ?? (Symbol)target.Value!, target, middle, rhs, style);
 		public LNode CallInfixOp(LNode lhs, Symbol target, IndexRange targetRange, LNode middle, LNode rhs, NodeStyle style = NodeStyle.Operator) =>
 			Call(target, LNode.List(lhs, middle, rhs), lhs.Range.StartIndex, Max(rhs.Range.EndIndex, middle.Range.EndIndex), targetRange.StartIndex, targetRange.EndIndex, style);
 		
@@ -658,12 +660,12 @@ namespace Loyc.Syntax
 
 		#region Function, property and variable definitions
 
-		public LNode Fn(LNode retType, Symbol name, LNode argList, LNode body = null, int startIndex = -1, int endIndex = -1)
+		public LNode Fn(LNode retType, Symbol name, LNode argList, LNode? body = null, int startIndex = -1, int endIndex = -1)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
 			return Fn(retType, Id(name), argList, body, startIndex, endIndex);
 		}
-		public LNode Fn(LNode retType, LNode name, LNode argList, LNode body = null, int startIndex = -1, int endIndex = -1)
+		public LNode Fn(LNode retType, LNode name, LNode argList, LNode? body = null, int startIndex = -1, int endIndex = -1)
 		{
 			if (endIndex < startIndex) endIndex = startIndex;
 			CheckParam.Arg("argList", argList.Name == S.AltList || argList.Name == S.Missing);
@@ -672,11 +674,11 @@ namespace Loyc.Syntax
 				: new[] { retType, name, argList, body };
 			return new StdSimpleCallNode(S.Fn, new LNodeList(list), new SourceRange(_file, startIndex, Max(endIndex - startIndex, 0)), startIndex, startIndex);
 		}
-		public LNode Property(LNode type, LNode name, LNode body = null, int startIndex = -1, int endIndex = -1)
+		public LNode Property(LNode type, LNode name, LNode? body = null, int startIndex = -1, int endIndex = -1)
 		{
 			return Property(type, name, Missing_, body, null, startIndex, endIndex);
 		}
-		public LNode Property(LNode type, LNode name, LNode argList, LNode body, LNode initializer = null, int startIndex = -1, int endIndex = -1)
+		public LNode Property(LNode type, LNode name, LNode? argList, LNode? body, LNode? initializer = null, int startIndex = -1, int endIndex = -1)
 		{
 			argList = argList ?? Missing_;
 			CheckParam.Arg("body with initializer", initializer == null || (body != null && body.Calls(S.Braces)));
@@ -689,15 +691,15 @@ namespace Loyc.Syntax
 			return new StdSimpleCallNode(S.Property, new LNodeList(list), new SourceRange(_file, startIndex, Max(endIndex - startIndex, 0)), startIndex, startIndex);
 		}
 		
-		public LNode Var(LNode type, string name, LNode initValue = null, int startIndex = -1, int endIndex = -1)
+		public LNode Var(LNode type, string name, LNode? initValue = null, int startIndex = -1, int endIndex = -1)
 		{
 			return Var(type, GSymbol.Get(name), initValue, startIndex, endIndex);
 		}
-		public LNode Var(LNode type, Symbol name, LNode initValue = null, int startIndex = -1, int endIndex = -1)
+		public LNode Var(LNode type, Symbol name, LNode? initValue = null, int startIndex = -1, int endIndex = -1)
 		{
 			return Var(type, Id(name), initValue, startIndex, endIndex);
 		}
-		public LNode Var(LNode type, LNode name, LNode initValue = null, int startIndex = -1, int endIndex = -1)
+		public LNode Var(LNode type, LNode name, LNode? initValue = null, int startIndex = -1, int endIndex = -1)
 		{
 			type = type ?? Missing;
 			if (initValue != null)

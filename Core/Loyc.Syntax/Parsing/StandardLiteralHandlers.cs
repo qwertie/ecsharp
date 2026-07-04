@@ -147,7 +147,7 @@ namespace Loyc.Syntax
 	/// <seealso cref="PrintHelpers"/>
 	public class StandardLiteralHandlers : LiteralHandlerTable
 	{
-		private static StandardLiteralHandlers _value = null;
+		private static StandardLiteralHandlers? _value = null;
 		public static StandardLiteralHandlers Value => _value = _value ?? new StandardLiteralHandlers();
 
 		protected static Symbol __u = GSymbol.Get("_u"); // uint or ulong
@@ -229,7 +229,7 @@ namespace Loyc.Syntax
 			AddParser(true, __r32, f32);
 			AddParser(true, __r64, f64);
 			AddParser(true, __z, big);
-			AddParser(true, _s, (s, tm) => (Symbol)s);
+			AddParser(true, _s, (s, tm) => OK((Symbol?)s));
 			AddParser(true, _void, (s, tm) =>
 				s.IsEmpty ? OK(G.BoxedVoid) : new LogMessage(Severity.Error, s, "void literal should be an empty string"));
 			AddParser(true, (Symbol)"null", (s, tm) =>
@@ -246,7 +246,7 @@ namespace Loyc.Syntax
 				int ch = s2.PopFirst(out bool fail);
 				if (fail || s2.Length > 0)
 					return new LogMessage(Severity.Error, s, "Character literal should be a single character");
-				return OK(ch < 0x10000 ? (char)ch : (object)s.ToString());
+				return OK(ch < 0x10000 ? (char)ch : (object?)s.ToString());
 			});
 			AddParser(true, _bais, (s, tm) => {
 				var slice = ByteArrayInString.TryConvertToBytes(s);
@@ -307,7 +307,7 @@ namespace Loyc.Syntax
 
 		#region Parsing code
 
-		protected static Either<object, LogMessage> OK(object result) => new Either<object, LogMessage>(result);
+		protected static Either<object, LogMessage> OK(object? result) => new Either<object, LogMessage>(result!); // Either stores the value in an [AllowNull] field
 
 		protected static Either<object, LogMessage> SyntaxError(UString input, Symbol typeMarker)
 		{

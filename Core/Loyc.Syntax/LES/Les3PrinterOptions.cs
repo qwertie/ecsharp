@@ -8,7 +8,7 @@ namespace Loyc.Syntax.Les
 	public class Les3PrinterOptions : LNodePrinterOptions
 	{
 		public Les3PrinterOptions() : this(null) { }
-		public Les3PrinterOptions(ILNodePrinterOptions options)
+		public Les3PrinterOptions(ILNodePrinterOptions? options)
 		{
 			WarnAboutUnprintableLiterals = true;
 			SpaceAfterComma = true;

@@ -7,6 +7,7 @@ using System.Numerics;
 using Loyc.Utilities;
 using S = Loyc.Syntax.CodeSymbols;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Loyc.Syntax.Lexing;
 using Loyc.Collections;
 using System.Globalization;
@@ -19,13 +20,15 @@ namespace Loyc.Syntax.Les
 	public class Les2Printer
 	{
 		Les2PrinterWriter _out;
-		IMessageSink _errors;
+		IMessageSink _errors = null!; // late-init: set via ErrorSink before use
 
+		[AllowNull]
 		public IMessageSink ErrorSink { get { return _errors; } set { _errors = value ?? MessageSink.Null; } }
 
 		Les2PrinterOptions _o;
 		public Les2PrinterOptions Options { get { return _o; } }
-		public void SetOptions(ILNodePrinterOptions options)
+		[MemberNotNull(nameof(_o))]
+		public void SetOptions(ILNodePrinterOptions? options)
 		{
 			_o = options as Les2PrinterOptions ?? new Les2PrinterOptions(options);
 		}
@@ -33,9 +36,9 @@ namespace Loyc.Syntax.Les
 		#region Constructors and default Printer
 		
 		[ThreadStatic]
-		static Les2Printer _printer;
+		static Les2Printer? _printer;
 
-		internal static void Print(ILNode node, StringBuilder target, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options = null)
+		internal static void Print(ILNode node, StringBuilder target, IMessageSink? sink, ParsingMode? mode, ILNodePrinterOptions? options = null)
 		{
 			var p = _printer = _printer ?? new Les2Printer(new StringBuilder(), null);
 			var oldOptions = p._o;
@@ -55,7 +58,7 @@ namespace Loyc.Syntax.Les
 			p.ErrorSink = oldSink;
 		}
 
-		internal Les2Printer(StringBuilder target, ILNodePrinterOptions options = null)
+		internal Les2Printer(StringBuilder target, ILNodePrinterOptions? options = null)
 		{
 			SetOptions(options);
 			_out = new Les2PrinterWriter(target, _o.IndentString ?? "\t", _o.NewlineString ?? "\n");
@@ -64,7 +67,7 @@ namespace Loyc.Syntax.Les
 		#endregion
 
 		/// <summary>Top-level non-static printing method</summary>
-		internal void Print(ILNode node, Precedence context, string terminator = null)
+		internal void Print(ILNode node, Precedence context, string? terminator = null)
 		{
 			_out.BeginNode(node);
 			int parenCount = WriteAttrs(node, ref context);
@@ -144,10 +147,11 @@ namespace Loyc.Syntax.Les
 			// suppresses the newline if it is followed immediately by another newline.
 			// But if we print a space after the trivia, then this suppression does not
 			// occur and we end up with two newlines. Therefore, we must print the space first.
-			if (target.AttrCount() == 0)
-				target = null; // optimize the usual case
-			if (target != null)
-				PrintPrefixTrivia(target);
+			ILNode? t = target;
+			if (t.AttrCount() == 0)
+				t = null; // optimize the usual case
+			if (t != null)
+				PrintPrefixTrivia(t);
 			if (!Les2PrecedenceMap.IsNaturalOperator(op.Name))
 				PrintStringCore('`', false, op.Name);
 			else {
@@ -155,8 +159,8 @@ namespace Loyc.Syntax.Les
 				_out.Write(op.Name.Substring(1));
 			}
 			SpaceIf(spaceAfter);
-			if (target != null)
-				PrintSuffixTrivia(target, 0, null);
+			if (t != null)
+				PrintSuffixTrivia(t, 0, null);
 
 			_out.EndNode();
 		}
@@ -215,7 +219,7 @@ namespace Loyc.Syntax.Les
 			return false;
 		}
 
-		private void PrintArgList(NegListSlice<ILNode> args, bool stmtMode, string leftDelim, char rightDelim, string separator = null, ILNode target = null)
+		private void PrintArgList(NegListSlice<ILNode> args, bool stmtMode, string leftDelim, char rightDelim, string? separator = null, ILNode? target = null)
 		{
 			if (target != null)
 				PrintPrefixTrivia(target);
@@ -333,7 +337,7 @@ namespace Loyc.Syntax.Les
 			foreach (var attr in _n.Attrs())
 				MaybePrintTrivia(attr, needSpace: false);
 		}
-		private void PrintSuffixTrivia(ILNode _n, int parenCount, string terminator)
+		private void PrintSuffixTrivia(ILNode _n, int parenCount, string? terminator)
 		{
 			while (--parenCount >= 0)
 				_out.Write(')').Dedent();
@@ -397,13 +401,13 @@ namespace Loyc.Syntax.Les
 
 		static string GetRawText(ILNode rawTextNode)
 		{
-			object value = rawTextNode.Value;
+			object? value = rawTextNode.Value;
 			if (value == null || value == NoValue.Value) {
-				var node = rawTextNode.TryGet(0, null);
-				if (node != null)
-					value = node.Value;
+				var maybe = rawTextNode.TryGet(0);
+				if (maybe.HasValue)
+					value = maybe.Value.Value;
 			}
-			return (value ?? rawTextNode.Name).ToString();
+			return (value ?? rawTextNode.Name).ToString()!; // Symbol/object ToString never null here
 		}
 
 		private void PrintSpaces(string spaces)
@@ -426,14 +430,15 @@ namespace Loyc.Syntax.Les
 
 		#region Static methods for printing literals, identifiers and strings
 
-		[ThreadStatic] static StringBuilder _staticStringBuilder = new StringBuilder();
-		[ThreadStatic] static Les2PrinterWriter _staticWriter;
-		[ThreadStatic] static Les2Printer _staticPrinter;
+		[ThreadStatic] static StringBuilder? _staticStringBuilder = new StringBuilder();
+		[ThreadStatic] static Les2PrinterWriter? _staticWriter;
+		[ThreadStatic] static Les2Printer? _staticPrinter;
 
+		[MemberNotNull(nameof(_staticStringBuilder), nameof(_staticWriter), nameof(_staticPrinter))]
 		static void MaybeInitThread()
 		{
-			_staticPrinter = _staticPrinter ?? new Les2Printer(_staticStringBuilder);
-			_staticWriter = _staticWriter ?? new Les2PrinterWriter(_staticStringBuilder);
+			_staticPrinter = _staticPrinter ?? new Les2Printer(_staticStringBuilder!);
+			_staticWriter = _staticWriter ?? new Les2PrinterWriter(_staticStringBuilder!);
 			_staticStringBuilder = _staticStringBuilder ?? new StringBuilder();
 		}
 		public static string PrintId(Symbol name)
@@ -444,7 +449,7 @@ namespace Loyc.Syntax.Les
 			_staticPrinter.PrintIdOrSymbol(name, false);
 			return _staticStringBuilder.ToString();
 		}
-		public static string PrintLiteral(object value, NodeStyle style = 0) => PrintLiteral(LNode.Literal(value, null, style));
+		public static string PrintLiteral(object? value, NodeStyle style = 0) => PrintLiteral(LNode.Literal(value, null, style));
 		public static string PrintLiteral(ILNode literal)
 		{
 			MaybeInitThread();
@@ -515,7 +520,7 @@ namespace Loyc.Syntax.Les
 				_out.Write(name.Name);
 		}
 
-		private void PrintString(Symbol typeMarker, char quoteType, bool tripleQuoted, UString text)
+		private void PrintString(Symbol? typeMarker, char quoteType, bool tripleQuoted, UString text)
 		{
 			if (typeMarker != null && typeMarker.Name.Length != 0)
 				PrintIdOrSymbol(typeMarker, isSymbol: false);
@@ -630,7 +635,7 @@ namespace Loyc.Syntax.Les
 			}
 		}
 
-		private void PrintStringOrNumber(UString text, NodeStyle stringStyle, Symbol typeMarker)
+		private void PrintStringOrNumber(UString text, NodeStyle stringStyle, Symbol? typeMarker)
 		{
 			if (typeMarker != null && typeMarker.Name.StartsWith("_"))
 			{
@@ -642,8 +647,8 @@ namespace Loyc.Syntax.Les
 				}
 				else if (Les3Printer.CanPrintAsNumber(text, typeMarker))
 				{
-					_out.Write(text.ToString());
-					_out.Write(typeMarker.Name.Slice(1).ToString());
+					_out.Write(text.ToString()!);
+					_out.Write(typeMarker.Name.Slice(1).ToString()!);
 					return;
 				}
 			}
@@ -662,7 +667,7 @@ namespace Loyc.Syntax.Les
 	public sealed class Les2PrinterOptions : LNodePrinterOptions
 	{
 		public Les2PrinterOptions() { }
-		public Les2PrinterOptions(ILNodePrinterOptions options)
+		public Les2PrinterOptions(ILNodePrinterOptions? options)
 		{
 			if (options != null)
 				CopyFrom(options);

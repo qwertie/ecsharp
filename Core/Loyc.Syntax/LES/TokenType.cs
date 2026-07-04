@@ -62,15 +62,15 @@ namespace Loyc.Syntax.Les
 		/// For performance reasons, a <see cref="Token"/> does not have a reference 
 		/// to its source file, so this method cannot return the original string.
 		/// </remarks>
-		public static string ToString(Token t, ICharSource sourceCode)
+		public static string ToString(Token t, ICharSource? sourceCode)
 		{
 			if (sourceCode != null && t.EndIndex <= sourceCode.Count)
-				return sourceCode.Slice(t.StartIndex, t.Length).ToString();
+				return sourceCode.Slice(t.StartIndex, t.Length).ToString() ?? "";
 
 			StringBuilder sb = new StringBuilder();
 			switch (t.Kind)
 			{
-				case TokenKind.Spaces: return (t.Value ?? " ").ToString();
+				case TokenKind.Spaces: return (t.Value ?? " ").ToString() ?? "";
 				case TokenKind.Comment:
 					if (t.Type() == TokenType.SLComment)
 						return "// (comment)";
@@ -84,10 +84,10 @@ namespace Loyc.Syntax.Les
 			if (t.Value != null)
 			{
 				if (t.Type() == TokenType.BQOperator)
-					return Les2Printer.PrintString((t.Value ?? "").ToString(), '`', false);
+					return Les2Printer.PrintString((t.Value ?? "").ToString() ?? "", '`', false);
 				else if (t.Type() == TokenType.Shebang)
 					return "#!" + t.Value.ToString() + "\n";
-				return t.Value.ToString();
+				return t.Value.ToString() ?? "";
 			}
 			switch (t.Kind)
 			{

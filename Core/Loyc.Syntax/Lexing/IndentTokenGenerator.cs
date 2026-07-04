@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Loyc.Collections;
@@ -128,7 +129,7 @@ namespace Loyc.Syntax.Lexing
 		/// </remarks>
 		protected virtual bool IndentChangedUnexpectedly(Token tokenBeforeNewline, ref Maybe<Token> tokenAfterNewline, ref int deltaIndent)
 		{
-			var pos = IndexToMsgContext(tokenAfterNewline.Or(default(Token)));
+			var pos = IndexToMsgContext(tokenAfterNewline.Or(default(Token)!));
 			if (deltaIndent > 0) {
 				if (_errorBias >= 0)
 					ErrorSink.Error(pos, "Unexpected indent");
@@ -151,7 +152,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			int index = Lexer.InputPosition;
 			if (token is ISimpleToken<int>)
-				index = (token as ISimpleToken<int>).StartIndex;
+				index = (token as ISimpleToken<int>)!.StartIndex;
 			return new SourceRange(Lexer.SourceFile, index);
 		}
 
@@ -162,14 +163,15 @@ namespace Loyc.Syntax.Lexing
 			indent2 = indent2.Substring(0, common);
 			if (!indent1.Equals(indent2))
 				ErrorSink.Write(Severity.Warning, IndexToMsgContext(next), "Indentation style changed on this line from {0} to {1}",
-					Les2Printer.PrintLiteral(indent1.ToString()), 
-					Les2Printer.PrintLiteral(indent2.ToString()));
+					Les2Printer.PrintLiteral(indent1.ToString()!),
+					Les2Printer.PrintLiteral(indent2.ToString()!));
 		}
 
 		public override void Reset() { 
 			base.Reset();
 			InitState();
 		}
+		[MemberNotNull(nameof(_lastNonWS))]
 		void InitState()
 		{
 			_pending.Resize(0);
@@ -182,7 +184,7 @@ namespace Loyc.Syntax.Lexing
 			_errorBias = 0;
 			_outerIndents.Resize(1);
 			_outerIndents[0] = -1;
-			_lastNonWS = default(Token);
+			_lastNonWS = default(Token)!; // this sentinel doesn't escape until a real token replaces it
 		}
 
 		protected int BracketDepth { get { return _bracketDepth; } }
@@ -524,6 +526,7 @@ namespace Loyc.Syntax.Lexing
 		public int[] AllIndentTriggers
 		{
 			get { return _allIndentTriggers; }
+			[MemberNotNull(nameof(_allIndentTriggers))]
 			set { _allIndentTriggers = value ?? EmptyArray<int>.Value; }
 		}
 
@@ -531,10 +534,11 @@ namespace Loyc.Syntax.Lexing
 		/// effect at the end of a line.</summary>
 		/// <remarks>If this list includes items that are not in 
 		/// <see cref="AllIndentTriggers"/>, they have no effect.</remarks>
-		private int[] _eolIndentTriggers;
+		private int[] _eolIndentTriggers = null!; // beware: stays null unless EolIndentTriggers is set
 		public int[] EolIndentTriggers
 		{
 			get { return _eolIndentTriggers; }
+			[MemberNotNull(nameof(_eolIndentTriggers))]
 			set { _eolIndentTriggers = value ?? EmptyArray<int>.Value; }
 		}
 
@@ -597,7 +601,7 @@ namespace Loyc.Syntax.Lexing
 		protected override Maybe<Token> MakeEndOfLineToken(Token tokenBeforeNewline, ref Maybe<Token> tokenAfterNewline, int? deltaIndent)
 		{
 			if (!EolToken.HasValue)
-				return null;
+				return Maybe<Token>.NoValue;
 			if (tokenBeforeNewline.TypeInt == EolToken.Value.TypeInt)
 				return Maybe<Token>.NoValue;
 			else

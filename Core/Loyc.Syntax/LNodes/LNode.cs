@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
@@ -112,23 +113,25 @@ namespace Loyc.Syntax
 		public static CallNode Call(LNodeList attrs, LNode target, LNodeList args, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, range, style); }
 		public static CallNode Trivia(Symbol name, object value, SourceRange range, NodeStyle style = NodeStyle.Default) { return new StdTriviaNode(name, value, range, style); }
 
-		public static IdNode Id(Symbol name, ISourceFile file = null) { return new StdIdNode(name, new SourceRange(file)); }
-		public static IdNode Id(string name, ISourceFile file = null) { return new StdIdNode(GSymbol.Get(name), new SourceRange(file)); }
-		public static IdNode Id(LNodeList attrs, Symbol name, ISourceFile file = null) { return new StdIdNodeWithAttrs(attrs, name, new SourceRange(file)); }
-		public static IdNode Id(LNodeList attrs, string name, ISourceFile file = null) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), new SourceRange(file)); }
-		public static LiteralNode Literal<V>(V value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) where V: struct { return new StdLiteralNode<SimpleValue<V>>(new SimpleValue<V>(value), new SourceRange(file), style); }
-		public static LiteralNode Literal<V>(LNodeList attrs, V value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode<SimpleValue<V>>(new SimpleValue<V>(value), new SourceRange(file), style); }
+		// Null is a valid ISourceFile in these methods (the LNode constructor replaces a null
+		// Source with EmptySourceFile.Synthetic) but SourceRange's constructor isn't aware of that.
+		public static IdNode Id(Symbol name, ISourceFile? file = null) { return new StdIdNode(name, new SourceRange(file!)); }
+		public static IdNode Id(string name, ISourceFile? file = null) { return new StdIdNode(GSymbol.Get(name), new SourceRange(file!)); }
+		public static IdNode Id(LNodeList attrs, Symbol name, ISourceFile? file = null) { return new StdIdNodeWithAttrs(attrs, name, new SourceRange(file!)); }
+		public static IdNode Id(LNodeList attrs, string name, ISourceFile? file = null) { return new StdIdNodeWithAttrs(attrs, GSymbol.Get(name), new SourceRange(file!)); }
+		public static LiteralNode Literal<V>(V value, ISourceFile? file = null, NodeStyle style = NodeStyle.Default) where V: struct { return new StdLiteralNode<SimpleValue<V>>(new SimpleValue<V>(value), new SourceRange(file!), style); }
+		public static LiteralNode Literal<V>(LNodeList attrs, V value, ISourceFile? file = null, NodeStyle style = NodeStyle.Default) { return new StdLiteralNode<SimpleValue<V>>(new SimpleValue<V>(value), new SourceRange(file!), style); }
 		// This overload is needed so that `LNode.Literal(null)` still works, which is important since the `quote` macro can produce that expression
-		public static LiteralNode Literal(object value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) => new StdLiteralNode<SimpleValue<object>>(new SimpleValue<object>(value), new SourceRange(file), style);
-		public static CallNode Call(Symbol name, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, LNodeList.Empty, new SourceRange(file), style); }
-		public static CallNode Call(LNode target, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, LNodeList.Empty, new SourceRange(file), style); }
-		public static CallNode Call(Symbol name, LNodeList args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, args, new SourceRange(file), style); }
-		public static CallNode Call(LNode target, LNodeList args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, args, new SourceRange(file), style); }
-		public static CallNode Call(LNodeList attrs, Symbol name, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, LNodeList.Empty, new SourceRange(file), style); }
-		public static CallNode Call(LNodeList attrs, LNode target, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, LNodeList.Empty, new SourceRange(file), style); }
-		public static CallNode Call(LNodeList attrs, Symbol name, LNodeList args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, new SourceRange(file), style); }
-		public static CallNode Call(LNodeList attrs, LNode target, LNodeList args, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, new SourceRange(file), style); }
-		public static CallNode Trivia(Symbol name, object value, ISourceFile file = null, NodeStyle style = NodeStyle.Default) { return new StdTriviaNode(name, value, new SourceRange(file), style); }
+		public static LiteralNode Literal(object? value, ISourceFile? file = null, NodeStyle style = NodeStyle.Default) => new StdLiteralNode<SimpleValue<object?>>(new SimpleValue<object?>(value), new SourceRange(file!), style);
+		public static CallNode Call(Symbol name, ISourceFile? file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, LNodeList.Empty, new SourceRange(file!), style); }
+		public static CallNode Call(LNode target, ISourceFile? file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, LNodeList.Empty, new SourceRange(file!), style); }
+		public static CallNode Call(Symbol name, LNodeList args, ISourceFile? file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNode(name, args, new SourceRange(file!), style); }
+		public static CallNode Call(LNode target, LNodeList args, ISourceFile? file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNode(target, args, new SourceRange(file!), style); }
+		public static CallNode Call(LNodeList attrs, Symbol name, ISourceFile? file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, LNodeList.Empty, new SourceRange(file!), style); }
+		public static CallNode Call(LNodeList attrs, LNode target, ISourceFile? file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, LNodeList.Empty, new SourceRange(file!), style); }
+		public static CallNode Call(LNodeList attrs, Symbol name, LNodeList args, ISourceFile? file = null, NodeStyle style = NodeStyle.Default) { return new StdSimpleCallNodeWithAttrs(attrs, name, args, new SourceRange(file!), style); }
+		public static CallNode Call(LNodeList attrs, LNode target, LNodeList args, ISourceFile? file = null, NodeStyle style = NodeStyle.Default) { return new StdComplexCallNodeWithAttrs(attrs, target, args, new SourceRange(file!), style); }
+		public static CallNode Trivia(Symbol name, object value, ISourceFile? file = null, NodeStyle style = NodeStyle.Default) { return new StdTriviaNode(name, value, new SourceRange(file!), style); }
 
 		/// <summary>Used by the <c>quote {...}</c> macro.</summary>
 		public static readonly LNode InParensTrivia = Id(CodeSymbols.TriviaInParens);
@@ -353,7 +356,9 @@ namespace Loyc.Syntax
 		/// created programmatically from a value, or if the parser did not save the 
 		/// type marker, or if this is not a literal.</summary>
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)] // Don't clutter the debugger: most nodes aren't literals
-		public virtual Symbol TypeMarker => null;
+		public virtual Symbol? TypeMarker => null;
+
+		Symbol IUninterpretedLiteral.TypeMarker => TypeMarker!; // IUninterpretedLiteral.TypeMarker isn't marked nullable, but it can return null
 
 		/// <summary>Creates a new literal node with a different Value than the current literal node.</summary>
 		/// <exception cref="InvalidOperationException">The node was not a literal already.</exception>
@@ -363,12 +368,12 @@ namespace Loyc.Syntax
 
 		#region Properties and methods for Call nodes
 
-		/// <summary>Returns the target of a method call, or null if <see cref="IsCall"/> 
+		/// <summary>Returns the target of a method call, or null if <see cref="IsCall"/>
 		/// is false. The target can be a symbol with no name (<see cref="GSymbol.Empty"/>)
 		/// to represent a parenthesized expression, if there is one argument.</summary>
-		public abstract LNode Target { get; }
+		public abstract LNode? Target { get; }
 
-		ILNode ILNode.Target { get { return Target; } }
+		ILNode ILNode.Target { get { return Target!; } } // ILNode.Target isn't marked nullable, but it can return null
 
 		/// <summary>Returns the argument list of this node. Always empty when <c><see cref="IsCall"/>==false</c>.</summary>
 		/// <remarks>
@@ -554,7 +559,7 @@ namespace Loyc.Syntax
 			public void Dispose() { Printer = old; }
 		}
 
-		public virtual string Print(ParsingMode mode = null, ILNodePrinterOptions options = null)
+		public virtual string Print(ParsingMode? mode = null, ILNodePrinterOptions? options = null)
 		{
 			return Printer.Print(this, MessageSink.Null, mode, options);
 		}
@@ -612,9 +617,9 @@ namespace Loyc.Syntax
 		}
 		
 		/// <inheritdoc cref="Equals(ILNode, CompareMode)"/>
-		public static bool Equals(ILNode a, ILNode b, CompareMode mode = CompareMode.Normal)
+		public static bool Equals(ILNode? a, ILNode? b, CompareMode mode = CompareMode.Normal)
 		{
-			if ((object)a == b)
+			if ((object?)a == b)
 				return true;
 			if (a == null || b == null)
 				return false;
@@ -715,9 +720,9 @@ namespace Loyc.Syntax
 		/// <param name="mode">Whether to pay attention to <see cref="Style"/> and trivia attributes</param>
 		/// <remarks>Position information (<see cref="Range"/>) is not compared.</remarks>
 		public virtual bool Equals(ILNode other, CompareMode mode) { return Equals(this, other, mode); }
-		public bool Equals(LNode other) { return Equals(this, other); }
-		public bool Equals(ILNode other) { return Equals(this, other); }
-		public override bool Equals(object other) { var b = other as LNode; return Equals(this, b); }
+		public bool Equals(LNode? other) { return Equals(this, other); }
+		public bool Equals(ILNode? other) { return Equals(this, other); }
+		public override bool Equals(object? other) { var b = other as LNode; return Equals(this, b); }
 		protected internal abstract int GetHashCode(int recurse, int styleMask);
 		/// <summary>Gets the hash code based on the structure of the tree.</summary>
 		/// <remarks>
@@ -803,7 +808,8 @@ namespace Loyc.Syntax
 		/// </ul>
 		/// </remarks>
 		/// <seealso cref="LNodeExt.WithSpliced"/>
-		public static LNode MergeLists(LNode node1, LNode node2, Symbol listName)
+		[return: NotNullIfNotNull("node1"), NotNullIfNotNull("node2")]
+		public static LNode? MergeLists(LNode? node1, LNode? node2, Symbol listName)
 		{
 			if (node1 == null)
 				return node2;
@@ -919,10 +925,11 @@ namespace Loyc.Syntax
 				bool fail;
 				var r = TryGet(index, out fail);
 				if (fail) throw new ArgumentOutOfRangeException("index");
-				return r;
+				return r!; // r is not null when fail == false
 			}
 		}
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public LNode TryGet(int index, out bool fail)
 		{
 			if (index >= 0) {
@@ -963,6 +970,7 @@ namespace Loyc.Syntax
 		#region Explicit interface implementations (INegListSource<ILNode>)
 
 		ILNode IIndexed<int, ILNode>.this[int index] { get { return this[index]; } }
+		[return: MaybeNull]
 		ILNode ITryGet<int, ILNode>.TryGet(int index, out bool fail) { return TryGet(index, out fail); }
 		IEnumerator<ILNode> IEnumerable<ILNode>.GetEnumerator() { return GetEnumerator(); }
 		IListSource<ILNode> INegListSource<ILNode>.Slice(int start, int count)
@@ -1045,7 +1053,7 @@ namespace Loyc.Syntax
 					return newRoot.Value;
 			}
 
-			Func<LNode, Maybe<LNode>> selector = null; selector = node =>
+			Func<LNode, Maybe<LNode>> selector = null!; selector = node => // null! because the lambda needs to refer to itself
 			{
 				Maybe<LNode> @new = matcher(node);
 				if (@new.HasValue)
@@ -1068,7 +1076,7 @@ namespace Loyc.Syntax
 					return newRoot.Value;
 			}
 
-			Func<LNode, IReadOnlyList<LNode>> selector = null; selector = node =>
+			Func<LNode, IReadOnlyList<LNode>> selector = null!; selector = node => // null! because the lambda needs to refer to itself
 			{
 				LNodeList? @new = matcher(node);
 				if (@new != null)

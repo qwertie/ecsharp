@@ -48,12 +48,12 @@ namespace Loyc.Syntax
 
 		/// <summary>Converts from MatchType (usually integer) to string (used in 
 		/// error messages).</summary>
-		public Func<MatchType, string> TokenTypeToString { get; set; }
+		public Func<MatchType, string>? TokenTypeToString { get; set; }
 
 		protected override string ToString(MatchType tokenType)
 		{
 			if (TokenTypeToString == null)
-				return tokenType.ToString();
+				return tokenType.ToString()!;
 			else
 				return TokenTypeToString(tokenType);
 		}
@@ -70,7 +70,7 @@ namespace Loyc.Syntax
 			set { base.InputPosition = value; }
 		}
 
-		public new ISourceFile SourceFile
+		public new ISourceFile? SourceFile
 		{
 			get { return base.SourceFile; }
 		}

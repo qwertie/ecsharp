@@ -17,8 +17,8 @@ namespace Loyc.Syntax.Les
 	public class Les3PrecedenceMap
 	{
 		[ThreadStatic]
-		protected static Les3PrecedenceMap _default;
-		public static Les3PrecedenceMap Default { get { 
+		protected static Les3PrecedenceMap? _default;
+		public static Les3PrecedenceMap Default { get {
 			return _default = _default ?? new Les3PrecedenceMap();
 		} }
 
@@ -75,7 +75,7 @@ namespace Loyc.Syntax.Les
 		}
 
 		// All the keys are Symbols, but we use object as the key type to avoid casting Token.Value
-		Dictionary<object, Symbol> _suffixOpNames;
+		Dictionary<object, Symbol>? _suffixOpNames;
 
 		// All the keys are Symbols, but we use object as the key type to avoid casting Token.Value
 		protected static readonly Map<object, Precedence> PredefinedPrefixPrecedence = 
@@ -173,7 +173,7 @@ namespace Loyc.Syntax.Les
 			if (table.TryGetValue(symbol, out prec))
 				return prec;
 
-			string sym = symbol.ToString();
+			string sym = symbol.ToString()!; // symbol is a non-null Symbol; ToString never returns null
 			if (sym.Length <= 1 || sym[0] != '\'')
 				return P.Other; // empty or non-operator
 
@@ -291,14 +291,14 @@ namespace Loyc.Syntax.Les
 			CheckParam.IsNotNull(nameof(symbol), symbol);
 
 			_suffixOpNames = _suffixOpNames ?? new Dictionary<object, Symbol>();
-			Symbol name;
+			Symbol? name;
 			if (_suffixOpNames.TryGetValue(symbol, out name))
 				return name;
 
-			CheckParam.Arg(nameof(symbol), symbol.ToString().StartsWith("'"), symbol);
+			CheckParam.Arg(nameof(symbol), symbol.ToString()!.StartsWith("'"), symbol);
 
 			var was = symbol.ToString();
-			return _suffixOpNames[symbol] = GSymbol.Get("'suf" + symbol.ToString().Substring(1));
+			return _suffixOpNames[symbol] = GSymbol.Get("'suf" + symbol.ToString()!.Substring(1));
 		}
 
 		/// <summary>Decides whether the name resembles a suffix operator.</summary>
@@ -325,8 +325,8 @@ namespace Loyc.Syntax.Les
 		protected Les2PrecedenceMap() : base(les2mode: true) { }
 
 		[ThreadStatic]
-		protected new static Les2PrecedenceMap _default;
-		public new static Les2PrecedenceMap Default { get { 
+		protected new static Les2PrecedenceMap? _default;
+		public new static Les2PrecedenceMap Default { get {
 			return _default = _default ?? new Les2PrecedenceMap();
 		} }
 	}

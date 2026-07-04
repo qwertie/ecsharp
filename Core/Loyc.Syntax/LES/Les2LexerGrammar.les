@@ -15,6 +15,10 @@ namespace Loyc.Syntax.Les
 	using TT = TokenType;
 	using S = CodeSymbols;
 	
+	// 0162=Unreachable code detected; 0642=Possibly mistaken empty statement;
+	// 86xx=nullability (the generated code is not annotated)
+	#rawText("#pragma warning disable 162, 642, 8600, 8602, 8603, 8604, 8625");
+
 	@[public, partial] class Les2Lexer
 	{
 		@[FullLLk, AddCsLineDirectives(@false)]

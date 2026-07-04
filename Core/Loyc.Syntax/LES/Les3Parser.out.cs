@@ -25,19 +25,19 @@ namespace Loyc.Syntax.Les
 	partial class Les3Parser
 	{
 		static readonly Symbol sy__aposx0A = (Symbol) "'\n", sy__apos_lpar_rpar = (Symbol) "'()";
-		#pragma warning disable 162, 642
+		#pragma warning disable 162, 642, 8600, 8602, 8603, 8604, 8625
 
 		protected new const TT EOF = TT.EOF;
 		
 		// Note: verbose messages are only printed when custom tool is given --verbose flag
-		Dictionary<UString, LNode> _sharedTrees;
+		Dictionary<UString, LNode>? _sharedTrees;
 		bool _isCommaSeparatedListContext;
-		string _listContextName;
+		string? _listContextName;
 		void MissingEndMarker(LNode previousExpr, TokenType endMarker) {
 			var location = new SourceRange(SourceFile, LT(-1).EndIndex + 1);
 			ErrorSink.Write(Severity.Error, location, "Expected '{0}'", endMarker == TT.Comma ? ',' : ';');
 		}
-		public LNodeList ExprList(string listContextName, LNode firstItem = null, bool presumeCommaSeparated = true) {
+		public LNodeList ExprList(string listContextName, LNode? firstItem = null, bool presumeCommaSeparated = true) {
 			var endMarker = default(TT);
 			return ExprList(listContextName, ref endMarker, firstItem, presumeCommaSeparated, isBracedBlock: false);
 		}
@@ -170,7 +170,7 @@ namespace Loyc.Syntax.Les
 			return result;
 		}
 
-		public LNodeList ExprList(string listContextName, ref TokenType separatorType, LNode firstItem = null, bool presumeCommaSeparated = true, bool isBracedBlock = false)
+		public LNodeList ExprList(string listContextName, ref TokenType separatorType, LNode? firstItem = null, bool presumeCommaSeparated = true, bool isBracedBlock = false)
 		{
 			TT la0;
 			LNodeList got_TokenListEx = default(LNodeList);

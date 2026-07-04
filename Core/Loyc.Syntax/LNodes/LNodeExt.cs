@@ -200,28 +200,28 @@ namespace Loyc.Syntax
 			}
 		}
 
-		public static LNodeList WithSpliced(this LNodeList list, int index, LNode node, Symbol listName = null)
+		public static LNodeList WithSpliced(this LNodeList list, int index, LNode node, Symbol? listName = null)
 		{
 			if (node.Calls(listName ?? CodeSymbols.Splice))
 				return list.InsertRange(index, node.Args);
 			else
 				return list.Insert(index, node);
 		}
-		public static LNodeList WithSpliced(this LNodeList list, LNode node, Symbol listName = null)
+		public static LNodeList WithSpliced(this LNodeList list, LNode node, Symbol? listName = null)
 		{
 			if (node.Calls(listName ?? CodeSymbols.Splice))
 				return list.AddRange(node.Args);
 			else
 				return list.Add(node);
 		}
-		public static void SpliceInsert(this WList<LNode> list, int index, LNode node, Symbol listName = null)
+		public static void SpliceInsert(this WList<LNode> list, int index, LNode node, Symbol? listName = null)
 		{
 			if (node.Calls(listName ?? CodeSymbols.Splice))
 				list.InsertRange(index, node.Args);
 			else
 				list.Insert(index, node);
 		}
-		public static void SpliceAdd(this WList<LNode> list, LNode node, Symbol listName = null)
+		public static void SpliceAdd(this WList<LNode> list, LNode node, Symbol? listName = null)
 		{
 			if (node.Calls(listName ?? CodeSymbols.Splice))
 				list.AddRange(node.Args);
@@ -230,13 +230,13 @@ namespace Loyc.Syntax
 		}
 
 
-		public static LNode AttrNamed(this LNode self, Symbol name)
+		public static LNode? AttrNamed(this LNode self, Symbol name)
 		{
 			return self.Attrs.NodeNamed(name);
 		}
 		public static LNode WithoutAttrNamed(this LNode self, Symbol name)
 		{
-			LNode _;
+			LNode? _;
 			return WithoutAttrNamed(self, name, out _);
 		}
 		public static LNodeList Without(this LNodeList list, LNode node)
@@ -255,7 +255,7 @@ namespace Loyc.Syntax
 		{
 			return self.WithAttrs(self.Attrs.Without(node));
 		}
-		public static LNode WithoutAttrNamed(this LNode self, Symbol name, out LNode removedAttr)
+		public static LNode WithoutAttrNamed(this LNode self, Symbol name, out LNode? removedAttr)
 		{
 			var a = self.Attrs.WithoutNodeNamed(name, out removedAttr);
 			if (removedAttr != null)
@@ -265,10 +265,10 @@ namespace Loyc.Syntax
 		}
 		public static LNodeList WithoutNodeNamed(this LNodeList a, Symbol name)
 		{
-			LNode _;
+			LNode? _;
 			return WithoutNodeNamed(a, name, out _);
 		}
-		public static LNodeList WithoutNodeNamed(this LNodeList list, Symbol name, out LNode removedNode)
+		public static LNodeList WithoutNodeNamed(this LNodeList list, Symbol name, out LNode? removedNode)
 		{
 			removedNode = null;
 			for (int i = 0, c = list.Count; i < c; i++)
@@ -279,7 +279,7 @@ namespace Loyc.Syntax
 			return list;
 		}
 
-		public static LNode ArgNamed(this LNode self, Symbol name)
+		public static LNode? ArgNamed(this LNode self, Symbol name)
 		{
 			return self.Args.NodeNamed(name);
 		}
@@ -293,7 +293,7 @@ namespace Loyc.Syntax
 					i++;
 			return resultIfNotFound;
 		}
-		public static LNode NodeNamed(this LNodeList self, Symbol name)
+		public static LNode? NodeNamed(this LNodeList self, Symbol name)
 		{
 			foreach (LNode node in self)
 				if (node.Name == name)
@@ -341,7 +341,7 @@ namespace Loyc.Syntax
 		/// present.</summary>
 		public static LNode WithoutOuterParens(this LNode self)
 		{
-			LNode parens;
+			LNode? parens;
 			self = WithoutAttrNamed(self, S.TriviaInParens, out parens);
 			// Restore original node range
 			if (parens != null && self.Range.Contains(parens.Range))
@@ -405,7 +405,7 @@ namespace Loyc.Syntax
 		/// In EC#, the quote(...) macro can be used to create the LNode object for 
 		/// a pattern.
 		/// </remarks>
-		public static bool MatchesPattern(this LNode candidate, LNode pattern, ref MMap<Symbol, LNode> captures, out LNodeList unmatchedAttrs, bool gatherDuplicatesInList = false)
+		public static bool MatchesPattern(this LNode candidate, LNode pattern, ref MMap<Symbol, LNode>? captures, out LNodeList unmatchedAttrs, bool gatherDuplicatesInList = false)
 		{
 			MatchPatternHelper helper = new MatchPatternHelper(captures, gatherDuplicatesInList);
 			bool result = helper.MatchesPattern(candidate, pattern, out unmatchedAttrs);
@@ -414,7 +414,7 @@ namespace Loyc.Syntax
 		}
 
 		/// <inheritdoc cref="MatchesPattern(LNode, LNode, ref MMap{Symbol, LNode}, out LNodeList, bool)"/>
-		public static bool MatchesPattern(this LNode candidate, LNode pattern, out IDictionary<Symbol, LNode> captures, out LNodeList unmatchedAttrs, bool gatherDuplicatesInList = false)
+		public static bool MatchesPattern(this LNode candidate, LNode pattern, out IDictionary<Symbol, LNode>? captures, out LNodeList unmatchedAttrs, bool gatherDuplicatesInList = false)
 		{
 			MatchPatternHelper helper = new MatchPatternHelper(null, gatherDuplicatesInList);
 			bool result = helper.MatchesPattern(candidate, pattern, out unmatchedAttrs);
@@ -423,17 +423,17 @@ namespace Loyc.Syntax
 		}
 
 		/// <inheritdoc cref="MatchesPattern(LNode, LNode, ref MMap{Symbol, LNode}, out LNodeList, bool)"/>
-		public static bool MatchesPattern(this LNode candidate, LNode pattern, out IDictionary<Symbol, LNode> captures, bool gatherDuplicatesInList = false)
+		public static bool MatchesPattern(this LNode candidate, LNode pattern, out IDictionary<Symbol, LNode>? captures, bool gatherDuplicatesInList = false)
 		{
 			return MatchesPattern(candidate, pattern, out captures, out var _, gatherDuplicatesInList);
 		}
 
 		struct MatchPatternHelper // helper methods of MatchesPattern()
 		{
-			internal MMap<Symbol, LNode> captures;
+			internal MMap<Symbol, LNode>? captures;
 			//internal LNodeList unmatchedAttrs;
 			internal bool gatherDuplicatesInList;
-			internal MatchPatternHelper(MMap<Symbol, LNode> captures, bool gatherDuplicatesInList = false) {
+			internal MatchPatternHelper(MMap<Symbol, LNode>? captures, bool gatherDuplicatesInList = false) {
 				this.captures = captures;
 				//this.unmatchedAttrs = unmatchedAttrs;
 				this.gatherDuplicatesInList = gatherDuplicatesInList;
@@ -446,7 +446,7 @@ namespace Loyc.Syntax
 					return false;
 
 				// $capture or $(..capture)
-				LNode sub = GetCaptureIdentifier(pattern);
+				LNode? sub = GetCaptureIdentifier(pattern);
 				if (sub != null)
 				{
 					if (!AddCapture(sub.Name, candidate))
@@ -465,7 +465,7 @@ namespace Loyc.Syntax
 					return object.Equals(candidate.Value, pattern.Value);
 				else if (kind == LNodeKind.Call)
 				{
-					if (!MatchesPatternNested(candidate.Target, pattern.Target, ref unmatchedAttrs))
+					if (!MatchesPatternNested(candidate.Target!, pattern.Target!, ref unmatchedAttrs)) // both are calls, so Target != null
 						return false;
 					var cArgs = candidate.Args;
 					var pArgs = pattern.Args;
@@ -498,7 +498,7 @@ namespace Loyc.Syntax
 
 			bool AddCapture(LNode cap, Slice_<LNode> items)
 			{
-				LNode capId = GetCaptureIdentifier(cap);
+				LNode capId = GetCaptureIdentifier(cap)!; // cap is a $(params capture), so this is non-null
 				if (items.Count == 1)
 					return AddCapture(capId.Name, items[0]);
 				else
@@ -510,7 +510,7 @@ namespace Loyc.Syntax
 			internal bool AddCapture(Symbol capName, LNode candidate)
 			{
 				captures = captures ?? new MMap<Symbol, LNode>();
-				LNode oldCap = captures.TryGetValue(capName, null);
+				LNode? oldCap = captures.TryGetValue(capName, null!); // returns null if not found
 				if (oldCap == null || gatherDuplicatesInList || capName == __) {
 					captures[capName] = LNode.MergeLists(oldCap, candidate, S.Splice);
 				} else {
@@ -582,7 +582,7 @@ namespace Loyc.Syntax
 				// the sequence pArgs[p+1 .. p+x] where x is the maximum value such
 				// that none of the nodes in the sequence are $(params caps).
 				int saved_p = p, saved_c = c;
-				var savedCaptures = captures.AsImmutable();
+				var savedCaptures = captures!.AsImmutable(); // non-null: MatchThenParams initializes captures before calling this
 				var savedAttrs = attrs;
 				int captureSize = 0;
 				for (;; captureSize++) {
@@ -615,7 +615,7 @@ namespace Loyc.Syntax
 		/// These are conventionally used to represent partial syntax trees.</summary>
 		/// <returns>The matched identifier (<c>x</c> in the examples above), or null 
 		/// if <c>pattern</c> was not a match.</returns>
-		public static LNode GetCaptureIdentifier(LNode pattern, bool identifierRequired = true)
+		public static LNode? GetCaptureIdentifier(LNode pattern, bool identifierRequired = true)
 		{
 			if (pattern.Calls(S.Substitute, 1)) {
 				var arg = pattern.Args.Last;
@@ -683,11 +683,11 @@ namespace Loyc.Syntax
 			return false;
 		}
 
-		public static ILNode AttrNamed(this ILNode node, Symbol name)
+		public static ILNode? AttrNamed(this ILNode node, Symbol name)
 		{
 			return node.Attrs().NodeNamed(name);
 		}
-		public static ILNode NodeNamed(this NegListSlice<ILNode> self, Symbol name)
+		public static ILNode? NodeNamed(this NegListSlice<ILNode> self, Symbol name)
 		{
 			foreach (var node in self)
 				if (node.Name == name)

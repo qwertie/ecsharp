@@ -10,7 +10,7 @@ namespace Loyc.Syntax
 	/// it is embedded.</remarks>
 	internal struct LiteralFromParser : ILiteralValueProvider
 	{
-		public LiteralFromParser(object value, int startIndex, int length, Symbol typeMarker)
+		public LiteralFromParser(object value, int startIndex, int length, Symbol? typeMarker)
 		{
 			_value = value;
 			_startIndex = startIndex;
@@ -21,7 +21,7 @@ namespace Loyc.Syntax
 		/// simply be the boxed return value from <see cref="GetTextValue"/> (i.e. 
 		/// <see cref="LNode.TextValue"/>). To save memory, the Value (of type
 		/// <see cref="UString"/>) is not generated until it is requested.</summary>
-		public LiteralFromParser(int startIndex, int length, Symbol typeMarker)
+		public LiteralFromParser(int startIndex, int length, Symbol? typeMarker)
 		{
 			_value = NoValue.Value;
 			_startIndex = startIndex;
@@ -30,13 +30,13 @@ namespace Loyc.Syntax
 		}
 		object _value;
 		int _startIndex, _length;
-		Symbol _typeMarker;
+		Symbol? _typeMarker;
 
 		// ILiteralValueProvider implementation:
 
 		public UString GetTextValue(SourceRange range) =>
 			_startIndex < 0 ? default(UString) : range.Source.Text.Slice(_startIndex, _length);
-		public Symbol GetTypeMarker(SourceRange range) => _typeMarker;
+		public Symbol? GetTypeMarker(SourceRange range) => _typeMarker;
 		public object GetValue(SourceRange range) =>
 			_value == NoValue.Value ? GetTextValue(range) : _value;
 	}

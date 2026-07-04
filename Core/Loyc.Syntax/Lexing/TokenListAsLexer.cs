@@ -33,7 +33,7 @@ namespace Loyc.Syntax.Lexing
 				return Maybe<Token>.NoValue;
 		}
 
-		public Loyc.IMessageSink ErrorSink { get; set; }
+		public Loyc.IMessageSink ErrorSink { get; set; } = null!; // may remain null; ILexer.ErrorSink is declared non-null
 
 		public int IndentLevel { get { return 0; } } // TODO
 		public UString IndentString

@@ -58,7 +58,7 @@ namespace Loyc.Syntax
 		/// <param name="msgs">Error and warning messages are sent to this object.
 		/// If this parameter is null, messages should be sent to <see cref="MessageSink.Default"/>.</param>
 		/// <param name="options">Parsing options.</param>
-		IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, IParsingOptions options);
+		IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink? msgs, IParsingOptions options);
 
 		/// <summary>If <see cref="HasTokenizer"/> is true, this method accepts a 
 		/// lexer returned by Tokenize() and begins parsing.</summary>
@@ -72,7 +72,7 @@ namespace Loyc.Syntax
 		/// sends the results to the parser. If possible, the output is computed 
 		/// lazily.
 		/// </remarks>
-		IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, IParsingOptions options);
+		IListSource<LNode> Parse(ILexer<Token> input, IMessageSink? msgs, IParsingOptions options);
 
 		/// <summary>Parses a token tree, such as one that came from a token literal.</summary>
 		/// <param name="tokens">List of tokens</param>
@@ -89,7 +89,7 @@ namespace Loyc.Syntax
 		/// </remarks>
 		/// <exception cref="NotSupportedException">This feature is not supported 
 		/// by this parsing service.</exception>
-		IListSource<LNode> Parse(IListSource<Token> tokens, ISourceFile file, IMessageSink msgs, IParsingOptions options);
+		IListSource<LNode> Parse(IListSource<Token> tokens, ISourceFile file, IMessageSink? msgs, IParsingOptions options);
 	}
 
 	/// <summary>Standard extension methods for <see cref="IParsingService"/>.</summary>
@@ -148,7 +148,7 @@ namespace Loyc.Syntax
 		/// <param name="fileExtensions">File extensions affected (null to use the service's own list)</param>
 		/// <returns>The number of new file extensions registered, or 0 if none.</returns>
 		/// <remarks>This method does not replace existing registrations.</remarks>
-		public static int Register(IParsingService service, IEnumerable<string> fileExtensions = null)
+		public static int Register(IParsingService service, IEnumerable<string>? fileExtensions = null)
 		{
 			CheckParam.IsNotNull("service", service);
 			int oldCount = _registeredLanguages.Count;
@@ -166,20 +166,20 @@ namespace Loyc.Syntax
 		/// <param name="fileExtensions">File extensions affected (null to use the service's own list)</param>
 		/// <returns>The number of file extensions unregistered, or 0 if none.</returns>
 		/// <remarks>The service for a file extension is not removed unless the given service reference is equal to the registered service.</remarks>
-		public static int Unregister(IParsingService service, IEnumerable<string> fileExtensions = null)
+		public static int Unregister(IParsingService service, IEnumerable<string>? fileExtensions = null)
 		{
 			CheckParam.IsNotNull("service", service);
 			fileExtensions = fileExtensions ?? service.FileExtensions;
 			int oldCount = _registeredLanguages.Count;
 			foreach (var fileExt in fileExtensions)
-				if (_registeredLanguages.TryGetValue(fileExt, null) == service)
+				if (_registeredLanguages.TryGetValue(fileExt, null!) == service) // null is a sentinel meaning "not registered"; it never escapes
 					_registeredLanguages = _registeredLanguages.Without(fileExt);
 			return oldCount - _registeredLanguages.Count;
 		}
 
 		/// <summary>Finds the language service associated with the longest matching registered file extension.</summary>
 		/// <remarks>Returns null if there is no registered language service for the filename's extension.</remarks>
-		public static IParsingService GetServiceForFileName(string filename)
+		public static IParsingService? GetServiceForFileName(string filename)
 		{
 			return RegisteredLanguages
 				.Where(pair => ExtensionMatches(pair.Key, filename))
@@ -216,7 +216,7 @@ namespace Loyc.Syntax
 		#endregion
 
 		private static ParsingOptions _fileWithComments = new ParsingOptions();
-		private static ParsingOptions QuickOptions(ParsingMode mode = null, bool preserveComments = true)
+		private static ParsingOptions QuickOptions(ParsingMode? mode = null, bool preserveComments = true)
 		{
 			if (preserveComments && (mode == null || mode == ParsingMode.File))
 				return _fileWithComments;
@@ -224,59 +224,59 @@ namespace Loyc.Syntax
 		}
 
 		/// <summary>Parses a string by invoking <see cref="IParsingService.Tokenize(ICharSource, string, IMessageSink, IParsingOptions)"/> using an empty string as the file name.</summary>
-		public static ILexer<Token> Tokenize(this IParsingService parser, UString input, IMessageSink msgs = null)
+		public static ILexer<Token> Tokenize(this IParsingService parser, UString input, IMessageSink? msgs = null)
 		{
 			return parser.Tokenize(input, "", msgs ?? MessageSink.Default, _fileWithComments);
 		}
 		/// <summary>Parses a string by invoking <see cref="IParsingService.Tokenize(ICharSource, string, IMessageSink, IParsingOptions)"/> using default options.</summary>
-		public static ILexer<Token> Tokenize(this IParsingService parser, ICharSource text, string fileName, IMessageSink msgs = null)
+		public static ILexer<Token> Tokenize(this IParsingService parser, ICharSource text, string fileName, IMessageSink? msgs = null)
 		{
 			return parser.Tokenize(text, fileName, msgs ?? MessageSink.Default, _fileWithComments);
 		}
 
 		/// <summary>Parses a string by invoking <see cref="IParsingService.Parse(ICharSource, string, IMessageSink, IParsingOptions)"/> using an empty string as the file name.</summary>
-		public static IListSource<LNode> Parse(this IParsingService parser, UString input, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = true)
+		public static IListSource<LNode> Parse(this IParsingService parser, UString input, IMessageSink? msgs = null, ParsingMode? inputType = null, bool preserveComments = true)
 		{
 			return parser.Parse(input, "", msgs ?? MessageSink.Default, QuickOptions(inputType, preserveComments));
 		}
 		/// <summary>Parses a string by invoking <see cref="IParsingService.Parse(ICharSource, string, IMessageSink, IParsingOptions)"/> using an empty string as the file name.</summary>
-		public static IListSource<LNode> Parse(this IParsingService parser, UString input, IMessageSink msgs, IParsingOptions options)
+		public static IListSource<LNode> Parse(this IParsingService parser, UString input, IMessageSink? msgs, IParsingOptions? options)
 		{
 			return parser.Parse(input, "", msgs ?? MessageSink.Default, options ?? _fileWithComments);
 		}
-		public static IListSource<LNode> Parse(this IParsingService parser, ICharSource text, string fileName, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = true)
+		public static IListSource<LNode> Parse(this IParsingService parser, ICharSource text, string fileName, IMessageSink? msgs = null, ParsingMode? inputType = null, bool preserveComments = true)
 		{
 			return parser.Parse(text, fileName, msgs ?? MessageSink.Default, QuickOptions(inputType, preserveComments));
 		}
-		public static IListSource<LNode> Parse(this IParsingService parser, ILexer<Token> input, IMessageSink msgs = null, ParsingMode mode = null, bool preserveComments = true)
+		public static IListSource<LNode> Parse(this IParsingService parser, ILexer<Token> input, IMessageSink? msgs = null, ParsingMode? mode = null, bool preserveComments = true)
 		{
 			return parser.Parse(input, msgs, QuickOptions(mode, preserveComments));
 		}
-		public static IListSource<LNode> Parse(this IParsingService parser, IListSource<Token> tokens, ISourceFile file, IMessageSink msgs, ParsingMode inputType = null)
+		public static IListSource<LNode> Parse(this IParsingService parser, IListSource<Token> tokens, ISourceFile file, IMessageSink? msgs, ParsingMode? inputType = null)
 		{
 			return parser.Parse(tokens, file, msgs, QuickOptions(inputType));
 		}
 
 		/// <inheritdoc cref="ParseSingle(IParsingService, UString, IMessageSink, IParsingOptions)"/>
-		public static LNode ParseSingle(this IParsingService parser, UString expr, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = true)
+		public static LNode ParseSingle(this IParsingService parser, UString expr, IMessageSink? msgs = null, ParsingMode? inputType = null, bool preserveComments = true)
 		{
 			return ParseSingle(parser, expr, msgs, QuickOptions(inputType, preserveComments));
 		}
 		/// <summary>Parses a string and expects exactly one output.</summary>
 		/// <exception cref="InvalidOperationException">The output list was empty or contained multiple nodes.</exception>
-		public static LNode ParseSingle(this IParsingService parser, UString expr, IMessageSink msgs, IParsingOptions options)
+		public static LNode ParseSingle(this IParsingService parser, UString expr, IMessageSink? msgs, IParsingOptions? options)
 		{
 			var e = Parse(parser, expr, msgs, options);
 			return Single(e);
 		}
 		/// <inheritdoc cref="ParseSingle(IParsingService, ICharSource, string, IMessageSink, IParsingOptions)"/>
-		public static LNode ParseSingle(this IParsingService parser, ICharSource text, string fileName, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = true)
+		public static LNode ParseSingle(this IParsingService parser, ICharSource text, string fileName, IMessageSink? msgs = null, ParsingMode? inputType = null, bool preserveComments = true)
 		{
 			return ParseSingle(parser, text, fileName, msgs, QuickOptions(inputType, preserveComments));
 		}
 		/// <summary>Parses a string and expects exactly one output.</summary>
 		/// <exception cref="InvalidOperationException">The output list was empty or contained multiple nodes.</exception>
-		public static LNode ParseSingle(this IParsingService parser, ICharSource text, string fileName, IMessageSink msgs = null, IParsingOptions options = null)
+		public static LNode ParseSingle(this IParsingService parser, ICharSource text, string fileName, IMessageSink? msgs = null, IParsingOptions? options = null)
 		{
 			var e = parser.Parse(text, fileName, msgs ?? MessageSink.Default, options ?? _fileWithComments);
 			return Single(e);
@@ -284,7 +284,7 @@ namespace Loyc.Syntax
 
 		static LNode Single(IListSource<LNode> e)
 		{
-			LNode node = e.TryGet(0, null);
+			LNode? node = e.TryGet(0, null);
 			if (node == null)
 				throw new InvalidOperationException(Localize.Localized("ParseSingle: result was empty."));
 			if (e.TryGet(1, null) != null) // don't call Count because e is typically Buffered()
@@ -292,17 +292,17 @@ namespace Loyc.Syntax
 			return node;
 		}
 		/// <summary>Parses a Stream.</summary>
-		public static IListSource<LNode> Parse(this IParsingService parser, Stream stream, string fileName, ParsingMode inputType = null, IMessageSink msgs = null, bool preserveComments = true)
+		public static IListSource<LNode> Parse(this IParsingService parser, Stream stream, string fileName, ParsingMode? inputType = null, IMessageSink? msgs = null, bool preserveComments = true)
 		{
 			return parser.Parse(new StreamCharSource(stream), fileName, msgs, inputType, preserveComments);
 		}
 		/// <summary>Parses a Stream.</summary>
-		public static ILexer<Token> Tokenize(this IParsingService parser, Stream stream, string fileName, IMessageSink msgs = null)
+		public static ILexer<Token> Tokenize(this IParsingService parser, Stream stream, string fileName, IMessageSink? msgs = null)
 		{
 			return parser.Tokenize(new StreamCharSource(stream), fileName, msgs);
 		}
 		/// <summary>Opens the specified file, parses the entire file, and closes the file.</summary>
-		public static IListSource<LNode> ParseFile(this IParsingService parser, string fileName, IMessageSink msgs = null, ParsingMode inputType = null, bool preserveComments = true)
+		public static IListSource<LNode> ParseFile(this IParsingService parser, string fileName, IMessageSink? msgs = null, ParsingMode? inputType = null, bool preserveComments = true)
 		{
 			using (var stream = new FileStream(fileName, FileMode.Open)) {
 				var results = Parse(parser, stream, fileName, inputType ?? ParsingMode.File, msgs, preserveComments);
@@ -317,7 +317,7 @@ namespace Loyc.Syntax
 			}
 		}
 		/// <summary>Opens the specified file and tokenizes it.</summary>
-		public static ILexer<Token> TokenizeFile(this IParsingService parser, string fileName, IMessageSink msgs = null)
+		public static ILexer<Token> TokenizeFile(this IParsingService parser, string fileName, IMessageSink? msgs = null)
 		{
 			using (var stream = new FileStream(fileName, FileMode.Open))
 				return Tokenize(parser, stream, fileName, msgs);

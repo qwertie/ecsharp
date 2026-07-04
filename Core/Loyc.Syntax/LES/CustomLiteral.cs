@@ -29,7 +29,7 @@ namespace Loyc.Syntax.Les
 		{
 			return TypeMarker == rhs.TypeMarker && (Value == rhs.Value || Value != null && Value.Equals(rhs.Value));
 		}
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (obj is CustomLiteral) {
 				var rhs = (CustomLiteral)obj;

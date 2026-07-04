@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Loyc.Collections;
@@ -87,9 +88,11 @@ namespace Loyc.Syntax
 	
 		/// <summary>Reinitializes the object. This method is called by the constructor.</summary>
 		/// <remarks>See the constructor for documentation of the parameters.</remarks>
+		[MemberNotNull(nameof(_getEofToken), nameof(_tokenList))]
 		protected virtual void Reset(List list, Token eofToken, ISourceFile file, int startIndex = 0) => Reset(list, t => eofToken, eofToken.Type, file, startIndex);
 		/// <summary>Reinitializes the object. This method is called by the constructor.</summary>
 		/// <remarks>See the constructor for documentation of the parameters.</remarks>
+		[MemberNotNull(nameof(_getEofToken), nameof(_tokenList))]
 		protected virtual void Reset(List list, Func<Token, Token> getEofToken, MatchType eof, ISourceFile file, int startIndex = 0)
 		{
 			CheckParam.IsNotNull<object>("list", list);
@@ -102,7 +105,7 @@ namespace Loyc.Syntax
 		}
 		protected void Reset()
 		{
-			Reset(TokenList, EofToken, SourceFile);
+			Reset(TokenList, EofToken, SourceFile!); // SourceFile may be null; Reset stores it in a nullable field
 		}
 
 		protected Func<Token, Token> _getEofToken;
@@ -110,7 +113,7 @@ namespace Loyc.Syntax
 		{
 			get {
 				int c = _tokenList.Count;
-				return _getEofToken(c > 0 ? _tokenList[c - 1] : default(Token));
+				return _getEofToken(c > 0 ? _tokenList[c - 1] : default(Token)!);
 			}
 		}
 
@@ -162,7 +165,7 @@ namespace Loyc.Syntax
 		// So the parser calls something like Down(lparen) to begin parsing inside 
 		// the parentheses, then it calls Up() to return to the parent tree.
 
-		private Stack<KeyValuePair<List, int>> _parents;
+		private Stack<KeyValuePair<List, int>>? _parents;
 
 		/// <summary>Switches to parsing the specified token list at position zero
 		/// (typically the value of <see cref="Loyc.Syntax.Lexing.Token.Children"/> 
@@ -186,7 +189,7 @@ namespace Loyc.Syntax
 		/// <summary>Returns to the old token list saved by <see cref="Down"/>.</summary>
 		protected void Up()
 		{
-			Debug.Assert(_parents.Count > 0);
+			Debug.Assert(_parents!.Count > 0);
 			var pair = _parents.Pop();
 			_tokenList = pair.Key;
 			InputPosition = pair.Value;

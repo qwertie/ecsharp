@@ -65,17 +65,17 @@ namespace Loyc.Syntax.Les
 		Symbol GetTypeMarkerSymbol(UString typeMarker, bool isNumericLiteral)
 		{
 			var pair = Pair.Create(typeMarker, isNumericLiteral);
-			if (!_typeMarkers.TryGetValue(pair, out Symbol typeMarkerSym))
-				_typeMarkers[pair] = typeMarkerSym = (Symbol)(isNumericLiteral ? "_" + (string)typeMarker : typeMarker);
+			if (!_typeMarkers.TryGetValue(pair, out Symbol? typeMarkerSym))
+				_typeMarkers[pair] = typeMarkerSym = (Symbol)(isNumericLiteral ? "_" + (string)typeMarker : typeMarker)!; // Symbol cast is nullable, but input is non-null
 			return typeMarkerSym;
 		}
 
 		[Obsolete("Please call StandardLiteralHandlers.Value.TryParse(UString, Symbol) instead")]
-		public static object ParseLiteral(Symbol typeMarker, UString unescapedText, out string syntaxError)
+		public static object? ParseLiteral(Symbol typeMarker, UString unescapedText, out string? syntaxError)
 		{
 			var result = StandardLiteralHandlers.Value.TryParse(unescapedText, typeMarker);
 			syntaxError = result.Right.HasValue ? result.Right.Value.Formatted : null;
-			return result.Left.Or(null);
+			return result.Left.Or(null!); // Maybe<object>.Or requires non-null, but null is the intended default here
 		}
 
 		protected UString GetUnescapedString(bool hasEscapes, bool isTripleQuoted)
@@ -401,7 +401,7 @@ namespace Loyc.Syntax.Les
 			}
 
 			Debug.Assert(first != '\'');
-			Symbol name = (Symbol)("'" + op);
+			Symbol name = (Symbol)("'" + op)!; // string->Symbol cast is nullable, but input is non-null
 			
 			if (length >= 2 && first == last && (last == '+' || last == '-' || last == '!'))
 				return TokenType.PreOrSufOp;
@@ -427,7 +427,7 @@ namespace Loyc.Syntax.Les
 				if (first == '.')
 					return Pair.Create(CodeSymbols.Dot, TokenType.Dot);
 			}
-			return Pair.Create((Symbol)("'" + op), GetOperatorTokenType(op));
+			return Pair.Create((Symbol)("'" + op)!, GetOperatorTokenType(op)); // string->Symbol cast is nullable, but input is non-null
 		}
 
 		#endregion
@@ -436,11 +436,11 @@ namespace Loyc.Syntax.Les
 	[EditorBrowsable(EditorBrowsableState.Never)] // used only by syntax highlighter
 	public partial class Les3Parser : BaseParserForList<Token, int>
 	{
-		LNodeFactory F;
+		LNodeFactory F = null!; // set by Reset(), which is called from the base constructor
 		ILiteralParser _literalParser;
 
 		public Les3Parser(IList<Token> list, ISourceFile file, IMessageSink sink, IParsingOptions options, int startIndex = 0)
-			: base(list, prev => new Token((int)TokenType.EOF, prev.EndIndex, 0, null), (int)TokenType.EOF, file, startIndex) {
+			: base(list, prev => new Token((int)TokenType.EOF, prev.EndIndex, 0, default(NodeStyle), null), (int)TokenType.EOF, file, startIndex) {
 			_literalParser = options?.LiteralParser ?? StandardLiteralHandlers.Value;
 			ErrorSink = sink;
 		}
@@ -502,7 +502,7 @@ namespace Loyc.Syntax.Les
 			return n.SetBaseStyle(NodeStyle.PrefixNotation);
 		}
 
-		protected LNode MissingExpr(Token tok, string error = null, bool afterToken = false)
+		protected LNode MissingExpr(Token tok, string? error = null, bool afterToken = false)
 		{
 			int startIndex = afterToken ? tok.EndIndex : tok.StartIndex;
 			LNode missing = F.Id(S.Missing, startIndex, tok.EndIndex);
@@ -515,7 +515,7 @@ namespace Loyc.Syntax.Les
 
 		protected Precedence PrefixPrecedenceOf(Token t)
 		{
-			var prec = _precMap.Find(OperatorShape.Prefix, t.Value);
+			var prec = _precMap.Find(OperatorShape.Prefix, t.Value!); // operator tokens always have a Symbol value
 			if (prec == LesPrecedence.Illegal)
 				ErrorSink.Write(Severity.Error, F.Id(t),
 					"Operator `{0}` cannot be used as a prefix operator", t.Value);
@@ -539,15 +539,15 @@ namespace Loyc.Syntax.Les
 			if (opTok.Type() == TokenType.Id) {
 				var opTok2 = LT(li + 1);
 				if (opTok2.Type() == TokenType.NormalOp && opTok.EndIndex == opTok2.StartIndex)
-					prec = _precMap.Find(OperatorShape.Infix, opTok2.Value);
+					prec = _precMap.Find(OperatorShape.Infix, opTok2.Value!); // operator tokens always have a Symbol value
 				else {
 					// Oops, LesPrecedenceMap doesn't yet support non-single-quote ops
 					// (because it's shared with LESv2 which doesn't have them)
 					// TODO: improve performance by avoiding this concat
-					prec = _precMap.Find(OperatorShape.Infix, (Symbol)("'" + opTok.Value.ToString()));
+					prec = _precMap.Find(OperatorShape.Infix, (Symbol)("'" + opTok.Value!.ToString()));
 				}
 			} else
-				prec = _precMap.Find(OperatorShape.Infix, opTok.Value);
+				prec = _precMap.Find(OperatorShape.Infix, opTok.Value!); // operator tokens always have a Symbol value
 			bool result = context.CanParse(prec);
 			if (!context.CanMixWith(prec))
 				Error(li, "Operator \"{0}\" cannot be mixed with the infix operator to its left. Add parentheses to clarify the code's meaning.", LT(li).Value);

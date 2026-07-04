@@ -83,7 +83,7 @@ namespace Loyc.Syntax.Lexing
 			protected set { base.InputPosition = value; }
 		}
 
-		public new LexerSourceFile<CharSrc> SourceFile
+		public new LexerSourceFile<CharSrc>? SourceFile
 		{
 			get { return base.SourceFile; }
 		}
@@ -197,7 +197,7 @@ namespace Loyc.Syntax.Lexing
 	public class LexerSourceFile<CharSource> : SourceFile<CharSource>, ISourceFile
 		where CharSource : ICharSource
 	{
-		public LexerSourceFile(CharSource source, ILineColumnFile startingPos = null) : base(source, startingPos) { }
+		public LexerSourceFile(CharSource source, ILineColumnFile? startingPos = null) : base(source, startingPos) { }
 		public LexerSourceFile(CharSource source, string fileName) : base(source, fileName) { }
 
 		/// <summary>Allows a lexer to record the index of the character after 

@@ -25,14 +25,14 @@ namespace Loyc.Syntax.Les
 		/// <remarks>This property is null by default, which causes the default 
 		/// table to be used. See <see cref="GetDefaultCssClassTable()"/> for more 
 		/// information.</remarks>
-		public string[] ColorCodesToCssClasses { get; set; }
+		public string?[]? ColorCodesToCssClasses { get; set; }
 
 		/// <summary>Creates an instance of this class, which produces plain LES 
 		/// augmented with control codes.</summary>
-		public Les3PrettyPrinter(IMessageSink sink = null, ILNodePrinterOptions options = null) : this(null, sink, options) { }
+		public Les3PrettyPrinter(IMessageSink? sink = null, ILNodePrinterOptions? options = null) : this(null, sink, options) { }
 		/// <summary>Creates an instance of this class, which produces plain LES 
 		/// augmented with control codes.</summary>
-		public Les3PrettyPrinter(StringBuilder target, IMessageSink sink, ILNodePrinterOptions options) : base(target, sink, options)
+		public Les3PrettyPrinter(StringBuilder? target, IMessageSink? sink, ILNodePrinterOptions? options) : base(target, sink, options)
 		{
 		}
 
@@ -42,7 +42,8 @@ namespace Loyc.Syntax.Les
 		}
 		protected override LesColorCode ColorCodeForId(UString name)
 		{
-			if (LNode.IsSpecialName(name.ToString()) || Continuators.ContainsKey((Symbol) name.ToString()))
+			string nameStr = name.ToString() ?? "";
+			if (LNode.IsSpecialName(nameStr) || Continuators.ContainsKey(((Symbol) nameStr)!))
 				return LesColorCode.SpecialId;
 			else
 				return LesColorCode.Id;
@@ -157,9 +158,9 @@ namespace Loyc.Syntax.Les
 		/// .highlight .pi { color: #B50; } /* Parenthesis Inner */
 		/// </pre>
 		/// </remarks>
-		public static string[] GetDefaultCssClassTable()
+		public static string?[] GetDefaultCssClassTable()
 		{
-			var names = new string[32];
+			var names = new string?[32];
 			names[(int)LesColorCode.Comment       ] = "c";  // Comment
 			names[(int)LesColorCode.Id            ] = null;  // Name is "n" but use null to shorten output
 			names[(int)LesColorCode.Number        ] = "m";  // Number
@@ -177,7 +178,7 @@ namespace Loyc.Syntax.Les
 			return names;
 		}
 
-		internal static readonly string[] DefaultCssClassTable = GetDefaultCssClassTable();
+		internal static readonly string?[] DefaultCssClassTable = GetDefaultCssClassTable();
 
 		/// <summary>Prints an LNode as LESv3 with HTML syntax highlighting elements.</summary>
 		/// <param name="nodes">Syntax trees to print.</param>
@@ -186,16 +187,16 @@ namespace Loyc.Syntax.Les
 		/// <param name="options">Options to control the style for code printing.</param>
 		/// <returns>The output StringBuilder</returns>
 		public static StringBuilder PrintToHtml(
-				IEnumerable<ILNode> nodes, StringBuilder output = null, 
-				bool addPreCode = true, IMessageSink sink = null,
-				ILNodePrinterOptions options = null)
+				IEnumerable<ILNode> nodes, StringBuilder? output = null, 
+				bool addPreCode = true, IMessageSink? sink = null,
+				ILNodePrinterOptions? options = null)
 		{
 			var pp = new Les3PrettyPrinter(sink, options);
 			return pp.PrintToHtml(nodes, output, addPreCode);
 		}
 
 		/// <inheritdoc cref="PrintToHtml(IEnumerable{ILNode}, StringBuilder, bool, IMessageSink, ILNodePrinterOptions)"/>
-		public StringBuilder PrintToHtml(IEnumerable<ILNode> nodes, StringBuilder output = null, bool addPreCode = true)
+		public StringBuilder PrintToHtml(IEnumerable<ILNode> nodes, StringBuilder? output = null, bool addPreCode = true)
 		{
 			var newline = Options.NewlineString;
 			Options.NewlineString = "\n";
@@ -205,7 +206,7 @@ namespace Loyc.Syntax.Les
 		}
 
 		/// <inheritdoc cref="PrintToHtml(IEnumerable{ILNode}, StringBuilder, bool, IMessageSink, ILNodePrinterOptions)"/>
-		public StringBuilder PrintToHtml(ILNode node, StringBuilder output = null, bool addPreCode = true)
+		public StringBuilder PrintToHtml(ILNode node, StringBuilder? output = null, bool addPreCode = true)
 		{
 			var newline = Options.NewlineString;
 			Options.NewlineString = "\n";
@@ -224,9 +225,9 @@ namespace Loyc.Syntax.Les
 		/// see <see cref="GetDefaultCssClassTable"/>.</param>
 		/// <returns>The output StringBuilder.</returns>
 		public static StringBuilder PrintToHtmlCore(
-				StringBuilder input, StringBuilder output = null, 
+				StringBuilder input, StringBuilder? output = null, 
 				bool addPreCode = true, string newline = "\n",
-				string[] colorCodesToCssClasses = null)
+				string?[]? colorCodesToCssClasses = null)
 		{
 			CheckParam.Arg("output", output != input);
 			colorCodesToCssClasses = colorCodesToCssClasses ?? DefaultCssClassTable;
@@ -234,7 +235,7 @@ namespace Loyc.Syntax.Les
 			if (addPreCode)
 				output.Append("<pre class='highlight'><code>");
 
-			string cssClass = null;
+			string? cssClass = null;
 			int depth = 0;
 			char c, next = input.TryGet(0, '\0');
 			for (int i = 0; i < input.Length; i++) {

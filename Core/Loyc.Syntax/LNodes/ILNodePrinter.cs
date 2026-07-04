@@ -22,7 +22,7 @@ namespace Loyc.Syntax
 		/// <param name="options">A set of options to control printer behavior. If null,
 		/// an appropriate default set of options should be used. Some languages may
 		/// support additional option interfaces beyond <see cref="ILNodePrinterOptions"/>.</param>
-		void Print(LNode node, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null);
+		void Print(LNode node, StringBuilder target, IMessageSink? sink = null, ParsingMode? mode = null, ILNodePrinterOptions? options = null);
 
 		/// <summary>Serializes a list of syntax trees to a StringBuilder in the syntax supported by this object.</summary>
 		/// <param name="nodes">Syntax trees to print.</param>
@@ -35,7 +35,7 @@ namespace Loyc.Syntax
 		/// an appropriate default set of options should be used. Some languages may
 		/// support additional option interfaces beyond <see cref="ILNodePrinterOptions"/>.</param>
 		/// <remarks>Some implementations can simply call <see cref="LNodePrinter.PrintMultiple"/>.</remarks>
-		void Print(IEnumerable<LNode> nodes, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null);
+		void Print(IEnumerable<LNode> nodes, StringBuilder target, IMessageSink? sink = null, ParsingMode? mode = null, ILNodePrinterOptions? options = null);
 	}
 
 	/// <summary>Standard extension methods for <see cref="ILNodePrinter"/>.</summary>
@@ -43,7 +43,7 @@ namespace Loyc.Syntax
 	{
 		/// <summary>Serializes the specified syntax tree to a string in the 
 		/// syntax supported by the specified <see cref="ILNodePrinter"/>.</summary>
-		public static string Print(this ILNodePrinter printer, LNode node, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
+		public static string Print(this ILNodePrinter printer, LNode node, IMessageSink? sink = null, ParsingMode? mode = null, ILNodePrinterOptions? options = null)
 		{
 			StringBuilder target = new StringBuilder();
 			printer.Print(node, target, sink, mode, options);
@@ -52,7 +52,7 @@ namespace Loyc.Syntax
 
 		/// <summary>Serializes a list of syntax trees to a string in the 
 		/// syntax supported by the specified <see cref="ILNodePrinter"/>.</summary>
-		public static string Print(this ILNodePrinter printer, IEnumerable<LNode> nodes, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
+		public static string Print(this ILNodePrinter printer, IEnumerable<LNode> nodes, IMessageSink? sink = null, ParsingMode? mode = null, ILNodePrinterOptions? options = null)
 		{
 			StringBuilder target = new StringBuilder();
 			printer.Print(nodes, target, sink, mode, options);
@@ -63,7 +63,7 @@ namespace Loyc.Syntax
 		/// <param name="printer">Printer to be used for each single LNode.</param>
 		/// <remarks>The newline between two nodes is suppressed if the second 
 		/// node has a <c>%appendStatement</c> attribute.</remarks>
-		public static StringBuilder PrintMultiple(ILNodePrinter printer, IEnumerable<LNode> nodes, StringBuilder sb, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options)
+		public static StringBuilder PrintMultiple(ILNodePrinter printer, IEnumerable<LNode> nodes, StringBuilder? sb, IMessageSink? sink, ParsingMode? mode, ILNodePrinterOptions? options)
 		{
 			sb = sb ?? new StringBuilder();
 			var lineSeparator = (options != null ? options.NewlineString : null) ?? "\n";

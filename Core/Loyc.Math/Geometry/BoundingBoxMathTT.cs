@@ -1,4 +1,9 @@
 ﻿
+
+
+
+
+
 // This is a generated file
 using System;
 using System.Collections.Generic;
@@ -15,6 +20,9 @@ namespace Loyc.Geometry
 	{
 	}
 }
+
+
+
 
 namespace Loyc.Geometry
 {
@@ -67,6 +75,7 @@ namespace Loyc.Geometry
 		}
 	}
 }
+
 namespace Loyc.Geometry
 {
 	using T = System.Single;
@@ -118,6 +127,7 @@ namespace Loyc.Geometry
 		}
 	}
 }
+
 namespace Loyc.Geometry
 {
 	using T = System.Double;
@@ -169,6 +179,7 @@ namespace Loyc.Geometry
 		}
 	}
 }
+
 
 namespace Loyc.Geometry
 {

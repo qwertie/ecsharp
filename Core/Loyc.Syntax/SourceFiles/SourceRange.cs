@@ -84,7 +84,7 @@ namespace Loyc.Syntax
 		public static bool operator !=(SourceRange a, SourceRange b) => !(a == b);
 
 		public bool Equals(SourceRange other) => this == other;
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return obj is SourceRange && (SourceRange)obj == this;
 		}

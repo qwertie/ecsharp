@@ -243,7 +243,7 @@ namespace LeMP
 		{
 			var node = ctx.CurrentNode();
 			var args = node.Args;
-			LNode last = null;
+			LNode? last = null;
 			var body = LNode.List();
 			if (node.ArgCount != 0 && (last = args.Last).Calls(CodeSymbols.Braces)) {
 				body = last.Args;
@@ -262,7 +262,7 @@ namespace LeMP
 		/// <c>option1: v1, option2: v2</c> is parsed into <c>@`'::=`(option1, v1), 
 		/// @`'::=`(option2, v2)</c> in EC# or <c>@`':`(option1, v1), @`':`(option2, v2)</c> in LES.
 		/// </remarks>
-		public static IEnumerable<KeyValuePair<LNode, LNode>> GetOptions(LNodeList optionList)
+		public static IEnumerable<KeyValuePair<LNode, LNode?>> GetOptions(LNodeList optionList)
 		{
 			Symbol lesNamedArg = (Symbol)"'<:";
 			foreach (var option in optionList) {
@@ -270,12 +270,12 @@ namespace LeMP
 				{
 					LNode key = option.Args[0];
 					LNode value = option.Args.Last;
-					yield return new KeyValuePair<LNode, LNode>(key, value);
+					yield return new KeyValuePair<LNode, LNode?>(key, value);
 				}
-				else if (option.Args.Count == 1 && option.Target.IsId)
-					yield return new KeyValuePair<LNode, LNode>(option.Target, option.Args[0]);
+				else if (option.Args.Count == 1 && option.Target!.IsId) // Args.Count == 1 implies a call, so Target != null
+					yield return new KeyValuePair<LNode, LNode?>(option.Target, option.Args[0]);
 				else
-					yield return new KeyValuePair<LNode, LNode>(option, null);
+					yield return new KeyValuePair<LNode, LNode?>(option, null);
 			}
 		}
 	}

@@ -245,7 +245,7 @@ namespace Loyc.Syntax
 				Array.Resize(ref outChars, neededOutSize);
 
 			MemoryMarshal.TryGetArray(buf.AsMemory(), out ArraySegment<byte> seg);
-			return _decoder.GetChars(seg.Array, seg.Offset, seg.Count, outChars, outIndex, flush);
+			return _decoder.GetChars(seg.Array!, seg.Offset, seg.Count, outChars, outIndex, flush);
 		}
 
 		public override int Count
