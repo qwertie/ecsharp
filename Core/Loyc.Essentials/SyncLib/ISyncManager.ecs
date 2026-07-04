@@ -818,8 +818,8 @@ namespace Loyc.SyncLib
 					return sync.$(out NameWithType(SyncList, $T, Impl))<InternalList.Scanner<$T>, ReadOnlyMemory<$T>, MemoryBuilder<$T>>(
 						name, scanner, null, new MemoryBuilder<$T>(), listMode | ObjectMode.NotNull, tupleOrListLength);
 				}
-				public static IListSource<$T> SyncList<SyncManager>(this SyncManager sync,
-					FieldId name, IListSource<$T> savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1)
+				public static IListSource<$T>? SyncList<SyncManager>(this SyncManager sync,
+					FieldId name, IListSource<$T>? savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1)
 					where SyncManager : ISyncManager
 				{
 					var scanner = default(ScannableEnumerable<$T>.Scanner<IEnumerator<$T>>);

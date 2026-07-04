@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Loyc.Collections;
 
 namespace Loyc.Collections
@@ -29,7 +30,7 @@ namespace Loyc.Collections
 	/// </remarks>
 	public abstract class WListProtected<T>
 	{
-		private VListBlock<T> _block = null;
+		private VListBlock<T>? _block = null;
 		private int _localCount;
 		private const int IsOwnerFlag = unchecked((int)0x80000000);
 		private const int UserByteShift = 20;
@@ -38,7 +39,7 @@ namespace Loyc.Collections
 
 		/// <summary>Reference to VListBlock that contains items at the "front" 
 		/// of the list. _block can be null if the list is empty.</summary>
-		protected internal VListBlock<T> Block
+		protected internal VListBlock<T>? Block
 		{
 			get { return _block; }
 			internal set { _block = value; }
@@ -106,7 +107,7 @@ namespace Loyc.Collections
 			if (userByte != 0)
 				UserByte = userByte;
 		}
-		internal WListProtected(VListBlock<T> block, int localCount, bool isOwner)
+		internal WListProtected(VListBlock<T>? block, int localCount, bool isOwner)
 		{
 			Block = block;
 			_localCount = localCount & LocalCountMask;
@@ -295,10 +296,10 @@ namespace Loyc.Collections
 
 		/// <summary>Gets an item WITHOUT doing a range check</summary>
 		protected T GetAtDff(int distanceFromFront) 
-			{ return Block[LocalCount - 1 - distanceFromFront]; }
+			{ return Block![LocalCount - 1 - distanceFromFront]; }
 		/// <summary>Sets an item WITHOUT doing a range or mutability check</summary>
 		protected void SetAtDff(int distanceFromFront, T item) 
-			{ Block[LocalCount - 1 - distanceFromFront] = item; }
+			{ Block![LocalCount - 1 - distanceFromFront] = item; }
 
 		#endregion
 
@@ -352,7 +353,7 @@ namespace Loyc.Collections
 	public abstract class WListBase<T> : WListProtected<T>, IListAndListSource<T>
 	{
 		protected internal WListBase() { }
-		protected internal WListBase(VListBlock<T> block, int localCount, bool isOwner) 
+		protected internal WListBase(VListBlock<T>? block, int localCount, bool isOwner) 
 			: base(block, localCount, isOwner) {}
 
 		#region IList<T>/ICollection<T> Members
@@ -382,6 +383,7 @@ namespace Loyc.Collections
 
 		#region IListSource<T> Members
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			int v_index = AdjustWListIndex(index, 1);

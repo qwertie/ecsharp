@@ -47,15 +47,15 @@ namespace Loyc.Collections
 	public class MSet<T> : ISetImm<T>, ISetImm<T, MSet<T>>, ICollectionAndReadOnly<T>, ICloneable<MSet<T>>, ICollectionSink<T>, IEquatable<MSet<T>>, ISet<T>
 	{
 		internal InternalSet<T> _set;
-		internal IEqualityComparer<T> _comparer;
+		internal IEqualityComparer<T>? _comparer;
 		internal int _count;
 
 		public MSet() { _comparer = InternalSet<T>.DefaultComparer; }
 		public MSet(IEnumerable<T> copy) : this(copy, InternalSet<T>.DefaultComparer) { }
-		public MSet(IEnumerable<T> copy, IEqualityComparer<T> comparer) { _comparer = comparer; AddRange(copy); }
-		public MSet(IEqualityComparer<T> comparer) { _comparer = comparer; }
-		public MSet(InternalSet<T> set, IEqualityComparer<T> comparer) : this(set, comparer, set.Count()) { }
-		internal MSet(InternalSet<T> set, IEqualityComparer<T> comparer, int count)
+		public MSet(IEnumerable<T> copy, IEqualityComparer<T>? comparer) { _comparer = comparer; AddRange(copy); }
+		public MSet(IEqualityComparer<T>? comparer) { _comparer = comparer; }
+		public MSet(InternalSet<T> set, IEqualityComparer<T>? comparer) : this(set, comparer, set.Count()) { }
+		internal MSet(InternalSet<T> set, IEqualityComparer<T>? comparer, int count)
 		{
 			Debug.Assert(count >= 0);
 			_set = set;
@@ -67,7 +67,9 @@ namespace Loyc.Collections
 		public bool IsEmpty { get { return _count == 0; } }
 		internal InternalSet<T> InternalSet { get { return _set; } }
 		public InternalSet<T> FrozenInternalSet { get { _set.CloneFreeze(); return _set; } }
-		public IEqualityComparer<T> Comparer { get { return _comparer; } }
+		/// <summary>Returns the comparer, or null if the set uses reference equality
+		/// (see <see cref="Impl.InternalSet{T}.DefaultComparer"/>).</summary>
+		public IEqualityComparer<T>? Comparer { get { return _comparer; } }
 
 		/// <summary>Adds the specified item to the set, or throws an exception if
 		/// a matching item is already present.</summary>
@@ -133,8 +135,8 @@ namespace Loyc.Collections
 			return new MSet<T>(_set, _comparer, _count);
 		}
 
-		bool IEquatable<MSet<T>>.Equals(MSet<T> rhs) { return SetEquals(rhs); }
-		public override bool Equals(object obj)
+		bool IEquatable<MSet<T>>.Equals(MSet<T>? rhs) { return SetEquals(rhs!); }
+		public override bool Equals(object? obj)
 		{
 			return obj is MSet<T> && SetEquals((MSet<T>)obj);
 		}
@@ -335,7 +337,7 @@ namespace Loyc.Collections
 		}
 		public MSet<T> Intersect(Set<T> other) { return Intersect(other._set, other.Comparer); }
 		public MSet<T> Intersect(MSet<T> other) { return Intersect(other._set, other.Comparer); }
-		internal MSet<T> Intersect(InternalSet<T> other, IEqualityComparer<T> otherComparer)
+		internal MSet<T> Intersect(InternalSet<T> other, IEqualityComparer<T>? otherComparer)
 		{
 			var set2 = _set.CloneFreeze();
 			int count2 = _count - set2.IntersectWith(other, otherComparer);

@@ -838,8 +838,8 @@ namespace Loyc.SyncLib
 			return sync.SyncListBoolImpl<InternalList.Scanner<bool>, ReadOnlyMemory<bool>, MemoryBuilder<bool>>(
 			name, scanner, null, new MemoryBuilder<bool>(), listMode | ObjectMode.NotNull, tupleOrListLength);
 		}
-		public static IListSource<bool> SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, IListSource<bool> savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1) where SyncManager: ISyncManager
+		public static IListSource<bool>? SyncList<SyncManager>(this SyncManager sync, 
+		  FieldId name, IListSource<bool>? savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<bool>.Scanner<IEnumerator<bool>>);
@@ -1023,8 +1023,8 @@ namespace Loyc.SyncLib
 			return sync.SyncListByteImpl<InternalList.Scanner<byte>, ReadOnlyMemory<byte>, MemoryBuilder<byte>>(
 			name, scanner, null, new MemoryBuilder<byte>(), listMode | ObjectMode.NotNull, tupleOrListLength);
 		}
-		public static IListSource<byte> SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, IListSource<byte> savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1) where SyncManager: ISyncManager
+		public static IListSource<byte>? SyncList<SyncManager>(this SyncManager sync, 
+		  FieldId name, IListSource<byte>? savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<byte>.Scanner<IEnumerator<byte>>);
@@ -1820,8 +1820,8 @@ namespace Loyc.SyncLib
 			return sync.SyncListCharImpl<InternalList.Scanner<char>, ReadOnlyMemory<char>, MemoryBuilder<char>>(
 			name, scanner, null, new MemoryBuilder<char>(), listMode | ObjectMode.NotNull, tupleOrListLength);
 		}
-		public static IListSource<char> SyncList<SyncManager>(this SyncManager sync, 
-		  FieldId name, IListSource<char> savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1) where SyncManager: ISyncManager
+		public static IListSource<char>? SyncList<SyncManager>(this SyncManager sync, 
+		  FieldId name, IListSource<char>? savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1) where SyncManager: ISyncManager
 		
 		{
 			var scanner = default(ScannableEnumerable<char>.Scanner<IEnumerator<char>>);

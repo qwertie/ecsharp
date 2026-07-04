@@ -7,6 +7,10 @@ using System.Diagnostics;
 
 namespace Loyc.Collections
 {
+	// They want me to put a "where K: notnull" constraint on MMap. I disagree. The warning says:
+	// type 'K' cannot be used as...'TKey' in...'IDictionary<TKey, TValue>'. Nullability of...'K' doesn't match 'notnull' constraint.
+	#pragma warning disable 8714
+
 	/// <summary>
 	/// A dictionary class built on top of <c>InternalSet&lt;KeyValuePair&lt;K,V>></c>.
 	/// </summary>
@@ -44,11 +48,11 @@ namespace Loyc.Collections
 	{
 		public MMap() : base() { }
 		/// <summary>Creates an empty map with the specified key comparer.</summary>
-		public MMap(IEqualityComparer<K> comparer) : base(comparer) { }
+		public MMap(IEqualityComparer<K>? comparer) : base(comparer) { }
 		/// <summary>Creates a map with the specified elements.</summary>
 		public MMap(IEnumerable<KeyValuePair<K, V>> copy) : base(copy) { }
 		/// <summary>Creates a map with the specified elements and key comparer.</summary>
-		public MMap(IEnumerable<KeyValuePair<K,V>> copy, IEqualityComparer<K> comparer) : base(copy, comparer) { }
+		public MMap(IEnumerable<KeyValuePair<K,V>> copy, IEqualityComparer<K>? comparer) : base(copy, comparer) { }
 		internal MMap(InternalSet<KeyValuePair<K, V>> set, IEqualityComparer<K> keyComparer, int count) : base(set, keyComparer, count) { }
 
 		#region IDictionary<K,V>
@@ -63,7 +67,7 @@ namespace Loyc.Collections
 		}
 		public bool Remove(K key)
 		{
-			var kvp = new KeyValuePair<K, V>(key, default(V));
+			var kvp = new KeyValuePair<K, V>(key, default(V)!);
 			return GetAndRemove(ref kvp);
 		}
 		public new ValueCollection<K, V> Values
@@ -219,7 +223,7 @@ namespace Loyc.Collections
 		/// <remarks>This method shall not throw when the key is null.</remarks>
 		public Maybe<V> GetAndRemove(K key)
 		{
-			var kvp = new KeyValuePair<K, V>(key, default(V));
+			var kvp = new KeyValuePair<K, V>(key, default(V)!);
 			if (_set.Remove(ref kvp, Comparer)) {
 				_count--;
 				return kvp.Value;
@@ -262,7 +266,7 @@ namespace Loyc.Collections
 		public MMap<K, V> Without(K key)
 		{
 			var set = _set.CloneFreeze();
-			var item = new KeyValuePair<K, V>(key, default(V));
+			var item = new KeyValuePair<K, V>(key, default(V)!);
 			if (set.Remove(ref item, Comparer))
 				return new MMap<K, V>(set, _keyComparer, _count - 1);
 			return this;

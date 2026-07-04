@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
@@ -64,7 +65,7 @@ namespace Loyc.Collections.Impl
 		/// split in half, the return value is the left side, and splitRight is
 		/// set to the right side.</returns>
 		/// <exception cref="NotSupportedException">This node does not allow insertion at an arbitrary location (e.g. BList node).</exception>
-		public virtual AListNode<K, T> Insert(uint index, T item, out AListNode<K, T> splitRight, IAListTreeObserver<K, T> tob)
+		public virtual AListNode<K, T>? Insert(uint index, T item, out AListNode<K, T>? splitRight, IAListTreeObserver<K, T>? tob)
 		{
 			throw new NotSupportedException();
 		}
@@ -81,7 +82,7 @@ namespace Loyc.Collections.Impl
 		/// <remarks>This method can only be called for ALists, since other tree 
 		/// types don't allow insertion at a specific index.</remarks>
 		/// <exception cref="NotSupportedException">This node does not allow insertion at an arbitrary location (e.g. BList node).</exception>
-		public virtual AListNode<K, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<K, T> splitRight, IAListTreeObserver<K, T> tob)
+		public virtual AListNode<K, T>? InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<K, T>? splitRight, IAListTreeObserver<K, T>? tob)
 		{
 			throw new NotSupportedException();
 		}
@@ -112,7 +113,7 @@ namespace Loyc.Collections.Impl
 		/// informs the caller when replacement occurs in this mode by changing 
 		/// op.Mode to AddDuplicateMode.ReplaceExisting.
 		/// </remarks>
-		internal virtual int DoSingleOperation(ref AListSingleOperation<K, T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
+		internal virtual int DoSingleOperation(ref AListSingleOperation<K, T> op, out AListNode<K, T>? splitLeft, out AListNode<K, T>? splitRight)
 		{
 			throw new NotSupportedException();
 		}
@@ -135,7 +136,7 @@ namespace Loyc.Collections.Impl
 		/// <remarks>In a language with templates, I would change a couple
 		/// of elements of <see cref="AListSparseOperation{T}"/> into 
 		/// template parameters.</remarks>
-		internal virtual int DoSparseOperation(ref AListSparseOperation<T> op, int index, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
+		internal virtual int DoSparseOperation(ref AListSparseOperation<T> op, int index, out AListNode<K, T>? splitLeft, out AListNode<K, T>? splitRight)
 		{
 			throw new NotSupportedException();
 		}
@@ -145,6 +146,7 @@ namespace Loyc.Collections.Impl
 		/// item at the new index is returned. index is set to null if this 
 		/// doesn't work because there are no items above or below, or if 
 		/// direction is 0. On entry, index must NOT be null.</summary>
+		[return: MaybeNull]
 		internal virtual T SparseGetNearest(ref int? index, int direction)
 		{
 			throw new NotSupportedException();
@@ -171,7 +173,7 @@ namespace Loyc.Collections.Impl
 		/// <remarks>Currently, this method can be called for all tree types, even 
 		/// though improper use could break the tree invariant (e.g. sorted order of BList).
 		/// </remarks>
-		public abstract void SetAt(uint index, T item, IAListTreeObserver<K, T> tob);
+		public abstract void SetAt(uint index, T item, IAListTreeObserver<K, T>? tob);
 
 		/// <summary>Removes an item at the specified index.</summary>
 		/// <returns>Returns true if the node is undersized after the removal, or 
@@ -184,21 +186,21 @@ namespace Loyc.Collections.Impl
 		/// discarded if it is an inner node with a single child (the child becomes 
 		/// the new root node), or it is a leaf node with no children.
 		/// </remarks>
-		public abstract bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> tob);
+		public abstract bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T>? tob);
 
 		/// <summary>Moves item(s) from a right sibling into this node.</summary>
 		/// <param name="localsToMove">Number of local items to be moved.</param>
 		/// <returns>Returns the number of indexes moved on success (localsToMove
 		/// if a leaf node, TotalCount of the child moved otherwise), or 0 if
 		/// either or both nodes are frozen.</returns>
-		internal abstract uint TakeFromRight(AListNode<K, T> rightSibling, int localsToMove, IAListTreeObserver<K, T> tob);
+		internal abstract uint TakeFromRight(AListNode<K, T> rightSibling, int localsToMove, IAListTreeObserver<K, T>? tob);
 		
 		/// <summary>Moves item(s) from a left sibling into this node.</summary>
 		/// <param name="localsToMove">Number of local items to be moved.</param>
 		/// <returns>Returns the number of indexes moved on success (localsToMove
 		/// if a leaf node, TotalCount of the child moved otherwise), or 0 if
 		/// either or both nodes are frozen.</returns>
-		internal abstract uint TakeFromLeft(AListNode<K, T> leftSibling, int localsToMove, IAListTreeObserver<K, T> tob);
+		internal abstract uint TakeFromLeft(AListNode<K, T> leftSibling, int localsToMove, IAListTreeObserver<K, T>? tob);
 
 		/// <summary>Returns true if the node is explicitly marked read-only. 
 		/// Conceptually, the node can still be changed, but when any change needs 
@@ -227,7 +229,7 @@ namespace Loyc.Collections.Impl
 		/// <param name="tob">Tree observer (null if none)</param>
 		/// <returns>True if the node was unfrozen</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static bool AutoClone(ref AListNode<K, T> node, AListInnerBase<K, T> parent, IAListTreeObserver<K, T> tob)
+		public static bool AutoClone(ref AListNode<K, T> node, AListInnerBase<K, T>? parent, IAListTreeObserver<K, T>? tob)
 		{
 			if (node.IsFrozen) {
 				node = Clone(node, parent, tob);
@@ -235,7 +237,7 @@ namespace Loyc.Collections.Impl
 			}
 			return false;
 		}
-		static AListNode<K, T> Clone(AListNode<K, T> node, AListInnerBase<K, T> parent, IAListTreeObserver<K, T> tob)
+		static AListNode<K, T> Clone(AListNode<K, T> node, AListInnerBase<K, T>? parent, IAListTreeObserver<K, T>? tob)
 		{
 			var clone = node.DetachedClone();
 			if (tob != null) tob.HandleChildReplaced(node, clone, null, parent);
@@ -276,7 +278,7 @@ namespace Loyc.Collections.Impl
 		protected byte _childCount;
 
 		/// <summary>Allows derived classes of AListNode to access AListBase._observer.</summary>
-		protected IAListTreeObserver<K, T> GetObserver(AListBase<K, T> tree) { return tree._observer; }
+		protected IAListTreeObserver<K, T>? GetObserver(AListBase<K, T> tree) { return tree._observer; }
 		/// <summary>Allows derived classes of AListNode to fire the AListBase.ListChanging event.</summary>
 		protected bool HasListChanging(AListBase<K, T> tree) { return tree._listChanging != null; }
 		/// <summary>Allows derived classes of AListNode to fire the AListBase.ListChanging event properly.</summary>
@@ -406,7 +408,7 @@ namespace Loyc.Collections.Impl
 	/// <typeparam name="T">Item type (stored in leaf nodes)</typeparam>
 	internal struct AListSparseOperation<T>
 	{
-		public AListSparseOperation(uint index, bool isInsert, bool writeEmpty, int count, IAListTreeObserver<int, T> tob)
+		public AListSparseOperation(uint index, bool isInsert, bool writeEmpty, int count, IAListTreeObserver<int, T>? tob)
 		{
 			AbsoluteIndex = (uint)index;
 			IsInsert = isInsert;
@@ -425,16 +427,16 @@ namespace Loyc.Collections.Impl
 		/// <summary>Index into sparse list where the operation starts.</summary>
 		public uint AbsoluteIndex;
 		/// <summary>A single item to insert if <c>Source==null &amp;&amp; !WriteEmpty</c></summary>
-		public T Item;
+		[AllowNull] public T Item;
 		/// <summary>When nonzero, the operation is partialy complete and items in 
 		/// range Source[0...SourceIndex-1] have already been inserted.</summary>
 		public int SourceIndex;
 		/// <summary>Equals SparseSource.Count, but SparseSource may be null when inserting
 		/// a single item (then SourceCount==1) or when inserting blank space.</summary>
 		public int SourceCount;
-		public IListSource<T> Source;
-		public ISparseListSource<T> SparseSource; // Source as sparse
-		public IAListTreeObserver<int, T> tob;
+		public IListSource<T>? Source;
+		public ISparseListSource<T>? SparseSource; // Source as sparse
+		public IAListTreeObserver<int, T>? tob;
 	}
 }
 

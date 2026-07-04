@@ -43,7 +43,7 @@ namespace Loyc.SyncLib.Impl
 					(_syncItem, new ListBuilder<T>(), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, savable);
 			} else {
-				Debug.Assert(_tupleLength <= -1 || savable.Count == _tupleLength);
+				Debug.Assert(_tupleLength <= -1 || savable == null || savable.Count == _tupleLength);
 				var saver = new ListSaver<SM, List<T>, T, SyncItem>(_syncItem, _listMode);
 				return saver.Sync(ref sync, name, savable);
 			}
@@ -56,7 +56,7 @@ namespace Loyc.SyncLib.Impl
 					(_syncItem, new CollectionBuilder<List<T>, T>(Alloc<T>.List), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, null);
 			} else {
-				Debug.Assert(_tupleLength <= -1 || savable.Count == _tupleLength);
+				Debug.Assert(_tupleLength <= -1 || savable == null || savable.Count == _tupleLength);
 				var saver = new ListSaverC<SM, IList<T>, T, SyncItem>(_syncItem, _listMode);
 				return saver.Sync(ref sync, name, savable);
 			}
@@ -95,7 +95,7 @@ namespace Loyc.SyncLib.Impl
 					(_syncItem, new ArrayBuilder<T>(), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, savable);
 			} else {
-				Debug.Assert(_tupleLength <= -1 || savable.Length == _tupleLength);
+				Debug.Assert(_tupleLength <= -1 || savable == null || savable.Length == _tupleLength);
 				var saver = new ListSaver<SM, T[], T, SyncItem>(_syncItem, _listMode);
 				return saver.Sync(ref sync, name, savable);
 			}
@@ -108,7 +108,7 @@ namespace Loyc.SyncLib.Impl
 					(_syncItem, new CollectionBuilder<List<T>, T>(Alloc<T>.List), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, null);
 			} else {
-				Debug.Assert(_tupleLength <= -1 || savable.Count == _tupleLength);
+				Debug.Assert(_tupleLength <= -1 || savable == null || savable.Count == _tupleLength);
 				var saver = new ListSaver<SM, IReadOnlyList<T>, T, SyncItem>(_syncItem, _listMode);
 				return saver.Sync(ref sync, name, savable);
 			}
@@ -121,7 +121,7 @@ namespace Loyc.SyncLib.Impl
 					(_syncItem, new CollectionBuilder<List<T>, T>(Alloc<T>.List), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, null);
 			} else {
-				Debug.Assert(_tupleLength <= -1 || savable.Count == _tupleLength);
+				Debug.Assert(_tupleLength <= -1 || savable == null || savable.Count == _tupleLength);
 				var saver = new ListSaver<SM, IReadOnlyCollection<T>, T, SyncItem>(_syncItem, _listMode);
 				return saver.Sync(ref sync, name, savable);
 			}
@@ -134,7 +134,7 @@ namespace Loyc.SyncLib.Impl
 					(_syncItem, new CollectionBuilder<DList<T>, T>(Alloc<T>.DList), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, null);
 			} else {
-				Debug.Assert(_tupleLength <= -1 || savable.Count == _tupleLength);
+				Debug.Assert(_tupleLength <= -1 || savable == null || savable.Count == _tupleLength);
 				var saver = new ListSaver<SM, IListSource<T>, T, SyncItem>(_syncItem, _listMode);
 				return saver.Sync(ref sync, name, savable);
 			}
@@ -147,7 +147,7 @@ namespace Loyc.SyncLib.Impl
 					(_syncItem, new CollectionBuilder<ICollection<T>, T>(Alloc<T>.List), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, null);
 			} else {
-				Debug.Assert(_tupleLength <= -1 || savable.Count == _tupleLength);
+				Debug.Assert(_tupleLength <= -1 || savable == null || savable.Count == _tupleLength);
 				var saver = new ListSaverC<SM, ICollection<T>, T, SyncItem>(_syncItem, _listMode);
 				return saver.Sync(ref sync, name, savable);
 			}
@@ -160,7 +160,7 @@ namespace Loyc.SyncLib.Impl
 					(_syncItem, new CollectionBuilder<HashSet<T>, T>(Alloc<T>.HashSet), _listMode, _tupleLength);
 				return loader.Sync(ref sync, name, null);
 			} else {
-				Debug.Assert(_tupleLength <= -1 || savable.Count == _tupleLength);
+				Debug.Assert(_tupleLength <= -1 || savable == null || savable.Count == _tupleLength);
 				var saver = new ListSaver<SM, HashSet<T>, T, SyncItem>(_syncItem, _listMode);
 				return saver.Sync(ref sync, name, savable);
 			}

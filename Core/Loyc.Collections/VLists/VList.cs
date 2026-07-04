@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Loyc.MiniTest;
 using Loyc.Collections;
@@ -49,12 +50,12 @@ namespace Loyc.Collections
 	 DebuggerDisplay("Count = {Count}")]
 	public struct VList<T> : IListAndListSource<T>, ICloneable<VList<T>>, ITryPop<T>, ICloneable
 	{
-		internal VListBlock<T> _block;
+		internal VListBlock<T>? _block;
 		internal int _localCount;
 
 		#region Constructors
 
-		internal VList(VListBlock<T> block, int localCount)
+		internal VList(VListBlock<T>? block, int localCount)
 		{
 			_block = block;
 			_localCount = localCount;
@@ -135,7 +136,7 @@ namespace Loyc.Collections
 		}
 		/// <summary>Returns whether the two list references are the same.
 		/// Does not compare the contents of the lists.</summary>
-		public override bool Equals(object rhs_)
+		public override bool Equals(object? rhs_)
 		{
 			if (rhs_ == null)
 				return false;
@@ -187,7 +188,7 @@ namespace Loyc.Collections
 		public VList<T> RemoveRange(int index, int count)
 		{
 			if (count != 0)
-				this = _block.RemoveRange(_localCount, Count - (index + count), count).ToVList();
+				this = _block!.RemoveRange(_localCount, Count - (index + count), count).ToVList();
 			return this;
 		}
 
@@ -199,7 +200,7 @@ namespace Loyc.Collections
 		public T Last
 		{
 			get {
-				return _block.Front(_localCount);
+				return _block!.Front(_localCount);
 			}
 		}
 		public bool IsEmpty
@@ -219,7 +220,7 @@ namespace Loyc.Collections
 				this = WithoutLast(1);
 				return item;
 			}
-			return default(T);
+			return default(T)!; // Nullability contract broken, and there's no attribute like [return: MaybeNullIf("isEmpty")]
 		}
 
 		/// <summary>Gets the last item in the list (at index Count-1).</summary>
@@ -228,7 +229,7 @@ namespace Loyc.Collections
 		{
 			if (!(isEmpty = _block == null))
 				return Last;
-			return default(T);
+			return default(T)!; // Nullability contract broken, and there's no attribute like [return: MaybeNullIf("isEmpty")]
 		}
 
 		/// <summary>Removes the last item (at index Count-1) from the list and returns it.</summary>
@@ -341,17 +342,17 @@ namespace Loyc.Collections
 		void IList<T>.RemoveAt(int index) { RemoveAt(index); }
 		public VList<T> RemoveAt(int index)
 		{
-			this = _block.RemoveAt(_localCount, Count - (index + 1)).ToVList();
+			this = _block!.RemoveAt(_localCount, Count - (index + 1)).ToVList();
 			return this;
 		}
 
 		public T this[int index]
 		{
 			get {
-				return _block.RGet(index, _localCount);
+				return _block!.RGet(index, _localCount);
 			}
 			set {
-				this = _block.ReplaceAt(_localCount, value, Count - 1 - index).ToVList();
+				this = _block!.ReplaceAt(_localCount, value, Count - 1 - index).ToVList();
 			}
 		}
 		/// <summary>Gets an item from the list at the specified index; returns 
@@ -438,8 +439,8 @@ namespace Loyc.Collections
 		{
 			ushort _localIndex;
 			ushort _localCount;
-			VListBlock<T> _curBlock;
-			VListBlock<T> _nextBlock;
+			VListBlock<T>? _curBlock;
+			VListBlock<T>? _nextBlock;
 			FVList<T> _outerList;
 
 			public Enumerator(VList<T> list)
@@ -460,9 +461,9 @@ namespace Loyc.Collections
 
 			public T Current
 			{
-				get { return _curBlock[_localIndex]; }
+				get { return _curBlock![_localIndex]; }
 			}
-			object System.Collections.IEnumerator.Current
+			object? System.Collections.IEnumerator.Current
 			{
 				get { return Current; }
 			}
@@ -512,9 +513,10 @@ namespace Loyc.Collections
 
 		#region IListSource<T> Members
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
-			T value = default(T);
+			T value = default(T)!;
 			fail = _block == null || !_block.RGet(index, _localCount, ref value);
 			return value;
 		}
@@ -549,7 +551,7 @@ namespace Loyc.Collections
 			if (_localCount == 0)
 				return this;
 			else
-				return (VList<T>)_block.Where(_localCount, keep, null);
+				return (VList<T>)_block!.Where(_localCount, keep, null);
 		}
 
 		/// <summary>Filters and maps a list with a user-defined function.</summary>
@@ -591,7 +593,7 @@ namespace Loyc.Collections
 			if (_localCount == 0)
 				return this;
 			else
-				return (VList<T>)_block.SmartSelect(_localCount, map, null);
+				return (VList<T>)_block!.SmartSelect(_localCount, map, null);
 		}
 
 		/// <summary>Maps a list to another list by concatenating the outputs of a mapping function.</summary>
@@ -610,7 +612,7 @@ namespace Loyc.Collections
 			if (_localCount == 0)
 				return this;
 			else
-				return (VList<T>)_block.SelectMany(_localCount, map, true, null);
+				return (VList<T>)_block!.SelectMany(_localCount, map, true, null);
 		}
 
 		/*/// <summary>Maps a list to another list of the same length.</summary>

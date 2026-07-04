@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc.Collections.Impl;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Loyc.Collections
@@ -44,8 +45,9 @@ namespace Loyc.Collections
 				CreateIndex();
 		}
 
-		AListIndexer<int, T> _indexer;
+		AListIndexer<int, T>? _indexer;
 
+		[MemberNotNull(nameof(_indexer))]
 		protected void CreateIndex()
 		{
 			Debug.Assert(_indexer == null);
@@ -80,11 +82,11 @@ namespace Loyc.Collections
 		/// <param name="item">Item to find in the list</param>
 		/// <param name="sorted">Whether to sort the list of indexes before returning it.</param>
 		/// <remarks>If IsIndexed is false, an index is created.</remarks>
-		public List<int> IndexesOf(T item, bool sorted)
+		public List<int>? IndexesOf(T item, bool sorted)
 		{
 			if (_indexer == null) CreateIndex();
 			var list = _indexer.IndexesOf(item);
-			if (sorted && list.Count > 1)
+			if (sorted && list!.Count > 1) // (throws if item was not found, as it always has)
 				list.Sort();
 			return list;
 		}

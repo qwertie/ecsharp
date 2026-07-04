@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
@@ -8,7 +9,7 @@ namespace Loyc.Collections
 {
 	class ArrayOf4<T>
 	{
-		T t0, t1, t2, t3;
+		[AllowNull] T t0, t1, t2, t3;
 		
 		T A { get { return t0; } set { t0 = value; } }
 		T B { get { return t1; } set { t1 = value; } }

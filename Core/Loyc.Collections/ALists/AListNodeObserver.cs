@@ -40,7 +40,7 @@ namespace Loyc.Collections
 		/// <see cref="IAListTreeObserver{K,T}"/>.</summary>
 		protected class ObserverMgr : IAListTreeObserver<K, T>
 		{
-			public ObserverMgr(AListBase<K, T> list, AListNode<K,T> root, IAListTreeObserver<K, T> existingObserver)
+			public ObserverMgr(AListBase<K, T> list, AListNode<K,T>? root, IAListTreeObserver<K, T>? existingObserver)
 			{
 				_list = list;
 				_root = root;
@@ -49,7 +49,7 @@ namespace Loyc.Collections
 			}
 
 			protected AListBase<K, T> _list;
-			protected AListNode<K, T> _root;
+			protected AListNode<K, T>? _root;
 			protected InternalList<IAListTreeObserver<K, T>> _observers = InternalList<IAListTreeObserver<K, T>>.Empty;
 
 			#region IAListTreeObserver members
@@ -58,12 +58,12 @@ namespace Loyc.Collections
 			{
 				throw new InvalidOperationException(); // should not be called
 			}
-			public void Detach(AListBase<K, T> list, AListNode<K, T> root)
+			public void Detach(AListBase<K, T> list, AListNode<K, T>? root)
 			{
 				throw new NotImplementedException(); // should not be called
 			}
 
-			public void RootChanged(AListBase<K, T> list, AListNode<K, T> newRoot, bool clear)
+			public void RootChanged(AListBase<K, T> list, AListNode<K, T>? newRoot, bool clear)
 			{
 				Debug.Assert(_list == list);
 				_root = newRoot;

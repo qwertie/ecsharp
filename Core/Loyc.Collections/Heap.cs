@@ -53,7 +53,7 @@ namespace Loyc.Collections
 		/// index of the item within the <see cref="List"/>. If the item has been
 		/// removed from the list, the index is -1.
 		/// </remarks>
-		public event Action<T, int> OnItemMoved;
+		public event Action<T, int>? OnItemMoved;
 
 		/// <summary>Initializes the heap wrapper with the list and comparer to use.
 		/// Both parameters must not be null.</summary>
@@ -61,7 +61,7 @@ namespace Loyc.Collections
 		/// is placed or relocated within the heap (see <see cref="OnItemMoved"/>.)</param>
 		/// <remarks>If the list is not already arranged as a max-heap, you must call
 		/// Heapify() after the constructor to rearrange it into a heap.</remarks>
-		public MaxHeap(TList list, TComparer comparer, Action<T, int> onItemMoved = null) {
+		public MaxHeap(TList list, TComparer comparer, Action<T, int>? onItemMoved = null) {
 			_list = list;
 			_cmp = comparer;
 			OnItemMoved = onItemMoved;
@@ -162,7 +162,7 @@ namespace Loyc.Collections
 		{
 			int count = _list.Count - 1;
 			if (isEmpty = count < 0)
-				return default(T);
+				return default(T)!; // ITryPop<T> lacks [return: MaybeNull], and there's no attribute like [return: MaybeNullIf("isEmpty")]
 			var result = _list[0];
 			BubbleDown(_list[count], 0, count);
 			_list.RemoveAt(count);
@@ -192,7 +192,7 @@ namespace Loyc.Collections
 		{
 			if (!(isEmpty = _list.Count == 0))
 				return _list[0];
-			return default(T);
+			return default(T)!; // ITryPop<T> lacks [return: MaybeNull], and there's no attribute like [return: MaybeNullIf("isEmpty")]
 		}
 
 		/// <summary>Gets the largest item from the heap
@@ -239,7 +239,7 @@ namespace Loyc.Collections
 	public class MinHeap<T, TList, TComparer> : MaxHeap<T, TList, ReverseComparer<T, TComparer>>
 		where TList : IList<T> where TComparer : IComparer<T>
 	{
-		public MinHeap(TList list, TComparer comparer, Action<T, int> onItemMoved = null) 
+		public MinHeap(TList list, TComparer comparer, Action<T, int>? onItemMoved = null)
 			: base(list, new ReverseComparer<T, TComparer>(comparer), onItemMoved) { }
 	}
 
@@ -252,14 +252,14 @@ namespace Loyc.Collections
 	/// </remarks>
 	public class MaxHeap<T> : MaxHeap<T, InternalList<T>, IComparer<T>>
 	{
-		public MaxHeap(IComparer<T> comparer = null, Action<T, int> onItemMoved = null)
+		public MaxHeap(IComparer<T>? comparer = null, Action<T, int>? onItemMoved = null)
 			: base(InternalList<T>.Empty, comparer ?? Comparer<T>.Default, onItemMoved) { }
-		public MaxHeap(IEnumerable<T> items, IComparer<T> comparer = null, bool heapify = true)
+		public MaxHeap(IEnumerable<T> items, IComparer<T>? comparer = null, bool heapify = true)
 			: base(new InternalList<T>(items), comparer ?? Comparer<T>.Default)
 		{
 			if (heapify) Heapify();
 		}
-		public MaxHeap(InternalList<T> list, IComparer<T> comparer = null, bool heapify = true)
+		public MaxHeap(InternalList<T> list, IComparer<T>? comparer = null, bool heapify = true)
 			: base(list, comparer ?? Comparer<T>.Default)
 		{
 			if (heapify) Heapify();
@@ -275,14 +275,14 @@ namespace Loyc.Collections
 	/// </remarks>
 	public class MinHeap<T> : MinHeap<T, InternalList<T>, IComparer<T>>
 	{
-		public MinHeap(IComparer<T> comparer = null, Action<T, int> onItemMoved = null) 
+		public MinHeap(IComparer<T>? comparer = null, Action<T, int>? onItemMoved = null)
 			: base(InternalList<T>.Empty, comparer ?? Comparer<T>.Default, onItemMoved) { }
-		public MinHeap(IEnumerable<T> items, IComparer<T> comparer = null, bool heapify = true) 
+		public MinHeap(IEnumerable<T> items, IComparer<T>? comparer = null, bool heapify = true)
 			: base(new InternalList<T>(items), comparer ?? Comparer<T>.Default)
 		{
 			if (heapify) Heapify();
 		}
-		public MinHeap(InternalList<T> list, IComparer<T> comparer = null, bool heapify = true) 
+		public MinHeap(InternalList<T> list, IComparer<T>? comparer = null, bool heapify = true)
 			: base(list, comparer ?? Comparer<T>.Default)
 		{
 			if (heapify) Heapify();
@@ -292,14 +292,14 @@ namespace Loyc.Collections
 	/// <summary>This priority queue wrapper type is returned from the AsMaxHeap() extension method.</summary>
 	public class MaxHeapInList<T> : MaxHeap<T, IList<T>, IComparer<T>>
 	{
-		public MaxHeapInList(IList<T> list = null, IComparer<T> comparer = null, Action<T, int> onItemMoved = null)
+		public MaxHeapInList(IList<T>? list = null, IComparer<T>? comparer = null, Action<T, int>? onItemMoved = null)
 			: base(list ?? new List<T>(), comparer ?? Comparer<T>.Default, onItemMoved) { }
 	}
 	
 	/// <summary>This priority queue wrapper type is returned from the AsMinHeap() extension method.</summary>
 	public class MinHeapInList<T> : MinHeap<T, IList<T>, IComparer<T>>
 	{
-		public MinHeapInList(IList<T> list = null, IComparer<T> comparer = null, Action<T, int> onItemMoved = null)
+		public MinHeapInList(IList<T>? list = null, IComparer<T>? comparer = null, Action<T, int>? onItemMoved = null)
 			: base(list ?? new List<T>(), comparer ?? Comparer<T>.Default, onItemMoved) { }
 	}
 
@@ -313,7 +313,7 @@ namespace Loyc.Collections
 		/// the heap property, or call Heapify() on the result of this function.</summary>
 		/// <param name="compare">An object to be used to compare T values.</param>
 		/// <param name="heapify">Whether to rearrange items so that they have the heap property.</param>
-		public static MaxHeapInList<T> AsMaxHeap<T>(this IList<T> list, IComparer<T> compare = null, bool heapify = false)
+		public static MaxHeapInList<T> AsMaxHeap<T>(this IList<T> list, IComparer<T>? compare = null, bool heapify = false)
 		{
 			var heap = new MaxHeapInList<T>(list, compare);
 			if (heapify)
@@ -327,7 +327,7 @@ namespace Loyc.Collections
 		/// <param name="heapify">Whether to rearrange items so that they have
 		/// the heap property. If the items are already arranged with the heap 
 		/// property, you can skip heapification by setting this to false.</param>
-		public static MaxHeap<T> ToMaxHeap<T>(this IList<T> list, IComparer<T> compare = null, bool heapify = true)
+		public static MaxHeap<T> ToMaxHeap<T>(this IList<T> list, IComparer<T>? compare = null, bool heapify = true)
 		{
 			return new MaxHeap<T>(list, compare, heapify);
 		}
@@ -340,7 +340,7 @@ namespace Loyc.Collections
 		/// the heap property, or call Heapify() on the result of this function.</summary>
 		/// <param name="compare">An object to be used to compare T values.</param>
 		/// <param name="heapify">Whether to rearrange items so that they have the heap property.</param>
-		public static MinHeapInList<T> AsMinHeap<T>(this IList<T> list, IComparer<T> compare = null, bool heapify = false)
+		public static MinHeapInList<T> AsMinHeap<T>(this IList<T> list, IComparer<T>? compare = null, bool heapify = false)
 		{
 			var heap = new MinHeapInList<T>(list, compare);
 			if (heapify)
@@ -354,7 +354,7 @@ namespace Loyc.Collections
 		/// <param name="heapify">Whether to rearrange items so that they have
 		/// the heap property. If the items are already arranged with the heap 
 		/// property, you can skip heapification by setting this to false.</param>
-		public static MinHeap<T> ToMinHeap<T>(this IList<T> list, IComparer<T> compare = null, bool heapify = true)
+		public static MinHeap<T> ToMinHeap<T>(this IList<T> list, IComparer<T>? compare = null, bool heapify = true)
 		{
 			return new MinHeap<T>(list, compare, heapify);
 		}

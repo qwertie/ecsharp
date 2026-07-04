@@ -14,8 +14,8 @@ namespace Loyc.Collections
 	/// </remarks>
 	public sealed class VListBlockOfTwo<T> : VListBlock<T>
 	{
-		internal T _1;
-		internal T _2;
+		internal T _1 = default!; // may hold default(T) when unused; T is not marked
+		internal T _2 = default!; // nullable to avoid spurious warnings in FGet etc.
 
 		/// <summary>Initializes a mutable block with no items.</summary>
 		public VListBlockOfTwo()
@@ -133,7 +133,7 @@ namespace Loyc.Collections
 			// so this object is about to become garbage, and there is no need to 
 			// clear the items. If _localCount is 2, there is nothing to clear.
 			if (_immCount == 1)
-				_2 = default(T);
+				_2 = default(T)!;
 			_immCount &= ImmCountMask;
 		}
 
@@ -155,7 +155,7 @@ namespace Loyc.Collections
 
 		#region LINQ-like methods
 
-		public override FVList<T> Where(int localCount, Func<T, bool> keep, WListProtected<T> forWList)
+		public override FVList<T> Where(int localCount, Func<T, bool> keep, WListProtected<T>? forWList)
 		{
 			// Optimization
 			
@@ -215,7 +215,7 @@ namespace Loyc.Collections
 			}
 		}*/
 
-		public override FVList<T> SmartSelect(int _localCount, Func<T, T> map, WListProtected<T> forWList)
+		public override FVList<T> SmartSelect(int _localCount, Func<T, T> map, WListProtected<T>? forWList)
 		{	// Optimization
 			T item, item2;
 

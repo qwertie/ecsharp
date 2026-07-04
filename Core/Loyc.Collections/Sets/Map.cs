@@ -7,6 +7,10 @@ using System.Diagnostics;
 
 namespace Loyc.Collections
 {
+	// They want me to put a "where K: notnull" constraint on MapOrMMap and Map. I disagree. The warning says:
+	// type 'K' cannot be used as...'TKey' in...'IDictionary<TKey, TValue>'. Nullability of...'K' doesn't match 'notnull' constraint.
+	#pragma warning disable 8714
+
 	/// <summary>Common base class that contains code shared between 
 	/// <see cref="Map{K,V}"/> and <see cref="MMap{K,V}"/>.</summary>
 	/// <remarks>You might notice that although <see cref="Map{K,V}"/> and 
@@ -46,9 +50,9 @@ namespace Loyc.Collections
 		protected static readonly EqualityComparer<V> DefaultValueComparer = EqualityComparer<V>.Default;
 
 		protected MapOrMMap() : this(InternalSet<K>.DefaultComparer) { }
-		protected MapOrMMap(IEqualityComparer<K> comparer) { _keyComparer = comparer ?? ValueComparer<K>.Default; }
+		protected MapOrMMap(IEqualityComparer<K>? comparer) { _keyComparer = comparer ?? ValueComparer<K>.Default; }
 		protected MapOrMMap(IEnumerable<KeyValuePair<K, V>> list) : this(list, InternalSet<K>.DefaultComparer) { }
-		protected MapOrMMap(IEnumerable<KeyValuePair<K, V>> list, IEqualityComparer<K> comparer)
+		protected MapOrMMap(IEnumerable<KeyValuePair<K, V>> list, IEqualityComparer<K>? comparer)
 		{
 			_keyComparer = comparer ?? ValueComparer<K>.Default;
 			_set = new InternalSet<KeyValuePair<K, V>>(list, this, out _count);
@@ -82,26 +86,26 @@ namespace Loyc.Collections
 		/// <summary>Not intended to be called by users.</summary>
 		int IEqualityComparer<KeyValuePair<K, V>>.GetHashCode(KeyValuePair<K, V> obj)
 		{
-			return _keyComparer.GetHashCode(obj.Key);
+			return _keyComparer.GetHashCode(obj.Key!);
 		}
 
 		#endregion
 
 		public bool ContainsKey(K key)
 		{
-			var kvp = new KeyValuePair<K, V>(key, default(V));
+			var kvp = new KeyValuePair<K, V>(key, default(V)!);
 			return _set.Find(ref kvp, Comparer);
 		}
 		public bool TryGetValue(K key, out V value)
 		{
-			var kvp = new KeyValuePair<K, V>(key, default(V));
+			var kvp = new KeyValuePair<K, V>(key, default(V)!);
 			bool result = _set.Find(ref kvp, Comparer);
 			value = kvp.Value;
 			return result;
 		}
 		V ITryGet<K, V>.TryGet(K key, out bool fail)
 		{
-			var kvp = new KeyValuePair<K, V>(key, default(V));
+			var kvp = new KeyValuePair<K, V>(key, default(V)!);
 			fail = !_set.Find(ref kvp, Comparer);
 			return kvp.Value;
 		}
@@ -109,7 +113,7 @@ namespace Loyc.Collections
 		public V this[K key]
 		{
 			get {
-				var kvp = new KeyValuePair<K, V>(key, default(V));
+				var kvp = new KeyValuePair<K, V>(key, default(V)!);
 				if (_set.Find(ref kvp, Comparer))
 					return kvp.Value;
 				throw new KeyNotFoundException();
@@ -209,11 +213,11 @@ namespace Loyc.Collections
 		[Obsolete("It is recommended to use Map<K,V>.Empty instead, to avoid an unnecessary memory allocation.")]
 		public Map() : base() { }
 		/// <summary>Creates an empty map with the specified key comparer.</summary>
-		public Map(IEqualityComparer<K> comparer) : base(comparer) { }
+		public Map(IEqualityComparer<K>? comparer) : base(comparer) { }
 		/// <summary>Creates a map with the specified elements.</summary>
 		public Map(IEnumerable<KeyValuePair<K, V>> list) : this(list, InternalSet<K>.DefaultComparer) { }
 		/// <summary>Creates a map with the specified elements and key comparer.</summary>
-		public Map(IEnumerable<KeyValuePair<K, V>> list, IEqualityComparer<K> comparer) : base(list, comparer) { _set.CloneFreeze(); }
+		public Map(IEnumerable<KeyValuePair<K, V>> list, IEqualityComparer<K>? comparer) : base(list, comparer) { _set.CloneFreeze(); }
 		internal Map(InternalSet<KeyValuePair<K, V>> set, IEqualityComparer<K> keyComparer, int count) : base(set, keyComparer, count) { }
 
 		public new InternalSet<KeyValuePair<K, V>> FrozenInternalSet { get { Debug.Assert(_set.IsRootFrozen); return _set; } }
@@ -290,7 +294,7 @@ namespace Loyc.Collections
 		{
 			Debug.Assert(_set.IsRootFrozen);
 			var set = _set;
-			var item = new KeyValuePair<K, V>(key, default(V));
+			var item = new KeyValuePair<K, V>(key, default(V)!);
 			if (set.Remove(ref item, Comparer))
 				return new Map<K, V>(set, _keyComparer, _count - 1);
 			return this;

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Loyc.Math;
 
 namespace Loyc.Collections.Impl
@@ -373,7 +374,7 @@ namespace Loyc.Collections.Impl
 
 		/// <summary>This is <see cref="EqualityComparer{T}.Default"/>, or
 		/// null if T implements <see cref="IReferenceEquatable"/>.</summary>
-		public static readonly IEqualityComparer<T> DefaultComparer = typeof(IReferenceEquatable).IsAssignableFrom(typeof(T)) ? null : EqualityComparer<T>.Default;
+		public static readonly IEqualityComparer<T>? DefaultComparer = typeof(IReferenceEquatable).IsAssignableFrom(typeof(T)) ? null : EqualityComparer<T>.Default;
 
 		const int BitsPerLevel = 4;
 		const int FanOut = 1 << BitsPerLevel;
@@ -387,7 +388,7 @@ namespace Loyc.Collections.Impl
 		internal class Node
 		{
 			internal T[] _items;
-			internal Node[] _children; // null if not needed
+			internal Node?[]? _children; // null if not needed
 			internal uint _used;     // b0-15 indicates which items are used; b16-31 are 'deleted' flags.
 			                         //       these flags indicate usage of _items only, not _children
 			internal short _counter; // b0-4  items count, b5-8 child count, b12 overflow flag
@@ -453,7 +454,7 @@ namespace Loyc.Collections.Impl
 			internal void ClearTAt(int i)
 			{
 				Debug.Assert(!IsFrozen);
-				_items[i] = default(T);
+				_items[i] = default(T)!;
 				// clear used flag, set deleted flag
 				_used = (_used | ((FlagMask+1u) << i)) & ~(1u << i);
 				_counter--;
@@ -466,7 +467,7 @@ namespace Loyc.Collections.Impl
 				_used = 0;
 				_counter = 0;
 				for (int i = 0; i < _items.Length; i++)
-					_items[i] = default(T);
+					_items[i] = default(T)!;
 				if (_children != null)
 					for (int i = 0; i < _children.Length; i++)
 						_children[i] = null;
@@ -485,7 +486,7 @@ namespace Loyc.Collections.Impl
 					size += IntPtr.Size * (4 + FanOut); // add _children array
 					for (int i = 0; i < _children.Length; i++)
 						if (_children[i] != null)
-							size += _children[i].CountMemory(sizeOfT, ref s);
+							size += _children[i]!.CountMemory(sizeOfT, ref s);
 				} else
 					s.LeafCount++;
 
@@ -515,14 +516,14 @@ namespace Loyc.Collections.Impl
 				return new MaxDepthNode(this);
 			}
 
-			internal int ScanOverflowFor(T item, IEqualityComparer<T> comparer, out T existing)
+			internal int ScanOverflowFor(T item, IEqualityComparer<T>? comparer, out T existing)
 			{
 				for (int i = 0; i < _overflow.Count; i++) {
 					existing = _overflow[i];
 					if (comparer == null ? object.ReferenceEquals(existing, item) : comparer.Equals(existing, item))
 						return i;
 				}
-				existing = default(T);
+				existing = default(T)!;
 				return -1;
 			}
 
@@ -561,25 +562,25 @@ namespace Loyc.Collections.Impl
 			return node;
 		} 
 
-		Node _root;
+		Node? _root;
 
-		public InternalSet(IEnumerable<T> list, IEqualityComparer<T> comparer, out int count)
+		public InternalSet(IEnumerable<T> list, IEqualityComparer<T>? comparer, out int count)
 		{
 			_root = null;
 			count = UnionWith(list, comparer, false);
 		}
-		public InternalSet(IEnumerable<T> list, IEqualityComparer<T> comparer)
+		public InternalSet(IEnumerable<T> list, IEqualityComparer<T>? comparer)
 		{
 			_root = null;
 			UnionWith(list, comparer, false);
 		}
 
-		public int GetSetHashCode(IEqualityComparer<T> comparer)
+		public int GetSetHashCode(IEqualityComparer<T>? comparer)
 		{
 			int hc = 0;
 			comparer = comparer ?? EqualityComparer<T>.Default;
 			foreach (T item in this)
-				hc ^= comparer.GetHashCode(item);
+				hc ^= comparer.GetHashCode(item!);
 			return hc;
 		}
 
@@ -646,7 +647,7 @@ namespace Loyc.Collections.Impl
 
 		static int Adj(int i, int n) { return (i + n) & Mask; }
 		
-		static bool Equals(T value, ref T item, IEqualityComparer<T> comparer)
+		static bool Equals(T value, ref T item, IEqualityComparer<T>? comparer)
 		{
 			if (comparer == null)
 				return object.ReferenceEquals(value, item);
@@ -656,11 +657,11 @@ namespace Loyc.Collections.Impl
 			}
 			return false;
 		}
-		static uint GetHashCode(T item, IEqualityComparer<T> comparer)
+		static uint GetHashCode(T item, IEqualityComparer<T>? comparer)
 		{
 			if (comparer == null)
 				return (uint)(item == null ? 0 : item.GetHashCode());
-			return (uint)comparer.GetHashCode(item);
+			return (uint)comparer.GetHashCode(item!);
 		}
 
 		static void PropagateFrozenFlag(Node parent, Node child)
@@ -669,19 +670,19 @@ namespace Loyc.Collections.Impl
 				child.Freeze();
 		}
 
-		static void ReplaceChild(ref Node slots, int iHome, Node newChild)
+		static void ReplaceChild(ref Node slots, int iHome, Node? newChild)
 		{
 			if (slots.IsFrozen)
 				slots = slots.Clone();
-			slots._children[iHome] = newChild;
+			slots._children![iHome] = newChild;
 			if (newChild == null) {
 				slots._counter -= CounterPerChild;
 				slots.CheckCounter();
 				if (slots._counter < CounterPerChild) {
-					Debug.Assert(slots._children.All(c => c == null));
+					Debug.Assert(slots._children!.All(c => c == null));
 					slots._children = null;
 				} else
-					Debug.Assert(slots._children.Any(c => c != null));
+					Debug.Assert(slots._children!.Any(c => c != null));
 			}
 		}
 		static bool TryRemoveChild(ref Node slots, int iHome, Node child)
@@ -723,7 +724,7 @@ namespace Loyc.Collections.Impl
 
 		/// <summary>Tries to add an item to the set, and retrieves the existing item if present.</summary>
 		/// <returns>true if the item was added, false if it was already present.</returns>
-		public bool Add(ref T item, IEqualityComparer<T> comparer, bool replaceIfPresent)
+		public bool Add(ref T item, IEqualityComparer<T>? comparer, bool replaceIfPresent)
 		{
 			if (_root == null)
 				_root = new Node(0);
@@ -733,7 +734,7 @@ namespace Loyc.Collections.Impl
 
 		/// <summary>Removes an item from the set.</summary>
 		/// <returns>true if the item was removed, false if it was not found.</returns>
-		public bool Remove(ref T item, IEqualityComparer<T> comparer)
+		public bool Remove(ref T item, IEqualityComparer<T>? comparer)
 		{
 			if (_root == null)
 				return false;
@@ -761,7 +762,7 @@ namespace Loyc.Collections.Impl
 			Debug.Assert(slots.TAt(i));
 			if (slots.Counter == 1) {
 				slots.CheckCounter();
-				slots = null;
+				slots = null!; // null is a sentinel meaning "the node is now empty"; the caller must handle it
 			} else {
 				if (slots.IsFrozen)
 					slots = slots.Clone();
@@ -771,11 +772,11 @@ namespace Loyc.Collections.Impl
 			return true;
 		}
 
-		static bool AddOrRemove(ref Node slots, ref T item, uint hc, IEqualityComparer<T> comparer, OnFoundExisting mode)
+		static bool AddOrRemove(ref Node slots, ref T item, uint hc, IEqualityComparer<T>? comparer, OnFoundExisting mode)
 		{
 			int iHome = (int)hc & Mask; // the "home" slot of the new item
 		retry:
-			Node child;
+			Node? child;
 			bool added;
 			if (slots._children != null && (child = slots._children[iHome]) != null) {
 				var old = child;
@@ -811,10 +812,10 @@ namespace Loyc.Collections.Impl
 				// but we know that reference comparison is trivial. This 
 				// optimization cannot be used when item==default(T), hence the 
 				// check for item!=null above.
-				if ((object)item == (object)slots._items[iAdj = iHome] ||
-					(object)item == (object)slots._items[iAdj = Adj(iHome, 1)] ||
-					(object)item == (object)slots._items[iAdj = Adj(iHome, 2)] ||
-					(object)item == (object)slots._items[iAdj = Adj(iHome, 3)])
+				if ((object?)item == (object?)slots._items[iAdj = iHome] ||
+					(object?)item == (object?)slots._items[iAdj = Adj(iHome, 1)] ||
+					(object?)item == (object?)slots._items[iAdj = Adj(iHome, 2)] ||
+					(object?)item == (object?)slots._items[iAdj = Adj(iHome, 3)])
 					return mode(ref slots, iAdj, item);
 
 				deleted &= Mask;
@@ -847,7 +848,7 @@ namespace Loyc.Collections.Impl
 			}
 
 			// At maximum depth, we may have to look at the overflow list too
-			MaxDepthNode mdSlots = null;
+			MaxDepthNode? mdSlots = null;
 			if (slots.Depth >= MaxDepth) {
 				mdSlots = (MaxDepthNode)slots;
 				int i = mdSlots.ScanOverflowFor(item, comparer, out existing);
@@ -911,7 +912,7 @@ namespace Loyc.Collections.Impl
 			throw new NotImplementedException();
 		}
 
-		static int SelectBucketToSpill(Node slots, int i0, IEqualityComparer<T> comparer)
+		static int SelectBucketToSpill(Node slots, int i0, IEqualityComparer<T>? comparer)
 		{
 			int[] count = new int[FanOut];
 			int max = count[i0] = 1, max_i = i0;
@@ -935,7 +936,7 @@ namespace Loyc.Collections.Impl
 			}
 			return max_i;
 		}
-		static void Spill(Node parent, int i0, IEqualityComparer<T> comparer)
+		static void Spill(Node parent, int i0, IEqualityComparer<T>? comparer)
 		{
 			int parentDepth = parent.Depth;
 			var child = parentDepth + 1 == MaxDepth ? new MaxDepthNode() : new Node(parentDepth + 1);
@@ -964,9 +965,9 @@ namespace Loyc.Collections.Impl
 
 		#region Find() and helper
 
-		public bool Find(ref T item, IEqualityComparer<T> comparer)
+		public bool Find(ref T item, IEqualityComparer<T>? comparer)
 		{
-			Node slots = _root;
+			Node? slots = _root;
 			if (slots == null)
 				return false;
 			uint hc = GetHashCode(item, comparer);
@@ -974,7 +975,7 @@ namespace Loyc.Collections.Impl
 			int iHome;
 			for (;;) {
 				iHome = (int)hc & Mask; // the "home" slot of the new item
-				Node children;
+				Node? children;
 				if (slots._children != null && (children = slots._children[iHome]) != null) {
 					slots = children;
 					hc >>= BitsPerLevel;
@@ -990,10 +991,10 @@ namespace Loyc.Collections.Impl
 			if (comparer == null && (item != null || (comparer = EqualityComparer<T>.Default) == null)) {
 				// Use reference equality (e.g. for T=Symbol); too bad .NET doesn't
 				// support bitwise equality or we'd use this code for integers too.
-				if ((object)item == (object)slots._items[iAdj = iHome] ||
-					(object)item == (object)slots._items[iAdj = Adj(iHome, 1)] ||
-					(object)item == (object)slots._items[iAdj = Adj(iHome, 2)] ||
-					(object)item == (object)slots._items[iAdj = Adj(iHome, 3)])
+				if ((object?)item == (object?)slots._items[iAdj = iHome] ||
+					(object?)item == (object?)slots._items[iAdj = Adj(iHome, 1)] ||
+					(object?)item == (object?)slots._items[iAdj = Adj(iHome, 2)] ||
+					(object?)item == (object?)slots._items[iAdj = Adj(iHome, 3)])
 					return true;
 			} else {
 				uint used = slots._used;
@@ -1047,7 +1048,7 @@ namespace Loyc.Collections.Impl
 		{
 			internal bool IsInitialized() { return _stack.InternalArray != null; }
 			internal T _current;
-			Node _currentNode;
+			Node? _currentNode;
 			InternalList<Node> _stack;
 			uint _hc; // stack of indexes, which are also partial hashcodes
 			int _i;   // index in the current node
@@ -1062,9 +1063,10 @@ namespace Loyc.Collections.Impl
 				_stack.Capacity = stackCapacity;
 			}
 
+			[MemberNotNull(nameof(_current))]
 			public void Reset(InternalSet<T> set)
 			{
-				_current = default(T);
+				_current = default(T)!;
 				_stack.Resize(0, false);
 				_currentNode = set._root;
 				_i = -1;
@@ -1097,10 +1099,10 @@ namespace Loyc.Collections.Impl
 
 					// Exhausted all items in current node. Advance to next node:
 					// 1. Find the first child of current node, if any
-					Node[] children = _currentNode._children;
+					Node?[]? children = _currentNode._children;
 					if (children != null) {
 						for (int i = 0; i < children.Length; i++) {
-							Node c = children[i];
+							Node? c = children[i];
 							if (c != null) {
 								_hc |= (uint)(i << (_stack.Count * BitsPerLevel));
 								_stack.Add(_currentNode);
@@ -1128,7 +1130,7 @@ namespace Loyc.Collections.Impl
 							if (children != null) {
 								for (i++; i < children.Length; i++) {
 									if (children[i] != null) {
-										_currentNode = children[i];
+										_currentNode = children[i]!;
 										PropagateFrozenFlag(parent, _currentNode);
 										_hc = (_hc & clearMask) | (i << shift);
 										_i = -1;
@@ -1158,7 +1160,7 @@ namespace Loyc.Collections.Impl
 			/// value is placed in the wrong location, it becomes irretrievable
 			/// (except via enumerator), as search methods will be looking 
 			/// elsewhere for it.</remarks>
-			public void SetCurrentValue(T value, ref InternalSet<T> set, IEqualityComparer<T> comparer)
+			public void SetCurrentValue(T value, ref InternalSet<T> set, IEqualityComparer<T>? comparer)
 			{
 				Node curNode = AutoThawCurrentNode(ref set);
 				if (_i < curNode._items.Length)
@@ -1166,7 +1168,7 @@ namespace Loyc.Collections.Impl
 				else
 					SetCurrentValueCore(ref ((MaxDepthNode)curNode)._overflow.InternalArray[_i - curNode._items.Length], value, comparer);
 			}
-			static void SetCurrentValueCore(ref T slot, T value, IEqualityComparer<T> comparer)
+			static void SetCurrentValueCore(ref T slot, T value, IEqualityComparer<T>? comparer)
 			{
 				if (comparer != null && !comparer.Equals(slot, value))
 					throw new ArgumentException("SetCurrentValue: the new key does not match the old key.");
@@ -1207,7 +1209,7 @@ namespace Loyc.Collections.Impl
 				while (child.IsEmpty && depth >= 0) {
 					Node parent = _stack[depth];
 					int i = GetCurrentIndexAt(depth);
-					Debug.Assert(parent._children[i] == child);
+					Debug.Assert(parent._children![i] == child);
 					ReplaceChild(ref parent, i, null);
 					Debug.Assert(parent == _stack[depth]);
 					depth--;
@@ -1225,10 +1227,10 @@ namespace Loyc.Collections.Impl
 			private Node AutoThawCurrentNode(ref InternalSet<T> set)
 			{
 				int i = _stack.Count;
-				Node old = _currentNode, oldParent;
-				if (!_currentNode.IsFrozen)
-					return _currentNode;
-				_currentNode = _currentNode.Clone();
+				Node old = _currentNode!, oldParent; // (_currentNode is not null while positioned on an item)
+				if (!old.IsFrozen)
+					return old;
+				_currentNode = old.Clone();
 				Node current = _currentNode;
 
 				Node[] stack = _stack.InternalArray;
@@ -1245,8 +1247,8 @@ namespace Loyc.Collections.Impl
 							parent = parent.Clone();
 							stack[i] = parent;
 						}
-						Debug.Assert(parent._children[indexInParent] == old);
-						parent._children[indexInParent] = current;
+						Debug.Assert(parent._children![indexInParent] == old);
+						parent._children![indexInParent] = current;
 						current = parent;
 						old = oldParent;
 						if (oldParent == parent)
@@ -1257,7 +1259,7 @@ namespace Loyc.Collections.Impl
 			}
 
 			void IDisposable.Dispose() { }
-			object System.Collections.IEnumerator.Current { get { return Current; } }
+			object? System.Collections.IEnumerator.Current { get { return Current; } }
 			void System.Collections.IEnumerator.Reset() { throw new NotSupportedException(); }
 		}
 		public Enumerator GetEnumerator() { return new Enumerator(this); }
@@ -1282,7 +1284,7 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
-		public bool Contains(T item, IEqualityComparer<T> comparer)
+		public bool Contains(T item, IEqualityComparer<T>? comparer)
 		{
 			return Find(ref item, comparer);
 		}
@@ -1311,7 +1313,7 @@ namespace Loyc.Collections.Impl
 		/// <param name="replaceIfPresent">If items in 'other' match items in this 
 		/// set, this flag causes those items in 'other' to replace the items in
 		/// this set.</param>
-		public int UnionWith(IEnumerable<T> other, IEqualityComparer<T> thisComparer, bool replaceIfPresent)
+		public int UnionWith(IEnumerable<T> other, IEqualityComparer<T>? thisComparer, bool replaceIfPresent)
 		{
 			int numAdded = 0;
 			foreach (var t in other) {
@@ -1322,7 +1324,7 @@ namespace Loyc.Collections.Impl
 			return numAdded;
 		}
 		/// <inheritdoc cref="UnionWith(IEnumerable{T}, IEqualityComparer{T}, bool)"/>
-		public int UnionWith(InternalSet<T> other, IEqualityComparer<T> thisComparer, bool replaceIfPresent)
+		public int UnionWith(InternalSet<T> other, IEqualityComparer<T>? thisComparer, bool replaceIfPresent)
 		{
 			int numAdded = 0;
 			var e = SetOperationEnumerator();
@@ -1337,7 +1339,7 @@ namespace Loyc.Collections.Impl
 		/// <param name="otherComparer">The comparer for 'other' (not for this set,
 		/// which is simply enumerated).</param>
 		/// <returns>Returns the number of items that were removed from the set.</returns>
-		public int IntersectWith(InternalSet<T> other, IEqualityComparer<T> otherComparer)
+		public int IntersectWith(InternalSet<T> other, IEqualityComparer<T>? otherComparer)
 		{
 			int removed = 0;
 			var e = SetOperationEnumerator();
@@ -1371,9 +1373,9 @@ namespace Loyc.Collections.Impl
 		/// constructed to answer the query. Also, this overload has the same subtle 
 		/// assumption as the other overload.
 		/// </remarks>
-		public int IntersectWith(IEnumerable<T> other, IEqualityComparer<T> comparer)
+		public int IntersectWith(IEnumerable<T> other, IEqualityComparer<T>? comparer)
 		{
-			ISet<T> otherSet = other as ISet<T>;
+			ISet<T>? otherSet = other as ISet<T>;
 			if (otherSet != null)
 				return IntersectWith(otherSet);
 			else {
@@ -1386,7 +1388,7 @@ namespace Loyc.Collections.Impl
 		/// <param name="thisComparer">The comparer for this set (not for 'other',
 		/// which is simply enumerated).</param>
 		/// <returns>Returns the number of items that were removed.</returns>
-		public int ExceptWith(IEnumerable<T> other, IEqualityComparer<T> thisComparer)
+		public int ExceptWith(IEnumerable<T> other, IEqualityComparer<T>? thisComparer)
 		{
 			int removed = 0;
 			foreach (T t in other) {
@@ -1397,7 +1399,7 @@ namespace Loyc.Collections.Impl
 			return removed;
 		}
 		/// <inheritdoc cref="ExceptWith(IEnumerable{T}, IEqualityComparer{T})"/>
-		public int ExceptWith(InternalSet<T> other, IEqualityComparer<T> thisComparer)
+		public int ExceptWith(InternalSet<T> other, IEqualityComparer<T>? thisComparer)
 		{
 			int removed = 0;
 			var e = SetOperationEnumerator();
@@ -1410,7 +1412,7 @@ namespace Loyc.Collections.Impl
 			return removed;
 		}
 
-		public int SymmetricExceptWith(InternalSet<T> other, IEqualityComparer<T> thisComparer)
+		public int SymmetricExceptWith(InternalSet<T> other, IEqualityComparer<T>? thisComparer)
 		{
 			int delta = 0;
 			var e = SetOperationEnumerator();
@@ -1439,7 +1441,7 @@ namespace Loyc.Collections.Impl
 		/// the temporary set as for this set.</param>
 		/// <remarks>Returns the change in set size (positive if items were added,
 		/// negative if items were removed)</remarks>
-		public int SymmetricExceptWith(IEnumerable<T> other, IEqualityComparer<T> comparer, bool xorDuplicates = true)
+		public int SymmetricExceptWith(IEnumerable<T> other, IEqualityComparer<T>? comparer, bool xorDuplicates = true)
 		{
 			if (!xorDuplicates) {
 				var set = new InternalSet<T>(other, comparer);
@@ -1475,7 +1477,7 @@ namespace Loyc.Collections.Impl
 					return false;
 			return true;
 		}
-		public bool IsSubsetOf(InternalSet<T> other, IEqualityComparer<T> otherComparer)
+		public bool IsSubsetOf(InternalSet<T> other, IEqualityComparer<T>? otherComparer)
 		{
 			var e = SetOperationEnumerator();
 			e.Reset(this);
@@ -1484,9 +1486,9 @@ namespace Loyc.Collections.Impl
 					return false;
 			return true;
 		}
-		public bool IsSubsetOf(IEnumerable<T> other, IEqualityComparer<T> comparer, int myMinCount = 0)
+		public bool IsSubsetOf(IEnumerable<T> other, IEqualityComparer<T>? comparer, int myMinCount = 0)
 		{
-			ISet<T> otherSet = other as ISet<T>;
+			ISet<T>? otherSet = other as ISet<T>;
 			if (otherSet != null)
 				return IsSubsetOf(otherSet, myMinCount);
 			else {
@@ -1501,7 +1503,7 @@ namespace Loyc.Collections.Impl
 		}
 
 		/// <summary>Returns true if all items in the other set are present in this set.</summary>
-		public bool IsSupersetOf(IEnumerable<T> other, IEqualityComparer<T> thisComparer, int myMaxCount = int.MaxValue)
+		public bool IsSupersetOf(IEnumerable<T> other, IEqualityComparer<T>? thisComparer, int myMaxCount = int.MaxValue)
 		{
 			var coll = other as ICollection<T>;
 			if (coll != null && coll.Count > myMaxCount)
@@ -1512,20 +1514,20 @@ namespace Loyc.Collections.Impl
 					return false;
 			return true;
 		}
-		public bool IsSupersetOf(InternalSet<T> other, IEqualityComparer<T> thisComparer)
+		public bool IsSupersetOf(InternalSet<T> other, IEqualityComparer<T>? thisComparer)
 		{
 			return other.IsSubsetOf(this, thisComparer);
 		}
 
 		/// <summary>Returns true if this set contains at least one item from 'other'.</summary>
-		public bool Overlaps(IEnumerable<T> other, IEqualityComparer<T> thisComparer)
+		public bool Overlaps(IEnumerable<T> other, IEqualityComparer<T>? thisComparer)
 		{
 			foreach (T item in other)
 				if (Contains(item, thisComparer))
 					return true;
 			return false;
 		}
-		public bool Overlaps(InternalSet<T> other, IEqualityComparer<T> thisComparer)
+		public bool Overlaps(InternalSet<T> other, IEqualityComparer<T>? thisComparer)
 		{
 			var e = SetOperationEnumerator();
 			e.Reset(other);
@@ -1554,9 +1556,9 @@ namespace Loyc.Collections.Impl
 		/// constructed to answer the query. Also, this overload has the same subtle 
 		/// assumption as the other overload.
 		/// </remarks>
-		public bool IsProperSubsetOf(IEnumerable<T> other, IEqualityComparer<T> comparer, int myExactCount)
+		public bool IsProperSubsetOf(IEnumerable<T> other, IEqualityComparer<T>? comparer, int myExactCount)
 		{
-			ISet<T> otherSet = other as ISet<T>;
+			ISet<T>? otherSet = other as ISet<T>;
 			if (otherSet != null)
 				return IsProperSubsetOf(otherSet, myExactCount);
 			else {
@@ -1578,7 +1580,7 @@ namespace Loyc.Collections.Impl
 		/// constructed with the comparer of the other set, that set would shrink--
 		/// then the results of this method are unreliable. If both sets use the 
 		/// same comparer, though, you have nothing to worry about.</remarks>
-		public bool IsProperSupersetOf(ISet<T> other, IEqualityComparer<T> thisComparer, int myExactCount) { return myExactCount > other.Count && IsSupersetOf(other, thisComparer, myExactCount); }
+		public bool IsProperSupersetOf(ISet<T> other, IEqualityComparer<T>? thisComparer, int myExactCount) { return myExactCount > other.Count && IsSupersetOf(other, thisComparer, myExactCount); }
 		
 		/// <summary>Returns true if all items in the other set are present in this set, 
 		/// and this set has at least one item that is not in the other set.</summary>
@@ -1587,9 +1589,9 @@ namespace Loyc.Collections.Impl
 		/// constructed to answer the query. Also, this overload has the same subtle 
 		/// assumption as the other overload.
 		/// </remarks>
-		public bool IsProperSupersetOf(IEnumerable<T> other, IEqualityComparer<T> comparer, int myExactCount)
+		public bool IsProperSupersetOf(IEnumerable<T> other, IEqualityComparer<T>? comparer, int myExactCount)
 		{
-			ISet<T> otherSet = other as ISet<T>;
+			ISet<T>? otherSet = other as ISet<T>;
 			if (otherSet != null)
 				return IsProperSupersetOf(otherSet, comparer, myExactCount);
 			else {
@@ -1626,9 +1628,9 @@ namespace Loyc.Collections.Impl
 		/// constructed to answer the query. Also, this overload has the same subtle 
 		/// assumption as the other overload.
 		/// </remarks>
-		public bool SetEquals(IEnumerable<T> other, IEqualityComparer<T> comparer, int myExactCount)
+		public bool SetEquals(IEnumerable<T> other, IEqualityComparer<T>? comparer, int myExactCount)
 		{
-			ISet<T> otherSet = other as ISet<T>;
+			ISet<T>? otherSet = other as ISet<T>;
 			if (otherSet != null)
 				return myExactCount == otherSet.Count && IsSubsetOf(otherSet, myExactCount);
 			else {

@@ -79,7 +79,7 @@ namespace Loyc.Collections
 
 		/// <summary>Finds the minimum element's index in the list</summary>
 		public static int IndexOfMin<T>(this IEnumerable<T> source, Func<T, int> selector) => 
-		  IndexOfMin < T > (source, selector, out T _);
+		  IndexOfMin < T > (source, selector, out _);
 
 		/// <summary>Finds the minimum element's index in the list, and returns it with the item itself</summary>
 		public static int IndexOfMin<T>(this IEnumerable<T> source, Func<T, int> selector, [MaybeNull] out T min)
@@ -125,7 +125,7 @@ namespace Loyc.Collections
 
 		/// <summary>Finds the minimum element's index in the list</summary>
 		public static int IndexOfMin<T, R>(this IEnumerable<T> source, Func<T, R> selector) => 
-		  IndexOfMin<T, R>(source, selector, out T _);
+		  IndexOfMin(source, selector, out _);
 		/// <summary>Finds the minimum element's index in the list</summary>
 		public static int IndexOfMin<T, R>(this IEnumerable<T> source, Func<T, R> selector, [MaybeNull] out T min)
 		{
@@ -213,7 +213,7 @@ namespace Loyc.Collections
 
 		/// <summary>Finds the maximum element's index in the list</summary>
 		public static int IndexOfMax<T>(this IEnumerable<T> source, Func<T, int> selector) => 
-		  IndexOfMax < T > (source, selector, out T _);
+		  IndexOfMax < T > (source, selector, out _);
 
 		/// <summary>Finds the maximum element's index in the list, and returns it with the item itself</summary>
 		public static int IndexOfMax<T>(this IEnumerable<T> source, Func<T, int> selector, [MaybeNull] out T min)
@@ -259,7 +259,7 @@ namespace Loyc.Collections
 
 		/// <summary>Finds the maximum element's index in the list</summary>
 		public static int IndexOfMax<T, R>(this IEnumerable<T> source, Func<T, R> selector) => 
-		  IndexOfMin<T, R>(source, selector, out T _);
+		  IndexOfMax(source, selector, out _);
 		/// <summary>Finds the maximum element's index in the list</summary>
 		public static int IndexOfMax<T, R>(this IEnumerable<T> source, Func<T, R> selector, [MaybeNull] out T min)
 		{

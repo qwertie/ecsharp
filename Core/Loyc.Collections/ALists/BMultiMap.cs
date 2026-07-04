@@ -42,6 +42,9 @@ namespace Loyc.Collections
 	/// efficiency of a B+ tree and capabilities of a <see cref="AListBase{K,V}"/>, 
 	/// although it tends to be slower than <see cref="Dictionary{K,V}"/>.
 	/// </remarks>
+	// They want me to put a "where K: notnull" constraint on BMultiMap. I disagree. The warning says:
+	// type 'K' cannot be used as...'TKey' in...'IReadOnlyDictionary<TKey, TValue>'. Nullability of...'K' doesn't match 'notnull' constraint.
+	#pragma warning disable 8714
 	[Serializable]
 	public class BMultiMap<K, V> : BList<KeyValuePair<K, V>>, IReadOnlyDictionary<K, BMultiMap<K,V>.ValueList>, IIndexed<K, BMultiMap<K, V>.ValueList>
 	{
@@ -152,7 +155,7 @@ namespace Loyc.Collections
 		{
 			var op = new AListSingleOperation<KeyValuePair<K, V>, KeyValuePair<K, V>>();
 			op.CompareToKey = op.CompareKeys = CompareKeysOnly;
-			op.Key = new KeyValuePair<K,V>(key, default(V));
+			op.Key = new KeyValuePair<K,V>(key, default(V)!);
 			OrganizedRetrieve(ref op);
 			return op.Found;
 		}
@@ -179,7 +182,7 @@ namespace Loyc.Collections
 			var op = new AListSingleOperation<KeyValuePair<K, V>, KeyValuePair<K, V>>();
 			op.Mode = AListOperation.Remove;
 			op.CompareToKey = op.CompareKeys = CompareKeysOnly;
-			op.Key = op.Item = new KeyValuePair<K, V>(key, default(V));
+			op.Key = op.Item = new KeyValuePair<K, V>(key, default(V)!);
 			return DoSingleOperation(ref op) < 0;
 		}
 
@@ -390,7 +393,7 @@ namespace Loyc.Collections
 		{
 			var op = new AListSingleOperation<KeyValuePair<K, V>, KeyValuePair<K, V>>();
 			op.CompareKeys = op.CompareToKey = CompareKeysOnly;
-			op.Key = new KeyValuePair<K, V>(key, default(V));
+			op.Key = new KeyValuePair<K, V>(key, default(V)!);
 			op.LowerBound = true;
 			OrganizedRetrieve(ref op);
 			if (found = op.Found)
@@ -410,7 +413,7 @@ namespace Loyc.Collections
 		{
 			var op = new AListSingleOperation<KeyValuePair<K, V>, KeyValuePair<K, V>>();
 			op.CompareKeys = op.CompareToKey = UpperBoundCompare;
-			op.Key = new KeyValuePair<K, V>(key, default(V));
+			op.Key = new KeyValuePair<K, V>(key, default(V)!);
 			OrganizedRetrieve(ref op);
 			return (int)op.BaseIndex;
 		}
@@ -428,7 +431,7 @@ namespace Loyc.Collections
 				return lowerBound;
 
 			found = false;
-			object searchFor2 = searchFor;
+			object? searchFor2 = searchFor;
 			int index = lowerBound;
 			while (key == null ? searchFor != null : !key.Equals(searchFor2))
 			{

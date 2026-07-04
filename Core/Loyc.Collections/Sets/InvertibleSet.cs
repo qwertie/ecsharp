@@ -114,11 +114,11 @@ namespace Loyc.Collections
 			int hc = BaseSet.GetHashCode();
 			return IsInverted ? ~hc : hc;
 		}
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return obj is InvertibleSet<T> && Equals((InvertibleSet<T>)obj);
 		}
-		bool IEquatable<InvertibleSet<T>>.Equals(InvertibleSet<T> other) { return SetEquals(other); }
+		bool IEquatable<InvertibleSet<T>>.Equals(InvertibleSet<T>? other) { return SetEquals(other!); }
 
 		#region ISetImm<T, InvertibleSet<T>>: IsSubsetOf, IsSupersetOf, Overlaps, IsProperSubsetOf, IsProperSupersetOf, SetEquals
 		// Remember to keep this code in sync with MSet<T> (the copies can be identical)

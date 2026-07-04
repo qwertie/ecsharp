@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Loyc.Collections.Impl
 {
@@ -22,7 +23,7 @@ namespace Loyc.Collections.Impl
 		protected internal struct Entry
 		{
 			public Entry(uint offset, T item) { Offset = offset; Item = item; }
-			public T Item;
+			[AllowNull] public T Item;
 			public uint Offset;
 		}
 		protected internal InternalList<Entry> _list;
@@ -59,7 +60,7 @@ namespace Loyc.Collections.Impl
 			if (_list.Count > 0 && _list.Last.Offset + 1 == _totalCount)
 				return _list.Last.Item;
 			else
-				return default(T);
+				return default(T)!; // empty space at the end of the list yields default(T)
 		}
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -94,11 +95,11 @@ namespace Loyc.Collections.Impl
 				if (BinarySearch(index, out i))
 					return _list[i].Item;
 				else
-					return default(T);
+					return default(T)!; // empty space yields default(T)
 			}
 		}
 
-		public override void SetAt(uint index, T item, IAListTreeObserver<int, T> tob)
+		public override void SetAt(uint index, T item, IAListTreeObserver<int, T>? tob)
 		{
 			throw new NotSupportedException();
 			//Debug.Assert(!IsFrozen);
@@ -118,7 +119,7 @@ namespace Loyc.Collections.Impl
 			return i1;
 		}
 
-		public override bool RemoveAt(uint index, uint count, IAListTreeObserver<int, T> tob)
+		public override bool RemoveAt(uint index, uint count, IAListTreeObserver<int, T>? tob)
 		{
 			Debug.Assert(!IsFrozen);
 			Debug.Assert(count <= _totalCount);
@@ -140,7 +141,7 @@ namespace Loyc.Collections.Impl
 				list.InternalArray[i].Offset += (uint)change;
 		}
 
-		internal override uint TakeFromRight(AListNode<int, T> sibling, int localsToMove, IAListTreeObserver<int, T> tob)
+		internal override uint TakeFromRight(AListNode<int, T> sibling, int localsToMove, IAListTreeObserver<int, T>? tob)
 		{
 			Debug.Assert(localsToMove <= sibling.LocalCount && LocalCount + localsToMove <= _maxNodeSize);
 			var right = (SparseAListLeaf<T>)sibling;
@@ -162,7 +163,7 @@ namespace Loyc.Collections.Impl
 			return spaceBeingMoved;
 		}
 
-		internal override uint TakeFromLeft(AListNode<int, T> sibling, int localsToMove, IAListTreeObserver<int, T> tob)
+		internal override uint TakeFromLeft(AListNode<int, T> sibling, int localsToMove, IAListTreeObserver<int, T>? tob)
 		{
 			Debug.Assert(localsToMove <= sibling.LocalCount && LocalCount + localsToMove <= _maxNodeSize);
 			var left = (SparseAListLeaf<T>)sibling;
@@ -215,11 +216,11 @@ namespace Loyc.Collections.Impl
 			return excludeSparse ? (uint)LocalCount : TotalCount;
 		}
 
-		public override AListNode<int, T> Insert(uint index, T item, out AListNode<int, T> splitRight, IAListTreeObserver<int, T> tob)
+		public override AListNode<int, T>? Insert(uint index, T item, out AListNode<int, T>? splitRight, IAListTreeObserver<int, T>? tob)
 		{
 			throw new NotSupportedException();
 		}
-		public override AListNode<int, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<int, T> splitRight, IAListTreeObserver<int, T> tob)
+		public override AListNode<int, T>? InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<int, T>? splitRight, IAListTreeObserver<int, T>? tob)
 		{
 			throw new NotSupportedException();
 		}
@@ -232,7 +233,7 @@ namespace Loyc.Collections.Impl
 			_totalCount += (uint)count;
 		}
 
-		internal override int DoSparseOperation(ref AListSparseOperation<T> op, int index, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
+		internal override int DoSparseOperation(ref AListSparseOperation<T> op, int index, out AListNode<int, T>? splitLeft, out AListNode<int, T>? splitRight)
 		{
 			Debug.Assert(!IsFrozen);
 			if (op.IsInsert)
@@ -241,9 +242,10 @@ namespace Loyc.Collections.Impl
 				return DoReplace(ref op, index, out splitLeft, out splitRight);
 		}
 
+		[return: MaybeNull]
 		internal override T SparseGetNearest(ref int? index_, int direction)
 		{
-			uint index = index_.Value < 0 ? 0 : (uint)index_.Value;
+			uint index = index_!.Value < 0 ? 0 : (uint)index_.Value;
 			int i;
 			if (!BinarySearch((uint)index, out i)) {
 				if (direction < 0)
@@ -257,7 +259,7 @@ namespace Loyc.Collections.Impl
 			return _list[i].Item;
 		}
 
-		private int DoReplace(ref AListSparseOperation<T> op, int index, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
+		private int DoReplace(ref AListSparseOperation<T> op, int index, out AListNode<int, T>? splitLeft, out AListNode<int, T>? splitRight)
 		{
 			if (op.WriteEmpty)
 			{
@@ -286,7 +288,7 @@ namespace Loyc.Collections.Impl
 			splitLeft = splitRight = null;
 			if (op.Source != null) {
 				for (; op.SourceIndex < op.SourceCount; op.SourceIndex++) {
-					op.Item = op.Source[op.SourceIndex];
+					op.Item = op.Source![op.SourceIndex];
 					if (!ReplaceSingleItem(ref op, (uint)(index + op.SourceIndex))) {
 						SplitLeaf(out splitLeft, out splitRight, false);
 						return 0;
@@ -315,7 +317,7 @@ namespace Loyc.Collections.Impl
 			return true;
 		}
 
-		private int DoInsert(ref AListSparseOperation<T> op, int index0, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
+		private int DoInsert(ref AListSparseOperation<T> op, int index0, out AListNode<int, T>? splitLeft, out AListNode<int, T>? splitRight)
 		{
 			Debug.Assert(_totalCount + op.SourceCount >= _totalCount); // caller ensures list size does not overflow
 			
@@ -362,7 +364,7 @@ namespace Loyc.Collections.Impl
 				var tempList = new InternalList<Entry>(leftHere);
 
 				int? si;
-				T item;
+				T? item;
 				for (int prev = op.SourceIndex - 1; ; prev = si.Value) {
 					si = prev;
 					item = source.NextHigherItem(ref si);

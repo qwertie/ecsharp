@@ -6,6 +6,7 @@ namespace Loyc.Collections
 	using System.Text;
 	using System.Collections.Specialized;
 	using System.Diagnostics;
+	using System.Diagnostics.CodeAnalysis;
 	using System.Runtime.CompilerServices;
 	using Loyc.Collections.Impl;
 	using Loyc.Math;
@@ -146,9 +147,9 @@ namespace Loyc.Collections
 	{
 		#region Data members
 
-		protected internal ListChangingHandler<T, IListSource<T>> _listChanging; // Delegate for ListChanging
-		protected internal AListNode<K, T> _root;
-		protected internal IAListTreeObserver<K, T> _observer;
+		protected internal ListChangingHandler<T, IListSource<T>>? _listChanging; // Delegate for ListChanging
+		protected internal AListNode<K, T>? _root; // null when list is empty
+		protected internal IAListTreeObserver<K, T>? _observer;
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		protected uint _count;
 		protected ushort _version;
@@ -256,7 +257,7 @@ namespace Loyc.Collections
 		/// derived classes, should call to create a sublist of a list. Used in 
 		/// conjunction with CopySectionHelper().
 		/// </summary>
-		protected AListBase(AListBase<K, T> original, AListNode<K, T> section)
+		protected AListBase(AListBase<K, T> original, AListNode<K, T>? section)
 		{
 			_maxLeafSize = original._maxLeafSize;
 			_maxInnerSize = original._maxInnerSize;
@@ -297,6 +298,7 @@ namespace Loyc.Collections
 		{
 			if (_freezeMode != FreezeMode.NotFrozen) ThrowFrozen();
 		}
+		[DoesNotReturn]
 		private void ThrowFrozen()
 		{
 			string name = GetType().NameWithGenericArgs();
@@ -324,6 +326,7 @@ namespace Loyc.Collections
 				}
 			}
 		}
+		[MemberNotNull(nameof(_root))]
 		protected void AutoCreateOrCloneRoot()
 		{
 			if (_root == null) {
@@ -338,7 +341,7 @@ namespace Loyc.Collections
 					_observer.RootChanged(this, _root, false);
 			}
 		}
-		protected void AutoSplit(AListNode<K, T> splitLeft, AListNode<K, T> splitRight)
+		protected void AutoSplit(AListNode<K, T>? splitLeft, AListNode<K, T>? splitRight)
 		{
 			if (splitLeft == null)
 				return;
@@ -355,7 +358,7 @@ namespace Loyc.Collections
 				_root = SplitRoot(splitLeft, splitRight);
 				_treeHeight++;
 				if (_observer != null)
-					_observer.HandleRootSplit(this, oldRoot, splitLeft, splitRight, (AListInnerBase<K,T>)_root);
+					_observer.HandleRootSplit(this, oldRoot!, splitLeft, splitRight, (AListInnerBase<K,T>)_root);
 			}
 		}
 		protected void HandleChangedOrUndersizedRoot(AListNode<K, T> result)
@@ -436,7 +439,7 @@ namespace Loyc.Collections
 				} else if (_root.IsFrozen)
 					AutoCreateOrCloneRoot();
 
-				AListNode<K, T> splitLeft, splitRight;
+				AListNode<K, T>? splitLeft, splitRight;
 				Debug.Assert(op.CompareKeys != null && op.CompareToKey != null);
 				Debug.Assert(op.BaseIndex == 0 && !op.Found && op.AggregateChanged == 0);
 				op.List = this;
@@ -482,7 +485,7 @@ namespace Loyc.Collections
 			if (_freezeMode == FreezeMode.FrozenForConcurrency)
 				ThrowFrozen();
 			op.List = this;
-			AListNode<K, T> splitLeft, splitRight;			
+			AListNode<K, T>? splitLeft, splitRight;
 			_root.DoSingleOperation(ref op, out splitLeft, out splitRight);
 		}
 		
@@ -520,7 +523,7 @@ namespace Loyc.Collections
 			{
 				_freezeMode = FreezeMode.FrozenForConcurrency;
 
-				if (_root.IsFrozen)
+				if (_root!.IsFrozen)
 					AutoCreateOrCloneRoot();
 				var result = _root.RemoveAt(index, amount, _observer);
 				if (result)
@@ -548,7 +551,7 @@ namespace Loyc.Collections
 			// in order to optimize from O(N log N) to O(N)
 			int numRemoved = 0;
 			for (uint i = _count - 1; i != uint.MaxValue; i--) {
-				if (match(_root[i])) {
+				if (match(_root![i])) {
 					RemoveInternal(i, 1u);
 					numRemoved++;
 				}
@@ -617,14 +620,14 @@ namespace Loyc.Collections
 		/// <param name="comparer">Comparison object (e.g. <see cref="EqualityComparer{T}.Default"/>.)</param>
 		/// <returns>Index of the matching item, or null if no matching item was found.</returns>
 		/// <exception cref="ArgumentOutOfRangeException">when startIndex > Count</exception>
-		public int? FirstIndexOf(T item, int startIndex, EqualityComparer<T> comparer = null)
+		public int? FirstIndexOf(T item, int startIndex, EqualityComparer<T>? comparer = null)
 		{
 			comparer = comparer ?? EqualityComparer<T>.Default;
 			bool ended = false;
 			var it = GetEnumerator(startIndex);
 			for (uint i = 0; i < _count; i++)
 			{
-				T current = it.MoveNext(ref ended);
+				T? current = it.MoveNext(ref ended);
 				Debug.Assert(!ended);
 				if (comparer.Equals(item, current))
 					return (int)i;
@@ -632,7 +635,7 @@ namespace Loyc.Collections
 			return null;
 		}
 		[Obsolete("Please use FirstIndexOf instead, which returns null if item is not found")]
-		public int LinearScanFor(T item, int startIndex, EqualityComparer<T> comparer = null) => FirstIndexOf(item, startIndex, comparer) ?? -1;
+		public int LinearScanFor(T item, int startIndex, EqualityComparer<T>? comparer = null) => FirstIndexOf(item, startIndex, comparer) ?? -1;
 
 		public void CopyTo(T[] array, int arrayIndex)
 		{
@@ -672,10 +675,10 @@ namespace Loyc.Collections
 		public class Enumerator : IBinumerator<T>
 		{
 			protected readonly AListBase<K, T> _self;
-			protected Pair<AListInnerBase<K, T>, int>[] _stack;
-			protected internal AListNode<K, T> _leaf;
+			protected Pair<AListInnerBase<K, T>, int>[]? _stack; // null when the tree height is below 2
+			[AllowNull] protected internal AListNode<K, T> _leaf; // null only if the list is empty
 			protected internal int _leafIndex;
-			protected T _current;
+			[AllowNull] protected T _current;
 			protected ushort _expectedVersion;
 
 			protected internal uint _currentIndex;
@@ -754,7 +757,7 @@ namespace Loyc.Collections
 				else
 				{
 					_leaf = self._root;
-					if (self._count != 0 && !_leaf.IsLeaf)
+					if (self._count != 0 && !_leaf!.IsLeaf)
 						throw new InvalidStateException();
 				}
 
@@ -778,6 +781,7 @@ namespace Loyc.Collections
 				StartIndex = copy.StartIndex;
 			}
 
+			[return: MaybeNull]
 			protected internal T MoveNext(ref bool ended)
 			{
 				// "if (_currentIndex < LastIndex - 1)" is wrong if (int)_currentIndex == -1
@@ -794,6 +798,7 @@ namespace Loyc.Collections
 					return MoveNextAtEnd();
 				}
 			}
+			[return: MaybeNull]
 			private T MoveNextAtEnd()
 			{
 				if (_currentIndex + 1 == LastIndex)
@@ -812,7 +817,7 @@ namespace Loyc.Collections
 					throw new ConcurrentModificationException();
 				Debug.Assert(_currentIndex < LastIndex);
 
-				var stack = _stack;
+				var stack = _stack!; // if it's null, the try-catch below throws InvalidStateException
 				int s;
 				try {
 					s = stack.Length - 1;
@@ -834,6 +839,7 @@ namespace Loyc.Collections
 				Debug.Assert(_leaf.LocalCount > 0);
 			}
 
+			[return: MaybeNull]
 			protected internal T MovePrevious(ref bool ended)
 			{
 				// "if (_currentIndex > FirstIndex)" is wrong, in case (int)_currentIndex == -1
@@ -850,6 +856,7 @@ namespace Loyc.Collections
 					return MovePreviousAtEnd();
 				}
 			}
+			[return: MaybeNull]
 			private T MovePreviousAtEnd()
 			{
 				if (_currentIndex == FirstIndex)
@@ -867,7 +874,7 @@ namespace Loyc.Collections
 				if (_self._freezeMode == FreezeMode.FrozenForConcurrency)
 					throw new ConcurrentModificationException();
 
-				var stack = _stack;
+				var stack = _stack!; // if it's null, the try-catch below throws InvalidStateException
 				int s;
 				try
 				{
@@ -907,7 +914,7 @@ namespace Loyc.Collections
 				_current = MovePrevious(ref ended);
 				return !ended;
 			}
-			object System.Collections.IEnumerator.Current
+			object? System.Collections.IEnumerator.Current
 			{
 				get { return _current; }
 			}
@@ -958,18 +965,18 @@ namespace Loyc.Collections
 				var idx = _self._observer;
 				if (stack == null) {
 					Debug.Assert(_self._treeHeight == 1 && _self._root == _leaf);
-					if (idx != null) idx.HandleNodeReplaced(_self._root, _leaf, null);
+					if (idx != null) idx.HandleNodeReplaced(_self._root!, _leaf, null);
 					_self._root = _leaf;
 				} else {
-					AListInnerBase<K, T> clone2 = null;
+					AListInnerBase<K, T>? clone2 = null;
 					for (int s = stack.Length - 1; ; s--)
 					{
 						clone = clone2 = stack[s].Item1.HandleChildCloned(stack[s].Item2, clone, idx);
 						if (clone == null)
 							break;
-						stack[s].Item1 = clone2;
+						stack[s].Item1 = clone2!;
 						if (s == 0) {
-							if (idx != null) idx.HandleNodeReplaced(_self._root, clone2, null);
+							if (idx != null) idx.HandleNodeReplaced(_self._root!, clone2!, null);
 							_self._root = clone2;
 							break;
 						}
@@ -992,19 +999,21 @@ namespace Loyc.Collections
 					ThrowFrozen();
 				if ((uint)index >= (uint)Count)
 					ThrowIndexOutOfRange();
-				return _root[(uint)index];
+				return _root![(uint)index];
 			}
 		}
 
+		[DoesNotReturn]
 		protected void ThrowIndexOutOfRange() => throw new ArgumentOutOfRangeException("index");
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			if (_freezeMode == FreezeMode.FrozenForConcurrency)
 				ThrowFrozen();
 			fail = false;
 			if ((uint)index < (uint)_count)
-				return _root[(uint)index];
+				return _root![(uint)index];
 			fail = true;
 			return default(T);
 		}
@@ -1035,13 +1044,13 @@ namespace Loyc.Collections
 		/// <summary>Together with the <see cref="AListBase{K,T}.AListBase(AListBase{K,T},AListNode{K,T})"/>
 		/// constructor, this method helps implement the CopySection() method in derived 
 		/// classes, by cloning a section of the tree.</summary>
-		protected AListNode<K, T> CopySectionHelper(int start, int subcount)
+		protected AListNode<K, T>? CopySectionHelper(int start, int subcount)
 		{
 			if (subcount < 0)
 				throw new ArgumentOutOfRangeException("subcount");
 			return CopySectionHelper((uint)start, (uint)subcount);
 		}
-		protected AListNode<K, T> CopySectionHelper(uint start, uint subcount)
+		protected AListNode<K, T>? CopySectionHelper(uint start, uint subcount)
 		{
 			if (start > _count)
 				throw new ArgumentOutOfRangeException("start");
@@ -1050,7 +1059,7 @@ namespace Loyc.Collections
 			if (subcount == 0)
 				return null;
 
-			var section = _root.CopySection(start, subcount, this);
+			var section = _root!.CopySection(start, subcount, this);
 			return section;
 		}
 
@@ -1153,7 +1162,7 @@ namespace Loyc.Collections
 					_observer = observer;
 					return true;
 				} else if (_observer is ObserverMgr)
-					return (_observer as ObserverMgr).AddObserver(observer);
+					return (_observer as ObserverMgr)!.AddObserver(observer);
 				else {
 					var mgr = new ObserverMgr(this, _root, _observer);
 					if (mgr.AddObserver(observer)) {
@@ -1198,7 +1207,7 @@ namespace Loyc.Collections
 				if (_observer == null)
 					return 0;
 				if (_observer is ObserverMgr)
-					return (_observer as ObserverMgr).ObserverCount;
+					return (_observer as ObserverMgr)!.ObserverCount;
 				else
 					return 1;
 			}
@@ -1217,6 +1226,7 @@ namespace Loyc.Collections
 		{
 			get { return _list[_list.Count - 1 - index]; }
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			return _list.TryGet(_list.Count - 1 - index, out fail);

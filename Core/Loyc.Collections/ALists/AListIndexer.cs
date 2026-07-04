@@ -42,8 +42,8 @@ namespace Loyc.Collections.Impl
 	public class AListIndexer<K, T> : IAListTreeObserver<K, T>
 	{
 		BMultiMap<T, AListLeafBase<K, T>> _items;
-		BMultiMap<AListNode<K,T>, AListInnerBase<K, T>> _nodes;
-		AListNode<K, T> _root;
+		BMultiMap<AListNode<K,T>, AListInnerBase<K, T>>? _nodes; // created on demand; null if the tree is a single leaf
+		AListNode<K, T>? _root;
 
 		// This is not a valid comparison function for a normal dictionary, 
 		// because two unrelated objects can have the same hashcode. However,
@@ -56,7 +56,7 @@ namespace Loyc.Collections.Impl
 		//     object and find an unrelated object instead (or in addition).
 		static int CompareHashCodes<X>(X a, X b)
 		{
-			return a.GetHashCode().CompareTo(b.GetHashCode());
+			return a!.GetHashCode().CompareTo(b!.GetHashCode());
 		}
 		static bool Equals(T a, T b)
 		{
@@ -83,9 +83,9 @@ namespace Loyc.Collections.Impl
 		}
 
 		public bool? Attach(AListBase<K, T> list) => true;
-		public void Detach(AListBase<K,T> list, AListNode<K, T> root) => RootChanged(list, null, true);
+		public void Detach(AListBase<K,T> list, AListNode<K, T>? root) => RootChanged(list, null, true);
 
-		public void RootChanged(AListBase<K, T> list, AListNode<K, T> newRoot, bool clear)
+		public void RootChanged(AListBase<K, T> list, AListNode<K, T>? newRoot, bool clear)
 		{
 			if (newRoot == null)
 			{
@@ -115,7 +115,7 @@ namespace Loyc.Collections.Impl
 		}
 		public void NodeRemoved(AListNode<K, T> child, AListInnerBase<K, T> parent)
 		{
-			int index = _nodes.IndexOfExact(new KeyValuePair<AListNode<K, T>, AListInnerBase<K, T>>(child, parent));
+			int index = _nodes!.IndexOfExact(new KeyValuePair<AListNode<K, T>, AListInnerBase<K, T>>(child, parent));
 			if (index <= -1) BadState();
 			_nodes.RemoveAt(index);
 		}
@@ -180,7 +180,7 @@ namespace Loyc.Collections.Impl
 			return ReconstructIndex(item, leaf);
 		}
 
-		public List<int> IndexesOf(T item)
+		public List<int>? IndexesOf(T item)
 		{
 			AListLeafBase<K, T> leaf;
 			bool found;
@@ -191,7 +191,7 @@ namespace Loyc.Collections.Impl
 			var list = new List<int>();
 			list.Add(ReconstructIndex(item, leaf));
 
-			object searchFor = item;
+			object? searchFor = item;
 			KeyValuePair<T,AListLeafBase<K,T>> kvp;
 			for(;;) {
 				i++;
@@ -200,7 +200,7 @@ namespace Loyc.Collections.Impl
 				kvp = _items[i];
 				if (CompareHashCodes(kvp.Key, item) != 0)
 					break;
-				if (kvp.Key.Equals(searchFor))
+				if (kvp.Key!.Equals(searchFor))
 					list.Add(ReconstructIndex(kvp.Key, kvp.Value));
 			}
 
@@ -224,7 +224,7 @@ namespace Loyc.Collections.Impl
 			while (node != _root)
 			{
 				Debug.Assert(node != null);
-				_nodes.FindLowerBoundExact(ref node, out inner, out found);
+				_nodes!.FindLowerBoundExact(ref node, out inner, out found);
 				if (!found)
 					BadState();
 				if ((localIndex = (int)inner.BaseIndexOf(node)) <= -1)
@@ -254,22 +254,22 @@ namespace Loyc.Collections.Impl
 		/// </remarks>
 		public void VerifyCorrectness()
 		{
-			StringBuilder e = null; // error message
+			StringBuilder? e = null; // error message
 
 			if (_items.Count != (_root == null ? 0 : _root.TotalCount))
-				AddError(ref e, "Recorded # of items ({0}) differs from actual list Count ({1}).", _items.Count, _root.TotalCount);
+				AddError(ref e, "Recorded # of items ({0}) differs from actual list Count ({1}).", _items.Count, _root!.TotalCount);
 
 			foreach (var pair in _items)
 			{
 				var leaf = pair.Value;
 				if (leaf.IndexOf(pair.Key, 0) <= -1)
 					AddError(ref e, "Outdated record: leaf {0:X} no longer contains item '{1}'.", leaf.GetHashCode() & 0xFFFF, pair.Key);
-				if (leaf != _root && _nodes.IndexOfExact(leaf) <= -1)
+				if (leaf != _root && _nodes!.IndexOfExact(leaf) <= -1)
 					AddError(ref e, "Leaf {0:X} has no known parent but is not the root.", leaf.GetHashCode() & 0xFFFF);
 			}
 			
 			if (_nodes == null) {
-				if (!_root.IsLeaf)
+				if (!_root!.IsLeaf)
 					AddError(ref e, "AListIndexer is unaware that the AList is a tree");
 				if (_root.LocalCount != _items.Count)
 					AddError(ref e, "Count {0} != indexed count {1}.", _root.LocalCount, _items.Count);
@@ -290,14 +290,14 @@ namespace Loyc.Collections.Impl
 								AddError(ref e, "Leaf {0:X} contains non-indexed item '{1}'.", leaf.GetHashCode() & 0xFFFF, leaf[i]);
 					totalChildren += pair.Key.LocalCount;
 				}
-				if (totalChildren + _root.LocalCount != _items.Count + _nodes.Count)
+				if (totalChildren + _root!.LocalCount != _items.Count + _nodes.Count)
 					AddError(ref e, "Computed count {0}+{1} != indexed count {2}+{3}.", totalChildren, _root.LocalCount, _items.Count, _nodes.Count);
 			}
 			
 			if (e != null)
 				BadState(e.ToString());
 		}
-		void AddError(ref StringBuilder sb, string fmt, params object[] args)
+		void AddError(ref StringBuilder? sb, string fmt, params object?[] args)
 		{
 			if (sb == null)
 				sb = new StringBuilder("AListIndexer is inconsistent with the list it is attached to.");

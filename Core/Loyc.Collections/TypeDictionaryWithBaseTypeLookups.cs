@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -27,7 +28,7 @@ namespace Loyc.Collections
 	public class TypeDictionaryWithBaseTypeLookups<Value> : IDictionaryAndReadOnly<Type, Value>, IAdd<KeyValuePair<Type, Value>>
 	{
 		Dictionary<Type, Value> _dict;
-		Dictionary<Type, Maybe<Value>> _cache = null;
+		Dictionary<Type, Maybe<Value>>? _cache = null;
 
 		public TypeDictionaryWithBaseTypeLookups() => _dict = new Dictionary<Type, Value>();
 		public TypeDictionaryWithBaseTypeLookups(IDictionary<Type, Value> copy) => _dict = new Dictionary<Type, Value>(copy);
@@ -84,9 +85,9 @@ namespace Loyc.Collections
 			_dict.Clear();
 		}
 
-		public bool TryGetValue(Type type, out Value value)
+		public bool TryGetValue(Type type, [MaybeNullWhen(false)] out Value value)
 		{
-			Dictionary<Type, Maybe<Value>> cache = _cache;
+			Dictionary<Type, Maybe<Value>>? cache = _cache;
 			if (cache == null) {
 				if (_dict.Count == 0) {
 					value = default;
@@ -94,7 +95,7 @@ namespace Loyc.Collections
 				}
 				_cache = cache = new Dictionary<Type, Maybe<Value>>();
 			} else if (cache.TryGetValue(type, out var maybe)) {
-				value = maybe.Or(default);
+				value = maybe.Or(default!);
 				return maybe.HasValue;
 			}
 

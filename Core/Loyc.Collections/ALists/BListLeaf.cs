@@ -14,7 +14,7 @@ namespace Loyc.Collections.Impl
 		protected BListLeaf(ushort maxNodeSize, InternalList<T> list) : base(maxNodeSize, list) { }
 		public BListLeaf(BListLeaf<K, T> frozen) : base(frozen) { }
 
-		internal override int DoSingleOperation(ref AListSingleOperation<K, T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
+		internal override int DoSingleOperation(ref AListSingleOperation<K, T> op, out AListNode<K, T>? splitLeft, out AListNode<K, T>? splitRight)
 		{
 			T searchItem = op.Item;
 			int index = _list.BinarySearch(op.Key, op.CompareToKey, op.LowerBound);
@@ -66,7 +66,7 @@ namespace Loyc.Collections.Impl
 					if (GetObserver(op.List) != null)
 					{
 						if ((op.AggregateChanged & 2) == 0)
-							GetObserver(op.List).ItemAdded(searchItem, this);
+							GetObserver(op.List)!.ItemAdded(searchItem, this);
 					}
 					return 1;
 				}
@@ -96,7 +96,7 @@ namespace Loyc.Collections.Impl
 					if (GetObserver(op.List) != null)
 					{
 						Debug.Assert((op.AggregateChanged & 2) == 0);
-						GetObserver(op.List).ItemRemoved(op.Item, this);
+						GetObserver(op.List)!.ItemRemoved(op.Item, this);
 					}
 
 					return -1;
@@ -124,15 +124,15 @@ namespace Loyc.Collections.Impl
 			}
 
 			if (GetObserver(op.List) != null) {
-				GetObserver(op.List).ItemRemoved(op.Item, this);
-				GetObserver(op.List).ItemAdded(searchItem, this);
+				GetObserver(op.List)!.ItemRemoved(op.Item, this);
+				GetObserver(op.List)!.ItemAdded(searchItem, this);
 			}
 			return 0;
 		}
 
 		/// <summary>Called by DoSingleOperation to split a full node, then retry the add operation.</summary>
 		/// <remarks>Same arguments and return value as DoSingleOperation.</remarks>
-		internal virtual int SplitAndAdd(ref AListSingleOperation<K, T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
+		internal virtual int SplitAndAdd(ref AListSingleOperation<K, T> op, out AListNode<K, T>? splitLeft, out AListNode<K, T>? splitRight)
 		{
 			// Tell DoSingleOperation not to send notifications to the observer
 			op.AggregateChanged |= 2;
@@ -174,7 +174,7 @@ namespace Loyc.Collections.Impl
 			return new BListLeaf<K, T>(_maxNodeSize, _list.CopySection((int)index, (int)count));
 		}
 
-		public override bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> tob)
+		public override bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T>? tob)
 		{
 			return base.RemoveAt(index, count, tob) || index == LocalCount;
 		}

@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Loyc.MiniTest;
@@ -46,14 +47,14 @@ namespace Loyc.Collections
 		// is empty. VList, in contrast, is not normally used to refer to a mutable 
 		// list so it can always assume (_localCount == 0) == (_block == null).
 
-		internal VListBlock<T> _block;
+		internal VListBlock<T>? _block;
 		internal int _localCount;
 
 		#region Constructors
 
 		internal static EqualityComparer<T> EqualityComparer = VListBlock<T>.EqualityComparer;
 
-		internal FVList(VListBlock<T> block, int localCount)
+		internal FVList(VListBlock<T>? block, int localCount)
 		{
 			_block = block;
 			_localCount = localCount;
@@ -132,7 +133,7 @@ namespace Loyc.Collections
 		}
 		/// <summary>Returns whether the two list references are the same.
 		/// Does not compare the contents of the lists.</summary>
-		public override bool Equals(object rhs_)
+		public override bool Equals(object? rhs_)
 		{
 			if (rhs_ == null)
 				return false;
@@ -179,7 +180,7 @@ namespace Loyc.Collections
 		public FVList<T> RemoveRange(int index, int count)
 		{
 			if (count != 0)
-				this = _block.RemoveRange(_localCount, index, count);
+				this = _block!.RemoveRange(_localCount, index, count);
 			return this;
 		}
 
@@ -191,14 +192,14 @@ namespace Loyc.Collections
 		public T First
 		{
 			get {
-				return _block.Front(_localCount);
+				return _block!.Front(_localCount);
 			}
 		}
 		public bool IsEmpty
 		{
 			get {
 				Debug.Assert((_localCount == 0) == (_block == null)
-				          || (_localCount == 0 && _block.ImmCount == 0));
+				          || (_localCount == 0 && _block!.ImmCount == 0));
 				return _localCount == 0 && _block == null;
 			}
 		}
@@ -361,17 +362,17 @@ namespace Loyc.Collections
 		void IList<T>.RemoveAt(int index) { RemoveAt(index); }
 		public FVList<T> RemoveAt(int index)
 		{
-			this = _block.RemoveAt(_localCount, index);
+			this = _block!.RemoveAt(_localCount, index);
 			return this;
 		}
 
 		public T this[int index]
 		{
 			get {
-				return _block.FGet(index, _localCount);
+				return _block!.FGet(index, _localCount);
 			}
 			set {
-				this = _block.ReplaceAt(_localCount, value, index);
+				this = _block!.ReplaceAt(_localCount, value, index);
 			}
 		}
 		/// <summary>Gets an item from the list at the specified index; returns 
@@ -379,7 +380,7 @@ namespace Loyc.Collections
 		public T this[int index, T defaultValue]
 		{
 			get {
-				_block.FGet(index, _localCount, ref defaultValue);
+				_block!.FGet(index, _localCount, ref defaultValue);
 				return defaultValue;
 			}
 		}
@@ -421,7 +422,7 @@ namespace Loyc.Collections
 		{
 			get {
 				Debug.Assert((_localCount == 0) == (_block == null)
-				          || (_localCount == 0 && _block.ImmCount == 0));
+				          || (_localCount == 0 && _block!.ImmCount == 0));
 				if (_block == null)
 					return 0;
 				return _localCount + _block.PriorCount; 
@@ -454,8 +455,8 @@ namespace Loyc.Collections
 			FVList<T> _tail;
 			T _current;
 
-			public Enumerator(FVList<T> list) { _tail = list; _current = default(T); }
-			public Enumerator(VList<T> list) { _tail = (FVList<T>)list; _current = default(T); }
+			public Enumerator(FVList<T> list) { _tail = list; _current = default(T)!; }
+			public Enumerator(VList<T> list) { _tail = (FVList<T>)list; _current = default(T)!; }
 
 			#region IEnumerator<T> Members
 
@@ -463,7 +464,7 @@ namespace Loyc.Collections
 			{
 				get { return _current; }
 			}
-			object System.Collections.IEnumerator.Current
+			object? System.Collections.IEnumerator.Current
 			{
 				get { return _current; }
 			}
@@ -503,9 +504,10 @@ namespace Loyc.Collections
 
 		#region IListSource<T> Members
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
-			T value = default(T);
+			T value = default(T)!;
 			fail = _block == null || !_block.FGet(index, _localCount, ref value);
 			return value;
 		}
@@ -541,7 +543,7 @@ namespace Loyc.Collections
 			if (_localCount == 0)
 				return this;
 			else
-				return _block.Where(_localCount, filter, null);
+				return _block!.Where(_localCount, filter, null);
 		}
 
 		/// <summary>Filters and maps a list with a user-defined function.</summary>
@@ -587,7 +589,7 @@ namespace Loyc.Collections
 			if (_localCount == 0)
 				return this;
 			else
-				return _block.SmartSelect(_localCount, map, null);
+				return _block!.SmartSelect(_localCount, map, null);
 		}
 
 		/// <summary>Maps a list to another list by concatenating the outputs of a mapping function.</summary>
@@ -609,7 +611,7 @@ namespace Loyc.Collections
 			if (_localCount == 0)
 				return this;
 			else
-				return _block.SelectMany(_localCount, map, false, null);
+				return _block!.SelectMany(_localCount, map, false, null);
 		}
 		
 		/*/// <summary>Maps a list to another list of the same length.</summary>
