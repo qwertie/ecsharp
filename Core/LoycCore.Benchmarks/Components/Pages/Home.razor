@@ -1,0 +1,132 @@
+@page "/"
+@rendermode InteractiveServer
+@implements IDisposable
+
+<PageTitle>Loyc Benchmarks</PageTitle>
+
+<div class="app-header">
+    <h1>Loyc Benchmarks</h1>
+    <details class="env-info">
+        <summary>Environment</summary>
+        <table>
+            @foreach (var (name, value) in EnvironmentInfo.Gather())
+            {
+                <tr><th>@name</th><td>@value</td></tr>
+            }
+        </table>
+    </details>
+    @if (EnvironmentInfo.IsDebugBuild)
+    {
+        <span class="debug-warning">⚠ DEBUG build — timings are not representative; rebuild with -c Release</span>
+    }
+</div>
+
+<div class="app-body">
+    <aside class="sidebar">
+        <div class="toolbar">
+            <input class="filter" type="search" placeholder="Filter benchmarks…"
+                   value="@_filter" @oninput="e => _filter = (string)e.Value!" />
+        </div>
+        <div class="toolbar">
+            <button class="primary" disabled="@(_selection.Count == 0)" @onclick="RunSelected">
+                ▶ Run selected (@_selection.Count)
+            </button>
+            <button @onclick="RunAll">Run all</button>
+        </div>
+        <div class="toolbar">
+            <button disabled="@(Queue.CurrentJob == null)"
+                    @onclick="() => Queue.CancelCurrent()">Cancel current</button>
+            <button disabled="@(Queue.QueuedCount == 0 && Queue.CurrentJob == null)"
+                    @onclick="() => Queue.CancelAll()">Cancel all</button>
+        </div>
+
+        <div class="tree">
+            @foreach (var group in Registry.Root.Children
+                .Where(c => c.DescendantLeaves().Any(l => TreeNodeView.Matches(l, _filter))))
+            {
+                <TreeNodeView Node="group" Selection="_selection" Filter="@_filter"
+                              OnSelectionChanged="StateHasChanged" OnView="View"
+                              ViewedPath="@_viewedPath" Queue="Queue" />
+            }
+        </div>
+
+        @if (Queue.Jobs.Count > 0)
+        {
+            <div class="queue-panel">
+                <div class="queue-header">
+                    <h3>Queue</h3>
+                    <button class="small" @onclick="() => Queue.ClearFinished()">Clear finished</button>
+                </div>
+                @foreach (var job in Queue.Jobs)
+                {
+                    <div class="queue-item @job.Status.ToString().ToLower()" @onclick="() => View(job.Leaf.Path)">
+                        <span class="queue-status">@GetStatusIcon(job)</span>
+                        <span class="queue-name" title="@job.Leaf.Path">@job.Leaf.Path</span>
+                        @if (job.Status == JobStatus.Running)
+                        {
+                            <span class="queue-pct">@((job.Result.ProgressFraction * 100).ToString("0"))%</span>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </aside>
+
+    <section class="content">
+        <ResultPanel Path="@_viewedPath" Version="_version" />
+    </section>
+</div>
+
+@code {
+    [Inject] BenchmarkRegistry Registry { get; set; } = null!;
+    [Inject] BenchmarkQueueService Queue { get; set; } = null!;
+
+    readonly HashSet<string> _selection = new();
+    string _filter = "";
+    string? _viewedPath;
+    int _version;
+    System.Threading.Timer? _refreshTimer;
+    int _refreshPending;
+
+    protected override void OnInitialized()
+    {
+        // Coalesce the queue's change notifications (which can be very frequent
+        // while a benchmark logs output) into at most ~4 UI refreshes per second.
+        _refreshTimer = new System.Threading.Timer(_ => {
+            if (Interlocked.Exchange(ref _refreshPending, 0) != 0)
+                _ = InvokeAsync(() => { _version++; StateHasChanged(); });
+        }, null, 250, 250);
+        Queue.Changed += OnQueueChanged;
+    }
+
+    void OnQueueChanged() => Interlocked.Exchange(ref _refreshPending, 1);
+
+    void View(string path)
+    {
+        _viewedPath = path;
+        _version++;
+    }
+
+    void RunSelected()
+    {
+        Queue.Enqueue(Registry.Leaves.Select(l => l.Path).Where(_selection.Contains));
+        _viewedPath ??= _selection.FirstOrDefault();
+    }
+
+    void RunAll() => Queue.Enqueue(Registry.Leaves.Select(l => l.Path));
+
+    static string GetStatusIcon(BenchmarkJob job) => job.Status switch {
+        JobStatus.Queued => "⏳",
+        JobStatus.Running => "▶",
+        JobStatus.Completed => "✓",
+        JobStatus.Failed => "✗",
+        JobStatus.Canceled => "⊘",
+        _ => "?",
+    };
+
+    public void Dispose()
+    {
+        Queue.Changed -= OnQueueChanged;
+        _refreshTimer?.Dispose();
+    }
+}

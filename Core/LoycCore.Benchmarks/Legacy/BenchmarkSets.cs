@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,17 +14,17 @@ namespace Benchmark
 {
 	class BenchmarkSetsBase<T>
 	{
-		protected const int ItemQuota = 5000000;
+		protected const int ItemQuota = 250000;
 
 		protected class Result
 		{
 			public string Descr;
 			public int DataSize;
-			public int HTime, MTime, ITime;
+			public double HTime, MTime, ITime;
 			public long HSetMemory, MSetMemory;
 			public override string ToString()
 			{
-				string msg = string.Format("{0,-33},{1,4},{2,4},{3,4}",
+				string msg = string.Format("{0,-33},{1,7:0.0},{2,7:0.0},{3,7:0.0}",
 					string.Format("{0} ({1})", Descr, DataSize == -1 ? "avg" : (object)DataSize),
 					HTime, MTime, ITime);
 				if (HSetMemory != 0 && MSetMemory != 0) {
@@ -79,10 +80,10 @@ namespace Benchmark
 		protected List<Result> _results = new List<Result>();
 
 		protected Random _r = new Random();
-		protected EzStopwatch _timer = new EzStopwatch();
+		protected PerfTimer _timer = new PerfTimer();
 		protected T[] _data;
 
-		protected int _hTime, _mTime, _iTime;
+		protected double _hTime, _mTime, _iTime;
 		protected long _mSetMemory, _hSetMemory;
 
 		protected void BeginTest()
@@ -231,7 +232,7 @@ namespace Benchmark
 			Debug.Assert(countH == countO);
 			Debug.Assert(countH == countI);
 		}
-		private int TrialMembershipTests(T[] data, int start, int stop, ref int time, ICollection<T> set)
+		private int TrialMembershipTests(T[] data, int start, int stop, ref double time, ICollection<T> set)
 		{
 			_timer.Restart();
 			int count = 0;
@@ -510,7 +511,7 @@ namespace Benchmark
 			Debug.Assert(countH == countO);
 			Debug.Assert(countH == countI);
 		}
-		private int TrialMembershipTests(T[] data, int start, int stop, ref int time, IDictionary<T,T> set)
+		private int TrialMembershipTests(T[] data, int start, int stop, ref double time, IDictionary<T,T> set)
 		{
 			_timer.Restart();
 			int count = 0;

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,96 +7,86 @@ using Loyc.Collections;
 using Loyc.Math;
 using Loyc;
 using Loyc.Collections.Impl;
-using System.Drawing;
 using System.Reflection;
-using OxyPlot;
-using OxyPlot.Axes;
 
 namespace Benchmark
 {
+	/// <summary>The classic Loyc collection benchmarks (AList, DList, SparseAList,
+	/// BDictionary, MMap, ...), ported from the old OxyPlot/WinForms chart app; data
+	/// points now flow to the web UI's charts through <see cref="BenchmarkContext"/>.</summary>
 	class ListBenchmarks
 	{
 		IAdd<EzDataPoint> _graph;
 		Predicate<EzDataPoint> _where;
-		
+		BenchmarkContext _ctx;
+
 		public bool TestALists = true;
 		public bool TestDLists = true;
 		public bool TestOther = true;
 		int _count;
 		int _seed = Environment.TickCount;
 
-		Dictionary<object, Action<PlotModel>> _graphConfiguration = new Dictionary<object, Action<PlotModel>>();
-		
+		Dictionary<object, Action<GraphModel>> _graphConfiguration = new Dictionary<object, Action<GraphModel>>();
+		HashSet<object> _configuredGraphs = new HashSet<object>();
+
 		void Add(EzDataPoint dp)
 		{
-			if (_where == null || _where(dp))
+			if (_where == null || _where(dp)) {
+				ConfigureGraphOnce(dp.GraphId);
 				_graph.Add(dp);
+			}
 		}
 
-		public void Run(EzChartForm graph = null, Predicate<EzDataPoint> where = null)
+		// Replaces EzChartForm.InitDefaultModel: sets up a graph's axes the first
+		// time a data point is sent to it.
+		void ConfigureGraphOnce(object graphId)
+		{
+			if (_configuredGraphs.Add(graphId)) {
+				var m = new GraphModel(graphId.ToString()) { Title = graphId.ToString() };
+				if (_graphConfiguration.TryGetValue(graphId, out var action))
+					action(m);
+				else
+					AddStandardAxes(m, string.Format("Milliseconds to perform {0:n0} iterations", StdIterations), yMinimum: 0);
+				_ctx.ConfigureGraph(m);
+			}
+		}
+
+		public void Run(BenchmarkContext ctx, int maxListSize = 1000000, Predicate<EzDataPoint> where = null)
 		{
 			Benchmarker b = new Benchmarker(1);
-			_graph = graph;
-			_where = null;
+			_ctx = ctx;
+			_graph = ctx;
+			_where = where;
 
-			graph.InitDefaultModel = (id, plotModel) =>
-			{
-				plotModel.LegendPosition = LegendPosition.TopLeft;
-				plotModel.PlotMargins = new OxyThickness(double.NaN, double.NaN, 12, double.NaN); // avoid cutting off "1000000" (NaN=autodetect)
-				if (_graphConfiguration.TryGetValue(id, out var action))
-					action(plotModel);
-				else
-					AddStandardAxes(plotModel, string.Format("Milliseconds to perform {0:n0} iterations", StdIterations), yMinimum: 0);
-			};
-			
 			_r = new Random(_seed);
-			RunListSizeBenchmarks(_graph, "Bytes used per list item", "Bytes used per 8-byte item", true);
-			RunListSizeBenchmarks(_graph, "Bytes used per list", "Total heap bytes", false);
-			RunDictionarySizeBenchmarks(_graph, "Bytes per dictionary pair", "Bytes used per 16-byte item", true);
-			RunDictionarySizeBenchmarks(_graph, "Bytes per dictionary", "Total heap bytes", false);
+			ctx.Progress(0, "Measuring collection memory use");
+			RunListSizeBenchmarks("Bytes used per list item", "Bytes used per 8-byte item", true);
+			RunListSizeBenchmarks("Bytes used per list", "Total heap bytes", false);
+			RunDictionarySizeBenchmarks("Bytes per dictionary pair", "Bytes used per 16-byte item", true);
+			RunDictionarySizeBenchmarks("Bytes per dictionary", "Total heap bytes", false);
 
-			Run(b, 30);
-			Run(b, 100);
-			Run(b, 300);
-			Run(b, 1000);
-			Run(b, 3000);
-			Run(b, 10000);
-			Run(b, 30000);
-			Run(b, 100000);
-			Run(b, 300000);
-			Run(b, 1000000);
-			//Run(b, 3000000);
+			int[] sizes = { 30, 100, 300, 1000, 3000, 10000, 30000, 100000, 300000, 1000000 };
+			var sizesToRun = sizes.Where(s => s <= maxListSize).ToList();
+			for (int i = 0; i < sizesToRun.Count; i++) {
+				ctx.Progress((double)i / sizesToRun.Count, $"List size {sizesToRun[i]:n0}");
+				Run(b, sizesToRun[i]);
+			}
+			ctx.Progress(1);
 		}
 
-		private void AddStandardAxes(PlotModel plotModel, string yAxisLabel, int? yMinimum = null, int? yMaximum = null)
+		private void AddStandardAxes(GraphModel m, string yAxisLabel, int? yMinimum = null, int? yMaximum = null)
 		{
-			plotModel.Axes.Add(new LogarithmicAxis {
-				Position = AxisPosition.Bottom,
-				Title = "List size",
-				MajorGridlineStyle = LineStyle.Solid,
-				MinorGridlineStyle = LineStyle.Dot
-			});
-			var yAxis = new LinearAxis { 
-				Position = AxisPosition.Left, 
-				Title = yAxisLabel,
-				MajorGridlineStyle = LineStyle.Solid,
-				MinorGridlineStyle = LineStyle.Dot,
-				Minimum = -1,
-			};
+			m.XAxisTitle = "List size";
+			m.XLogScale = true;
+			m.YAxisTitle = yAxisLabel;
+			m.YMin = yMinimum ?? -1;
 			if (yMaximum != null)
-				yAxis.Maximum = yMaximum.Value;
-			if (yMinimum != null)
-				yAxis.Minimum = yMinimum.Value;
-			plotModel.Axes.Add(yAxis);
+				m.YMax = yMaximum.Value;
 		}
 
-		void RunListSizeBenchmarks(IAdd<EzDataPoint> graph, string id, string yAxis, bool perItem)
+		void RunListSizeBenchmarks(string id, string yAxis, bool perItem)
 		{
-			_graphConfiguration[id] = plotModel => {
-				AddStandardAxes(plotModel, yAxis, 0, yMaximum: perItem ? 60 : (int?)null);
-				if (perItem)
-					plotModel.LegendPosition = LegendPosition.TopRight;
-			};
+			_graphConfiguration[id] = m => AddStandardAxes(m, yAxis, 0, yMaximum: perItem ? 60 : (int?)null);
 			int limit = perItem ? 9999 : 133;
 			for (int size = 1; size <= limit; size += Math.Max(1, size / 8))
 			{
@@ -103,37 +94,33 @@ namespace Benchmark
 				
 				var list = AddAtEnd(new List<long>(), size);
 				var lList = AddAtEnd(new LinkedList<long>(), size);
-				graph.Add(new EzDataPoint { GraphId = id, Series = "List<long>", Parameter = size, Value = CountSizeInBytes(list, 8) * factor });
-				graph.Add(new EzDataPoint { GraphId = id, Series = "LinkedList<long>", Parameter = size, Value = CountSizeInBytes(lList, 8) * factor });
+				Add(new EzDataPoint { GraphId = id, Series = "List<long>", Parameter = size, Value = CountSizeInBytes(list, 8) * factor });
+				Add(new EzDataPoint { GraphId = id, Series = "LinkedList<long>", Parameter = size, Value = CountSizeInBytes(lList, 8) * factor });
 
 				if (TestALists)
 				{
 					var alist = AddAtEnd(new AList<long>(), size);
 					var alistR = AddAtRandom(new AList<long>(), size);
-					graph.Add(new EzDataPoint { GraphId = id, Series = "AList<long> (sequential fill)", Parameter = size, Value = alist.CountSizeInBytes(8) * factor });
-					//graph.Add(new EzDataPoint { GraphId = id, Series = "AList<long> (random fill)", Parameter = size, Value = alistR.CountSizeInBytes(8) * factor });
+					Add(new EzDataPoint { GraphId = id, Series = "AList<long> (sequential fill)", Parameter = size, Value = alist.CountSizeInBytes(8) * factor });
+					//Add(new EzDataPoint { GraphId = id, Series = "AList<long> (random fill)", Parameter = size, Value = alistR.CountSizeInBytes(8) * factor });
 					var salist = AddAtEnd(new SparseAList<long>(), size);
 					var salistR = AddAtRandom(new SparseAList<long>(), size);
-					graph.Add(new EzDataPoint { GraphId = id, Series = "SparseAList<long> (sequential fill)", Parameter = size, Value = salist.CountSizeInBytes(8) * factor });
-					//graph.Add(new EzDataPoint { GraphId = id, Series = "SparseAList<long> (random fill)", Parameter = size, Value = salistR.CountSizeInBytes(8) * factor });
+					Add(new EzDataPoint { GraphId = id, Series = "SparseAList<long> (sequential fill)", Parameter = size, Value = salist.CountSizeInBytes(8) * factor });
+					//Add(new EzDataPoint { GraphId = id, Series = "SparseAList<long> (random fill)", Parameter = size, Value = salistR.CountSizeInBytes(8) * factor });
 				}
 				if (TestOther)
 				{
 					var ialist = AddAtEnd(new IndexedAList<long>(), size);
 					var ialistR = AddAtRandom(new IndexedAList<long>(), size);
-					graph.Add(new EzDataPoint { GraphId = id, Series = "IndexedAList<long> (sequential fill)", Parameter = size, Value = ialist.CountSizeInBytes(8) * factor });
-					//graph.Add(new EzDataPoint { GraphId = id, Series = "IndexedAList<long> (random fill)", Parameter = size, Value = ialistR.CountSizeInBytes(8) * factor });
+					Add(new EzDataPoint { GraphId = id, Series = "IndexedAList<long> (sequential fill)", Parameter = size, Value = ialist.CountSizeInBytes(8) * factor });
+					//Add(new EzDataPoint { GraphId = id, Series = "IndexedAList<long> (random fill)", Parameter = size, Value = ialistR.CountSizeInBytes(8) * factor });
 				}
 			}
 		}
 
-		void RunDictionarySizeBenchmarks(IAdd<EzDataPoint> graph, string id, string yAxis, bool perItem)
+		void RunDictionarySizeBenchmarks(string id, string yAxis, bool perItem)
 		{
-			_graphConfiguration[id] = plotModel => {
-				AddStandardAxes(plotModel, yAxis, 0, yMaximum: perItem ? 100 : (int?)null);
-				if (perItem)
-					plotModel.LegendPosition = LegendPosition.TopRight;
-			};
+			_graphConfiguration[id] = m => AddStandardAxes(m, yAxis, 0, yMaximum: perItem ? 100 : (int?)null);
 			int limit = perItem ? 9999 : 133;
 			for (int size = 1; size <= limit; size += Math.Max(1, size / 8))
 			{
@@ -141,26 +128,26 @@ namespace Benchmark
 
 				var dict = FillDictionary(new Dictionary<long, long>(), size, false);
 				var dictR = FillDictionary(new Dictionary<long, long>(), size, true);
-				//graph.Add(new EzDataPoint { GraphId = id, Series = "Dictionary<long,long> (sequential fill)", Parameter = size, Value = CountSizeInBytes(dict, 16) * factor });
-				graph.Add(new EzDataPoint { GraphId = id, Series = "Dictionary<long,long>", Parameter = size, Value = CountSizeInBytes(dictR, 16) * factor });
+				//Add(new EzDataPoint { GraphId = id, Series = "Dictionary<long,long> (sequential fill)", Parameter = size, Value = CountSizeInBytes(dict, 16) * factor });
+				Add(new EzDataPoint { GraphId = id, Series = "Dictionary<long,long>", Parameter = size, Value = CountSizeInBytes(dictR, 16) * factor });
 				
 				var sdictR = FillDictionary(new SortedDictionary<long, long>(), size, true);
-				graph.Add(new EzDataPoint { GraphId = id, Series = "SortedDictionary<long,long>", Parameter = size, Value = CountSizeInBytes(sdictR, 16) * factor });
+				Add(new EzDataPoint { GraphId = id, Series = "SortedDictionary<long,long>", Parameter = size, Value = CountSizeInBytes(sdictR, 16) * factor });
 				
 				if (TestALists)
 				{
 					var bdict = FillDictionary(new BDictionary<long,long>(), size, false);
 					var bdictR = FillDictionary(new BDictionary<long,long>(), size, true);
-					//graph.Add(new EzDataPoint { GraphId = id, Series = "BDictionary<long,long> (sequential fill)", Parameter = size, Value = bdict.CountSizeInBytes(16, 8) * factor });
-					graph.Add(new EzDataPoint { GraphId = id, Series = "BDictionary<long,long> (random fill)", Parameter = size, Value = bdictR.CountSizeInBytes(16, 8) * factor });
+					//Add(new EzDataPoint { GraphId = id, Series = "BDictionary<long,long> (sequential fill)", Parameter = size, Value = bdict.CountSizeInBytes(16, 8) * factor });
+					Add(new EzDataPoint { GraphId = id, Series = "BDictionary<long,long> (random fill)", Parameter = size, Value = bdictR.CountSizeInBytes(16, 8) * factor });
 				}
 
 				if (TestOther)
 				{
 					var map = FillDictionary(new MMap<long,long>(), size, false);
 					var mapR = FillDictionary(new MMap<long,long>(), size, true);
-					graph.Add(new EzDataPoint { GraphId = id, Series = "MMap<long,long> (sequential fill)", Parameter = size, Value = map.CountMemory(16) * factor });
-					graph.Add(new EzDataPoint { GraphId = id, Series = "MMap<long,long> (random fill)", Parameter = size, Value = mapR.CountMemory(16) * factor });
+					Add(new EzDataPoint { GraphId = id, Series = "MMap<long,long> (sequential fill)", Parameter = size, Value = map.CountMemory(16) * factor });
+					Add(new EzDataPoint { GraphId = id, Series = "MMap<long,long> (random fill)", Parameter = size, Value = mapR.CountMemory(16) * factor });
 				}
 			}
 		}
@@ -209,9 +196,14 @@ namespace Benchmark
 			//   public TKey key;
 			//   public TValue value;
 			// }
-			var buckets = (Array)dict.GetType().GetField("buckets", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(dict);
-			var entries = (Array)dict.GetType().GetField("entries", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(dict);
-			return 4 * 4 + 8 * IntPtr.Size + buckets.LongLength * 4 + entries.LongLength * (8 + sizeOfPair);
+			// Field names changed from "buckets"/"entries" (.NET Framework) to
+			// "_buckets"/"_entries" (.NET Core+)
+			const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
+			var bucketsField = dict.GetType().GetField("_buckets", flags) ?? dict.GetType().GetField("buckets", flags);
+			var entriesField = dict.GetType().GetField("_entries", flags) ?? dict.GetType().GetField("entries", flags);
+			var buckets = (Array)bucketsField.GetValue(dict);
+			var entries = (Array)entriesField.GetValue(dict);
+			return 4 * 4 + 8 * IntPtr.Size + (buckets?.LongLength ?? 0) * 4 + (entries?.LongLength ?? 0) * (8 + sizeOfPair);
 		}
 
 		public static double CountSizeInBytes<K, V>(SortedDictionary<K, V> dict, int sizeOfPair)
@@ -278,14 +270,10 @@ namespace Benchmark
 		public void Run(Benchmarker b, int listCount)
 		{
 			_count = listCount;
-			
-			int end = Console.CursorTop;
+
 			b.RunPublicBenchmarks(this, false, () =>
 			{
-				int start = Console.CursorTop;
 				b.PrintResults(Console.Out);
-				end = Console.CursorTop;
-				Console.CursorTop = start;
 
 				// Send results to _graph
 				if (_graph != null) {
@@ -325,10 +313,9 @@ namespace Benchmark
 				}
 			},
 			string.Format("{0,8}: ", listCount), true);
-			Console.CursorTop = end;
 		}
 
-		const int StdIterations = 100000; // Number of random insert/remove ops to perform
+		const int StdIterations = 5000; // Number of random insert/remove ops to perform
 		Random _r;
 
 		[Benchmark("Insert at random indexes")]
@@ -511,9 +498,8 @@ namespace Benchmark
 			if (r > -1)
 				b.ActiveBenchmarkName = b.ActiveBenchmarkName.Left(r) + Cycles + "x";
 
-			_graphConfiguration[b.ActiveBenchmarkName] = plotModel => {
-				AddStandardAxes(plotModel, string.Format("Milliseconds to perform {0:n0} iterations", StdIterations * 100));
-			};
+			_graphConfiguration[b.ActiveBenchmarkName] = m =>
+				AddStandardAxes(m, string.Format("Milliseconds to perform {0:n0} iterations", StdIterations * 100));
 
 			b.Run("List", b_ =>
 			{
@@ -587,9 +573,8 @@ namespace Benchmark
 			if (r > -1)
 				b.ActiveBenchmarkName = b.ActiveBenchmarkName.Left(r) + Cycles + "x";
 
-			_graphConfiguration[b.ActiveBenchmarkName] = plotModel => {
-				AddStandardAxes(plotModel, string.Format("Milliseconds to perform {0:n0} iterations", StdIterations * 100));
-			};
+			_graphConfiguration[b.ActiveBenchmarkName] = m =>
+				AddStandardAxes(m, string.Format("Milliseconds to perform {0:n0} iterations", StdIterations * 100));
 
 			b.Run("List", b_ =>
 			{

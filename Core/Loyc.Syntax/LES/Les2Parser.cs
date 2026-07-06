@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Diagnostics;
-using Loyc;
-using Loyc.Utilities;
 using Loyc.Syntax.Lexing;
 using Loyc.Collections;
 using Loyc.Syntax;

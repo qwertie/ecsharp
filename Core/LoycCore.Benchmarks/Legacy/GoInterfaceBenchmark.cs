@@ -1,8 +1,10 @@
+#nullable disable
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using Loyc.Utilities;
 using System.Diagnostics;
+using Benchmark;
 
 namespace Loyc
 {
@@ -19,7 +21,7 @@ namespace Loyc
 
 		public static void DoBenchmark()
 		{
-			const int Iterations = 10000000;
+			const int Iterations = 500000;
 
 			// Measure the time it takes to instantiate ten versions of
 			// IReadOnlyList<T>. GoInterface is not able to create generic wrappers,
@@ -43,9 +45,9 @@ namespace Loyc
 			// exiting the program, the second time around it should take zero
 			// milliseconds. And the benchmark generally runs more slowly right
 			// after you reboot your computer.
-			SimpleTimer timer = new SimpleTimer();
+			PerfTimer timer = new PerfTimer();
 			var dummy0 = GoInterface<IListSource<byte>>.ForceFrom(new List<byte>());
-			int firstOne = timer.Millisec;
+			double firstOne = timer.Millisec;
 			var dummy1 = GoInterface<IListSource<short>>.ForceFrom(new List<byte>());
 			var dummy2 = GoInterface<IListSource<ushort>>.ForceFrom(new List<byte>());
 			var dummy3 = GoInterface<IListSource<int>>.ForceFrom(new List<byte>());
@@ -55,9 +57,9 @@ namespace Loyc
 			var dummy7 = GoInterface<IListSource<float>>.ForceFrom(new List<byte>());
 			var dummy8 = GoInterface<IListSource<double>>.ForceFrom(new List<byte>());
 			var dummy9 = GoInterface<IListSource<object>>.ForceFrom(new List<byte>());
-			int firstTen = timer.Millisec;
+			double firstTen = timer.Millisec;
 
-			Console.WriteLine("First ten interfaces were wrapped in {0}ms ({1}ms for the first)", firstTen, firstOne);
+			Console.WriteLine("First ten interfaces were wrapped in {0:0.0}ms ({1:0.0}ms for the first)", firstTen, firstOne);
 
 			// Second test: measure how long it takes to wrap the same List<int>
 			// many times, using either GoInterface class.
@@ -75,24 +77,24 @@ namespace Loyc
 			do {
 				ilist = list; // normal interface assignment is pretty much a no-op
 			} while (++i < Iterations);
-			int wrapTest0 = timer.Restart();
+			double wrapTest0 = timer.Restart();
 
 			i = 0;
 			do {
 				rolist = GoInterface<IListSource<int>>.From(list);
 			} while (++i < Iterations);
-			int wrapTest1 = timer.Restart();
+			double wrapTest1 = timer.Restart();
 
 			i = 0;
 			do {
 				rolist = GoInterface<IListSource<int>, List<int>>.From(list);
 			} while (++i < Iterations) ;
-			int wrapTest2 = timer.Restart();
+			double wrapTest2 = timer.Restart();
 
 			Console.WriteLine("Wrapper creation speed ({0} times):", Iterations);
-			Console.WriteLine("- {0} ms for normal .NET interfaces (no-op)", wrapTest0);
-			Console.WriteLine("- {0} ms for GoInterface<IReadOnlyList<int>>.From()", wrapTest1);
-			Console.WriteLine("- {0} ms for GoInterface<IReadOnlyList<int>,List<int>>.From()", wrapTest2);
+			Console.WriteLine("- {0:0.0} ms for normal .NET interfaces (no-op)", wrapTest0);
+			Console.WriteLine("- {0:0.0} ms for GoInterface<IReadOnlyList<int>>.From()", wrapTest1);
+			Console.WriteLine("- {0:0.0} ms for GoInterface<IReadOnlyList<int>,List<int>>.From()", wrapTest2);
 
 			int total0 = 0, total1 = 0, total2 = 0;
 
@@ -101,26 +103,26 @@ namespace Loyc
 			{
 				total0 += list[i & 3];
 			}
-			int callTestDirectCall = timer.Restart();
+			double callTestDirectCall = timer.Restart();
 
 			for (i = 0; i < Iterations; i++)
 			{
 				total1 += ilist[i & 3];
 			}
-			int callTestNormalInterface = timer.Restart();
+			double callTestNormalInterface = timer.Restart();
 
 			for (i = 0; i < Iterations; i++)
 			{
 				total2 += rolist[i & 3];
 			}
-			int callTestGoInterface = timer.Restart();
+			double callTestGoInterface = timer.Restart();
 
 			Debug.Assert(total0 == total1 && total1 == total2);
 
 			Console.WriteLine("Indexer call speed ({0} times):", Iterations);
-			Console.WriteLine("- {0} ms for direct calls (not through an interface)", callTestDirectCall);
-			Console.WriteLine("- {0} ms through IList<int>", callTestNormalInterface);
-			Console.WriteLine("- {0} ms through IReadOnlyList<int>", callTestGoInterface);
+			Console.WriteLine("- {0:0.0} ms for direct calls (not through an interface)", callTestDirectCall);
+			Console.WriteLine("- {0:0.0} ms through IList<int>", callTestNormalInterface);
+			Console.WriteLine("- {0:0.0} ms through IReadOnlyList<int>", callTestGoInterface);
 		}
 	}
 }

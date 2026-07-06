@@ -177,3 +177,5 @@ FakesAssemblies/
 # Visual Studio Code settings
 .settings/
 .vs/
+# Benchmark web app: persisted results
+Core/LoycCore.Benchmarks/BenchmarkResults/

@@ -52,6 +52,19 @@ namespace Loyc.SyncLib
 
 			byte[] _nameBuf = Empty<byte>.Array;
 
+			// Caches the results of _opt.NameConverter so that it doesn't reallocate the
+			// same strings numerous times.
+			Dictionary<string, string>? _nameCache;
+
+			// Applies _opt.NameConverter, caching its result per distinct property name.
+			string ConvertName(string name)
+			{
+				_nameCache ??= new Dictionary<string, string>();
+				if (!_nameCache.TryGetValue(name, out var converted))
+					_nameCache[name] = converted = _opt.NameConverter!(name);
+				return converted;
+			}
+
 			public FieldId NextField
 				=> CurPropKey.Type <= JsonType.NotParsed 
 					? FieldId.Missing
@@ -80,7 +93,7 @@ namespace Loyc.SyncLib
 
 				var originalName = name;
 				if (_opt.NameConverter != null)
-					name = _opt.NameConverter(name);
+					name = ConvertName(name);
 
 				// Is it the current property?
 				if (AreEqual(in CurPropKey, name))

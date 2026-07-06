@@ -1,3 +1,4 @@
+#nullable disable
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
@@ -25,30 +26,30 @@ namespace Benchmark
 
 		public static void ThreadLocalStorage()
 		{
-			Console.WriteLine("Performance of accessing a thread-local variable 10,000,000 times:");
-			SimpleTimer t = new SimpleTimer();
-			const int Iterations = 10000000;
+			Console.WriteLine("Performance of accessing a thread-local variable 500,000 times:");
+			PerfTimer t = new PerfTimer();
+			const int Iterations = 500000;
 			
 			// Baseline comparison
 			for (int i = 0; i < Iterations; i++)
 				_globalVariable += i;
-			Console.WriteLine("    Non-thread-local global variable: {0}ms", t.Restart());
+			Console.WriteLine("    Non-thread-local global variable: {0:0.0}ms", t.Restart());
 
 			// ThreadStatic attribute
-			t = new SimpleTimer();
+			t = new PerfTimer();
 			for (int i = 0; i < Iterations; i++)
 			{
 				// In CLR 2.0, this is the same performance-wise as two separate 
 				// operations (a read and a write)
 				_threadStatic += i;
 			}
-			int time = t.Restart();
+			double time = t.Restart();
 			for (int i = 0; i < Iterations; i++)
 			{
 				_globalVariable += _threadStatic;
 			}
-			int time2 = t.Restart();
-			Console.WriteLine("    ThreadStatic variable: {0}ms (read-only: {1}ms)", time, time2);
+			double time2 = t.Restart();
+			Console.WriteLine("    ThreadStatic variable: {0:0.0}ms (read-only: {1:0.0}ms)", time, time2);
 
 			// ThreadLocalVariable<int>
 			_dict.Value = 0;
@@ -58,7 +59,7 @@ namespace Benchmark
 			for (int i = 0; i < Iterations; i++)
 				_globalVariable += _dict.Value;
 			time2 = t.Restart();
-			Console.WriteLine("    ThreadLocalVariable: {0}ms (read-only: {1}ms)", time, time2);
+			Console.WriteLine("    ThreadLocalVariable: {0:0.0}ms (read-only: {1:0.0}ms)", time, time2);
 
 			// Dictionary indexed by thread ID
 			_dictById[Thread.CurrentThread.ManagedThreadId] = 0;
@@ -74,7 +75,7 @@ namespace Benchmark
 			for (int i = 0; i < Iterations; i++)
 				_globalVariable += Thread.CurrentThread.ManagedThreadId;
 			time2 = t.Restart();
-			Console.WriteLine("    Dictionary: {0}ms ({1}ms getting the current Thread ID)", time, time2);
+			Console.WriteLine("    Dictionary: {0:0.0}ms ({1:0.0}ms getting the current Thread ID)", time, time2);
 
 			// Thread Data Slot: slow, so extrapolate from 1/5 the work
 			_tlSlot = Thread.AllocateDataSlot();
@@ -83,7 +84,7 @@ namespace Benchmark
 			for (int i = 0; i < Iterations/5; i++)
 				Thread.SetData(_tlSlot, (int)Thread.GetData(_tlSlot) + i);
 			time = t.Restart() * 5;
-			Console.WriteLine("    Thread-local data slot: {0}ms (extrapolated)", time);
+			Console.WriteLine("    Thread-local data slot: {0:0.0}ms (extrapolated)", time);
 		}
 
 		/// This benchmark is for the sake of CPTrie, which encodes keys in a byte
@@ -260,20 +261,20 @@ namespace Benchmark
 			byte[] array1 = new byte[256];
 			byte[] array2 = new byte[256];
 			int total1 = 0, total2 = 0, total3 = 0;
-			const int Iterations = 2000000;
+			const int Iterations = 100000;
 
-			SimpleTimer t = new SimpleTimer();
+			PerfTimer t = new PerfTimer();
 			// Write test #1
 			for (int i = 0; i < Iterations; i++)
 				for (int B = 0; B < 256; B++)
 					array1[B] = (byte)B;
-			int time1 = t.Restart();
+			double time1 = t.Restart();
 
 			// Write test #1b
 			for (int i = 0; i < Iterations; i++)
 				for (int B = 0; B < array2.Length; B++)
 					array2[B] = (byte)B;
-			int time1b = t.Restart();
+			double time1b = t.Restart();
 
 			// Write test #2
 			for (int i = 0; i < Iterations; i++) {
@@ -286,7 +287,7 @@ namespace Benchmark
 						*p2++ = (byte)B;
 				}
 			}
-			int time2 = t.Restart();
+			double time2 = t.Restart();
 
 			// Write test #2b
 			for (int i = 0; i < Iterations; i++) {
@@ -296,7 +297,7 @@ namespace Benchmark
 						p[B] = (byte)B;
 				}
 			}
-			int time2b = t.Restart();
+			double time2b = t.Restart();
 
 			// Write test #3
 			for (int i = 0; i < Iterations; i++)
@@ -314,7 +315,7 @@ namespace Benchmark
 					}
 				}
 			}
-			int time3 = t.Restart();
+			double time3 = t.Restart();
 
 			// Write test #3b
 			for (int i = 0; i < Iterations; i++)
@@ -327,7 +328,7 @@ namespace Benchmark
 						*p2++ = B | ((B + 1) << 8) | ((B + 2) << 16) | ((B + 3) << 24);
 				}
 			}
-			int time3b = t.Restart();
+			double time3b = t.Restart();
 
 			// Write test #4
 			for (int i = 0; i < Iterations; i++) {
@@ -339,7 +340,7 @@ namespace Benchmark
 						*p2++ = 0;
 				}
 			}
-			int time4 = t.Restart();
+			double time4 = t.Restart();
 
 			// Write test #5
 			for (int i = 0; i < Iterations; i++) {
@@ -353,14 +354,14 @@ namespace Benchmark
 					}
 				}
 			}
-			int time5 = t.Restart();
+			double time5 = t.Restart();
 
-			Console.WriteLine("Performance of writing a byte array (256B * 2M):");
-			Console.WriteLine("    Standard for loop: {0}ms or {1}ms", time1, time1b);
-			Console.WriteLine("    Pinned pointer, one byte at a time: {0}ms", time2);
-			Console.WriteLine("    Pinned pointer, 32 bits at a time: {0}ms or {1}ms", time3, time3b);
-			Console.WriteLine("    Pinned pointer, 32-bit fast fill: {0}ms", time4);
-			Console.WriteLine("    Pinned pointer, 32 bits, unrolled: {0}ms", time5);
+			Console.WriteLine("Performance of writing a byte array (256B * 100K):");
+			Console.WriteLine("    Standard for loop: {0:0.0}ms or {1:0.0}ms", time1, time1b);
+			Console.WriteLine("    Pinned pointer, one byte at a time: {0:0.0}ms", time2);
+			Console.WriteLine("    Pinned pointer, 32 bits at a time: {0:0.0}ms or {1:0.0}ms", time3, time3b);
+			Console.WriteLine("    Pinned pointer, 32-bit fast fill: {0:0.0}ms", time4);
+			Console.WriteLine("    Pinned pointer, 32 bits, unrolled: {0:0.0}ms", time5);
 			t.Restart();
 
 			// Read test #1
@@ -420,7 +421,7 @@ namespace Benchmark
 						dummy += (int)(*p2++);
 				}
 			}
-			time4 = t.Restart() | (dummy & 1);
+			time4 = t.Restart() + (dummy & 1);
 
 			// Read test #5
 			int total5 = 0;
@@ -440,11 +441,11 @@ namespace Benchmark
 			time5 = t.Restart();
 
 			Console.WriteLine("Performance of reading a byte array:");
-			Console.WriteLine("    Standard for loop: {0}ms", time1);
-			Console.WriteLine("    Pinned pointer, one byte at a time: {0}ms or {1}ms", time2, time2b);
-			Console.WriteLine("    Pinned pointer, 32 bits at a time, equivalent: {0}ms", time3);
-			Console.WriteLine("    Pinned pointer, 32 bits at a time, sans math: {0}ms", time4);
-			Console.WriteLine("    Pinned pointer, 32 bits, unrolled: {0}ms", time5);
+			Console.WriteLine("    Standard for loop: {0:0.0}ms", time1);
+			Console.WriteLine("    Pinned pointer, one byte at a time: {0:0.0}ms or {1:0.0}ms", time2, time2b);
+			Console.WriteLine("    Pinned pointer, 32 bits at a time, equivalent: {0:0.0}ms", time3);
+			Console.WriteLine("    Pinned pointer, 32 bits at a time, sans math: {0:0.0}ms", time4);
+			Console.WriteLine("    Pinned pointer, 32 bits, unrolled: {0:0.0}ms", time5);
 			t.Restart();
 
 			if (total1 != total2 || total2 != total3 || total2 != total2b || total3 != total5)
@@ -511,21 +512,21 @@ namespace Benchmark
 			// Copy test #5b
 			for (int i = 0; i < Iterations; i++)
 				Array.Copy(array1, 0, array2, 0, array1.Length);
-			int time5b = t.Restart();
+			double time5b = t.Restart();
 
 			// Copy test #6
 			for (int i = 0; i < Iterations; i++)
 				for (int B = 0; B < array1.Length; B += 16)
 					Array.Copy(array1, B, array2, B, 16);
-			int time6 = t.Restart();
+			double time6 = t.Restart();
 
 			Console.WriteLine("Performance of copying a byte array:");
-			Console.WriteLine("    Standard for loop: {0}ms", time1);
-			Console.WriteLine("    Pinned pointer, one byte at a time: {0}ms", time2);
-			Console.WriteLine("    Pinned pointer, 32 bits at a time: {0}ms", time3);
-			Console.WriteLine("    Repeated pinning, 32 bits at a time: {0}ms", time4);
-			Console.WriteLine("    Array.Copy, 256 bytes at a time: {0}ms or {1}ms", time5, time5b);
-			Console.WriteLine("    Array.Copy, 16 bytes at a time: {0}ms", time6);
+			Console.WriteLine("    Standard for loop: {0:0.0}ms", time1);
+			Console.WriteLine("    Pinned pointer, one byte at a time: {0:0.0}ms", time2);
+			Console.WriteLine("    Pinned pointer, 32 bits at a time: {0:0.0}ms", time3);
+			Console.WriteLine("    Repeated pinning, 32 bits at a time: {0:0.0}ms", time4);
+			Console.WriteLine("    Array.Copy, 256 bytes at a time: {0:0.0}ms or {1:0.0}ms", time5, time5b);
+			Console.WriteLine("    Array.Copy, 16 bytes at a time: {0:0.0}ms", time6);
 
 			Cell[] cells = new Cell[64];
 			
@@ -587,13 +588,13 @@ namespace Benchmark
 			for (int i = 0; i < Iterations; i++)
 				for (int c = 1; c < cells.Length; c++)
 					cells[c].a = (byte)(cells[c - 1].a + 1);
-			int time4b = t.Restart();
+			double time4b = t.Restart();
 
-			Console.WriteLine("Performance of writing a cell array (256B * 2M):");
-			Console.WriteLine("    One byte at a time: {0}ms or {1}ms", time1, time1b);
-			Console.WriteLine("    One byte at a time + copy: {0}ms", time2);
-			Console.WriteLine("    Constructor calls: {0}ms (bytes), {1}ms (ints)", time3, time3b);
-			Console.WriteLine("    Read-inc-write every fourth byte: {0}ms or {1}ms", time3, time3b);
+			Console.WriteLine("Performance of writing a cell array (256B * 100K):");
+			Console.WriteLine("    One byte at a time: {0:0.0}ms or {1:0.0}ms", time1, time1b);
+			Console.WriteLine("    One byte at a time + copy: {0:0.0}ms", time2);
+			Console.WriteLine("    Constructor calls: {0:0.0}ms (bytes), {1:0.0}ms (ints)", time3, time3b);
+			Console.WriteLine("    Read-inc-write every fourth byte: {0:0.0}ms or {1:0.0}ms", time4, time4b);
 
 			// Cell read test #1
 			total1 = 0;
@@ -635,8 +636,8 @@ namespace Benchmark
 			time2b = t.Restart();
 
 			Console.WriteLine("Performance of reading the cells:");
-			Console.WriteLine("    In-place: {0}ms or {1}ms", time1, time1b);
-			Console.WriteLine("    From stack copy: {0}ms or {1}ms", time2, time2b);
+			Console.WriteLine("    In-place: {0:0.0}ms or {1:0.0}ms", time1, time1b);
+			Console.WriteLine("    From stack copy: {0:0.0}ms or {1:0.0}ms", time2, time2b);
 			if (total1 != total2 || total2 != total3 || total3 != total4)
 				throw new Exception("bug");
 
@@ -658,8 +659,8 @@ namespace Benchmark
 			time2b = t.Restart();
 			
 			Console.WriteLine("Performance of copying a cell array");
-			Console.WriteLine("    Standard for loop: {0}ms", time1);
-			Console.WriteLine("    Array.Copy: {0}ms or {1}ms", time2, time2b);
+			Console.WriteLine("    Standard for loop: {0:0.0}ms", time1);
+			Console.WriteLine("    Array.Copy: {0:0.0}ms or {1:0.0}ms", time2, time2b);
 		}
 		
 		struct Cell
@@ -688,18 +689,18 @@ namespace Benchmark
 
 		/*public static void CountOnes()
 		{
-			SimpleTimer t = new SimpleTimer();
+			PerfTimer t = new PerfTimer();
 
 			int total1 = 0, total2 = 0;
 			for (int i = 0; i < 0x10000000; i++)
 				total1 += MathEx.CountOnes((uint)i);
-			int time1 = t.Restart();
+			double time1 = t.Restart();
 			
 			for (int i = 0; i < 0x10000000; i++)
 				total2 += G.CountOnesAlt((uint)i);
-			int time2 = t.Restart();
+			double time2 = t.Restart();
 
-			Console.WriteLine("CountOnes 268M times: {0}ms or {1}ms", time1, time2);
+			Console.WriteLine("CountOnes 268M times: {0:0.0}ms or {1:0.0}ms", time1, time2);
 
 			if (total1 != total2)
 				throw new Exception("bug");
@@ -731,9 +732,9 @@ namespace Benchmark
 		}
 		public static void EnumeratorVsIterator()
 		{
-			SimpleTimer t = new SimpleTimer();
-			int total1 = 0, total2 = 0, total2b = 0;
-			const int Limit = 333333333;
+			PerfTimer t = new PerfTimer();
+			double total1 = 0, total2 = 0, total2b = 0;
+			const int Limit = 16666666;
 
 			for (int i = 0; i < 3; i++)
 			{
@@ -744,7 +745,7 @@ namespace Benchmark
 				while (b1.MoveNext())
 					current = b1.Current;
 				total1 += t.Millisec;
-				Console.WriteLine("{0} seconds", t.Millisec * 0.001);
+				Console.WriteLine("{0:0.000} seconds", t.Millisec * 0.001);
 
 				Console.Write("Iterator<int>...     ");
 				t.Restart();
@@ -754,14 +755,14 @@ namespace Benchmark
 					current = b2(ref ended);
 				while (!ended);
 				total2 += t.Millisec;
-				Console.WriteLine("{0} seconds", t.Millisec * 0.001);
+				Console.WriteLine("{0:0.000} seconds", t.Millisec * 0.001);
 
 				Console.Write("Iterator.MoveNext... ");
 				t.Restart();
 				b2 = Counter2(Limit);
 				while (b2.MoveNext(out current)) { }
 				total2b += t.Millisec;
-				Console.WriteLine("{0} seconds", t.Millisec * 0.001);
+				Console.WriteLine("{0:0.000} seconds", t.Millisec * 0.001);
 			}
 			Console.WriteLine("On average, IEnumerator consumes {0:0.0}% as much time as Iterator.", total1 * 100.0 / total2);
 			Console.WriteLine("However, Iterator.MoveNext needs {0:0.0}% as much time as Iterator used directly.", total2b * 100.0 / total2);
@@ -796,15 +797,15 @@ namespace Benchmark
 			for (int i = 0; i < 1000000; i++)
 				numbers.Add(r.Next(1000000));
 
-			SimpleTimer t = new SimpleTimer();
+			PerfTimer t = new PerfTimer();
 			List<int> numbers2 = null;
-			for (int trial = 0; trial < 200; trial++)
+			for (int trial = 0; trial < 10; trial++)
 			{
 				numbers2 = (from n in numbers where n < 100000 select n + 1).ToList();
 			}
-			Console.WriteLine("LINQ:    {0}ms ({1} results)", t.Restart(), numbers2.Count);
+			Console.WriteLine("LINQ:    {0:0.0}ms ({1} results)", t.Restart(), numbers2.Count);
 
-			for (int trial = 0; trial < 200; trial++)
+			for (int trial = 0; trial < 10; trial++)
 			{
 				numbers2 = new List<int>();
 				for (int i = 0; i < numbers.Count; i++) {
@@ -813,9 +814,9 @@ namespace Benchmark
 						numbers2.Add(n + 1);
 				}
 			}
-			Console.WriteLine("for:     {0}ms ({1} results)", t.Restart(), numbers2.Count);
+			Console.WriteLine("for:     {0:0.0}ms ({1} results)", t.Restart(), numbers2.Count);
 
-			for (int trial = 0; trial < 200; trial++)
+			for (int trial = 0; trial < 10; trial++)
 			{
 				numbers2 = new List<int>();
 				foreach (int n in numbers) {
@@ -823,13 +824,13 @@ namespace Benchmark
 						numbers2.Add(n + 1);
 				}
 			}
-			Console.WriteLine("foreach: {0}ms ({1} results)", t.Restart(), numbers2.Count);
+			Console.WriteLine("foreach: {0:0.0}ms ({1} results)", t.Restart(), numbers2.Count);
 		}
 
 
 		public static void ConvexHull()
 		{
-			int[] testSizes = new int[] { 12345, 100, 316, 1000, 3160, 10000, 31600, 100000, 316000, 1000000, 3160000, 10000000 };
+			int[] testSizes = new int[] { 12345, 100, 316, 1000, 3160, 10000, 31600, 100000, 316000, 1000000 };
 			for (int iter = 0; iter < testSizes.Length; iter++) {
 				Random r = new Random();
 				
@@ -841,16 +842,16 @@ namespace Benchmark
 				}
 				// Plus: test sorting time to learn how much of the time is spent sorting
 				var points2 = new List<PointD>(points);
-				EzStopwatch timer = new EzStopwatch(true);
+				PerfTimer timer = new PerfTimer(true);
 				points2.Sort((a, b) => a.X == b.X ? a.Y.CompareTo(b.Y) : (a.X < b.X ? -1 : 1));
 				Stopwatch timer2 = new Stopwatch(); timer2.Start();
-				int sortTime = timer.Restart();
+				double sortTime = timer.Restart();
 				IListSource<Point<double>> output = PointMath.ComputeConvexHull(points, true);
-				int hullTime = timer.Millisec;
+				double hullTime = timer.Millisec;
 				Console.WriteLine("{0:c}   (ticks:{1,10} freq:{2})", timer2.Elapsed, timer2.ElapsedTicks, Stopwatch.Frequency);
 
 				if (iter == 0) continue; // first iteration primes the JIT/caches
-				Console.WriteLine("Convex hull of {0,8} points took {1} ms ({2} ms for sorting step). Output has {3} points.", 
+				Console.WriteLine("Convex hull of {0,8} points took {1:0.0} ms ({2:0.0} ms for sorting step). Output has {3} points.", 
 					testSizes[iter], hullTime, sortTime, output.Count);
 			}
 		}

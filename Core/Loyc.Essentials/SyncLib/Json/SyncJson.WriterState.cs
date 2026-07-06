@@ -30,12 +30,27 @@ namespace Loyc.SyncLib
 			protected byte[] _newline;
 			protected byte _pendingComma;
 			protected int _compactMode;
-			
+
 			public WriterState(IBufferWriter<byte> output, Options options) : base(output) {
 				_opt = options;
 				_optWrite = _opt.Write;
 				_indent = Encoding.UTF8.GetBytes(_optWrite.Indent);
 				_newline = Encoding.UTF8.GetBytes(_optWrite.Newline);
+				if (_opt.NameConverter != null)
+					_nameCache = new Dictionary<string, string>();
+			}
+
+			// Caches the results of _opt.NameConverter so that it doesn't reallocate the
+			// same strings numerous times.
+			protected Dictionary<string, string>? _nameCache;
+
+			// Applies _opt.NameConverter, memoizing its result per distinct property name.
+			string ConvertName(string? propName)
+			{
+				propName ??= "";
+				if (!_nameCache!.TryGetValue(propName, out var converted))
+					_nameCache[propName] = converted = _opt.NameConverter!(propName);
+				return converted;
 			}
 
 			public int Depth => _stack.Count;
@@ -319,7 +334,7 @@ namespace Loyc.SyncLib
 					buf = GetNextBuf(reserveExtra);
 				} else {
 					if (_opt.NameConverter != null)
-						propName = _opt.NameConverter(propName ?? "");
+						propName = ConvertName(propName);
 					buf = WriteString(propName.AsSpan(), 3 + reserveExtra);
 					buf[_i++] = (byte) ':';
 					if (_optWrite.SpaceAfterColon && _compactMode == 0)

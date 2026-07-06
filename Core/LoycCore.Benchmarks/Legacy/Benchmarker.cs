@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -95,14 +96,14 @@ namespace Benchmark
 		{
 			_currentTimer.Resume();
 		}
-		EzStopwatch _currentTimer;
+		PerfTimer _currentTimer;
 		int _nestingDepth = 0;
 
-		public int Run(string name, bool condition, Action code) { return condition ? Run(name, 0, code) : -1; }
-		public int Run(string name, bool condition, Func<Benchmarker, object> code, int loopTimes = 1) { return condition ? Run(name, 0, code, loopTimes) : -1; }
-		public int Run(string name, Action code) { return Run(name, 0, code); }
-		public int Run(string name, Func<Benchmarker, object> code, int loopTimes = 1) { return Run(name, 0, code, loopTimes); }
-		public int Run(string name, int minMillisec, Action code)
+		public double Run(string name, bool condition, Action code) { return condition ? Run(name, 0, code) : -1; }
+		public double Run(string name, bool condition, Func<Benchmarker, object> code, int loopTimes = 1) { return condition ? Run(name, 0, code, loopTimes) : -1; }
+		public double Run(string name, Action code) { return Run(name, 0, code); }
+		public double Run(string name, Func<Benchmarker, object> code, int loopTimes = 1) { return Run(name, 0, code, loopTimes); }
+		public double Run(string name, double minMillisec, Action code)
 		{
 			return Run(name, minMillisec, b => { code(); return null; });
 		}
@@ -125,19 +126,21 @@ namespace Benchmark
 		/// method to run a sub-benchmark. A row on the results table will be created
 		/// with both the name of the outer benchmark and the sub-benchmark. The
 		/// outer benchmark's time will include time used by the sub-benchmark.</remarks>
-		public int Run(string name, int minMillisec, Func<Benchmarker, object> code, int loopTimes = 1)
+		public double Run(string name, double minMillisec, Func<Benchmarker, object> code, int loopTimes = 1)
 		{
 			var oldActive = ActiveBenchmarkName;
 			if (++_nestingDepth > 1)
 				ActiveBenchmarkName += ": ";
 			ActiveBenchmarkName += name;
 
-			var totalTime = new EzStopwatch(true);
+			var totalTime = new PerfTimer(true);
 			try {
 				RunCore(minMillisec, code, loopTimes, _nestingDepth > 1, totalTime);
 			}
 			catch(Exception ex)
 			{
+				if (ex is OperationCanceledException)
+					throw; // user canceled (via BenchmarkContext/ConsoleCapture); don't tally as an error
 				Type excType = ex.GetType();
 				string msg = string.Format("{0}: {1}", ex.GetType().Name, ex.Message);
 				while (ex.InnerException != null) {
@@ -163,7 +166,7 @@ namespace Benchmark
 
 		/// <summary>Runs a piece of code one or more times and records the time taken.</summary>
 		/// <remarks>Garbage-collects before the test(s) if DoGC is true.</remarks>
-		public void RunCore(int minMillisec, Func<Benchmarker, object> code, int loopTimes, bool noGC, EzStopwatch totalTime)
+		public void RunCore(double minMillisec, Func<Benchmarker, object> code, int loopTimes, bool noGC, PerfTimer totalTime)
 		{
 			// Give the test as good a chance as possible to avoid garbage collection
 			if (DoGC && !noGC)
@@ -175,7 +178,7 @@ namespace Benchmark
 
 			var oldTimer = _currentTimer;
 			try {
-				_currentTimer = new EzStopwatch(true);
+				_currentTimer = new PerfTimer(true);
 				do {
 					_currentTimer.Restart();
 					object userData = null;
@@ -209,7 +212,7 @@ namespace Benchmark
 		{
 			public BenchmarkAttribute Attr;
 			public Func<Benchmarker, object> Func;
-			public int TotalMillisec; // including setup overhead
+			public double TotalMillisec; // including setup overhead
 			public int TrialsDone = 0;
 			public bool IsLastTrial { get { return TrialsDone + 1 == Attr.Trials; } }
 		}
@@ -299,7 +302,7 @@ namespace Benchmark
 				{
 					var benchmark = order[i];
 					string name = benchmark.Attr.Name ?? benchmark.Func.Method.Name;
-					int minMillisec = 0;
+					double minMillisec = 0;
 					if (benchmark.IsLastTrial)
 						minMillisec = Math.Max(benchmark.Attr.MinMillisec - benchmark.TotalMillisec, 0);
 					CurrentTrialNumber = benchmark.TrialsDone + 1;
@@ -322,7 +325,7 @@ namespace Benchmark
 		{
 			#if CompactFramework
 				// Console cursor cannot be controlled in the Compact Framework
-				var t = new SimpleTimer();
+				var t = new PerfTimer();
 				RunPublicBenchmarks(subject, randomOrder, () => {
 					// Also, console printing is slow; avoid spending too much time on it
 					if (t.ClearAfter(10000) != 0) { PrintResults(Console.Out); t.Restart(); }

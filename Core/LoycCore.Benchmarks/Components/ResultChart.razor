@@ -1,0 +1,208 @@
+@using ApexCharts
+@* Renders one GraphModel + its data points as an ApexCharts line or bar chart.
+   Numeric parameters => line series over sorted category positions. String
+   parameters => bars; when Model.Stacked is set, each entity emits paired
+   "(write)"/"(read)" series that share a group and stack into one round-trip bar. *@
+
+<div class="chart-card">
+    <ApexChart TItem="ChartPoint" Options="_options" Height="530" @key="RenderKey">
+        @foreach (var series in _series)
+        {
+            <ApexPointSeries TItem="ChartPoint"
+                             Items="series.Points"
+                             Name="@series.Name"
+                             Group="@series.Group"
+                             Color="@series.Color"
+                             SeriesType="@(_useBars ? SeriesType.Bar : SeriesType.Line)"
+                             XValue="@(p => p.X)"
+                             YValue="@(p => p.Y)" />
+        }
+    </ApexChart>
+</div>
+
+@code {
+    // Categorical palette (fixed slot order) from the data-viz reference palette,
+    // used for charts whose series don't map to a known serializer (e.g. the legacy
+    // collections line charts).
+    static readonly List<string> Palette = new() {
+        "#2a78d6", "#1baf7a", "#eda100", "#008300", "#4a3aa7", "#e34948", "#e87ba4", "#eb6834",
+    };
+
+    // Serializer bar colors, matched by longest series-name prefix (see FindColor),
+    // so array order below is cosmetic. Green/cyan hues for SyncLib; red/purple/blue/
+    // etc. for the others. Base is the "write" segment; Light is the (lighter) "read"
+    // segment (~40% toward white).
+    record HueRule(string Prefix, string Base, string Light);
+    static readonly HueRule[] Hues = {
+        new("SyncBinary",             "#0000cf", "#5555e2"), // blue
+        new("SyncJson",  "#00a86b", "#66cba6"), // jade
+        new("SyncJson (ISyncManager)", "#0d9488", "#6ebfb8"), // teal
+        new("SyncJson (Newton-compat)", "#1b7f37", "#76b287"), // green
+        new("System.Text.Json",       "#d0773b", "#e3bb89"), // orange
+        new("Newtonsoft.Json",        "#d03b3b", "#e38989"), // red
+        new("protobuf-net",           "#6d3ab7", "#a789d4"), // violet
+        new("MessagePack",            "#b3369c", "#d186c4"), // purple-magenta
+        new("BinaryFormatter",        "#8b2635", "#b97d86"), // maroon
+    };
+
+    // Fixed left-to-right order of the serializers in charts and legends; series
+    // whose base name isn't listed here (e.g. legacy collection benchmarks) sort
+    // alphabetically after these.
+    static readonly string[] SerializerOrder = {
+        "SyncBinary", "SyncJson", "SyncJson (Newton-compat)", "SyncJson (ISyncManager)",
+        "Newtonsoft.Json", "System.Text.Json", "BinaryFormatter", "MessagePack", "protobuf-net",
+    };
+
+    [Parameter, EditorRequired] public GraphModel Model { get; set; } = null!;
+    [Parameter, EditorRequired] public IReadOnlyList<EzDataPoint> Points { get; set; } = null!;
+    // Bumped by ResultPanel only when the viewed benchmark's own data changes;
+    // unchanged Version means this chart must not rebuild (see the guard below).
+    [Parameter] public int Version { get; set; }
+
+    record ChartPoint(string X, decimal? Y);
+    record ChartSeries(string Name, List<ChartPoint> Points, string? Group, string? Color);
+
+    List<ChartSeries> _series = new();
+    bool _useBars;
+    ApexChartOptions<ChartPoint> _options = new();
+    string RenderKey => Model.Id + "#" + Version;
+
+    // Rebuild-guard: only rebuild the options/series objects (which forces the
+    // ApexChart to re-render) when the model or version actually changes. This keeps
+    // charts stable while an unrelated benchmark runs and bumps the global version.
+    string? _builtModelId;
+    int _builtVersion = int.MinValue;
+    bool _dirty = true;
+
+    protected override bool ShouldRender() => _dirty;
+
+    protected override void OnParametersSet()
+    {
+        if (_builtModelId == Model.Id && _builtVersion == Version) {
+            _dirty = false;
+            return;
+        }
+        _builtModelId = Model.Id;
+        _builtVersion = Version;
+        _dirty = true;
+
+        var points = Points.Where(p => Equals(p.GraphId?.ToString(), Model.Id)).ToList();
+        _useBars = points.All(p => p.Parameter is string);
+
+        // X axis: category labels — numeric parameters sorted ascending, string
+        // parameters in first-appearance order
+        List<object?> parameters = points.Select(p => p.Parameter).Distinct().ToList();
+        if (points.Any(p => p.Parameter is not string && p.Parameter is not null))
+            parameters.Sort((a, b) => Convert.ToDouble(a).CompareTo(Convert.ToDouble(b)));
+
+        // Series order groups a serializer's segments together, "write" below "read"
+        // (so it stacks bottom-to-top). Non-serializer charts fall back to alphabetical.
+        _series = points.GroupBy(p => p.Series)
+            .OrderBy(g => GetSerializerRank(g.Key))
+            .ThenBy(g => GetSeriesSortKey(g.Key), StringComparer.Ordinal)
+            .Select(g => new ChartSeries(
+                g.Key.TrimStart('​'), // strip legacy sort-order hack
+                parameters.Select(x => {
+                    var match = g.FirstOrDefault(p => Equals(p.Parameter, x));
+                    return new ChartPoint(FormatX(x), match == null ? null : (decimal)match.Value);
+                }).ToList(),
+                Model.Stacked ? GetBaseName(g.Key) : null,
+                FindColor(g.Key)))
+            .ToList();
+
+        // Log Y only works when every value is positive
+        bool logY = Model.YLogScale && points.All(p => p.Value > 0);
+        bool anyMappedColor = _series.Any(s => s.Color != null);
+        // A shared tooltip lists every series at once (good for line charts and for
+        // stacked bars); plain bars use a per-bar tooltip. ApexCharts forbids
+        // shared+intersect together, so keep the two opposite.
+        bool sharedTip = !_useBars || Model.Stacked;
+
+        _options = new ApexChartOptions<ChartPoint> {
+            Chart = new Chart {
+                Toolbar = new Toolbar { Show = false },
+                Animations = new Animations { Enabled = false },
+                Background = "transparent",
+                Stacked = Model.Stacked ? true : null,
+            },
+            // When series carry their own colors, let those win; otherwise use the palette.
+            Colors = anyMappedColor ? _series.Select(s => s.Color ?? "#888888").ToList() : Palette,
+            Title = new Title { Text = Model.Title },
+            Stroke = new Stroke { Width = 2, Curve = Curve.Straight },
+            Markers = new Markers { Size = 4 },
+            Xaxis = new XAxis {
+                Type = XAxisType.Category,
+                Title = new AxisTitle { Text = Model.XAxisTitle },
+            },
+            Yaxis = new List<YAxis> {
+                new YAxis {
+                    Logarithmic = logY,
+                    Title = new AxisTitle { Text = Model.YAxisTitle },
+                    Min = logY ? null : Model.YMin,
+                    Max = Model.YMax,
+                    DecimalsInFloat = 2,
+                },
+            },
+            Legend = new Legend { Show = _series.Count > 1, Position = LegendPosition.Bottom },
+            Tooltip = new Tooltip { Shared = sharedTip, Intersect = !sharedTip },
+            PlotOptions = new PlotOptions { Bar = new PlotOptionsBar { BorderRadius = 3, ColumnWidth = "75%" } },
+        };
+    }
+
+    // The serializer name without the write/read marker. Non-SyncLib series look
+    // like "Newtonsoft.Json (write)"; SyncLib series name the API method instead,
+    // e.g. "SyncJson.Write (compat off)" or "SyncBinary.ReadI (ISyncManager)".
+    static string GetBaseName(string series)
+    {
+        if (series.EndsWith(" (write)"))
+            series = series[..^" (write)".Length];
+        else if (series.EndsWith(" (read)"))
+            series = series[..^" (read)".Length];
+        foreach (var method in new[] { ".WriteI", ".ReadI", ".Write", ".Read" })
+        {
+            int i = series.IndexOf(method, StringComparison.Ordinal);
+            if (i >= 0)
+            {
+                series = series.Remove(i, method.Length);
+                break;
+            }
+        }
+        return series;
+    }
+
+    static bool IsReadSeries(string series)
+        => series.EndsWith(" (read)") || series.Contains(".Read", StringComparison.Ordinal);
+
+    // Position of the series' serializer in SerializerOrder (unknown names last)
+    static int GetSerializerRank(string series)
+    {
+        int i = Array.IndexOf(SerializerOrder, GetBaseName(series));
+        return i < 0 ? int.MaxValue : i;
+    }
+
+    // Sort so each serializer's segments are adjacent with write before read.
+    static string GetSeriesSortKey(string series)
+        => GetBaseName(series) + (IsReadSeries(series) ? "1" : "0");
+
+    // Color a series by its serializer; read segments get the lighter shade.
+    // Match the LONGEST matching prefix so specific rules (e.g. "SyncJson
+    // (ISyncManager)") win over the generic "SyncJson", regardless of array order.
+    static string? FindColor(string series)
+    {
+        string name = GetBaseName(series);
+        HueRule? best = null;
+        foreach (var h in Hues)
+            if (name.StartsWith(h.Prefix) && (best == null || h.Prefix.Length > best.Prefix.Length))
+                best = h;
+        if (best == null)
+            return null; // unknown series => fall back to the default palette
+        return IsReadSeries(series) ? best.Light : best.Base;
+    }
+
+    static string FormatX(object? x) => x switch {
+        null => "",
+        string s => s,
+        double d => d.ToString("n0"),
+        _ => Convert.ToDouble(x).ToString("n0"),
+    };
+}
