@@ -269,7 +269,7 @@ namespace Loyc.Math
 			return Prescaled(MathEx.MulShift(N, mul.N, shift + Frac));
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return obj is FPI8 && ((FPI8)obj).N == N;
 		}
@@ -297,67 +297,67 @@ namespace Loyc.Math
 		{
 			return TypeCode.Object;
 		}
-		public bool ToBoolean(IFormatProvider provider)
+		public bool ToBoolean(IFormatProvider? provider)
 		{
 			return N != 0;
 		}
-		public sbyte ToSByte(IFormatProvider provider)
+		public sbyte ToSByte(IFormatProvider? provider)
 		{
 			return checked((sbyte)(N >> Frac));
 		}
-		public short ToInt16(IFormatProvider provider)
+		public short ToInt16(IFormatProvider? provider)
 		{
 			return checked((short)(N >> Frac));
 		}
-		public int ToInt32(IFormatProvider provider)
+		public int ToInt32(IFormatProvider? provider)
 		{
 			return checked((int)(N >> Frac));
 		}
-		public long ToInt64(IFormatProvider provider)
+		public long ToInt64(IFormatProvider? provider)
 		{
 			return checked((long)(N >> Frac));
 		}
-		public byte ToByte(IFormatProvider provider)
+		public byte ToByte(IFormatProvider? provider)
 		{
 			return checked((byte)(N >> Frac));
 		}
-		public ushort ToUInt16(IFormatProvider provider)
+		public ushort ToUInt16(IFormatProvider? provider)
 		{
 			return checked((ushort)(N >> Frac));
 		}
-		public uint ToUInt32(IFormatProvider provider)
+		public uint ToUInt32(IFormatProvider? provider)
 		{
 			return checked((uint)(N >> Frac));
 		}
-		public ulong ToUInt64(IFormatProvider provider)
+		public ulong ToUInt64(IFormatProvider? provider)
 		{
 			return checked((ulong)(N >> Frac));
 		}
-		public char ToChar(IFormatProvider provider)
+		public char ToChar(IFormatProvider? provider)
 		{
 			return checked((char)(N >> Frac));
 		}
-		public double ToDouble(IFormatProvider provider)
+		public double ToDouble(IFormatProvider? provider)
 		{
 			return (double)this;
 		}
-		DateTime IConvertible.ToDateTime(IFormatProvider provider)
+		DateTime IConvertible.ToDateTime(IFormatProvider? provider)
 		{
 			throw new InvalidCastException();
 		}
-		public decimal ToDecimal(IFormatProvider provider)
+		public decimal ToDecimal(IFormatProvider? provider)
 		{
 			return (decimal)(double)this;
 		}
-		public float ToSingle(IFormatProvider provider)
+		public float ToSingle(IFormatProvider? provider)
 		{
 			return (float)this;
 		}
-		string IConvertible.ToString(IFormatProvider provider)
+		string IConvertible.ToString(IFormatProvider? provider)
 		{
 			return ToString();
 		}
-		object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+		object IConvertible.ToType(Type conversionType, IFormatProvider? provider)
 		{
 			return Convert.ChangeType((double)this, conversionType, provider);
 		}
@@ -613,7 +613,7 @@ namespace Loyc.Math
 			return Prescaled(MathEx.MulShift(N, mul.N, shift + Frac));
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return obj is FPI16 && ((FPI16)obj).N == N;
 		}
@@ -641,67 +641,67 @@ namespace Loyc.Math
 		{
 			return TypeCode.Object;
 		}
-		public bool ToBoolean(IFormatProvider provider)
+		public bool ToBoolean(IFormatProvider? provider)
 		{
 			return N != 0;
 		}
-		public sbyte ToSByte(IFormatProvider provider)
+		public sbyte ToSByte(IFormatProvider? provider)
 		{
 			return checked((sbyte)(N >> Frac));
 		}
-		public short ToInt16(IFormatProvider provider)
+		public short ToInt16(IFormatProvider? provider)
 		{
 			return checked((short)(N >> Frac));
 		}
-		public int ToInt32(IFormatProvider provider)
+		public int ToInt32(IFormatProvider? provider)
 		{
 			return checked((int)(N >> Frac));
 		}
-		public long ToInt64(IFormatProvider provider)
+		public long ToInt64(IFormatProvider? provider)
 		{
 			return checked((long)(N >> Frac));
 		}
-		public byte ToByte(IFormatProvider provider)
+		public byte ToByte(IFormatProvider? provider)
 		{
 			return checked((byte)(N >> Frac));
 		}
-		public ushort ToUInt16(IFormatProvider provider)
+		public ushort ToUInt16(IFormatProvider? provider)
 		{
 			return checked((ushort)(N >> Frac));
 		}
-		public uint ToUInt32(IFormatProvider provider)
+		public uint ToUInt32(IFormatProvider? provider)
 		{
 			return checked((uint)(N >> Frac));
 		}
-		public ulong ToUInt64(IFormatProvider provider)
+		public ulong ToUInt64(IFormatProvider? provider)
 		{
 			return checked((ulong)(N >> Frac));
 		}
-		public char ToChar(IFormatProvider provider)
+		public char ToChar(IFormatProvider? provider)
 		{
 			return checked((char)(N >> Frac));
 		}
-		public double ToDouble(IFormatProvider provider)
+		public double ToDouble(IFormatProvider? provider)
 		{
 			return (double)this;
 		}
-		DateTime IConvertible.ToDateTime(IFormatProvider provider)
+		DateTime IConvertible.ToDateTime(IFormatProvider? provider)
 		{
 			throw new InvalidCastException();
 		}
-		public decimal ToDecimal(IFormatProvider provider)
+		public decimal ToDecimal(IFormatProvider? provider)
 		{
 			return (decimal)(double)this;
 		}
-		public float ToSingle(IFormatProvider provider)
+		public float ToSingle(IFormatProvider? provider)
 		{
 			return (float)this;
 		}
-		string IConvertible.ToString(IFormatProvider provider)
+		string IConvertible.ToString(IFormatProvider? provider)
 		{
 			return ToString();
 		}
-		object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+		object IConvertible.ToType(Type conversionType, IFormatProvider? provider)
 		{
 			return Convert.ChangeType((double)this, conversionType, provider);
 		}
@@ -951,7 +951,7 @@ namespace Loyc.Math
 			return Prescaled(MathEx.MulShift(N, mul.N, shift + Frac));
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return obj is FPI23 && ((FPI23)obj).N == N;
 		}
@@ -979,67 +979,67 @@ namespace Loyc.Math
 		{
 			return TypeCode.Object;
 		}
-		public bool ToBoolean(IFormatProvider provider)
+		public bool ToBoolean(IFormatProvider? provider)
 		{
 			return N != 0;
 		}
-		public sbyte ToSByte(IFormatProvider provider)
+		public sbyte ToSByte(IFormatProvider? provider)
 		{
 			return checked((sbyte)(N >> Frac));
 		}
-		public short ToInt16(IFormatProvider provider)
+		public short ToInt16(IFormatProvider? provider)
 		{
 			return checked((short)(N >> Frac));
 		}
-		public int ToInt32(IFormatProvider provider)
+		public int ToInt32(IFormatProvider? provider)
 		{
 			return checked((int)(N >> Frac));
 		}
-		public long ToInt64(IFormatProvider provider)
+		public long ToInt64(IFormatProvider? provider)
 		{
 			return checked((long)(N >> Frac));
 		}
-		public byte ToByte(IFormatProvider provider)
+		public byte ToByte(IFormatProvider? provider)
 		{
 			return checked((byte)(N >> Frac));
 		}
-		public ushort ToUInt16(IFormatProvider provider)
+		public ushort ToUInt16(IFormatProvider? provider)
 		{
 			return checked((ushort)(N >> Frac));
 		}
-		public uint ToUInt32(IFormatProvider provider)
+		public uint ToUInt32(IFormatProvider? provider)
 		{
 			return checked((uint)(N >> Frac));
 		}
-		public ulong ToUInt64(IFormatProvider provider)
+		public ulong ToUInt64(IFormatProvider? provider)
 		{
 			return checked((ulong)(N >> Frac));
 		}
-		public char ToChar(IFormatProvider provider)
+		public char ToChar(IFormatProvider? provider)
 		{
 			return checked((char)(N >> Frac));
 		}
-		public double ToDouble(IFormatProvider provider)
+		public double ToDouble(IFormatProvider? provider)
 		{
 			return (double)this;
 		}
-		DateTime IConvertible.ToDateTime(IFormatProvider provider)
+		DateTime IConvertible.ToDateTime(IFormatProvider? provider)
 		{
 			throw new InvalidCastException();
 		}
-		public decimal ToDecimal(IFormatProvider provider)
+		public decimal ToDecimal(IFormatProvider? provider)
 		{
 			return (decimal)(double)this;
 		}
-		public float ToSingle(IFormatProvider provider)
+		public float ToSingle(IFormatProvider? provider)
 		{
 			return (float)this;
 		}
-		string IConvertible.ToString(IFormatProvider provider)
+		string IConvertible.ToString(IFormatProvider? provider)
 		{
 			return ToString();
 		}
-		object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+		object IConvertible.ToType(Type conversionType, IFormatProvider? provider)
 		{
 			return Convert.ChangeType((double)this, conversionType, provider);
 		}
@@ -1299,7 +1299,7 @@ namespace Loyc.Math
 			return Prescaled(MathEx.MulShift(N, mul.N, shift + Frac));
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return obj is FPL16 && ((FPL16)obj).N == N;
 		}
@@ -1327,67 +1327,67 @@ namespace Loyc.Math
 		{
 			return TypeCode.Object;
 		}
-		public bool ToBoolean(IFormatProvider provider)
+		public bool ToBoolean(IFormatProvider? provider)
 		{
 			return N != 0;
 		}
-		public sbyte ToSByte(IFormatProvider provider)
+		public sbyte ToSByte(IFormatProvider? provider)
 		{
 			return checked((sbyte)(N >> Frac));
 		}
-		public short ToInt16(IFormatProvider provider)
+		public short ToInt16(IFormatProvider? provider)
 		{
 			return checked((short)(N >> Frac));
 		}
-		public int ToInt32(IFormatProvider provider)
+		public int ToInt32(IFormatProvider? provider)
 		{
 			return checked((int)(N >> Frac));
 		}
-		public long ToInt64(IFormatProvider provider)
+		public long ToInt64(IFormatProvider? provider)
 		{
 			return checked((long)(N >> Frac));
 		}
-		public byte ToByte(IFormatProvider provider)
+		public byte ToByte(IFormatProvider? provider)
 		{
 			return checked((byte)(N >> Frac));
 		}
-		public ushort ToUInt16(IFormatProvider provider)
+		public ushort ToUInt16(IFormatProvider? provider)
 		{
 			return checked((ushort)(N >> Frac));
 		}
-		public uint ToUInt32(IFormatProvider provider)
+		public uint ToUInt32(IFormatProvider? provider)
 		{
 			return checked((uint)(N >> Frac));
 		}
-		public ulong ToUInt64(IFormatProvider provider)
+		public ulong ToUInt64(IFormatProvider? provider)
 		{
 			return checked((ulong)(N >> Frac));
 		}
-		public char ToChar(IFormatProvider provider)
+		public char ToChar(IFormatProvider? provider)
 		{
 			return checked((char)(N >> Frac));
 		}
-		public double ToDouble(IFormatProvider provider)
+		public double ToDouble(IFormatProvider? provider)
 		{
 			return (double)this;
 		}
-		DateTime IConvertible.ToDateTime(IFormatProvider provider)
+		DateTime IConvertible.ToDateTime(IFormatProvider? provider)
 		{
 			throw new InvalidCastException();
 		}
-		public decimal ToDecimal(IFormatProvider provider)
+		public decimal ToDecimal(IFormatProvider? provider)
 		{
 			return (decimal)(double)this;
 		}
-		public float ToSingle(IFormatProvider provider)
+		public float ToSingle(IFormatProvider? provider)
 		{
 			return (float)this;
 		}
-		string IConvertible.ToString(IFormatProvider provider)
+		string IConvertible.ToString(IFormatProvider? provider)
 		{
 			return ToString();
 		}
-		object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+		object IConvertible.ToType(Type conversionType, IFormatProvider? provider)
 		{
 			return Convert.ChangeType((double)this, conversionType, provider);
 		}
@@ -1649,7 +1649,7 @@ namespace Loyc.Math
 			return Prescaled(MathEx.MulShift(N, mul.N, shift + Frac));
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return obj is FPL32 && ((FPL32)obj).N == N;
 		}
@@ -1677,67 +1677,67 @@ namespace Loyc.Math
 		{
 			return TypeCode.Object;
 		}
-		public bool ToBoolean(IFormatProvider provider)
+		public bool ToBoolean(IFormatProvider? provider)
 		{
 			return N != 0;
 		}
-		public sbyte ToSByte(IFormatProvider provider)
+		public sbyte ToSByte(IFormatProvider? provider)
 		{
 			return checked((sbyte)(N >> Frac));
 		}
-		public short ToInt16(IFormatProvider provider)
+		public short ToInt16(IFormatProvider? provider)
 		{
 			return checked((short)(N >> Frac));
 		}
-		public int ToInt32(IFormatProvider provider)
+		public int ToInt32(IFormatProvider? provider)
 		{
 			return checked((int)(N >> Frac));
 		}
-		public long ToInt64(IFormatProvider provider)
+		public long ToInt64(IFormatProvider? provider)
 		{
 			return checked((long)(N >> Frac));
 		}
-		public byte ToByte(IFormatProvider provider)
+		public byte ToByte(IFormatProvider? provider)
 		{
 			return checked((byte)(N >> Frac));
 		}
-		public ushort ToUInt16(IFormatProvider provider)
+		public ushort ToUInt16(IFormatProvider? provider)
 		{
 			return checked((ushort)(N >> Frac));
 		}
-		public uint ToUInt32(IFormatProvider provider)
+		public uint ToUInt32(IFormatProvider? provider)
 		{
 			return checked((uint)(N >> Frac));
 		}
-		public ulong ToUInt64(IFormatProvider provider)
+		public ulong ToUInt64(IFormatProvider? provider)
 		{
 			return checked((ulong)(N >> Frac));
 		}
-		public char ToChar(IFormatProvider provider)
+		public char ToChar(IFormatProvider? provider)
 		{
 			return checked((char)(N >> Frac));
 		}
-		public double ToDouble(IFormatProvider provider)
+		public double ToDouble(IFormatProvider? provider)
 		{
 			return (double)this;
 		}
-		DateTime IConvertible.ToDateTime(IFormatProvider provider)
+		DateTime IConvertible.ToDateTime(IFormatProvider? provider)
 		{
 			throw new InvalidCastException();
 		}
-		public decimal ToDecimal(IFormatProvider provider)
+		public decimal ToDecimal(IFormatProvider? provider)
 		{
 			return (decimal)(double)this;
 		}
-		public float ToSingle(IFormatProvider provider)
+		public float ToSingle(IFormatProvider? provider)
 		{
 			return (float)this;
 		}
-		string IConvertible.ToString(IFormatProvider provider)
+		string IConvertible.ToString(IFormatProvider? provider)
 		{
 			return ToString();
 		}
-		object IConvertible.ToType(Type conversionType, IFormatProvider provider)
+		object IConvertible.ToType(Type conversionType, IFormatProvider? provider)
 		{
 			return Convert.ChangeType((double)this, conversionType, provider);
 		}

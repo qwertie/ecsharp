@@ -111,6 +111,9 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="..\NullableAttributes.cs">
+      <Link>NullableAttributes.cs</Link>
+    </Compile>
     <Compile Include="ILNodePrinterHelper.cs" />
     <Compile Include="IParsingOptions.cs" />
     <Compile Include="LES\Les2LexerGrammar.out.cs">

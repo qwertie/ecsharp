@@ -47,36 +47,38 @@ namespace Loyc.Math
 	/// </example>
 	public static class Maths<T>
 	{
-		public static readonly INumTraits<T> Traits = Get() as INumTraits<T>;
-		public static readonly IMath<T> Math = Get() as IMath<T>;
-		public static readonly ISignedMath<T> SignedMath = Get() as ISignedMath<T>;
-		public static readonly IUIntMath<T> UIntMath = Get() as IUIntMath<T>;
-		public static readonly IIntMath<T> IntMath = Get() as IIntMath<T>;
-		public static readonly IRationalMath<T> RationalMath = Get() as IRationalMath<T>;
-		public static readonly IFloatMath<T> FloatMath = Get() as IFloatMath<T>;
-		public static readonly IComplexMath<T> ComplexMath = Get() as IComplexMath<T>;
-		public static readonly IConvertTo<T> NumConverter = Get() as IConvertTo<T>;
-		public static readonly IOrdered<T> Ordered = Get() as IOrdered<T>;
-		public static readonly IIncrementer<T> Inrementer = Get() as IIncrementer<T>;
-		public static readonly IBitwise<T> Bitwise = Get() as IBitwise<T>;
-		public static readonly IBinaryMath<T> BinaryMath = Get() as IBinaryMath<T>;
-		public static readonly IAdditionGroup<T> AdditionGroup = Get() as IAdditionGroup<T>;
-		public static readonly ITrigonometry<T> Trigonometry = Get() as ITrigonometry<T>;
-		public static readonly IHasRoot<T> HasRoot = Get() as IHasRoot<T>;
-		public static readonly IExp<T> Exp = Get() as IExp<T>;
-		public static readonly IMultiply<T> Multiply = Get() as IMultiply<T>;
-		public static readonly IMultiplicationGroup<T> MultiplicationGroup = Get() as IMultiplicationGroup<T>;
-		public static readonly IRing<T> Ring = Get() as IRing<T>;
-		public static readonly IField<T> Field = Get() as IField<T>;
+		// Caution: despite their non-nullable types, these fields are null when T
+		// is not one of the supported types (or the interface doesn't apply to T).
+		public static readonly INumTraits<T> Traits = (Get() as INumTraits<T>)!;
+		public static readonly IMath<T> Math = (Get() as IMath<T>)!;
+		public static readonly ISignedMath<T> SignedMath = (Get() as ISignedMath<T>)!;
+		public static readonly IUIntMath<T> UIntMath = (Get() as IUIntMath<T>)!;
+		public static readonly IIntMath<T> IntMath = (Get() as IIntMath<T>)!;
+		public static readonly IRationalMath<T> RationalMath = (Get() as IRationalMath<T>)!;
+		public static readonly IFloatMath<T> FloatMath = (Get() as IFloatMath<T>)!;
+		public static readonly IComplexMath<T> ComplexMath = (Get() as IComplexMath<T>)!;
+		public static readonly IConvertTo<T> NumConverter = (Get() as IConvertTo<T>)!;
+		public static readonly IOrdered<T> Ordered = (Get() as IOrdered<T>)!;
+		public static readonly IIncrementer<T> Inrementer = (Get() as IIncrementer<T>)!;
+		public static readonly IBitwise<T> Bitwise = (Get() as IBitwise<T>)!;
+		public static readonly IBinaryMath<T> BinaryMath = (Get() as IBinaryMath<T>)!;
+		public static readonly IAdditionGroup<T> AdditionGroup = (Get() as IAdditionGroup<T>)!;
+		public static readonly ITrigonometry<T> Trigonometry = (Get() as ITrigonometry<T>)!;
+		public static readonly IHasRoot<T> HasRoot = (Get() as IHasRoot<T>)!;
+		public static readonly IExp<T> Exp = (Get() as IExp<T>)!;
+		public static readonly IMultiply<T> Multiply = (Get() as IMultiply<T>)!;
+		public static readonly IMultiplicationGroup<T> MultiplicationGroup = (Get() as IMultiplicationGroup<T>)!;
+		public static readonly IRing<T> Ring = (Get() as IRing<T>)!;
+		public static readonly IField<T> Field = (Get() as IField<T>)!;
 
-		private static object _math;
-		private static object Get()
+		private static object? _math;
+		private static object? Get()
 		{
 			if (_math != null)
 				return _math;
 			
 			Type t = typeof(T);
-			object m;
+			object? m;
 			
 			if (t == typeof(sbyte)) m = new MathI8();
 			else if (t == typeof(byte)) m = new MathU8();

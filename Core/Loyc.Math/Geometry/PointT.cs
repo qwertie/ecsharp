@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Loyc.Math;
 
 namespace Loyc.Geometry
@@ -70,12 +71,12 @@ namespace Loyc.Geometry
 		public Point3(T x, T y) { _x = x; _y = y; _z = default(T); }
 		public Point3(T x, T y, T z) { _x = x; _y = y; _z = z; }
 
-		T _x, _y, _z;
+		[AllowNull] T _x, _y; [AllowNull] T _z; // _z is default(T) when the 2-arg constructor is used
 		public T X { get { return _x; } set { _x = value; } }
 		public T Y { get { return _y; } set { _y = value; } }
 		public T Z { get { return _z; } set { _z = value; } }
 	
-		public override bool Equals(object other) { return other is Point3<T> && ((Point3<T>)other) == this; }
+		public override bool Equals(object? other) { return other is Point3<T> && ((Point3<T>)other) == this; }
 		public override int GetHashCode() { return (_x.GetHashCode() ^ _z.GetHashCode()) ^ (_y.GetHashCode() << 1); }
 		public override string ToString() { return string.Format("({0},{1},{2})", _x, _y, _z); }
 		
