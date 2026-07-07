@@ -9,19 +9,21 @@ namespace Loyc.SyncLib;
 
 partial class SyncProtobuf
 {
+	/// <summary>The mutable state behind <see cref="SyncProtobuf.Reader"/>. The whole
+	///   input is kept in memory (Protobuf messages are length-prefixed, and SyncLib
+	///   supports reading fields in any order, so random access is required). Every read
+	///   is bounds-checked; malformed input causes <see cref="FormatException"/>.</summary>
 	internal class ReaderState
 	{
-		const string BadFormat = "Invalid Protobuf data";
-
 		readonly Options _opt;
 		readonly ReadOnlyMemory<byte> _mem;
 		Dictionary<long, object>? _objects;
 
 		int _lastFieldId;
 		readonly List<RFrame> _stack = new List<RFrame>(8);
-		RFrame _top;
+		RFrame? _top;
 
-		enum ObjType : byte { Normal = ObjectMode.Normal, List = ObjectMode.List, Tuple = ObjectMode.Tuple }
+		enum FrameKind : byte { Object, Tuple, List }
 
 		struct FieldEntry
 		{
@@ -32,14 +34,16 @@ partial class SyncProtobuf
 
 		class RFrame
 		{
-			public ObjType Type;
-			public ObjectMode Mode;
+			public FrameKind Kind;
 			public int SavedLastFieldId;
-			// Normal object:
+			// Object/Tuple: the message's fields, indexed for reordering support
 			public List<FieldEntry>? Fields;
 			public int Cursor;
-			// List/Tuple:
-			public int ListPos, ListEnd;
+			public byte DupState; // 0 = unknown, 1 = no duplicate field numbers, 2 = duplicates exist
+			// List: the entries of field 1 within the list container message
+			public List<FieldEntry>? Entries;
+			public int ElemIdx;                // next unconsumed entry
+			public int PackedPos, PackedEnd;   // current packed container (Pos >= End: none open)
 			// Deduplication:
 			public long Id;
 			public bool HasId;
@@ -49,13 +53,6 @@ partial class SyncProtobuf
 		{
 			_mem = input;
 			_opt = options;
-			// The whole input is treated as a message body; index its top-level fields.
-			_top = new RFrame {
-				Type = ObjType.Normal,
-				Mode = ObjectMode.Normal,
-				Fields = IndexFields(0, input.Length),
-			};
-			_stack.Add(_top);
 		}
 
 		public ReaderState(IScanner<byte> scanner, Options options)
@@ -63,28 +60,40 @@ partial class SyncProtobuf
 
 		static ReadOnlyMemory<byte> DrainScanner(IScanner<byte> scanner)
 		{
-			var buf = new Loyc.Collections.Impl.InternalList<byte>(256);
+			byte[] buf = new byte[256];
+			int count = 0;
 			Memory<byte> scratch = default;
 			ReadOnlyMemory<byte> chunk;
 			int skip = 0;
 			while ((chunk = scanner.Read(skip, -1, ref scratch)).Length != 0) {
-				var span = chunk.Span;
-				for (int i = 0; i < span.Length; i++)
-					buf.Add(span[i]);
+				if (count + chunk.Length > buf.Length)
+					Array.Resize(ref buf, System.Math.Max(buf.Length * 2, count + chunk.Length));
+				chunk.Span.CopyTo(buf.AsSpan(count));
+				count += chunk.Length;
 				skip = chunk.Length;
 			}
-			return buf.InternalArray.AsMemory(0, buf.Count);
+			return buf.AsMemory(0, count);
 		}
 
-		internal int Depth => _stack.Count - 1;
-		internal bool IsInsideList => _top.Type != ObjType.Normal;
-		internal bool? ReachedEndOfList => _top.Type != ObjType.Normal ? _top.ListPos >= _top.ListEnd : (bool?)null;
-		internal int? MinimumListLength => _top.Type != ObjType.Normal ? 0 : (int?)null;
+		internal int Depth => _stack.Count;
+		internal bool IsInsideList => _top != null && _top.Kind != FrameKind.Object;
+		bool InListFrame => _top != null && _top.Kind == FrameKind.List;
+
+		internal bool? ReachedEndOfList {
+			get {
+				var top = _top;
+				if (top == null || top.Kind != FrameKind.List)
+					return null; // unknown for objects; null for tuples (length not stored)
+				return top.PackedPos >= top.PackedEnd && top.ElemIdx >= top.Entries!.Count;
+			}
+		}
+		internal int? MinimumListLength => InListFrame ? 0 : (int?)null;
 
 		#region Low-level decoding
 
 		[DebuggerHidden]
-		Exception Error(string msg) => new FormatException("{0} ({1})".Localized(BadFormat, msg));
+		Exception Error(int position, string msg) =>
+			new FormatException("Invalid Protobuf data at byte {0}: {1}".Localized(position, msg));
 
 		ulong ReadVarint(ReadOnlySpan<byte> span, ref int pos)
 		{
@@ -92,28 +101,21 @@ partial class SyncProtobuf
 			int shift = 0;
 			while (true) {
 				if ((uint)pos >= (uint)span.Length)
-					throw Error("unexpected end of data");
+					throw Error(pos, "unexpected end of data");
 				byte b = span[pos++];
 				result |= (ulong)(b & 0x7F) << shift;
 				if ((b & 0x80) == 0)
 					return result;
 				shift += 7;
 				if (shift > 63)
-					throw Error("varint is too long");
+					throw Error(pos, "varint is too long");
 			}
-		}
-
-		byte ReadByteChecked(ReadOnlySpan<byte> span, ref int pos)
-		{
-			if ((uint)pos >= (uint)span.Length)
-				throw Error("unexpected end of data");
-			return span[pos++];
 		}
 
 		void CheckAvailable(ReadOnlySpan<byte> span, int pos, int count)
 		{
-			if (pos < 0 || count < 0 || pos + count > span.Length)
-				throw Error("value extends past end of data");
+			if (pos < 0 || count < 0 || (long)pos + count > span.Length)
+				throw Error(pos, "value extends past end of data");
 		}
 
 		uint ReadLE32(ReadOnlySpan<byte> span, ref int pos)
@@ -130,16 +132,15 @@ partial class SyncProtobuf
 			return lo | (hi << 32);
 		}
 
-		// Reads a length-prefixed byte range, validating the length against the buffer.
-		ReadOnlySpan<byte> ReadLenPrefixed(ReadOnlySpan<byte> span, ref int pos)
+		// Reads a length prefix and returns the [start, end) range of the payload,
+		// validating it against the buffer and the MaxPayloadSize option.
+		(int Start, int End) ReadLenPayload(ReadOnlySpan<byte> span, int pos)
 		{
 			ulong len = ReadVarint(span, ref pos);
 			if (len > (ulong)_opt.MaxPayloadSize)
-				throw Error("length-delimited payload is too large");
+				throw Error(pos, "length-delimited payload is too large");
 			CheckAvailable(span, pos, (int)len);
-			var result = span.Slice(pos, (int)len);
-			pos += (int)len;
-			return result;
+			return (pos, pos + (int)len);
 		}
 
 		// Skips a field's value given its wire type, returning the position after it.
@@ -150,12 +151,16 @@ partial class SyncProtobuf
 				case WireType.I32: return pos + 4;
 				case WireType.I64: return pos + 8;
 				case WireType.Len:
+					int lenPos = pos;
 					ulong len = ReadVarint(span, ref pos);
 					if (len > (ulong)_opt.MaxPayloadSize)
-						throw Error("length-delimited payload is too large");
-					return pos + (int)len;
+						throw Error(lenPos, "length-delimited payload is too large");
+					long end = pos + (long)len;
+					if (end > int.MaxValue)
+						throw Error(lenPos, "length-delimited payload is too large");
+					return (int)end;
 				default:
-					throw Error("unsupported wire type " + (int)wire);
+					throw Error(pos, "unsupported wire type " + (int)wire);
 			}
 		}
 
@@ -163,25 +168,53 @@ partial class SyncProtobuf
 		{
 			var span = _mem.Span;
 			if (end > span.Length)
-				throw Error("payload extends past end of data");
+				throw Error(start, "payload extends past end of data");
 			var list = new List<FieldEntry>();
 			int pos = start;
 			while (pos < end) {
 				ulong tag = ReadVarint(span, ref pos);
 				int num = (int)(tag >> 3);
+				if (num == 0 || tag > ((ulong)MaxFieldNumber << 3 | 7))
+					throw Error(pos, "invalid field number");
 				var wire = (WireType)(byte)(tag & 7);
 				int valueStart = pos;
 				pos = SkipValue(span, pos, wire);
 				if (pos > end)
-					throw Error("field value extends past end of message");
+					throw Error(valueStart, "field value extends past end of message");
 				list.Add(new FieldEntry { Num = num, Wire = wire, ValueStart = valueStart });
 			}
 			return list;
 		}
 
+		// Collects the entries of field 1 in a list container message [start, end).
+		// Other field numbers are permitted and ignored (like unknown fields).
+		List<FieldEntry> IndexListEntries(int start, int end)
+		{
+			var all = IndexFields(start, end);
+			var entries = new List<FieldEntry>(all.Count);
+			foreach (var fe in all)
+				if (fe.Num == 1)
+					entries.Add(fe);
+			return entries;
+		}
+
 		#endregion
 
 		#region Field lookup and numbering
+
+		// If no sub-object was ever begun, the whole input acts as one message body
+		// (this supports reading fields directly from a NewReader without a root object).
+		RFrame TopObject()
+		{
+			if (_top == null) {
+				var root = new RFrame {
+					Kind = FrameKind.Object,
+					Fields = IndexFields(0, _mem.Length),
+				};
+				Push(root);
+			}
+			return _top!;
+		}
 
 		int ResolveFieldId(FieldId name)
 		{
@@ -199,22 +232,100 @@ partial class SyncProtobuf
 
 		bool FindField(int id, out int valueStart, out WireType wire)
 		{
-			var fields = _top.Fields!;
-			// Fast path: fields are usually read in the order they were written.
-			int c = _top.Cursor;
-			if (c < fields.Count && fields[c].Num == id) {
+			var frame = TopObject();
+			var fields = frame.Fields!;
+			// Fast path: fields are usually read in the order they were written. Skipped
+			// if any field number occurs twice, because then the last occurrence must win.
+			int c = frame.Cursor;
+			if (c < fields.Count && fields[c].Num == id && !HasDuplicateFieldNumbers(frame)) {
 				var fe0 = fields[c];
-				_top.Cursor = c + 1;
+				frame.Cursor = c + 1;
 				valueStart = fe0.ValueStart; wire = fe0.Wire;
 				return true;
 			}
-			for (int i = 0; i < fields.Count; i++) {
+			// Search backward so that, per the Protobuf specification, the last
+			// occurrence of a duplicated (non-repeated) field wins.
+			for (int i = fields.Count - 1; i >= 0; i--) {
 				if (fields[i].Num == id) {
 					var fe = fields[i];
-					_top.Cursor = i + 1;
+					frame.Cursor = i + 1;
 					valueStart = fe.ValueStart; wire = fe.Wire;
 					return true;
 				}
+			}
+			valueStart = 0; wire = default;
+			return false;
+		}
+
+		static bool HasDuplicateFieldNumbers(RFrame frame)
+		{
+			if (frame.DupState == 0) {
+				frame.DupState = 1;
+				var fields = frame.Fields!;
+				if (fields.Count > 1) {
+					var seen = new HashSet<int>();
+					foreach (var fe in fields)
+						if (!seen.Add(fe.Num)) { frame.DupState = 2; break; }
+				}
+			}
+			return frame.DupState == 2;
+		}
+
+		#endregion
+
+		#region List-element access
+
+		// Returns the payload bounds of the next length-delimited list element.
+		(int Start, int End) NextElemPayload(ReadOnlySpan<byte> span)
+		{
+			var top = _top!;
+			Debug.Assert(top.Kind == FrameKind.List);
+			if (top.PackedPos < top.PackedEnd)
+				throw Error(top.PackedPos, "expected a packed scalar element (lists cannot mix element kinds)");
+			if (top.ElemIdx >= top.Entries!.Count)
+				throw Error(_mem.Length, "read past the end of a list");
+			var entry = top.Entries[top.ElemIdx++];
+			if (entry.Wire != WireType.Len)
+				throw Error(entry.ValueStart, "expected a length-delimited list element");
+			return ReadLenPayload(span, entry.ValueStart);
+		}
+
+		// Positions the packed-container cursor at the next packed scalar, opening the
+		// next container (field-1 entry) as needed. Returns false at the end of the list.
+		// Also accepts the unpacked encoding (one tagged entry per scalar), which other
+		// Protobuf implementations may produce for repeated scalar fields.
+		bool OpenPackedScalar(ReadOnlySpan<byte> span)
+		{
+			var top = _top!;
+			Debug.Assert(top.Kind == FrameKind.List);
+			while (top.PackedPos >= top.PackedEnd) {
+				if (top.ElemIdx >= top.Entries!.Count)
+					return false;
+				var entry = top.Entries[top.ElemIdx++];
+				if (entry.Wire == WireType.Len)
+					(top.PackedPos, top.PackedEnd) = ReadLenPayload(span, entry.ValueStart);
+				else {
+					top.PackedPos = entry.ValueStart;
+					top.PackedEnd = SkipValue(span, entry.ValueStart, entry.Wire);
+				}
+			}
+			return true;
+		}
+
+		// Finds field `num` in a small wrapper message [start, end) without allocating.
+		bool FindWrapperField(ReadOnlySpan<byte> span, int start, int end, int num, out int valueStart, out WireType wire)
+		{
+			int pos = start;
+			while (pos < end) {
+				ulong tag = ReadVarint(span, ref pos);
+				var wt = (WireType)(byte)(tag & 7);
+				if ((int)(tag >> 3) == num) {
+					valueStart = pos; wire = wt;
+					return true;
+				}
+				pos = SkipValue(span, pos, wt);
+				if (pos > end)
+					throw Error(pos, "field value extends past end of message");
 			}
 			valueStart = 0; wire = default;
 			return false;
@@ -230,17 +341,22 @@ partial class SyncProtobuf
 		ulong ReadRawVarintField(FieldId name)
 		{
 			var span = _mem.Span;
-			if (IsInsideList) {
-				int p = _top.ListPos;
+			if (InListFrame) {
+				if (!OpenPackedScalar(span))
+					throw Error(_mem.Length, "read past the end of a list");
+				var top = _top!;
+				int p = top.PackedPos;
 				ulong v = ReadVarint(span, ref p);
-				_top.ListPos = p;
+				if (p > top.PackedEnd)
+					throw Error(top.PackedPos, "packed element extends past its container");
+				top.PackedPos = p;
 				return v;
 			}
 			if (TryGetField(name, out int vs, out _)) {
 				int p = vs;
 				return ReadVarint(span, ref p);
 			}
-			return 0; // absent -> default
+			return 0; // absent -> default (standard Protobuf semantics)
 		}
 
 		internal long? ReadIntN(FieldId name)
@@ -253,47 +369,33 @@ partial class SyncProtobuf
 		ulong? ReadRawVarintFieldN(FieldId name)
 		{
 			var span = _mem.Span;
-			if (IsInsideList) {
-				int p = _top.ListPos;
-				byte present = ReadByteChecked(span, ref p);
-				ulong? result = present == 0 ? (ulong?)null : ReadVarint(span, ref p);
-				_top.ListPos = p;
-				return result;
-			}
-			if (TryGetField(name, out int vs, out _)) {
+			if (InListFrame) {
+				// Nullable elements are wrapped: {} = null, { 1: value } otherwise
+				var (s, e) = NextElemPayload(span);
+				if (!FindWrapperField(span, s, e, 1, out int vs, out _))
+					return null;
 				int p = vs;
+				return ReadVarint(span, ref p);
+			}
+			if (TryGetField(name, out int vs2, out _)) {
+				int p = vs2;
 				return ReadVarint(span, ref p);
 			}
 			return null; // absent -> null
 		}
 
-		internal float ReadFloat(FieldId name) => ReadFloatN(name) ?? default;
-		internal float? ReadFloatN(FieldId name)
+		internal float ReadFloatRaw(FieldId name)
 		{
 			var span = _mem.Span;
-			if (IsInsideList) {
-				// Non-nullable float lists write raw bits; nullable float lists write a
-				// presence byte. The element sync method decides which by its static type,
-				// so this method (float?) always uses presence framing.
-				int p = _top.ListPos;
-				byte present = ReadByteChecked(span, ref p);
-				float? result = present == 0 ? (float?)null : BitsToFloat(ReadLE32(span, ref p));
-				_top.ListPos = p;
-				return result;
-			}
-			if (TryGetField(name, out int vs, out _)) {
-				int p = vs;
-				return BitsToFloat(ReadLE32(span, ref p));
-			}
-			return null;
-		}
-		internal float ReadFloatRaw(FieldId name) // non-nullable list/field element
-		{
-			var span = _mem.Span;
-			if (IsInsideList) {
-				int p = _top.ListPos;
+			if (InListFrame) {
+				if (!OpenPackedScalar(span))
+					throw Error(_mem.Length, "read past the end of a list");
+				var top = _top!;
+				if (top.PackedEnd - top.PackedPos < 4)
+					throw Error(top.PackedPos, "packed element extends past its container");
+				int p = top.PackedPos;
 				float f = BitsToFloat(ReadLE32(span, ref p));
-				_top.ListPos = p;
+				top.PackedPos = p;
 				return f;
 			}
 			if (TryGetField(name, out int vs, out _)) {
@@ -302,14 +404,35 @@ partial class SyncProtobuf
 			}
 			return 0;
 		}
+		internal float? ReadFloatN(FieldId name)
+		{
+			var span = _mem.Span;
+			if (InListFrame) {
+				var (s, e) = NextElemPayload(span);
+				if (!FindWrapperField(span, s, e, 1, out int vs, out _))
+					return null;
+				int p = vs;
+				return BitsToFloat(ReadLE32(span, ref p));
+			}
+			if (TryGetField(name, out int vs2, out _)) {
+				int p = vs2;
+				return BitsToFloat(ReadLE32(span, ref p));
+			}
+			return null;
+		}
 
 		internal double ReadDoubleRaw(FieldId name)
 		{
 			var span = _mem.Span;
-			if (IsInsideList) {
-				int p = _top.ListPos;
+			if (InListFrame) {
+				if (!OpenPackedScalar(span))
+					throw Error(_mem.Length, "read past the end of a list");
+				var top = _top!;
+				if (top.PackedEnd - top.PackedPos < 8)
+					throw Error(top.PackedPos, "packed element extends past its container");
+				int p = top.PackedPos;
 				double d = BitsToDouble(ReadLE64(span, ref p));
-				_top.ListPos = p;
+				top.PackedPos = p;
 				return d;
 			}
 			if (TryGetField(name, out int vs, out _)) {
@@ -321,75 +444,163 @@ partial class SyncProtobuf
 		internal double? ReadDoubleN(FieldId name)
 		{
 			var span = _mem.Span;
-			if (IsInsideList) {
-				int p = _top.ListPos;
-				byte present = ReadByteChecked(span, ref p);
-				double? result = present == 0 ? (double?)null : BitsToDouble(ReadLE64(span, ref p));
-				_top.ListPos = p;
-				return result;
-			}
-			if (TryGetField(name, out int vs, out _)) {
+			if (InListFrame) {
+				var (s, e) = NextElemPayload(span);
+				if (!FindWrapperField(span, s, e, 1, out int vs, out _))
+					return null;
 				int p = vs;
+				return BitsToDouble(ReadLE64(span, ref p));
+			}
+			if (TryGetField(name, out int vs2, out _)) {
+				int p = vs2;
 				return BitsToDouble(ReadLE64(span, ref p));
 			}
 			return null;
 		}
 
-		// Reads a length-delimited payload (string/decimal/BigInteger) as a byte span.
-		// Returns false when the value is null/absent.
-		bool TryReadLenBytes(FieldId name, out ReadOnlySpan<byte> bytes)
+		// Locates a non-nullable length-delimited value (decimal, BigInteger, bytes): a
+		// plain LEN field, or a direct LEN element inside a list. False when absent.
+		bool TryReadLenBounds(FieldId name, out int start, out int end)
 		{
 			var span = _mem.Span;
-			if (IsInsideList) {
-				int p = _top.ListPos;
-				ulong v = ReadVarint(span, ref p);
-				if (v == 0) { _top.ListPos = p; bytes = default; return false; } // null element
-				if (v - 1 > (ulong)_opt.MaxPayloadSize)
-					throw Error("length-delimited payload is too large");
-				int len = (int)(v - 1);
-				CheckAvailable(span, p, len);
-				bytes = span.Slice(p, len);
-				_top.ListPos = p + len;
+			if (InListFrame) {
+				(start, end) = NextElemPayload(span);
 				return true;
 			}
-			if (TryGetField(name, out int vs, out _)) {
-				int p = vs;
-				bytes = ReadLenPrefixed(span, ref p);
+			if (TryGetField(name, out int vs, out WireType wire)) {
+				if (wire != WireType.Len)
+					throw Error(vs, "expected a length-delimited value");
+				(start, end) = ReadLenPayload(span, vs);
 				return true;
 			}
-			bytes = default;
+			start = end = 0;
+			return false;
+		}
+
+		// Locates a nullable length-delimited value (string, decimal?, BigInteger?):
+		// omitted when null in a message; wrapped as { 1: value } / {} inside a list.
+		// Returns false when the value is null/absent.
+		bool TryReadLenBoundsN(FieldId name, out int start, out int end)
+		{
+			var span = _mem.Span;
+			if (InListFrame) {
+				var (s, e) = NextElemPayload(span);
+				if (!FindWrapperField(span, s, e, 1, out int vs, out WireType wire)) {
+					start = end = 0;
+					return false; // empty wrapper = null element
+				}
+				if (wire != WireType.Len)
+					throw Error(vs, "expected a length-delimited value");
+				(start, end) = ReadLenPayload(span, vs);
+				if (end > e)
+					throw Error(vs, "value extends past end of its wrapper");
+				return true;
+			}
+			if (TryGetField(name, out int fvs, out WireType fwire)) {
+				if (fwire != WireType.Len)
+					throw Error(fvs, "expected a length-delimited value");
+				(start, end) = ReadLenPayload(span, fvs);
+				return true;
+			}
+			start = end = 0;
 			return false; // absent -> null
 		}
 
-		internal string? ReadString(FieldId name)
+		bool TryReadLenBytes(FieldId name, out ReadOnlySpan<byte> bytes)
 		{
-			if (!TryReadLenBytes(name, out var bytes))
-				return null;
-			#if NETSTANDARD2_0
-			return Encoding.UTF8.GetString(bytes.ToArray());
-			#else
-			return Encoding.UTF8.GetString(bytes);
-			#endif
+			bool found = TryReadLenBounds(name, out int s, out int e);
+			bytes = found ? _mem.Span.Slice(s, e - s) : default;
+			return found;
+		}
+		bool TryReadLenBytesN(FieldId name, out ReadOnlySpan<byte> bytes)
+		{
+			bool found = TryReadLenBoundsN(name, out int s, out int e);
+			bytes = found ? _mem.Span.Slice(s, e - s) : default;
+			return found;
 		}
 
-		internal decimal ReadDecimal(FieldId name) => ReadDecimalN(name) ?? default;
-		internal decimal? ReadDecimalN(FieldId name)
+		internal string? ReadString(FieldId name, ObjectMode mode)
+		{
+			if ((mode & ObjectMode.Deduplicate) != 0)
+				return (string?)ReadDedupLenValue(name, isString: true);
+			if (!TryReadLenBytesN(name, out var bytes))
+				return null;
+			return Utf8Decode(bytes);
+		}
+
+		// Reads a deduplicated string or byte[]: a wrapper { 1: id, 2: value } on the
+		// first occurrence, { 1: id } for a back-reference, or absent/{} for null.
+		object? ReadDedupLenValue(FieldId name, bool isString)
+		{
+			var span = _mem.Span;
+			int s, e;
+			if (InListFrame) {
+				(s, e) = NextElemPayload(span);
+				if (s == e)
+					return null; // empty wrapper = null element
+			} else {
+				if (!TryGetField(name, out int vs, out WireType wire))
+					return null; // absent -> null
+				if (wire != WireType.Len)
+					throw Error(vs, "expected a length-delimited value");
+				(s, e) = ReadLenPayload(span, vs);
+			}
+			if (!FindWrapperField(span, s, e, 1, out int idStart, out _))
+				throw Error(s, "deduplicated value has no id");
+			int p = idStart;
+			long id = (long)ReadVarint(span, ref p);
+			if (FindWrapperField(span, s, e, 2, out int valStart, out WireType valWire)) {
+				if (valWire != WireType.Len)
+					throw Error(valStart, "expected a length-delimited value");
+				var (vs2, ve2) = ReadLenPayload(span, valStart);
+				object value = isString
+					? (object)Utf8Decode(span.Slice(vs2, ve2 - vs2))
+					: span.Slice(vs2, ve2 - vs2).ToArray();
+				_objects ??= new Dictionary<long, object>();
+				_objects[id] = value;
+				return value;
+			}
+			if (_objects == null || !_objects.TryGetValue(id, out var existing))
+				throw Error(s, "dangling deduplication back-reference");
+			return existing;
+		}
+
+		internal decimal ReadDecimal(FieldId name)
 		{
 			if (!TryReadLenBytes(name, out var bytes))
+				return default;
+			return DecimalFromBytes(bytes);
+		}
+		internal decimal? ReadDecimalN(FieldId name)
+		{
+			if (!TryReadLenBytesN(name, out var bytes))
 				return null;
+			return DecimalFromBytes(bytes);
+		}
+		decimal DecimalFromBytes(ReadOnlySpan<byte> bytes)
+		{
 			if (bytes.Length != 16)
-				throw Error("decimal payload is not 16 bytes");
+				throw new FormatException("Invalid Protobuf data: decimal payload is not 16 bytes".Localized());
 			int[] bits = new int[4];
 			for (int i = 0; i < 4; i++)
 				bits[i] = unchecked((int)(uint)(bytes[i * 4] | (bytes[i * 4 + 1] << 8) | (bytes[i * 4 + 2] << 16) | (bytes[i * 4 + 3] << 24)));
 			return new decimal(bits);
 		}
 
-		internal BigInteger ReadBigInt(FieldId name) => ReadBigIntN(name) ?? default;
-		internal BigInteger? ReadBigIntN(FieldId name)
+		internal BigInteger ReadBigInt(FieldId name)
 		{
 			if (!TryReadLenBytes(name, out var bytes))
+				return default;
+			return BigIntFromBytes(bytes);
+		}
+		internal BigInteger? ReadBigIntN(FieldId name)
+		{
+			if (!TryReadLenBytesN(name, out var bytes))
 				return null;
+			return BigIntFromBytes(bytes);
+		}
+		static BigInteger BigIntFromBytes(ReadOnlySpan<byte> bytes)
+		{
 			#if NETSTANDARD2_0
 			return new BigInteger(bytes.ToArray());
 			#else
@@ -397,24 +608,41 @@ partial class SyncProtobuf
 			#endif
 		}
 
+		// Locates a byte[] value written by WriterState.WriteByteListField.
+		// Start >= 0: the value occupies [Start, Start+Length) of InputSpan.
+		// Start == -1: the value is null. Start == -2: Backref holds a byte[] instance
+		// (a deduplicated value; ReadDedupLenValue registers each new byte[] it creates,
+		// so back-references resolve to the same array instance).
+		internal (int Start, int Length, object? Backref) ReadByteListField(FieldId name, ObjectMode mode)
+		{
+			if ((mode & ObjectMode.Deduplicate) != 0) {
+				object? value = ReadDedupLenValue(name, isString: false);
+				return value == null ? (-1, 0, (object?)null) : (-2, 0, value);
+			}
+			bool nullable = (mode & ObjectMode.NotNull) == 0;
+			bool found = nullable
+				? TryReadLenBoundsN(name, out int s, out int e)
+				: TryReadLenBounds(name, out s, out e);
+			if (!found)
+				return (-1, 0, null);
+			return (s, e - s, null);
+		}
+
+		internal ReadOnlySpan<byte> InputSpan => _mem.Span;
+
 		#endregion
 
 		#region Type tag
 
 		internal string? ReadTypeTag()
 		{
-			if (IsInsideList)
+			if (InListFrame)
 				return null;
 			if (!FindField(TypeTagFieldNumber, out int vs, out _))
 				return null;
 			var span = _mem.Span;
-			int p = vs;
-			var bytes = ReadLenPrefixed(span, ref p);
-			#if NETSTANDARD2_0
-			return Encoding.UTF8.GetString(bytes.ToArray());
-			#else
-			return Encoding.UTF8.GetString(bytes);
-			#endif
+			var (s, e) = ReadLenPayload(span, vs);
+			return Utf8Decode(span.Slice(s, e - s));
 		}
 
 		#endregion
@@ -424,88 +652,99 @@ partial class SyncProtobuf
 		public (bool Begun, int Length, object? Object) BeginSubObject(FieldId name, ObjectMode mode)
 		{
 			var span = _mem.Span;
-			bool insideList = IsInsideList;
-			ObjectMode kind = mode & (ObjectMode.List | ObjectMode.Tuple);
+			FrameKind kind = (mode & ObjectMode.Tuple) == ObjectMode.Tuple ? FrameKind.Tuple
+				: (mode & ObjectMode.List) != 0 ? FrameKind.List : FrameKind.Object;
+			bool dedup = (mode & ObjectMode.Deduplicate) != 0;
+			bool nullable = (mode & (ObjectMode.NotNull | ObjectMode.Deduplicate)) != ObjectMode.NotNull;
 
-			int payloadStart, payloadEnd;
-			if (insideList) {
-				int p = _top.ListPos;
-				if (p >= _top.ListEnd)
+			if (_top == null)
+				return BeginRoot(span, kind, dedup);
+
+			if (InListFrame) {
+				if (ReachedEndOfList == true)
 					return (false, 0, null);
-				ulong v = ReadVarint(span, ref p);
-				if (v == 0) { _top.ListPos = p; return (false, 0, null); } // null element
-				if (v - 1 > (ulong)_opt.MaxPayloadSize)
-						throw Error("length-delimited payload is too large");
-					int frameLen = (int)(v - 1);
-				payloadStart = p;
-				payloadEnd = p + frameLen;
-				_top.ListPos = payloadEnd;
-			} else {
-				if (!TryGetField(name, out int vs, out WireType wire)) {
-					return (false, 0, null); // absent -> null object/list
+				var (s, e) = NextElemPayload(span);
+				if (dedup)
+					return BeginDedup(span, s, e, kind);
+				if (nullable) {
+					// Nullable element wrapper: {} = null, { 1: body } otherwise
+					if (!FindWrapperField(span, s, e, 1, out int vs, out WireType wire))
+						return (false, 0, null);
+					if (wire != WireType.Len)
+						throw Error(vs, "expected a length-delimited value");
+					var (bs, be) = ReadLenPayload(span, vs);
+					return PushBody(kind, bs, be, 0, false);
 				}
-				if (wire != WireType.Len)
-					throw Error("expected a length-delimited value");
-				int p = vs;
-				ulong len = ReadVarint(span, ref p);
-				payloadStart = p;
-				if (len > (ulong)_opt.MaxPayloadSize)
-						throw Error("length-delimited payload is too large");
-					payloadEnd = p + (int)len;
+				return PushBody(kind, s, e, 0, false); // NotNull element: direct body
 			}
 
-			if (payloadEnd < payloadStart || payloadEnd > span.Length)
-				throw Error("object payload extends past end of data");
+			// Field context: consume the field number even if the field is absent
+			if (!TryGetField(name, out int fvs, out WireType fwire))
+				return (false, 0, null); // absent -> null object/list
+			if (fwire != WireType.Len)
+				throw Error(fvs, "expected a length-delimited value");
+			var (ps, pe) = ReadLenPayload(span, fvs);
+			if (dedup)
+				return BeginDedup(span, ps, pe, kind);
+			return PushBody(kind, ps, pe, 0, false);
+		}
 
-			// Every sub-object/list payload begins with a framing marker (written even when
-			// deduplication was off), so the reader detects dedup from the data itself and
-			// tolerates the Deduplicate flag being toggled between writing and reading.
-			long objId = 0;
-			bool hasId = false;
-			int bodyStart;
-			{
-				int p = payloadStart;
-				if (p >= payloadEnd) throw Error("empty object payload");
-					byte marker = ReadByteChecked(span, ref p);
-				if (marker == DedupNone) {
-					bodyStart = p;
-				} else if (marker == DedupFirst) {
-					objId = (long)ReadVarint(span, ref p);
-					hasId = true;
-					bodyStart = p;
-				} else if (marker == DedupBackRef) {
-					ulong id = ReadVarint(span, ref p);
-					if (_objects == null || !_objects.TryGetValue((long)id, out var existing))
-						throw Error("dangling deduplication back-reference");
-					return (false, 0, existing);
-				} else {
-					throw Error("invalid object framing marker");
-				}
+		// The root value is a bare message body occupying the whole input.
+		(bool Begun, int Length, object? Object) BeginRoot(ReadOnlySpan<byte> span, FrameKind kind, bool dedup)
+		{
+			if (kind != FrameKind.Object)
+				throw new NotSupportedException(
+					"SyncProtobuf: the root value must be an object (a Protobuf message), not a list or tuple.");
+			if (_mem.Length == 0)
+				return (false, 0, null); // zero bytes = null root
+			if (dedup)
+				return BeginDedup(span, 0, _mem.Length, kind);
+			return PushBody(kind, 0, _mem.Length, 0, false);
+		}
+
+		// Interprets [s, e) as a dedup wrapper { 1: id, 2: body } / { 1: id } / {}.
+		(bool Begun, int Length, object? Object) BeginDedup(ReadOnlySpan<byte> span, int s, int e, FrameKind kind)
+		{
+			if (s == e)
+				return (false, 0, null); // empty wrapper = null
+			if (!FindWrapperField(span, s, e, 1, out int idStart, out _))
+				throw Error(s, "deduplicated object has no id");
+			int p = idStart;
+			long id = (long)ReadVarint(span, ref p);
+			if (FindWrapperField(span, s, e, 2, out int valStart, out WireType valWire)) {
+				if (valWire != WireType.Len)
+					throw Error(valStart, "expected a length-delimited value");
+				var (bs, be) = ReadLenPayload(span, valStart);
+				return PushBody(kind, bs, be, id, true);
 			}
+			// Back-reference: no body
+			if (_objects == null || !_objects.TryGetValue(id, out var existing))
+				throw Error(s, "dangling deduplication back-reference");
+			return (false, 0, existing);
+		}
 
+		(bool Begun, int Length, object? Object) PushBody(FrameKind kind, int start, int end, long id, bool hasId)
+		{
 			var frame = new RFrame {
-				Type = (ObjType)kind,
-				Mode = mode,
+				Kind = kind,
 				SavedLastFieldId = _lastFieldId,
-				Id = objId,
+				Id = id,
 				HasId = hasId,
 			};
-			if (kind == 0) {
-				frame.Fields = IndexFields(bodyStart, payloadEnd);
+			if (kind == FrameKind.List) {
+				frame.Entries = IndexListEntries(start, end);
 			} else {
-				frame.ListPos = bodyStart;
-				frame.ListEnd = payloadEnd;
+				frame.Fields = IndexFields(start, end);
 			}
 			Push(frame);
-
-			return (true, kind == 0 ? 1 : int.MaxValue, null);
+			return (true, kind == FrameKind.Object ? 1 : int.MaxValue, null);
 		}
 
 		public void EndSubObject()
 		{
-			var frame = _top;
+			var frame = _top!;
 			_stack.RemoveAt(_stack.Count - 1);
-			_top = _stack[_stack.Count - 1];
+			_top = _stack.Count > 0 ? _stack[_stack.Count - 1] : null;
 			_lastFieldId = frame.SavedLastFieldId;
 		}
 
@@ -520,18 +759,30 @@ partial class SyncProtobuf
 
 		internal void SetCurrentObject(object value)
 		{
-			if (_top.HasId) {
+			if (_top != null && _top.HasId) {
 				_objects ??= new Dictionary<long, object>();
 				_objects[_top.Id] = value;
 			}
 		}
 
-		internal FieldId NextField
+		internal void RegisterObject(long id, object value)
 		{
+			_objects ??= new Dictionary<long, object>();
+			_objects[id] = value;
+		}
+
+		internal FieldId NextField {
 			get {
-				if (_top.Type != ObjType.Normal || _top.Fields == null || _top.Cursor >= _top.Fields.Count)
+				var top = _top;
+				if (top == null || top.Kind == FrameKind.List || top.Fields == null)
 					return FieldId.Missing;
-				return new FieldId(null, _top.Fields[_top.Cursor].Num);
+				// Skip the reserved field numbers (_type and _present markers)
+				for (int i = top.Cursor; i < top.Fields.Count; i++) {
+					int num = top.Fields[i].Num;
+					if (num < PresentFieldNumber)
+						return new FieldId(null, num);
+				}
+				return FieldId.Missing;
 			}
 		}
 
@@ -539,6 +790,8 @@ partial class SyncProtobuf
 		{
 			if (IsInsideList)
 				return SyncType.Unknown;
+			if (_top == null && _mem.Length == 0)
+				return SyncType.Missing;
 			int id = name.Id != int.MinValue ? name.Id : _lastFieldId + 1;
 			// Note: this does not advance _lastFieldId (it's only a peek).
 			if (!FindFieldPeek(id, out WireType wire))
@@ -553,23 +806,21 @@ partial class SyncProtobuf
 		}
 		bool FindFieldPeek(int id, out WireType wire)
 		{
-			var fields = _top.Fields;
+			var fields = TopObject().Fields;
 			if (fields != null)
-				foreach (var fe in fields)
-					if (fe.Num == id) { wire = fe.Wire; return true; }
+				for (int i = fields.Count - 1; i >= 0; i--)
+					if (fields[i].Num == id) { wire = fields[i].Wire; return true; }
 			wire = default;
 			return false;
 		}
 
-		internal void VerifyEof()
+		static string Utf8Decode(ReadOnlySpan<byte> bytes)
 		{
-			if (!_opt.Read.VerifyEof)
-				return;
-			// The root frame indexes the whole input; a well-formed stream has exactly one
-			// top-level field (the root object) covering all the bytes.
-			var root = _stack[0];
-			if (root.Fields != null && root.Fields.Count > 1)
-				throw Error("unexpected trailing data after root object");
+			#if NETSTANDARD2_0
+			return Encoding.UTF8.GetString(bytes.ToArray());
+			#else
+			return Encoding.UTF8.GetString(bytes);
+			#endif
 		}
 
 		static float BitsToFloat(uint bits)

@@ -135,6 +135,7 @@ namespace Loyc.Tests
 				new SyncProtobufTests(false),
 				new SyncProtobufTests(true),
 				new SyncProtobufSchemaTests(),
+				new SyncProtobufInteropTests(),
 				new SyncMalformedInputTests()
 			);
 		}

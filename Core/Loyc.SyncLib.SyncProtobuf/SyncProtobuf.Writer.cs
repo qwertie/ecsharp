@@ -93,7 +93,7 @@ partial class SyncProtobuf
 
 		public string? Sync(FieldId name, string? savable, ObjectMode mode = ObjectMode.Normal)
 		{
-			_s.WriteStringField(name, savable);
+			_s.WriteStringField(name, savable, mode);
 			return savable;
 		}
 
@@ -144,8 +144,8 @@ partial class SyncProtobuf
 			where Scanner : IScanner<byte>
 			where ListBuilder : IListBuilder<List, byte>
 		{
-			var saver = new ScannerSaver<Writer, Scanner, byte, SyncPrimitive<Writer>>(new SyncPrimitive<Writer>(), mode);
-			saver.Write(ref this, name, scanner!, saving, tupleLength);
+			// Byte lists are stored as a Protobuf `bytes` value, not as a list container
+			_s.WriteByteListField(name, scanner, saving, mode);
 			return saving;
 		}
 

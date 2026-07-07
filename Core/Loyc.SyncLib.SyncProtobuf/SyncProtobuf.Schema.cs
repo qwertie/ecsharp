@@ -83,11 +83,13 @@ partial class SyncProtobuf
 	///   <see cref="EndSubObject"/> to throw. The message name is the .NET type name unless
 	///   <see cref="SyncTypeTag"/> is called.
 	/// <para/>
-	///   The generated <c>.proto</c> is a <i>logical</i> schema: scalar fields and nested
-	///   messages match the wire format exactly; collections are shown as
-	///   <c>repeated</c> fields (SyncProtobuf actually packs them into one length-delimited
-	///   field); and <c>decimal</c>/<see cref="BigInteger"/> (which Protobuf lacks) map to
-	///   <c>bytes</c>.
+	///   The generated <c>.proto</c> describes the wire format exactly: any Protobuf
+	///   implementation can use it to parse <see cref="SyncProtobuf.Writer"/>'s output.
+	///   Lists, nullable list elements and deduplicated values appear as generated
+	///   wrapper message types (e.g. <c>Int32List</c>, <c>StringOpt</c>, <c>PersonRef</c> —
+	///   see <see cref="SyncProtobuf"/> for the encoding); <c>decimal</c> and
+	///   <see cref="BigInteger"/> (which Protobuf lacks) map to <c>bytes</c>; and a
+	///   comment at the top names the root message.
 	/// </remarks>
 	public partial struct Schema : ISyncManager
 	{
@@ -150,7 +152,8 @@ partial class SyncProtobuf
 		public long Sync(FieldId name, long savable, int bits, bool signed = true) { _s.SyncScalar(name, "int64", false); return default; }
 		public BigInteger Sync(FieldId name, BigInteger savable, int bits, bool signed = true) { _s.SyncScalar(name, "bytes", false); return default; }
 
-		public string? Sync(FieldId name, string? savable, ObjectMode mode = ObjectMode.Normal) { _s.SyncScalar(name, "string", true); return default; }
+		public string? Sync(FieldId name, string? savable, ObjectMode mode = ObjectMode.Normal)
+			{ _s.SyncScalar(name, "string", true, dedup: (mode & ObjectMode.Deduplicate) != 0); return default; }
 
 		public bool?   Sync(FieldId name, bool? savable)   { _s.SyncScalar(name, "bool", true); return default; }
 		public sbyte?  Sync(FieldId name, sbyte? savable)  { _s.SyncScalar(name, "int32", true); return default; }
@@ -175,22 +178,37 @@ partial class SyncProtobuf
 			where Scanner : IScanner<bool>
 			where ListBuilder : IListBuilder<List, bool>
 		{
-			_s.SyncScalarList(name, "bool");
+			SyncScalarList(name, "bool", mode, tupleLength);
 			return default;
 		}
 		public List? SyncListByteImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 			where Scanner : IScanner<byte>
 			where ListBuilder : IListBuilder<List, byte>
 		{
-			_s.SyncScalarList(name, "uint32");
+			// Byte lists are stored as a Protobuf `bytes` value, not as a list container
+			bool nullable = (mode & (ObjectMode.NotNull | ObjectMode.Deduplicate)) != ObjectMode.NotNull;
+			_s.SyncScalar(name, "bytes", nullable, dedup: (mode & ObjectMode.Deduplicate) != 0);
 			return default;
 		}
 		public List? SyncListCharImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 			where Scanner : IScanner<char>
 			where ListBuilder : IListBuilder<List, char>
 		{
-			_s.SyncScalarList(name, "uint32");
+			SyncScalarList(name, "uint32", mode, tupleLength);
 			return default;
+		}
+
+		// Records a list/tuple of scalar elements the same way the writer encodes it
+		// (a list container, or a message with auto-numbered fields for a tuple)
+		void SyncScalarList(FieldId name, string elemType, ObjectMode mode, int tupleLength)
+		{
+			var (begun, _, _) = _s.BeginSubObject(name, null, mode | ObjectMode.List, tupleLength);
+			if (begun) {
+				int n = (mode & ObjectMode.Tuple) == ObjectMode.Tuple && tupleLength > 0 ? tupleLength : 1;
+				for (int i = 0; i < n; i++)
+					_s.SyncScalar((string?)null, elemType, false);
+				_s.EndSubObject();
+			}
 		}
 
 		#endregion

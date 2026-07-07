@@ -198,12 +198,12 @@ namespace Loyc.SyncLib.Tests
 		{
 			var options = new SyncProtobuf.Options();
 			var evil = new List<byte[]> {
-				new byte[0],
+				new byte[0],                                  // a null root; reading it is fine
 				new byte[] { 0x0A },                          // tag with no length
 				new byte[] { 0x0A, 0x7F },                    // length 127 but no data
 				new byte[] { 0x0A, 0x01 },                    // length 1 but no body byte
-				new byte[] { 0x0A, 0x01, 0x02 },              // framing marker 2 (backref) to nothing
-				new byte[] { 0x0A, 0x02, 0x01, 0xFF },        // dedup-first, id, then a truncated field tag
+				new byte[] { 0x0A, 0x01, 0x02 },              // sub-message containing a bare 0x02
+				new byte[] { 0x0A, 0x02, 0x01, 0xFF },        // sub-message with a truncated field
 				new byte[] { 0x08, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F }, // huge varint at root
 				new byte[] { 0x0A, 0x05, 0x00, 0x08, 0xFF, 0xFF, 0xFF }, // varint field value truncated
 				Enumerable.Range(0, 10_000).Select(_ => (byte)0x0A).ToArray(), // deep nesting must not overflow the stack

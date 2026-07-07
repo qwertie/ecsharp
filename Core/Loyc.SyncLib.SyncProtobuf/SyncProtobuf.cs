@@ -10,81 +10,120 @@ namespace Loyc.SyncLib;
 ///   the <a href="https://protobuf.dev/programming-guides/encoding/">Protocol Buffers</a>
 ///   wire format. Call <see cref="Write{T}(T, SyncObjectFunc{Writer, T}, Options?)"/> or
 ///   <see cref="Read{T}(ReadOnlyMemory{byte}, SyncObjectFunc{Reader, T}, Options?)"/> to
-///   (de)serialize an object, or <see cref="NewWriter"/> / <see cref="NewReader(ReadOnlyMemory{byte}, Options?)"/>
-///   to obtain a low-level (de)serializer.
+///   (de)serialize an object, <see cref="NewWriter"/> / <see cref="NewReader(ReadOnlyMemory{byte}, Options?)"/>
+///   to obtain a low-level (de)serializer, or <see cref="WriteSchema{T}(SyncObjectFunc{Schema, T}, Options?)"/>
+///   to generate a <c>.proto</c> schema describing the output.
 /// </summary>
 /// <remarks>
+///   The output is standard, valid Protocol Buffers: any Protobuf implementation (such
+///   as protoc-generated code or protobuf-net) can parse it using the proto3 schema
+///   produced by <see cref="SyncProtobuf.Schema"/>, and <see cref="Reader"/> can parse
+///   messages produced by other Protobuf implementations from the same schema.
+///   <para/>
 ///   Unlike <see cref="SyncBinary"/>, this format identifies every field by an integer
-///   ID, exactly like Protocol Buffers. Therefore <see cref="Reader"/> and
-///   <see cref="Writer"/> report <see cref="ISyncManager.NeedsIntegerIds"/> = true and
+///   ID. Therefore <see cref="Reader"/> and <see cref="Writer"/> report
+///   <see cref="ISyncManager.NeedsIntegerIds"/> = true and
 ///   <see cref="ISyncManager.SupportsReordering"/> = true: fields may be read in any
 ///   order, and unknown fields are skipped.
 ///
-/// <h3>Field IDs</h3>
+/// <h3>Field numbers</h3>
 ///
 ///   Each call to a <c>Sync</c> method carries a <see cref="FieldId"/>. If the FieldId
 ///   specifies an integer ID (i.e. <c>FieldId.Id != int.MinValue</c>, as produced by the
 ///   <c>(name, id)</c> tuple conversion or by a private <see cref="Symbol"/> pool), that
 ///   ID becomes the Protobuf field number. Otherwise the field number is auto-assigned as
-///   <c>N + 1</c>, where <c>N</c> is the last field number used in the current object
-///   (starting from 0). This matches the convention documented for
-///   <see cref="SyncBinary.FieldIdMode.Integers"/>. The auto-numbering advances for every
-///   field synchronized (whether or not a value is physically written), so the reader and
-///   writer stay in agreement as long as they synchronize the same fields in the same
-///   order.
+///   <c>N + 1</c>, where <c>N</c> is the last field number used in the current message
+///   (starting from 0). The auto-numbering advances for every field synchronized (whether
+///   or not a value is physically written), so the reader and writer stay in agreement as
+///   long as they synchronize the same fields in the same order. Valid field numbers are
+///   1 to 536,870,909; the range 19000-19999 (reserved by Protobuf) and the two highest
+///   numbers (reserved by SyncProtobuf, see below) are rejected.
 ///
-/// <h3>Wire format</h3>
+/// <h3>Scalar wire format</h3>
 ///
-///   Every field is preceded by a <i>tag</i>: an unsigned LEB128 varint equal to
-///   <c>(fieldNumber &lt;&lt; 3) | wireType</c>. The wire types used are the standard
-///   Protobuf ones:
+///   Every field is preceded by a <i>tag</i>: a varint equal to
+///   <c>(fieldNumber &lt;&lt; 3) | wireType</c>, using the standard Protobuf wire types:
 ///   <ul>
 ///   <li><b>VARINT (0)</b> — <c>bool</c>, <c>char</c> and all integer types. Signed
 ///       integers are stored as their 64-bit two's-complement bit pattern (so negative
 ///       numbers occupy 10 bytes, exactly like Protobuf <c>int32</c>/<c>int64</c>).</li>
 ///   <li><b>I64 (1)</b> — <c>double</c> (8 bytes, little-endian IEEE 754).</li>
-///   <li><b>LEN (2)</b> — length-delimited payloads: <c>string</c> (UTF-8), byte arrays,
-///       <c>decimal</c> (16 bytes), <c>BigInteger</c> (two's-complement, big-endian),
-///       sub-messages, lists and tuples.</li>
 ///   <li><b>I32 (5)</b> — <c>float</c> (4 bytes, little-endian IEEE 754).</li>
+///   <li><b>LEN (2)</b> — length-delimited payloads: <c>string</c> (UTF-8), <c>byte[]</c>
+///       (Protobuf <c>bytes</c>), <c>decimal</c> (16 bytes: the little-endian layout of
+///       <see cref="decimal.GetBits(decimal)"/>), <see cref="System.Numerics.BigInteger"/>
+///       (little-endian two's complement, the format of <c>BigInteger.ToByteArray()</c>),
+///       sub-messages, and the list/tuple/deduplication containers described below.</li>
 ///   </ul>
 ///
 ///   <b>Null and absent fields.</b> A field whose value is null (a null nullable scalar,
-///   string, byte array or sub-object) is simply omitted, and the reader returns null
-///   when a requested field is absent — matching Protobuf's "absent means default"
-///   convention. Because presence is encoded structurally, no special null bit-patterns
-///   are needed (contrast <see cref="SyncBinary"/>, which reserves NaN and 0xFF values).
-///   To preserve round-trip fidelity, non-null scalars are always written, even zero.
+///   string, byte array, list or sub-object) is simply omitted, and the reader returns
+///   null when a requested nullable field is absent — matching Protobuf's "absent means
+///   default" convention. Reading an absent field as a non-nullable primitive returns the
+///   type's default value, exactly like Protobuf. To preserve round-trip fidelity,
+///   non-null values are always written, even zero (in schema terms, every scalar field
+///   is <c>optional</c>, i.e. it has explicit presence).
 ///
-/// <h3>Sub-messages, lists and tuples</h3>
+/// <h3>The root object</h3>
 ///
-///   A sub-object, list or tuple is written as a single LEN field: the tag is followed by
-///   a varint byte-length and then the payload. For a normal object the payload is the
-///   concatenation of its (tag, value) fields; the reader indexes them by field number so
-///   they can be read in any order. For a list or tuple the payload is the concatenation
-///   of its elements, written positionally with no tags:
+///   The root object is written as a bare message body — no envelope — just like a
+///   message serialized by any other Protobuf library. Because of this, the root must be
+///   an object (not a list or tuple), a null root is encoded as zero bytes, and a
+///   non-null root that happens to contain no fields is marked with a reserved boolean
+///   field (number 536,870,910, called <c>_present</c> in generated schemas) so that it
+///   remains distinguishable from null.
+///
+/// <h3>Sub-objects, lists and tuples</h3>
+///
+///   A sub-object is a nested message: a LEN field containing the concatenation of its
+///   (tag, value) fields, which can be read in any order.
+///   <para/>
+///   A <b>tuple</b> is also a nested message; its elements are stored as fields
+///   auto-numbered 1, 2, 3, ... (a null element is an omitted field, which stays
+///   position-safe because element numbering advances regardless).
+///   <para/>
+///   A <b>list</b> field is a nested <i>list container</i> message in which all elements
+///   are stored in field 1 (in generated schemas this container is a message type like
+///   <c>Int32List { repeated int32 items = 1; }</c>). This one level of nesting is what
+///   allows SyncLib to distinguish a null list (field omitted) from an empty one (empty
+///   container), and to nest lists inside lists. Within the container:
 ///   <ul>
-///   <li>A scalar element is written raw (VARINT / I32 / I64), which is self-delimiting.</li>
-///   <li>A length-delimited element (string, BigInteger, sub-object, nested list) is
-///       prefixed by a varint <c>length + 1</c>, where a stored 0 denotes a null element.</li>
+///   <li>Non-nullable scalar elements are stored <i>packed</i>: field 1 is one
+///       length-delimited block of concatenated scalar values, exactly like Protobuf's
+///       packed repeated encoding.</li>
+///   <li>Non-nullable length-delimited elements (<c>decimal</c>, BigInteger, sub-objects
+///       synchronized with <see cref="ObjectMode.NotNull"/>) are stored as one field-1
+///       entry per element, like an ordinary repeated field.</li>
+///   <li>Nullable elements (strings, nullable scalars, nullable sub-objects, nested
+///       lists) are each wrapped in a single-field message <c>{ optional T value = 1; }</c>
+///       — the same idea as Protobuf's well-known wrapper types — where an empty wrapper
+///       represents a null element. This keeps null distinguishable from default values
+///       such as the empty string.</li>
 ///   </ul>
-///   The reader knows the payload's byte range from the outer length prefix, so it detects
-///   the end of a list when the read cursor reaches that boundary
-///   (<see cref="ISyncManager.ReachedEndOfList"/>). This is a slight divergence from
-///   idiomatic Protobuf, where a repeated message field re-emits its tag per element; here
-///   a list is a self-contained length-delimited container, which lets SyncLib represent
-///   nested lists, null elements and heterogeneous tuples uniformly. Lists of packed
-///   scalars are byte-compatible with Protobuf's packed-repeated encoding.
+///   <c>byte[]</c> and other byte lists are not stored as list containers at all; they
+///   are written as a single Protobuf <c>bytes</c> value.
 ///
 /// <h3>Deduplication and cyclic graphs</h3>
 ///
-///   When a field or element is synchronized with <see cref="ObjectMode.Deduplicate"/>,
-///   the LEN payload begins with a one-byte marker (0 = first occurrence, 1 =
-///   back-reference) followed by a varint object ID. A first occurrence is followed by the
-///   object body; a back-reference is not. This lets <see cref="SyncProtobuf"/> serialize
-///   shared references and cyclic object graphs (see the Jack-and-Jill example in
-///   <see cref="ISyncManager"/>). These markers are a SyncLib extension and are only
-///   present when deduplication is requested.
+///   A field or element synchronized with <see cref="ObjectMode.Deduplicate"/> is stored
+///   as a <i>reference wrapper</i> message <c>{ uint64 id = 1; T value = 2; }</c>: the
+///   first occurrence of an object stores both its ID and its value, and each later
+///   occurrence stores only the ID. This lets SyncProtobuf serialize shared references
+///   and cyclic object graphs (see the Jack-and-Jill example in <see cref="ISyncManager"/>)
+///   while remaining valid Protobuf. Deduplication also works for strings and byte
+///   arrays.
+///   <para/>
+///   <b>Caution:</b> because the wrapper is only present when Deduplicate is requested,
+///   the writer and reader must agree on which fields use Deduplicate. Unlike
+///   <see cref="SyncBinary"/> (whose optional markers make the flag self-describing),
+///   toggling <see cref="ObjectMode.Deduplicate"/> is a breaking change to the data
+///   stream.
+///
+/// <h3>Type tags</h3>
+///
+///   <see cref="ISyncManager.SyncTypeTag(string?)"/> stores the tag as a string field
+///   with the reserved number 536,870,911 (<c>_type</c> in generated schemas). Protobuf
+///   parsers that don't know about it simply skip it.
 /// </remarks>
 public partial class SyncProtobuf
 {
@@ -99,21 +138,22 @@ public partial class SyncProtobuf
 		I32 = 5,      // fixed32, sfixed32, float
 	}
 
-	/// <summary>The field number used to store an object's type tag (see
-	///   <see cref="ISyncManager.SyncTypeTag(string?)"/>). Protobuf reserves field numbers
-	///   19000-19999, so this value never collides with a user field number.</summary>
-	internal const int TypeTagFieldNumber = 19000;
+	/// <summary>The largest field number permitted by Protocol Buffers (2^29 - 1).</summary>
+	internal const int MaxFieldNumber = 536_870_911;
 
-	/// <summary>Object framing marker (first byte of every sub-object/list/tuple LEN
-	///   payload): the object is not deduplicated; its body follows immediately. Making
-	///   this marker always present lets the reader detect deduplication from the data
-	///   itself, so the <see cref="ObjectMode.Deduplicate"/> flag may be toggled between
-	///   writing and reading (as with <see cref="SyncBinary"/>).</summary>
-	internal const byte DedupNone = 0;
-	/// <summary>Object framing marker: first occurrence of a deduplicated object; a varint
-	///   object ID and then the body follow.</summary>
-	internal const byte DedupFirst = 1;
-	/// <summary>Object framing marker: a back-reference to a previously written object;
-	///   only a varint object ID follows and no body is present.</summary>
-	internal const byte DedupBackRef = 2;
+	/// <summary>The largest field number available to user fields. The two numbers above
+	///   it are reserved for <see cref="TypeTagFieldNumber"/> and
+	///   <see cref="PresentFieldNumber"/>.</summary>
+	internal const int MaxUserFieldNumber = MaxFieldNumber - 2;
+
+	/// <summary>The reserved field number used to store an object's type tag (see
+	///   <see cref="ISyncManager.SyncTypeTag(string?)"/>) as a string field. This is the
+	///   maximum legal Protobuf field number; generated schemas declare it as
+	///   <c>optional string _type</c>.</summary>
+	internal const int TypeTagFieldNumber = MaxFieldNumber;
+
+	/// <summary>The reserved field number of the boolean marker written when a non-null
+	///   root object would otherwise serialize to zero bytes (which is the encoding of a
+	///   null root). Generated schemas declare it as <c>optional bool _present</c>.</summary>
+	internal const int PresentFieldNumber = MaxFieldNumber - 1;
 }

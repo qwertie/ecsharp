@@ -23,6 +23,7 @@
     <ProjectReference Include="..\Loyc.SyncLib.SyncProtobuf\Loyc.SyncLib.SyncProtobuf.csproj" />
     <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="protobuf-net" Version="2.4.9" />
     <Compile Update="SyncLib\BigStandardModel.out.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

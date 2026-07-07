@@ -18,17 +18,13 @@ partial class SyncProtobuf
 	{
 		options ??= _defaultOptions;
 		Reader reader = NewReader(input, options);
-		var result = SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
-		reader._s.VerifyEof();
-		return result;
+		return SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
 	}
 	public static T? ReadI<T>(ReadOnlyMemory<byte> input, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 	{
 		options ??= _defaultOptions;
 		Reader reader = NewReader(input, options);
-		var result = SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
-		reader._s.VerifyEof();
-		return result;
+		return SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
 	}
 	public static T? Read<T>(byte[] input, SyncObjectFunc<Reader, T> sync, Options? options = null)
 		=> Read(input.AsMemory(), sync, options);
@@ -88,7 +84,7 @@ partial class SyncProtobuf
 		public char   Sync(FieldId name, char savable)   => unchecked((char)(ushort)_s.ReadUInt(name));
 
 		public string? Sync(FieldId name, string? savable, ObjectMode mode = ObjectMode.Normal)
-			=> _s.ReadString(name);
+			=> _s.ReadString(name, mode);
 
 		public int Sync(FieldId name, int savable, int bits, bool signed = true) => unchecked((int)_s.ReadInt(name));
 		public long Sync(FieldId name, long savable, int bits, bool signed = true) => _s.ReadInt(name);
@@ -123,8 +119,17 @@ partial class SyncProtobuf
 			where Scanner : IScanner<byte>
 			where ListBuilder : IListBuilder<List, byte>
 		{
-			var loader = new ListLoader<Reader, List, byte, ListBuilder, SyncPrimitive<Reader>>(new SyncPrimitive<Reader>(), builder, mode, tupleLength);
-			return loader.Sync(ref this, name, saving);
+			// Byte lists are stored as a Protobuf `bytes` value, not as a list container
+			var (start, length, backref) = _s.ReadByteListField(name, mode);
+			if (start == -1)
+				return default; // null
+			if (start == -2)
+				return builder.CastList(backref!);
+			builder.Alloc(length);
+			var span = _s.InputSpan.Slice(start, length);
+			for (int i = 0; i < length; i++)
+				builder.Add(span[i]);
+			return builder.List;
 		}
 
 		public List? SyncListCharImpl<Scanner, List, ListBuilder>(

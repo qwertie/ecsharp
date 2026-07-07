@@ -32,10 +32,12 @@ after_build:
     #  - Loyc.Syntax.dll      (Loyc.Syntax.$PKG_VERSION.nupkg)
     #  - Loyc.Utilities.dll   (Loyc.Utilities.$PKG_VERSION.nupkg)
     #  - Loyc.SyncLib.SyncJson.dll (Loyc.SyncLib.SyncJson.$PKG_VERSION.nupkg)
+    #  - Loyc.SyncLib.SyncProtobuf.dll (Loyc.SyncLib.SyncProtobuf.$PKG_VERSION.nupkg)
     #  - All of them together (LoycCore.$PKG_VERSION.nupkg)
     - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Core\Loyc.Interfaces.nuspec
     - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Core\Loyc.Essentials.nuspec
     - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Core\Loyc.SyncLib.SyncJson.nuspec
+    - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Core\Loyc.SyncLib.SyncProtobuf.nuspec
     - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Core\Loyc.Collections.nuspec
     - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Core\Loyc.Math.nuspec
     - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Core\Loyc.Syntax.nuspec

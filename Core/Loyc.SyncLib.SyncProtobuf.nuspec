@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Loyc.SyncLib.SyncProtobuf</id>
+    <version>$version$</version>
+    <authors>David Piepgrass</authors>
+    <owners>David Piepgrass</owners>
+    <projectUrl>http://core.loyc.net</projectUrl>
+    <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>Protocol Buffers serialization/deserialization support for Loyc.SyncLib.</summary>
+    <description>SyncProtobuf provides ISyncManager implementations for reading and writing the Protocol Buffers wire format with Loyc.SyncLib, a simple, flexible serialization/deserialization framework in which a single "synchronizer" function can both read and write the serialized form of a type. The output is standard, valid Protocol Buffers that can be parsed by any Protobuf implementation (such as protoc-generated code or protobuf-net), and a matching .proto schema can be generated automatically.</description>
+    <releaseNotes>See http://core.loyc.net/version-history</releaseNotes>
+    <copyright>Copyright 2026</copyright>
+    <tags>Loyc Core SyncLib Protobuf Protocol-Buffers Serialization Deserialization</tags>
+    <dependencies>
+      <group targetFramework=".NETFramework4.7.2">
+        <dependency id="Loyc.Interfaces" version="$version$"/>
+        <dependency id="Loyc.Essentials" version="$version$"/>
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Loyc.Interfaces" version="$version$"/>
+        <dependency id="Loyc.Essentials" version="$version$"/>
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="readme.md" />
+
+    <file src="Bin\Release\netstandard2.0\Loyc.SyncLib.SyncProtobuf.*" target="lib\netstandard2.0\" />
+    <file src="Bin\Release\Loyc.SyncLib.SyncProtobuf.*" target="lib\net472\" />
+    <file src="Loyc.SyncLib.SyncProtobuf\**\*.cs" target="src" />
+  </files>
+</package>
