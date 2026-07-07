@@ -131,6 +131,7 @@ namespace Loyc.Tests
 				new SyncJsonTests(newtonCompat: false, false, false),
 				new SyncJsonTests(newtonCompat: false, true, true),
 				new SyncJsonReaderTests(),
+				new SyncJsonSchemaTests(),
 				new SyncMalformedInputTests()
 			);
 		}

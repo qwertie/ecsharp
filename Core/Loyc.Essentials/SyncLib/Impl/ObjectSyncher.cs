@@ -32,7 +32,11 @@ namespace Loyc.SyncLib.Impl
 		public T? Sync(ref SyncManager sync, FieldId propName, T? item)
 		{
 			bool avoidBoxing = (_mode & (ObjectMode.Deduplicate | ObjectMode.NotNull)) == ObjectMode.NotNull;
-			var (begun, length, existingItem) = sync.BeginSubObject(propName, avoidBoxing ? null : item, _mode);
+			// When avoidBoxing, readers and writers ignore childKey, so pass typeof(T),
+			// which a schema saver (SyncMode.Schema) requires: it identifies the schema
+			// of the sub-object, since in Schema mode there is no data.
+			object? childKey = avoidBoxing || sync.Mode == SyncMode.Schema ? typeof(T) : item;
+			var (begun, length, existingItem) = sync.BeginSubObject(propName, childKey, _mode);
 			if (begun) {
 				try {
 					var result = _syncObj.Sync(sync, item);

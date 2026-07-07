@@ -646,13 +646,26 @@ namespace Loyc.SyncLib
 		///   fully read the documentation before use.</summary>
 		/// <param name="name">The name of the property being loaded or saved in
 		///   the current object.</param>
-		/// <param name="childKey">If the current Mode is Saving or Query, this 
-		///   must be a reference that represents the object being saved, or null 
-		///   if the object is null. In Loading mode (and sometimes in Schema mode), 
-		///   <see cref="ISyncManager"/> ignores this parameter. If a value type is
-		///   being read/written, you can set this parameter to null to avoid a
-		///   memory allocation for boxing, but only if you use a mode that includes 
-		///   ObjectMode.NotNull and not ObjectMode.Deduplicate.</param>
+		/// <param name="childKey">If the current Mode is Saving or Query, this
+		///   must be a reference that represents the object being saved, or null
+		///   if the object is null. In Loading mode, <see cref="ISyncManager"/>
+		///   ignores this parameter. If a value type is
+		///   being read/written, you can avoid a memory allocation for boxing by
+		///   setting this parameter to null (or better, to <c>typeof(T)</c>, which
+		///   also lets a schema saver identify the type), but only if you use a mode
+		///   that includes ObjectMode.NotNull and not ObjectMode.Deduplicate.
+		///   <para/>
+		///   In Schema mode there is no data, so this parameter instead identifies
+		///   the <i>schema</i> of the sub-object (helper methods such as
+		///   <see cref="SyncManagerExt.Sync{SM, T}(SM, FieldId, T, SyncObjectFunc{SM, T}, ObjectMode)"/>
+		///   pass <c>typeof(T)</c>). A schema saver uses this key to give the
+		///   sub-object's type a name, to avoid re-recording a schema it has already
+		///   seen (by returning Begun = false), and to break cycles when the object
+		///   graph's schema is recursive. If childKey is a non-null object that is not
+		///   a Type, it is treated as a sample instance, whose type identifies the
+		///   schema. If childKey is null in Schema mode, the sub-object is treated as
+		///   an anonymous object, which works, but its schema is not deduplicated and
+		///   cannot be recursive.</param>
 		/// <param name="mode">See <see cref="ObjectMode"/> for information 
 		///   about the possible modes. When ObjectMode.NotNull is present and
 		///   ObjectMode.Deduplicate is absent, the value of childKey is ignored.</param>

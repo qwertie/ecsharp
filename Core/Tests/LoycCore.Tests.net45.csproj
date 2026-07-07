@@ -190,6 +190,7 @@
     <Compile Include="SyncLib\SyncBinaryTests.cs" />
     <Compile Include="SyncLib\SyncBinaryWriterTests.cs" />
     <Compile Include="SyncLib\SyncJsonReaderTests.cs" />
+    <Compile Include="SyncLib\SyncJsonSchemaTests.cs" />
     <Compile Include="SyncLib\SyncJsonTests.cs" />
     <Compile Include="SyncLib\SyncJsonWriterTests.cs" />
     <Compile Include="SyncLib\SyncLibTests.cs" />

@@ -157,9 +157,7 @@ namespace Loyc.SyncLib
 			void CloseBraceOrBrack()
 			{
 				var mode = _stack.Last;
-				if ((mode & ObjectMode.Compact) != 0)
-					_compactMode--;
-				
+
 				// This will cause an unindent, since it is done before GetNextBuf() which writes the newline/indent
 				_stack.Pop();
 
@@ -188,6 +186,11 @@ namespace Loyc.SyncLib
 				{
 					WriteBraceOrBrack(isList);
 				}
+
+				// Decrement _compactMode only after writing the closing brace/bracket, so
+				// that a Compact object is written entirely on one line, e.g. {"a":1}
+				if ((mode & ObjectMode.Compact) != 0)
+					_compactMode--;
 
 				_pendingComma = (byte) ',';
 
