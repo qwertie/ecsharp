@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loyc.Collections", "Loyc.Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loyc.Math", "Loyc.Math\Loyc.Math.csproj", "{C457790D-1EE6-432A-8540-BC04A5963798}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loyc.SyncLib.SyncJson", "Loyc.SyncLib.SyncJson\Loyc.SyncLib.SyncJson.csproj", "{E4A8FFC3-D7BE-4570-B20C-89689F134C26}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loyc.Syntax", "Loyc.Syntax\Loyc.Syntax.csproj", "{1B5A837A-42EC-485D-97E7-7FD39BBB8609}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loyc.Utilities", "Loyc.Utilities\Loyc.Utilities.csproj", "{DB83F1BD-D9B2-4423-AD9E-EA6DD0D5AD17}"
@@ -35,6 +37,10 @@ Global
 		{C457790D-1EE6-432A-8540-BC04A5963798}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C457790D-1EE6-432A-8540-BC04A5963798}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C457790D-1EE6-432A-8540-BC04A5963798}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4A8FFC3-D7BE-4570-B20C-89689F134C26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4A8FFC3-D7BE-4570-B20C-89689F134C26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4A8FFC3-D7BE-4570-B20C-89689F134C26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4A8FFC3-D7BE-4570-B20C-89689F134C26}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1B5A837A-42EC-485D-97E7-7FD39BBB8609}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1B5A837A-42EC-485D-97E7-7FD39BBB8609}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B5A837A-42EC-485D-97E7-7FD39BBB8609}.Release|Any CPU.ActiveCfg = Release|Any CPU

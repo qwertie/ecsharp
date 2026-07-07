@@ -19,6 +19,7 @@
     <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.csproj" />
     <ProjectReference Include="..\Loyc.Math\Loyc.Math.csproj" />
     <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.csproj" />
+    <ProjectReference Include="..\Loyc.SyncLib.SyncJson\Loyc.SyncLib.SyncJson.csproj" />
     <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <Compile Update="SyncLib\BigStandardModel.out.cs">

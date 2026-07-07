@@ -21,9 +21,9 @@ namespace Loyc.SyncLib
 	{
 		public static bool Supports<T>()
 		{
-			if (DefaultSynchronizer<SyncJson.Writer, T>.Default != DefaultSynchronizer<SyncJson.Writer, T>._FallbackSync)
+			if (DefaultSynchronizer<SyncBinary.Writer, T>.Default != DefaultSynchronizer<SyncBinary.Writer, T>._FallbackSync)
 				return true;
-			return DefaultSynchronizer<SyncJson.Writer, T>.FindSynchronizer() != null;
+			return DefaultSynchronizer<SyncBinary.Writer, T>.FindSynchronizer() != null;
 		}
 		
 		public static T Sync<SyncManager, T>(ref SyncManager sync, FieldId name, [AllowNull] T value) where SyncManager: ISyncManager

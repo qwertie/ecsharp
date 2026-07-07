@@ -256,17 +256,6 @@
       <DependentUpon>ISyncManager.ecs</DependentUpon>
     </Compile>
     <Compile Include="SyncLib\ObjectMode.cs" />
-    <Compile Include="SyncLib\Json\SyncJson.Options.cs" />
-    <Compile Include="SyncLib\Json\SyncJson.out.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SyncJson.ecs</DependentUpon>
-    </Compile>
-    <Compile Include="SyncLib\Json\SyncJson.Parser.cs" />
-    <Compile Include="SyncLib\Json\SyncJson.Reader.cs" />
-    <Compile Include="SyncLib\Json\SyncJson.ReaderState.cs" />
-    <Compile Include="SyncLib\Json\SyncJson.Writer.cs" />
-    <Compile Include="SyncLib\Json\SyncJson.WriterState.cs" />
     <Compile Include="SyncLib\SyncManagerExt.cs" />
     <Compile Include="SyncLib\SyncMode.cs" />
     <Compile Include="SyncLib\SyncObjectList.cs" />
@@ -282,10 +271,6 @@
     <None Include="SyncLib\ISyncManager.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>ISyncManager.out.cs</LastGenOutput>
-    </None>
-    <None Include="SyncLib\Json\SyncJson.ecs">
-      <Generator>LeMP</Generator>
-      <LastGenOutput>SyncJson.out.cs</LastGenOutput>
     </None>
     <None Include="Utilities\GRange.ecs">
       <Generator>LeMP</Generator>

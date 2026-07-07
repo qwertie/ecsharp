@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 
 namespace Loyc.SyncLib.Impl
 {
-	internal partial class WriterStateBase
+	public partial class WriterStateBase
 	{
 		protected internal IBufferWriter<byte> _output;
 		//protected Memory<byte> _buf; // a sub-buffer returned from _output
@@ -38,7 +38,7 @@ namespace Loyc.SyncLib.Impl
 			_buf = _output.GetMemory(System.Math.Max(requiredBytes, MinimumBufSize));
 			return _buf.Span;
 		}
-		internal IBufferWriter<byte> Flush()
+		public IBufferWriter<byte> Flush()
 		{
 			_output.Advance(_i);
 			_i = 0;

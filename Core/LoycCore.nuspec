@@ -18,6 +18,7 @@
     <dependencies>
       <dependency id="Loyc.Interfaces" version="$version$"/>
       <dependency id="Loyc.Essentials" version="$version$"/>
+      <dependency id="Loyc.SyncLib.SyncJson" version="$version$"/>
       <dependency id="Loyc.Collections" version="$version$"/>
       <dependency id="Loyc.Math" version="$version$"/>
       <dependency id="Loyc.Syntax" version="$version$"/>

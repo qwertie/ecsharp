@@ -20,9 +20,9 @@ Low-level libraries on top:
          Loyc.Essentials
                 ^   ^
                 |   |
-                |   +----------------+
-                |                    |
-         Loyc.Collections        Loyc.Math
+                |   +----------------+---------------------+
+                |                    |                      |
+         Loyc.Collections        Loyc.Math    Loyc.SyncLib.SyncJson
                 ^                    ^
                 |                    |
            Loyc.Syntax               |

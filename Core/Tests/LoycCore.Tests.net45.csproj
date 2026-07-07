@@ -310,6 +310,10 @@
       <Project>{94bc16e0-2f14-4747-82f8-cfa22ad558ca}</Project>
       <Name>Loyc.Utilities.net45</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Loyc.SyncLib.SyncJson\Loyc.SyncLib.SyncJson.net45.csproj">
+      <Project>{062b2f70-4355-4c4b-b863-16f02de60d5e}</Project>
+      <Name>Loyc.SyncLib.SyncJson.net45</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
