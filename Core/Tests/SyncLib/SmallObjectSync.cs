@@ -22,10 +22,11 @@ namespace Loyc.SyncLib.Tests
 		{
 			obj ??= new SmallObject();
 			if (!sm.SupportsNextField || sm.NeedsIntegerIds) {
-				// Synchronize in the normal way
-				obj.Field1 = sm.Sync("Field1", obj.Field1);
-				obj.Field2 = sm.Sync("Field2", obj.Field2);
-				obj.Field3 = sm.Sync("Field3", obj.Field3);
+				// Synchronize in the normal way. The explicit integer IDs are used by
+				// int-keyed formats (e.g. Protobuf); string-keyed formats use the names.
+				obj.Field1 = sm.Sync(("Field1", 1), obj.Field1);
+				obj.Field2 = sm.Sync(("Field2", 2), obj.Field2);
+				obj.Field3 = sm.Sync(("Field3", 3), obj.Field3);
 			} else {
 				// Synchronize fields in the order they appear in the input.
 				string? name;

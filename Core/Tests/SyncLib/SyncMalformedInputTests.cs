@@ -63,6 +63,17 @@ namespace Loyc.SyncLib.Tests
 			return corpus;
 		}
 
+		static List<byte[]> ProtobufCorpus(SyncProtobuf.Options options)
+		{
+			var corpus = new List<byte[]>();
+			corpus.Add(SyncProtobuf.Write(SyncLibTests<SyncProtobuf.Reader, SyncProtobuf.Writer>.Jack(),
+				new PersonSync<SyncProtobuf.Writer>().Sync, options).ToArray());
+			corpus.Add(SyncProtobuf.Write(new object(), SyncVarious, options).ToArray());
+			corpus.Add(SyncProtobuf.Write(new int[] { 1, -1, int.MaxValue, int.MinValue },
+				(sm, v) => sm.SyncList("l", v)!, options).ToArray());
+			return corpus;
+		}
+
 		static List<byte[]> JsonCorpus(SyncJson.Options options)
 		{
 			var corpus = new List<byte[]>();
@@ -170,6 +181,44 @@ namespace Loyc.SyncLib.Tests
 					var readOptions = new SyncBinary.Options { Markers = markers };
 					SyncBinary.Read<Person>(data, new PersonSync<SyncBinary.Reader>().Sync, readOptions);
 				});
+			}
+		}
+
+		[Test]
+		public void FuzzProtobufReaderWithMutations()
+		{
+			var options = new SyncProtobuf.Options();
+			MutationFuzz("SyncProtobuf", ProtobufCorpus(options), data => {
+				SyncProtobuf.Read<Person>(data, new PersonSync<SyncProtobuf.Reader>().Sync, new SyncProtobuf.Options());
+			});
+		}
+
+		[Test]
+		public void HandcraftedEvilProtobufInputs()
+		{
+			var options = new SyncProtobuf.Options();
+			var evil = new List<byte[]> {
+				new byte[0],
+				new byte[] { 0x0A },                          // tag with no length
+				new byte[] { 0x0A, 0x7F },                    // length 127 but no data
+				new byte[] { 0x0A, 0x01 },                    // length 1 but no body byte
+				new byte[] { 0x0A, 0x01, 0x02 },              // framing marker 2 (backref) to nothing
+				new byte[] { 0x0A, 0x02, 0x01, 0xFF },        // dedup-first, id, then a truncated field tag
+				new byte[] { 0x08, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F }, // huge varint at root
+				new byte[] { 0x0A, 0x05, 0x00, 0x08, 0xFF, 0xFF, 0xFF }, // varint field value truncated
+				Enumerable.Range(0, 10_000).Select(_ => (byte)0x0A).ToArray(), // deep nesting must not overflow the stack
+			};
+			foreach (byte[] data in evil)
+				CheckReadContract("SyncProtobuf(evil)", 0, data,
+					d => SyncProtobuf.Read<Person>(d, new PersonSync<SyncProtobuf.Reader>().Sync, options));
+
+			// A corrupt list length prefix must fail fast rather than allocate or loop.
+			var list = SyncProtobuf.Write(new int[] { 1, 2, 3 }, (SyncProtobuf.Writer sm, int[]? v) => sm.SyncList("l", v)!, options).ToArray();
+			for (int i = 0; i < list.Length; i++) {
+				var corrupt = (byte[])list.Clone();
+				corrupt[i] = 0xFF; // oversized length varints, bad tags, etc.
+				CheckReadContract("SyncProtobuf(evil)", 100 + i, corrupt,
+					d => SyncProtobuf.Read<int[]>(d, (SyncProtobuf.Reader sm, int[]? v) => sm.SyncList("l", v)!, options));
 			}
 		}
 
