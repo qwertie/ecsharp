@@ -24,22 +24,33 @@ namespace Benchmark
 		/// <param name="op">The operation to measure.</param>
 		/// <param name="ct">Checked between trials; throws OperationCanceledException.</param>
 		/// <param name="targetTrialMs">Inner-loop count is chosen so one trial lasts
-		/// about this long. The unmeasured warm-up runs for at least this long too.</param>
+		/// about this long.</param>
 		/// <param name="trials">Number of measured trials (after 2 unrecorded trials).</param>
+		/// <param name="warmupMs">Minimum duration of the unmeasured warm-up. This is
+		/// deliberately much longer than a single trial: .NET's tiered JIT only promotes
+		/// a hot method to fully-optimized (tier-1) code after it has been called many
+		/// times, and the recompilation happens asynchronously on a background thread.
+		/// A too-short warm-up therefore measures a mix of tier-0/instrumented code and
+		/// makes heavily-generic call trees (like SyncLib's) look far slower than their
+		/// steady state. Warming for ~1/4 s gives promotion time to land and then
+		/// exercises the optimized code before timing begins.</param>
 		public static BenchStats Measure(Action op, CancellationToken ct,
-			double targetTrialMs = 50, int trials = 8, long maxOpsPerTrial = 10_000_000)
+			double targetTrialMs = 50, int trials = 8, long maxOpsPerTrial = 10_000_000,
+			double warmupMs = 250)
 		{
 			// Absorb one-time costs (JIT, static initialization) before estimating
 			op();
 
-			// Warm-up period, not measured: bring caches, branch predictors and the
-			// allocator to steady state, and estimate the cost of one op
+			// Warm-up period, not measured: settle the tiered JIT (see warmupMs), and
+			// bring caches, branch predictors and the allocator to steady state, while
+			// estimating the cost of one op. The run-count cap is only a safety net for
+			// pathologically cheap ops; the intent is to warm for the full warmupMs.
 			var sw = Stopwatch.StartNew();
 			long warmupRuns = 0;
 			do {
 				op();
 				warmupRuns++;
-			} while (sw.Elapsed.TotalMilliseconds < targetTrialMs && warmupRuns < maxOpsPerTrial);
+			} while (sw.Elapsed.TotalMilliseconds < warmupMs && warmupRuns < 200_000_000);
 			double estMs = Math.Max(sw.Elapsed.TotalMilliseconds / warmupRuns, 0.000_001);
 			long opsPerTrial = (long)Math.Clamp(targetTrialMs / estMs, 1, maxOpsPerTrial);
 

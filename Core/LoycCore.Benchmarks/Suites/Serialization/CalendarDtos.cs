@@ -306,16 +306,26 @@ namespace Benchmark.Serialization
 				UserId = dto.UserId,
 				DefaultColor = Color.FromArgb(dto.DefColorArgb),
 			};
-			foreach (var e in dto.Entries)
-				calendar.Entries.Add(e.StartTime, new CalendarEntry(calendar) {
+			foreach (var e in dto.Entries) {
+				// protobuf-net (at its default CompatibilityLevel) round-trips DateTime
+				// ticks correctly but drops DateTimeKind, returning Unspecified. The
+				// benchmark's generated StartTimes are UTC, and Validate normalizes with
+				// ToUniversalTime() — which misreads an Unspecified value as Local and
+				// shifts it by the machine's offset (silently failing round-trip
+				// validation on any non-UTC machine). Re-stamp the known-UTC instant so
+				// the DTO round-trip is correct. This is a no-op for MessagePack and
+				// BinaryFormatter, which already preserve Kind=Utc.
+				var startTime = DateTime.SpecifyKind(e.StartTime, DateTimeKind.Utc);
+				calendar.Entries.Add(startTime, new CalendarEntry(calendar) {
 					Id = e.Id,
 					Description = e.Description,
-					StartTime = e.StartTime,
+					StartTime = startTime,
 					Duration = e.Duration,
 					Location = e.Location,
 					AdvanceReminder = e.AdvanceReminder,
 					Color = Color.FromArgb(e.ColorArgb),
 				});
+			}
 			return calendar;
 		}
 	}

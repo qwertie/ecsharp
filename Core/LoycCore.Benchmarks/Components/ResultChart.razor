@@ -35,22 +35,23 @@
     record HueRule(string Prefix, string Base, string Light);
     static readonly HueRule[] Hues = {
         new("SyncBinary",             "#0000cf", "#5555e2"), // blue
+        new("SyncBinary (no markers)", "#2f8fd0", "#93c4e6"), // lighter sky blue
+        new("protobuf-net",           "#6d3ab7", "#a789d4"), // violet
+        new("MessagePack",            "#b3369c", "#d186c4"), // purple-magenta
+        new("BinaryFormatter",        "#8b2635", "#b97d86"), // maroon
         new("SyncJson",  "#00a86b", "#66cba6"), // jade
         new("SyncJson (ISyncManager)", "#0d9488", "#6ebfb8"), // teal
         new("SyncJson (Newton-compat)", "#1b7f37", "#76b287"), // green
         new("System.Text.Json",       "#d0773b", "#e3bb89"), // orange
         new("Newtonsoft.Json",        "#d03b3b", "#e38989"), // red
-        new("protobuf-net",           "#6d3ab7", "#a789d4"), // violet
-        new("MessagePack",            "#b3369c", "#d186c4"), // purple-magenta
-        new("BinaryFormatter",        "#8b2635", "#b97d86"), // maroon
     };
 
     // Fixed left-to-right order of the serializers in charts and legends; series
     // whose base name isn't listed here (e.g. legacy collection benchmarks) sort
     // alphabetically after these.
     static readonly string[] SerializerOrder = {
-        "SyncBinary", "SyncJson", "SyncJson (Newton-compat)", "SyncJson (ISyncManager)",
-        "Newtonsoft.Json", "System.Text.Json", "BinaryFormatter", "MessagePack", "protobuf-net",
+        "SyncBinary", "SyncBinary (no markers)", "protobuf-net", "MessagePack", "BinaryFormatter",
+        "SyncJson", "SyncJson (Newton-compat)", "SyncJson (ISyncManager)", "Newtonsoft.Json", "System.Text.Json",
     };
 
     [Parameter, EditorRequired] public GraphModel Model { get; set; } = null!;

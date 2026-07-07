@@ -43,6 +43,12 @@ namespace Benchmark.Serialization
 			// Same sync code, binary format
 			scenario.Adapters.Add(new SyncBinaryAdapter<Calendar>("SyncBinary",
 				new CalendarSync<SyncBinary.Writer>().Sync, new CalendarSync<SyncBinary.Reader>().Sync));
+			// SyncBinary with framing markers off (Markers.None): isolates the cost of
+			// the object start/end markers and type tags that Markers.Default writes per
+			// sub-object — most visible in object-heavy data like this calendar.
+			scenario.Adapters.Add(new SyncBinaryAdapter<Calendar>("SyncBinary (no markers)",
+				new CalendarSync<SyncBinary.Writer>().Sync, new CalendarSync<SyncBinary.Reader>().Sync,
+				new SyncBinary.Options { Markers = SyncBinary.Markers.None }));
 
 			// The traditional approach: DTO types + conversion code
 			var newtonsoft = new JsonCalendarSerialization();
@@ -230,6 +236,9 @@ namespace Benchmark.Serialization
 			scenario.Adapters.Add(new SyncJsonAdapter<T>("SyncJson (Newton-compat)", syncJsonWrite, syncJsonRead, compact));
 			scenario.Adapters.Add(new SyncJsonAdapter<T>("SyncJson", syncJsonWrite, syncJsonRead, compatOff));
 			scenario.Adapters.Add(new SyncBinaryAdapter<T>("SyncBinary", syncBinWrite, syncBinRead));
+			// Markers.None variant: framing markers/type tags off (see the calendar note).
+			scenario.Adapters.Add(new SyncBinaryAdapter<T>("SyncBinary (no markers)", syncBinWrite, syncBinRead,
+				new SyncBinary.Options { Markers = SyncBinary.Markers.None }));
 			scenario.Adapters.Add(new SystemTextJsonAdapter<T>(stjOptions));
 			scenario.Adapters.Add(new NewtonsoftAdapter<T>(newtonsoftSettings));
 			scenario.Adapters.Add(new BinaryFormatterAdapter<T>());
