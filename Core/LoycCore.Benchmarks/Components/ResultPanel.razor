@@ -37,6 +37,33 @@ else
             <pre class="error">@_result.Error</pre>
         }
 
+        @if (_result.Failures.Count > 0)
+        {
+            <div class="sub-failures" role="alert">
+                <div class="sub-failures-head">
+                    ⚠ @_result.Failures.Count sub-benchmark@(_result.Failures.Count == 1 ? "" : "s")
+                    failed and @(_result.Failures.Count == 1 ? "was" : "were") excluded from the charts
+                </div>
+                <ul>
+                    @foreach (var f in _result.Failures)
+                    {
+                        <li>
+                            <span class="fail-series">@f.Series</span>
+                            <span class="fail-case">[@f.Case]</span>
+                            — @f.Reason
+                            @if (!string.IsNullOrEmpty(f.Details))
+                            {
+                                <details>
+                                    <summary>stack trace</summary>
+                                    <pre>@f.Details</pre>
+                                </details>
+                            }
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+
         <p class="run-info">
             Run @_result.StartedUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
             @if (_result.ElapsedSeconds > 0)
@@ -110,6 +137,7 @@ else
             h = h * 31 + r.StartedUtc.Ticks;
             h = h * 31 + r.Points.Count;
             h = h * 31 + r.LogLines.Count;
+            h = h * 31 + r.Failures.Count;
         }
         return h;
     }

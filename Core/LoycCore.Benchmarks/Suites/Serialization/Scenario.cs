@@ -127,12 +127,13 @@ namespace Benchmark.Serialization
 				var back = adapter.Deserialize(payload);
 				string? error = Validate?.Invoke(data, back);
 				if (error != null) {
-					ctx.Log($"  ✗ {adapter.Name} [{label}]: round-trip mismatch: {error}");
+					ctx.ReportFailure(adapter.Name, label, "round-trip mismatch: " + error);
 					return null;
 				}
 				return payload;
 			} catch (Exception ex) {
-				ctx.Log($"  ✗ {adapter.Name} [{label}]: {ex.GetType().Name}: {GetFirstLine(ex.Message)}");
+				ctx.ReportFailure(adapter.Name, label,
+					$"{ex.GetType().Name}: {GetFirstLine(ex.Message)}", ex.ToString());
 				return null;
 			}
 		}

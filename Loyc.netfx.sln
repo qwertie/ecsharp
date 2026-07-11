@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0
+# Visual Studio Version 18
+VisualStudioVersion = 18.7.11925.98 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoycCore.Tests.net45", "Core\Tests\LoycCore.Tests.net45.csproj", "{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}"
 EndProject
@@ -34,6 +34,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeMPDemo.net4x", "Main\LeMPDemo\LeMPDemo.net4x.csproj", "{445D4D88-E182-49E1-A7FA-7617A71397EE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.Interfaces.net45", "Core\Loyc.Interfaces\Loyc.Interfaces.net45.csproj", "{834F7631-149C-4172-83C2-C6BF9F8BF26B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loyc.SyncLib.SyncProtobuf.net45", "Core\Loyc.SyncLib.SyncProtobuf\Loyc.SyncLib.SyncProtobuf.net45.csproj", "{7C2A1D64-9B3E-4D21-8F5A-2A9C1E0B7F31}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -163,6 +165,14 @@ Global
 		{834F7631-149C-4172-83C2-C6BF9F8BF26B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{834F7631-149C-4172-83C2-C6BF9F8BF26B}.Release|x86.ActiveCfg = Release|Any CPU
 		{834F7631-149C-4172-83C2-C6BF9F8BF26B}.Release|x86.Build.0 = Release|Any CPU
+		{7C2A1D64-9B3E-4D21-8F5A-2A9C1E0B7F31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C2A1D64-9B3E-4D21-8F5A-2A9C1E0B7F31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C2A1D64-9B3E-4D21-8F5A-2A9C1E0B7F31}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7C2A1D64-9B3E-4D21-8F5A-2A9C1E0B7F31}.Debug|x86.Build.0 = Debug|Any CPU
+		{7C2A1D64-9B3E-4D21-8F5A-2A9C1E0B7F31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C2A1D64-9B3E-4D21-8F5A-2A9C1E0B7F31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C2A1D64-9B3E-4D21-8F5A-2A9C1E0B7F31}.Release|x86.ActiveCfg = Release|Any CPU
+		{7C2A1D64-9B3E-4D21-8F5A-2A9C1E0B7F31}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -177,6 +187,7 @@ Global
 		{7493A75D-106A-4A50-9DCF-A7A034629FFF} = {30F2D32F-68A5-458D-8076-B669CAED2C52}
 		{062B2F70-4355-4C4B-B863-16F02DE60D5E} = {30F2D32F-68A5-458D-8076-B669CAED2C52}
 		{834F7631-149C-4172-83C2-C6BF9F8BF26B} = {30F2D32F-68A5-458D-8076-B669CAED2C52}
+		{7C2A1D64-9B3E-4D21-8F5A-2A9C1E0B7F31} = {30F2D32F-68A5-458D-8076-B669CAED2C52}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {83999369-3DC0-4FBD-9330-7CB7615F0591}

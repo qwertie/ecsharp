@@ -5,6 +5,23 @@ namespace Benchmark
 {
 	public enum JobStatus { Queued, Running, Completed, Failed, Canceled }
 
+	/// <summary>One sub-benchmark that failed during an otherwise-successful run (e.g. a
+	/// single serializer that threw or whose round-trip didn't match), so it was
+	/// excluded from the charts. Surfaced prominently in the UI so a silently-missing
+	/// series doesn't go unnoticed.</summary>
+	public class SubBenchmarkFailure
+	{
+		/// <summary>The serializer/series that failed, e.g. "protobuf-net".</summary>
+		public string Series { get; set; } = "";
+		/// <summary>The case/parameter it failed on, e.g. "100 entries".</summary>
+		public string Case { get; set; } = "";
+		/// <summary>Short, one-line reason (exception summary or mismatch description).</summary>
+		public string Reason { get; set; } = "";
+		/// <summary>Full details when available — typically an exception's ToString()
+		/// (message + stack trace). Null for a validation mismatch with no exception.</summary>
+		public string? Details { get; set; }
+	}
+
 	/// <summary>Result of one benchmark run: measurements, chart configs, and log output.</summary>
 	public class BenchmarkRunResult
 	{
@@ -15,6 +32,8 @@ namespace Benchmark
 		public List<string> LogLines { get; set; } = new();
 		public List<EzDataPoint> Points { get; set; } = new();
 		public Dictionary<string, GraphModel> Graphs { get; set; } = new();
+		/// <summary>Sub-benchmarks that failed but did not abort the whole run.</summary>
+		public List<SubBenchmarkFailure> Failures { get; set; } = new();
 
 		[JsonIgnore] public double ProgressFraction { get; set; }
 		[JsonIgnore] public string? ProgressNote { get; set; }
@@ -29,6 +48,7 @@ namespace Benchmark
 					LogLines = new List<string>(LogLines),
 					Points = new List<EzDataPoint>(Points),
 					Graphs = new Dictionary<string, GraphModel>(Graphs),
+					Failures = new List<SubBenchmarkFailure>(Failures),
 					ProgressFraction = ProgressFraction, ProgressNote = ProgressNote,
 				};
 		}

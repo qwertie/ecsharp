@@ -114,6 +114,19 @@ namespace Benchmark
 			_changed?.Invoke();
 		}
 
+		/// <summary>Records a sub-benchmark failure that didn't abort the whole run (e.g.
+		/// one serializer threw or produced a bad round-trip and was skipped). It is shown
+		/// prominently in the UI — with <paramref name="details"/> (usually a stack trace)
+		/// available on demand — and also written to the log. Thread-safe.</summary>
+		public void ReportFailure(string series, string @case, string reason, string? details = null)
+		{
+			lock (_result)
+				_result.Failures.Add(new SubBenchmarkFailure {
+					Series = series, Case = @case, Reason = reason, Details = details,
+				});
+			Log($"  ✗ {series} [{@case}]: {reason}");
+		}
+
 		/// <summary>Adds or updates a measurement. Thread-safe.</summary>
 		public void Add(EzDataPoint point)
 		{

@@ -135,7 +135,9 @@ namespace Loyc.Tests
 				new SyncProtobufTests(false),
 				new SyncProtobufTests(true),
 				new SyncProtobufSchemaTests(),
+				#if !DotNet45 // SyncProtobufInteropTests needs the protobuf-net package, which isn't referenced by the .NET Framework build
 				new SyncProtobufInteropTests(),
+				#endif
 				new SyncMalformedInputTests()
 			);
 		}

@@ -567,7 +567,7 @@ partial class SyncProtobuf
 
 		internal static uint FloatToBits(float value)
 		{
-			#if NETSTANDARD2_0
+			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
 			return BitConverter.ToUInt32(BitConverter.GetBytes(value), 0);
 			#else
 			return unchecked((uint)BitConverter.SingleToInt32Bits(value));
@@ -592,7 +592,7 @@ partial class SyncProtobuf
 
 		static int Utf8ByteCount(string s)
 		{
-			#if NETSTANDARD2_0
+			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
 			return Encoding.UTF8.GetByteCount(s);
 			#else
 			return Encoding.UTF8.GetByteCount(s.AsSpan());
@@ -600,7 +600,7 @@ partial class SyncProtobuf
 		}
 		static int Utf8GetBytes(string s, byte[] dest)
 		{
-			#if NETSTANDARD2_0
+			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
 			return Encoding.UTF8.GetBytes(s, 0, s.Length, dest, 0);
 			#else
 			return Encoding.UTF8.GetBytes(s.AsSpan(), dest.AsSpan());

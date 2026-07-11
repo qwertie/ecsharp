@@ -601,7 +601,7 @@ partial class SyncProtobuf
 		}
 		static BigInteger BigIntFromBytes(ReadOnlySpan<byte> bytes)
 		{
-			#if NETSTANDARD2_0
+			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
 			return new BigInteger(bytes.ToArray());
 			#else
 			return new BigInteger(bytes);
@@ -816,7 +816,7 @@ partial class SyncProtobuf
 
 		static string Utf8Decode(ReadOnlySpan<byte> bytes)
 		{
-			#if NETSTANDARD2_0
+			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
 			return Encoding.UTF8.GetString(bytes.ToArray());
 			#else
 			return Encoding.UTF8.GetString(bytes);
@@ -825,7 +825,7 @@ partial class SyncProtobuf
 
 		static float BitsToFloat(uint bits)
 		{
-			#if NETSTANDARD2_0
+			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
 			return BitConverter.ToSingle(BitConverter.GetBytes(bits), 0);
 			#else
 			return BitConverter.Int32BitsToSingle(unchecked((int)bits));

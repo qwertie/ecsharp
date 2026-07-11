@@ -318,7 +318,7 @@ namespace Loyc.SyncLib
 			/// Only needed if data is read out-of-order; not used direct
 			private InternalList<JsonFrame> _frameStack = InternalList<JsonFrame>.Empty;
 
-			protected void BeginReplay(in (JsonValue value, long position) value, out JsonPointer cur)
+			protected void BeginReplay(scoped in (JsonValue value, long position) value, out JsonPointer cur)
 			{
 				Debug.Assert(value.value.Type >= JsonType.FirstCompositeType);
 				Debug.Assert((value.value.Text.Span[0] == '{') == (value.value.Type == JsonType.Object));
