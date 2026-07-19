@@ -56,10 +56,18 @@ namespace Loyc.SyncLib
 		/// </summary>
 		NotNull = 8,
 
-		/// <summary>The object can have multiple types or derived classes, so a
-		///   type identifier needs to be saved to make deserialization possible.
-		///   TODO: figure out how it will work and say something about that here</summary>
-		//DynamicType = 16,
+		/// <summary>Requests that no type tag be read or written for this object,
+		///   even if its synchronizer has a <see cref="TypeTagAttribute"/> or was
+		///   registered with a tag in a <see cref="TypeSyncRegistry"/>. This is
+		///   useful for compactness when the object's type is known statically, or
+		///   for interoperability with data formats that lack type tags.</summary>
+		/// <remarks>Since most data formats are not self-describing (e.g.
+		///   <see cref="SyncBinary"/>), the same flag must be used when writing an
+		///   object and when reading it back; otherwise the data cannot be read
+		///   correctly. Note: an object written with this flag cannot be read
+		///   dynamically unless its static type is registered, because without a tag,
+		///   the reader cannot choose a synchronizer based on the data alone.</remarks>
+		NoTypeTag = 16,
 
 		/// <summary>Requests that compact formatting be used when writing this object.
 		///   When using <see cref="SyncJson.Writer"/>, this mode suppresses newlines.

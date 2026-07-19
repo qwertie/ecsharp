@@ -155,7 +155,7 @@ namespace Loyc.SyncLib
 		bool NeedsIntegerIds { get; }
 
 		/// <summary>
-		///   This is a low-level property that most code should not call directly.
+		///   This is a low-level property that most code should NOT call directly.
 		///   If a list is being scanned and the current object can detect
 		///   the end of the list (e.g. the mode is <see cref="SyncMode.Loading"/> and
 		///   BeginSubObject returned a length of int.MaxValue), this property returns 
@@ -417,7 +417,8 @@ namespace Loyc.SyncLib
 		/// </remarks>
 		SyncType GetFieldType(FieldId name, SyncType expectedType = SyncType.Unknown);
 
-		/// <summary>Reads or writes a "type tag" for the current object. This method
+		/// <summary>Reads or writes a "type tag" for the current object. This is a
+		///   low-level method; end-users normally should NOT call it! This method
 		///   can only be called once after BeginSubObject returns true, and can only
 		///   be called before synchronizing the first subfield (i.e. before calling
 		///   any of the Sync() methods).</summary>
@@ -642,7 +643,7 @@ namespace Loyc.SyncLib
 		object CurrentObject { set; }
 
 		/// <summary>Attempts to begin reading or writing a sub-object. This is a
-		///   low-level method; end-users normally should not call it! Be sure to 
+		///   low-level method; end-users normally should NOT call it! Be sure to 
 		///   fully read the documentation before use.</summary>
 		/// <param name="name">The name of the property being loaded or saved in
 		///   the current object.</param>

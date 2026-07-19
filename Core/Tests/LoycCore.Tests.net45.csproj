@@ -194,6 +194,7 @@
     <Compile Include="SyncLib\SyncJsonTests.cs" />
     <Compile Include="SyncLib\SyncJsonWriterTests.cs" />
     <Compile Include="SyncLib\SyncLibTests.cs" />
+    <Compile Include="SyncLib\SyncLibTests.Dynamic.cs" />
     <Compile Include="SyncLib\SyncLibTests.Fuzz.cs" />
     <Compile Include="SyncLib\SyncLibTests.Values.cs" />
     <Compile Include="SyncLib\SyncMalformedInputTests.cs" />

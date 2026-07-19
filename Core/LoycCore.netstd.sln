@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29911.84
+# Visual Studio Version 18
+VisualStudioVersion = 18.8.12009.203 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loyc.Essentials", "Loyc.Essentials\Loyc.Essentials.csproj", "{90E5977C-DD09-47CA-BEB2-3491780E6138}"
 EndProject
@@ -20,6 +20,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoycCore.Tests", "Tests\LoycCore.Tests.csproj", "{91432F90-BFEB-42E3-9A81-5C1E14651564}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loyc.Interfaces", "Loyc.Interfaces\Loyc.Interfaces.csproj", "{AA2CBEDC-0DF4-48BE-B87D-C0D17527EE03}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoycCore.Benchmarks", "LoycCore.Benchmarks\LoycCore.Benchmarks.csproj", "{7F31DE49-EFBF-1D60-4E07-E5E5A9C9EEC9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +65,10 @@ Global
 		{AA2CBEDC-0DF4-48BE-B87D-C0D17527EE03}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA2CBEDC-0DF4-48BE-B87D-C0D17527EE03}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA2CBEDC-0DF4-48BE-B87D-C0D17527EE03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F31DE49-EFBF-1D60-4E07-E5E5A9C9EEC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F31DE49-EFBF-1D60-4E07-E5E5A9C9EEC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F31DE49-EFBF-1D60-4E07-E5E5A9C9EEC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F31DE49-EFBF-1D60-4E07-E5E5A9C9EEC9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
