@@ -97,17 +97,15 @@ namespace LeMP.Tests
 				}", @"{
 					LNode a, b, c, first = null, last;
 					LNodeList args;
-					if (code.CallsMin(CodeSymbols.Tuple, 3) && (a = code.Args[0]) != null && (b = code.Args[1]) != null && (c = code.Args[code.Args.Count - 1]) != null) {
-						args = new LNodeList(code.Args.Slice(2, code.Args.Count - 3));
+					if (code.CallsMin(CodeSymbols.Tuple, 3) && (a = code.Args[0]) != null && (b = code.Args[1]) != null 
+						&& (args = new LNodeList(code.Args.Slice(2, code.Args.Count - 3))).IsEmpty | true && (c = code.Args[code.Args.Count - 1]) != null) {
 						Three(a, b, c);
 					} else if (code.CallsMin(CodeSymbols.Tuple, 1) && code.Args[0].Value == null && (args = new LNodeList(code.Args.Slice(1))).IsEmpty | true 
 						|| code.CallsMin(CodeSymbols.Tuple, 1) && (first = code.Args[0]) != null && (args = new LNodeList(code.Args.Slice(1))).IsEmpty | true) {
 						Tuple(first, args);
-					} else if (code.CallsMin(CodeSymbols.Tuple, 1) && (last = code.Args[code.Args.Count - 1]) != null) {
-						args = code.Args.WithoutLast(1);
+					} else if (code.CallsMin(CodeSymbols.Tuple, 1) && (args = code.Args.WithoutLast(1)).IsEmpty | true && (last = code.Args[code.Args.Count - 1]) != null) {
 						Unreachable();
-					} else if (code.Calls(CodeSymbols.Tuple)) {
-						args = code.Args;
+					} else if (code.Calls(CodeSymbols.Tuple) && (args = code.Args).IsEmpty | true) {
 						Tuple(args);
 					}
 				}");
@@ -151,10 +149,9 @@ namespace LeMP.Tests
 					LNodeList attrs, baseTypes, body;
 					if ((attrs = classDecl.Attrs).IsEmpty | true && classDecl.Calls(CodeSymbols.Class, 3) && 
 						(typeName = classDecl.Args[0]) != null && classDecl.Args[1].Calls(CodeSymbols.AltList) && 
-						classDecl.Args[2].Calls(CodeSymbols.Braces))
+						(baseTypes = classDecl.Args[1].Args).IsEmpty | true &&
+						classDecl.Args[2].Calls(CodeSymbols.Braces) && (body = classDecl.Args[2].Args).IsEmpty | true)
 					{
-						baseTypes = classDecl.Args[1].Args;
-						body = classDecl.Args[2].Args;
 						Handler();
 					}
 				}");
@@ -204,6 +201,74 @@ namespace LeMP.Tests
 						}
 					} /*after*/"
 				.Replace("tmp_1", "tmp_" + MacroProcessor.NextTempCounter));
+		}
+
+		[Test]
+		public void TestMatchCodeWithDuplicateVariables()
+		{
+			TestEcs(@"matchCode (node) {
+					case $x == $x, Foo($x): 
+						Handler1();
+					case $(ref r)($(ref r)): 
+						Handler2();
+					}",
+				@"{
+					LNode x;
+					if (node.Calls(CodeSymbols.Eq, 2) && (x = node.Args[0]) != null && LNode.Equals(x, node.Args[1], LNode.CompareMode.IgnoreTrivia)
+						|| node.Calls((Symbol) ""Foo"", 1) && (x = node.Args[0]) != null) {
+						Handler1();
+					} else if (node.Args.Count == 1 && (r = node.Target) != null && LNode.Equals(r, node.Args[0], LNode.CompareMode.IgnoreTrivia)) {
+						Handler2();
+					}
+				}");
+			TestEcs(@"matchCode (node) {
+					case { Foo($x, $(...etc)) == Bar($(...etc), $y); }: 
+						Handler1();
+					case { [$(...etc)] Foo($(...etc)); }: 
+						Handler2();
+					}",
+				@"{
+					LNode tmp_A, tmp_B, x, y;
+					LNodeList etc;
+					if (node.Calls(CodeSymbols.Eq, 2) && (tmp_A = node.Args[0]) != null && tmp_A.CallsMin((Symbol) ""Foo"", 1) 
+						&& (x = tmp_A.Args[0]) != null && (etc = new LNodeList(tmp_A.Args.Slice(1))).IsEmpty | true 
+						&& (tmp_B = node.Args[1]) != null && tmp_B.CallsMin((Symbol) ""Bar"", 1) 
+						&& LNode.Equals(etc, tmp_B.Args.WithoutLast(1), LNode.CompareMode.IgnoreTrivia)
+						&& (y = tmp_B.Args[tmp_B.Args.Count - 1]) != null) {
+						Handler1();
+					} else if ((etc = node.Attrs).IsEmpty | true && node.Calls((Symbol) ""Foo"") 
+						&& LNode.Equals(etc, node.Args, LNode.CompareMode.IgnoreTrivia)) {
+						Handler2();
+					}
+				}".Replace("tmp_A", "tmp_" + MacroProcessor.NextTempCounter)
+				  .Replace("tmp_B", "tmp_" + (MacroProcessor.NextTempCounter + 1)));
+		}
+
+		[Test]
+		public void TestMatches()
+		{
+			TestEcs(@"bool matches = matches(Get.Var, Do($stuff));", 
+					@"bool matches = LNode.Var(out var tmp_A, Get.Var) && (tmp_A.Calls((Symbol) ""Do"", 1) && LNode.Var(out var stuff, tmp_A.Args[0]));"
+					.Replace("tmp_A", "tmp_"+MacroProcessor.NextTempCounter));
+			TestEcs(@"
+					if (matches(code, { '2' + 2; }))
+						Weird();
+				", @"
+					if (code.Calls(CodeSymbols.Add, 2) && '2'.Equals(code.Args[0].Value) && 2.Equals(code.Args[1].Value))
+						Weird();
+					");
+			TestEcs(@"if (matches(code, 1, one)) 
+						One();
+				", @"
+					if (1.Equals(code.Value) || code.IsIdNamed((Symbol) ""one""))
+						One();
+				");
+			TestEcs(@"bool b = matches(stmt, { alt $altName; });",
+					@"bool b = stmt.Calls(CodeSymbols.Var, 2) && stmt.Args[0].IsIdNamed((Symbol) ""alt"") && LNode.Var(out var altName, stmt.Args[1]);");
+			TestEcs(@"bool b = matches(e, (_, $a, $(...args), $c));",
+					@"bool b = e.CallsMin(CodeSymbols.Tuple, 3) && e.Args[0].IsIdNamed((Symbol) ""_"") && LNode.Var(out var a, e.Args[1])
+					        && LNode.Var(out var args, new LNodeList(e.Args.Slice(2, e.Args.Count - 3)))
+					        && LNode.Var(out var c, e.Args[e.Args.Count - 1]);");
 		}
 	}
 }

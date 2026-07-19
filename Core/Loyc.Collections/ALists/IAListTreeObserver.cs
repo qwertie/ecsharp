@@ -58,8 +58,8 @@ namespace Loyc.Collections.Impl
 		/// <summary>Called when the observer is being detached from an AList.
 		/// Detach(), unlike Attach(), is not paired with a call to RootChanged.</summary>
 		/// <param name="list">List that is being detached.</param>
-		/// <param name="root">Root node that is being detached.</param>
-		void Detach(AListBase<K,T> list, AListNode<K, T> root);
+		/// <param name="root">Root node that is being detached (null if the list is empty).</param>
+		void Detach(AListBase<K,T> list, AListNode<K, T>? root);
 		
 		/// <summary>Called when the root of the tree changes, or when the
 		/// list is cleared. Also called after Attach(), but not after Detach().</summary>
@@ -72,7 +72,7 @@ namespace Loyc.Collections.Impl
 		/// a bookkeeping error somewhere.</param>
 		/// <param name="list">The list that changed.</param>
 		/// <param name="root">The new root (null if the tree is cleared).</param>
-		void RootChanged(AListBase<K,T> list, AListNode<K, T> root, bool clear);
+		void RootChanged(AListBase<K,T> list, AListNode<K, T>? root, bool clear);
 		
 		/// <summary>Called when an item is added to a leaf node.</summary>
 		/// <remarks>Note: this may be called as part of a move operation (remove+add)</remarks>
@@ -117,7 +117,7 @@ namespace Loyc.Collections.Impl
 	/// <summary>Helper methods for <see cref="IAListTreeObserver{K,T}"/>.</summary>
 	public static class AListTreeObserverExt
 	{
-		internal static void DoAttach<K, T>(this IAListTreeObserver<K, T> observer, AListBase<K, T> list, AListNode<K, T> root)
+		internal static void DoAttach<K, T>(this IAListTreeObserver<K, T> observer, AListBase<K, T> list, AListNode<K, T>? root)
 		{
 			var childrenFirst = observer.Attach(list);
 			observer.RootChanged(list, root, false);
@@ -185,7 +185,7 @@ namespace Loyc.Collections.Impl
 			self.RootChanged(list, newRoot, false);
 		}
 
-		internal static void HandleChildReplaced<K, T>(this IAListTreeObserver<K, T> self, AListNode<K, T> oldNode, AListNode<K, T> newLeft, AListNode<K, T> newRight, AListInnerBase<K, T> parent)
+		internal static void HandleChildReplaced<K, T>(this IAListTreeObserver<K, T> self, AListNode<K, T> oldNode, AListNode<K, T> newLeft, AListNode<K, T>? newRight, AListInnerBase<K, T>? parent)
 		{
 			self.HandleNodeReplaced(oldNode, newLeft, newRight);
 			if (parent != null)
@@ -197,7 +197,7 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
-		internal static void HandleNodeReplaced<K, T>(this IAListTreeObserver<K, T> self, AListNode<K, T> oldNode, AListNode<K, T> newLeft, AListNode<K, T> newRight)
+		internal static void HandleNodeReplaced<K, T>(this IAListTreeObserver<K, T> self, AListNode<K, T> oldNode, AListNode<K, T> newLeft, AListNode<K, T>? newRight)
 		{
 			if (newRight == null)
 			{	// cloned, not split

@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Loyc.Collections
@@ -48,6 +49,7 @@ namespace Loyc.Collections
 
 		#region IListSource<T> Members
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			if ((uint)index < (uint)_count) {
@@ -67,10 +69,10 @@ namespace Loyc.Collections
 		{ 
 			get {
 				bool fail;
-				T value = TryGet(index, out fail);
+				T? value = TryGet(index, out fail);
 				if (fail)
 					CheckParam.ThrowOutOfRange("index", index, 0, _count-1);
-				return value;
+				return value!;
 			}
 		}
 		
@@ -172,6 +174,7 @@ namespace Loyc.Collections
 				return _value; 
 			}
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T PopFirst(out bool fail)
 		{
 			if (!(fail = _count <= 0)) {

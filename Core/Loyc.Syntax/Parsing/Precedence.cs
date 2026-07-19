@@ -311,7 +311,7 @@ namespace Loyc.Syntax
 			return a.RangeEquals(b) && a.Left == b.Left && a.Right == b.Right;
 		}
 		public static bool operator !=(Precedence a, Precedence b) { return !(a == b); }
-		public override bool Equals(object obj) { return (obj is Precedence) && this == ((Precedence)obj); }
+		public override bool Equals(object? obj) { return (obj is Precedence) && this == ((Precedence)obj); }
 		public bool Equals(Precedence other) { return this == other; }
 		public override int  GetHashCode() { return Lo ^ (Hi << 4); }
 	}

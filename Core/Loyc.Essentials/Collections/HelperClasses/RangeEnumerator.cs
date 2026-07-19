@@ -12,13 +12,13 @@ namespace Loyc.Collections
 	public struct RangeEnumerator<T> : IEnumerator<T>
 	{
 		IFRange<T> _range;
-		T _current;
+		T? _current;
 		public RangeEnumerator(IFRange<T> range) { _range = range.Clone(); _current = default(T); }
 
 		public bool MoveNext() { bool empty; _current = _range.PopFirst(out empty); return !empty; }
-		public T Current { get { return _current; } }
+		public T Current { get { return _current!; } }
 
-		object System.Collections.IEnumerator.Current { get { return Current; } }
+		object? System.Collections.IEnumerator.Current { get { return Current; } }
 		void IDisposable.Dispose() { }
 		void System.Collections.IEnumerator.Reset() { throw new NotSupportedException(); }
 	}

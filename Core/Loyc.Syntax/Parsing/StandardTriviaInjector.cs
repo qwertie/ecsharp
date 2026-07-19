@@ -58,8 +58,8 @@ namespace Loyc.Syntax
 	/// </remarks>
 	public class StandardTriviaInjector : AbstractTriviaInjector<Token>
 	{
-		LNode _trivia_newline, _trivia_appendStatement;
-		ISourceFile _sourceFile;
+		LNode _trivia_newline = null!, _trivia_appendStatement = null!; // set by the SourceFile setter
+		ISourceFile _sourceFile = null!; // set by the SourceFile setter
 		public ISourceFile SourceFile
 		{
 			get { return _sourceFile; }
@@ -71,7 +71,7 @@ namespace Loyc.Syntax
 		}
 		public int NewlineTypeInt { get; set; }
 		public string SLCommentPrefix { get; set; }
-		public string SLCommentSuffix { get; set; }
+		public string? SLCommentSuffix { get; set; }
 		public string MLCommentPrefix { get; set; }
 		public string MLCommentSuffix { get; set; }
 		public bool TopLevelIsBlock { get; set; } // whether the root node list should expect newlines between items
@@ -105,7 +105,7 @@ namespace Loyc.Syntax
 			TopLevelIsBlock = topLevelIsBlock;
 		}
 
-		protected override LNodeList GetTriviaToAttach(LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode parent, int indexInParent)
+		protected override LNodeList GetTriviaToAttach(LNode node, IListSource<Token> trivia, TriviaLocation loc, LNode? parent, int indexInParent)
 		{
 			var newAttrs = LNode.List();
 			int i = 0;
@@ -120,7 +120,7 @@ namespace Loyc.Syntax
 				}
 			}
 			bool justAddedSLComment = false;
-			LNode attr = null;
+			LNode? attr = null;
 			for (; i < trivia.Count; i++) {
 				var t = trivia[i];
 				// ignore first newline after single-line comment
@@ -144,7 +144,7 @@ namespace Loyc.Syntax
 		/// <summary>Called to find out if a newline is to be added implicitly 
 		/// before the current child of the specified node.</summary>
 		/// <returns>By default, returns true if the node is a braced block.</returns>
-		protected virtual bool HasImplicitLeadingNewline(LNode child, LNode parent, int indexInParent)
+		protected virtual bool HasImplicitLeadingNewline(LNode child, LNode? parent, int indexInParent)
 		{
 			if (parent != null)
 				return parent.Calls(S.Braces) && indexInParent >= 0;
@@ -154,12 +154,12 @@ namespace Loyc.Syntax
 
 		/// <summary>Called to transform a trivia token into a trivia attribute.</summary>
 		/// <remarks>If a trivia token is not recognized, null is returned to ignore the trivia.</remarks>
-		protected virtual LNode MakeTriviaAttribute(Token t)
+		protected virtual LNode? MakeTriviaAttribute(Token t)
 		{
 			if (t.TypeInt == NewlineTypeInt)
 				return _trivia_newline;
 			else {
-				Symbol commentType = null;
+				Symbol? commentType = null;
 				UString text;
 				if (t.Value == null || t.Value == WhitespaceTag.Value)
 					text = SourceFile.Text.Slice(t.StartIndex, t.Length);
@@ -179,7 +179,7 @@ namespace Loyc.Syntax
 				}
 				if (commentType == null)
 					return null;
-				return LNode.Trivia(commentType, text.ToString(), SourceRange.New(SourceFile, t));
+				return LNode.Trivia(commentType, text.ToString()!, SourceRange.New(SourceFile, t)); // comment text is never null here
 			}
 		}
 

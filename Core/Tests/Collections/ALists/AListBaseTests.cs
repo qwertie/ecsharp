@@ -36,7 +36,7 @@ namespace Loyc.Collections.Tests
 	public class AListBaseTests<AList, T> : AListTestBase<AList, T> where AList : AListBase<int, T>, ICloneable<AList>
 	{
 		protected int _randomSeed;
-		protected Random _r;
+		protected Random _r = null!; // initialized by SetUp()
 		protected bool _testExceptions;
 
 		public AListBaseTests(AListTestHelpersBase<AList, T> helpers, bool testExceptions, int randomSeed) : base(helpers)
@@ -147,7 +147,7 @@ namespace Loyc.Collections.Tests
 				{
 					Assert.AreEqual(NotifyCollectionChangedAction.Add, args.Action);
 					Assert.That(args.NewItems != null && args.NewItems.Count == 1);
-					Assert.AreEqual(changeItem, GetKey(args.NewItems[0]));
+					Assert.AreEqual(changeItem, GetKey(args.NewItems![0]));
 				}
 				else if (sizeChange < 0) 
 				{
@@ -285,7 +285,7 @@ namespace Loyc.Collections.Tests
 			{
 				Assert.AreEqual(NotifyCollectionChangedAction.Remove, args.Action);
 				Assert.AreEqual(0, args.Index);
-				Assert.AreEqual(-args.SizeChange, args.OldItems.Count);
+				Assert.AreEqual(-args.SizeChange, args.OldItems!.Count);
 				sizeChange += args.SizeChange;
 			};
 
@@ -448,7 +448,7 @@ namespace Loyc.Collections.Tests
 			tob.CheckPoint();
 			alist.Clear();
 			Assert.AreEqual(0, idx.ItemCount); 
-			Assert.AreEqual(-1, idx.IndexOfAny(default(T)));
+			Assert.AreEqual(-1, idx.IndexOfAny(default(T)!));
 		}
 
 		[Test]
@@ -535,8 +535,8 @@ namespace Loyc.Collections.Tests
 	{
 		public int ItemCount, NodeCount, CheckPointCount;
 
-		AListBase<K, T> _list;
-		AListNode<K, T> _root;
+		AListBase<K, T>? _list;
+		AListNode<K, T>? _root;
 
 		public bool? Attach(AListBase<K, T> list)
 		{
@@ -548,10 +548,10 @@ namespace Loyc.Collections.Tests
 		{
 			Assert.ReferenceEquals(list, _list);
 			Assert.ReferenceEquals(root, _root);
-			RootChanged(_list, null, true);
+			RootChanged(_list!, null, true);
 			_list = null;
 		}
-		public void RootChanged(AListBase<K, T> list, AListNode<K, T> newRoot, bool clear)
+		public void RootChanged(AListBase<K, T> list, AListNode<K, T>? newRoot, bool clear)
 		{
 			Assert.ReferenceEquals(list, _list);
 			if (clear)
@@ -602,7 +602,7 @@ namespace Loyc.Collections.Tests
 		public void CheckPoint()
 		{
 			Assert.AreEqual((NodeCount != 0), (_root is AListInnerBase<K, T>));
-			Assert.AreEqual(_list.Count, _root == null ? 0 : _root.TotalCount);
+			Assert.AreEqual(_list!.Count, _root == null ? 0 : _root.TotalCount);
 			Assert.AreEqual(_list.Count, ItemCount);
 			CheckPointCount++;
 		}

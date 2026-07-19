@@ -1,0 +1,245 @@
+#ecs;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Numerics;
+
+[Passive]
+define (#type<$T>) { $T; }
+
+macro standardTypeToName($type) {
+	if (!type.HasSpecialName())
+		return type;
+	return LNode.Id(type.Name.Name[1].ToString().ToUpper() + type.Name.Name.Substring(2));
+}
+
+using Loyc.SyncLib;
+
+namespace Loyc.SyncLib.Tests
+{
+	define basicTypes => #splice(bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char);
+	define standardTypes => #splice(bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char, string);
+	define standardItemTypes => #splice(bool, sbyte, byte, short, ushort, int, uint, long, ulong, float, double, decimal, BigInteger, char, #type<string? >);
+
+	internal class StandardFields
+	{
+		##unroll(($ListT, $Suffix) in (
+			($T, ""),
+			(#type<$T? >, "Nullable"),
+		))
+		{
+			##unroll($T in standardTypes)
+			{
+				replace (varname => concatId(standardTypeToName($T), $Suffix))
+				{
+					public $ListT varname;
+				}
+			}
+		}
+
+		public this(int seed)
+		{
+			Bool = (seed & 1) != 0;
+			BoolNullable = null;
+			String = (seed++).ToString();
+			##unroll($T in basicTypes) {
+				static if (!($T `staticMatches` bool)) {
+					#snippet varstem = standardTypeToName($T);
+					$varstem = ($T) seed++;
+					concatId($varstem, "Nullable") = ($T) seed++;
+				}
+			}
+		}
+
+		public override bool Equals(object other) => other is StandardFields sf && Equals(sf);
+		public bool Equals(StandardFields other)
+		{
+			return other.Bool == Bool
+				&& other.Int8 == Int8
+				&& other.Uint8 == Uint8
+				&& other.Int16 == Int16
+				&& other.Uint16 == Uint16
+				&& other.Int32 == Int32
+				&& other.Uint32 == Uint32
+				&& other.Int64 == Int64
+				&& other.Uint64 == Uint64
+				&& other.Single == Single
+				&& other.Double == Double
+				&& other.Decimal == Decimal
+				&& other.BigInteger == BigInteger
+				&& other.Char == Char
+				&& other.String == String
+				&& other.BoolNullable == BoolNullable
+				&& other.Int8Nullable == Int8Nullable
+				&& other.Uint8Nullable == Uint8Nullable
+				&& other.Int16Nullable == Int16Nullable
+				&& other.Uint16Nullable == Uint16Nullable
+				&& other.Int32Nullable == Int32Nullable
+				&& other.Uint32Nullable == Uint32Nullable
+				&& other.Int64Nullable == Int64Nullable
+				&& other.Uint64Nullable == Uint64Nullable
+				&& other.SingleNullable == SingleNullable
+				&& other.DoubleNullable == DoubleNullable
+				&& other.DecimalNullable == DecimalNullable
+				&& other.BigIntegerNullable == BigIntegerNullable
+				&& other.CharNullable == CharNullable
+				&& other.StringNullable == StringNullable;
+		}
+		public override int GetHashCode() => base.GetHashCode(); // suppress warning
+	}
+
+	/// This class uses all standard types, their nullable variants,
+	/// and most of the supported collections of standard types, 
+	/// notably excluding Memory<T> which is not supported by Newtonsoft
+	/// (and so interferes with the Newtonsoft compatibility tests).
+	/// There are no custom types here, just natively-supported types.
+	internal class BigStandardModelNoMem : StandardFields
+	{
+		##unroll(($ListT, $Suffix) in (
+			(#type<$T[]>, "Array"),
+			(List<$T>, "List"),
+			//(IList< $T? >, "NList"),
+			(IReadOnlyCollection< $T >, "Coll"),
+		))
+		{
+			##unroll($T in standardTypes)
+			{
+				#snippet varname = concatId(standardTypeToName($T), $Suffix);
+				public $ListT $varname;
+			}
+		}
+
+		public this(int seed) : base(seed)
+		{
+			BoolArray = new bool[0];
+			BoolList = new List<bool> { false, true };
+			BoolColl = BoolList;
+			StringArray = new string[] { "Yarn", "Twine\0", "\u0001\a\b\n\r\t\v•" };
+			StringList = new List<string> { "Rope", "String", "Thread🧵", "💩\u007F\u0080\u00A1", "￭\uDC00\uDCFF\uDFFF", "\uD800" };
+			StringColl = StringList;
+			Uint8Array = new byte[] { (byte)seed, 0, 10, 20, 30, (byte)'H', (byte)'o', (byte)'l', (byte)'a', 33, 127, 128, 192, 255 };
+			Uint8List = new List<byte> { 255, (byte)seed, 0 };
+			Uint8Coll = Uint8List;
+
+			##unroll($T in basicTypes) {
+				static if (!($T `staticMatches` bool) && !($T `staticMatches` byte)) {
+					#snippet varstem = standardTypeToName($T);
+					$varstem = ($T) seed++;
+					concatId($varstem, "Coll") = 
+					concatId($varstem, "List") = new List<$T> { 
+						($T) seed++, ($T) seed++
+					};
+					concatId($varstem, "Array") = new $T[] { 
+						($T) seed++, ($T) seed++, ($T) seed++
+					};
+				}
+			}
+		}
+	}
+
+	/// This class uses all standard types, their nullable variants,
+	/// and most of the supported collections of standard types. 
+	/// But there are no custom types.
+	internal class BigStandardModel : BigStandardModelNoMem
+	{
+		##unroll(($ListT, $Suffix) in (
+			(Memory<$T>, "Memory"),
+		))
+		{
+			##unroll($T in standardTypes)
+			{
+				#snippet varname = concatId(standardTypeToName($T), $Suffix);
+				public $ListT $varname;
+			}
+		}
+
+		public this(int seed) : base(seed)
+		{
+			##unroll($T in basicTypes) {
+				static if (!($T `staticMatches` bool)) {
+					#snippet varstem = standardTypeToName($T);
+					
+					concatId($varstem, "Memory") = concatId($varstem, "Array").AsMemory();
+				}
+			}
+		}
+	}
+
+	#rawText("#pragma warning disable 8601, 8619, 8620"); // Disable nullability warnings for generated code
+
+	struct BigStandardModelSync<S> : ISyncObject<S, StandardFields>, ISyncObject<S, BigStandardModel>, ISyncObject<S, BigStandardModelNoMem>
+		where S: ISyncManager
+	{
+		public BigStandardModel Sync(S sync, BigStandardModel? obj)
+		{
+			obj = SyncMemory(sync, obj);
+			Sync(sync, (BigStandardModelNoMem) obj);
+			return obj;
+		}
+
+		public BigStandardModelNoMem Sync(S sync, BigStandardModelNoMem? obj)
+		{
+			obj = SyncLists(sync, obj);
+			Sync(sync, (StandardFields) obj);
+			return obj;
+		}
+
+		public StandardFields Sync(S sync, StandardFields? obj)
+		{
+			obj ??= new BigStandardModel(0);
+
+			##unroll(($ListT, $Suffix, $Sync) in (
+				($T, "", Sync),
+				(#type<$T? >, "Nullable", Sync),
+			))
+			{
+				##unroll($T in standardTypes)
+				{
+					#snippet varname = concatId(standardTypeToName($T), $Suffix);
+					obj.$varname = sync.$Sync(concat($varname), obj.$varname);
+				}
+			}
+
+			return obj;
+		}
+
+		public BigStandardModelNoMem SyncLists(S sync, BigStandardModelNoMem? obj)
+		{
+			obj ??= new BigStandardModelNoMem(0);
+
+			##unroll(($ListT, $Suffix, $Sync) in (
+				(#type<$T[]>, "Array", SyncList),
+				(List<$T>, "List", SyncList),
+				//(IList< $T? >, "NList", SyncList),
+				(IReadOnlyCollection<$T>, "Coll", SyncList),
+			))
+			{
+				##unroll($T in standardTypes)
+				{
+					#snippet varname = concatId(standardTypeToName($T), $Suffix);
+					obj.$varname = sync.$Sync(concat($varname), obj.$varname);
+				}
+			}
+			
+			return obj;
+		}
+
+		public BigStandardModel SyncMemory(S sync, BigStandardModel? obj)
+		{
+			obj ??= new BigStandardModel(0);
+
+			##unroll(($ListT, $Suffix, $Sync) in (
+				(Memory<$T>, "Memory", SyncList),
+			))
+			{
+				##unroll($T in standardTypes)
+				{
+					#snippet varname = concatId(standardTypeToName($T), $Suffix);
+					obj.$varname = sync.$Sync(concat($varname), obj.$varname);
+				}
+			}
+			
+			return obj;
+		}
+	}
+}

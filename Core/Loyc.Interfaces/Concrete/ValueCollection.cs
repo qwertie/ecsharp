@@ -46,7 +46,9 @@ namespace Loyc.Collections
 	/// from the Mono project, changed to use IDictionary instead of Dictionary.
 	/// </summary>
 	[Serializable]
-	public sealed class ValueCollection<TKey, TValue> : ICollection<TValue>, ICollectionAndReadOnly<TValue>, IEnumerable<TValue>, ICollection, IEnumerable {
+	public sealed class ValueCollection<TKey, TValue> : ICollection<TValue>, ICollectionAndReadOnly<TValue>, IEnumerable<TValue>, ICollection, IEnumerable
+		where TKey: notnull
+	{
 		IReadOnlyDictionary<TKey, TValue> dictionary;
 
 		public ValueCollection (IReadOnlyDictionary<TKey, TValue> dictionary)
@@ -156,7 +158,7 @@ namespace Loyc.Collections
 				get { return host_enumerator.Current.Value; }
 			}
 
-			object IEnumerator.Current {
+			object? IEnumerator.Current {
 				get { return host_enumerator.Current.Value; }
 			}
 

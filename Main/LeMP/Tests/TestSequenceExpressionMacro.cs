@@ -761,6 +761,54 @@ namespace LeMP.Tests
 			");
 		}
 
+		[Test(Fails = "TODO: Bug #136")]
+		public void Bug_2021_02_ColonColonStatement()
+		{
+			TestCs(@"#useSequenceExpressions;
+				new Point()::p;
+				Thing f()
+				{
+					new Thing()::t;
+					return t;
+				}
+				", @"
+				var p = new Point();
+				Thing f()
+				{
+					var t = new Thing();
+					return t;
+				}");
+		}
+
+		[Test(Fails = "TODO: Bug #136")]
+		public void Bug_2021_02_WithStatement()
+		{
+			TestCs(@"#useSequenceExpressions;
+				with (#runSequence(var p = new Person(), p))
+				{
+					.Name = ""John Smith"";
+					.Age = 39;
+				}
+				", @"
+				var p = new Person();
+						var tmp_10 = p;
+						tmp_10.Name = ""John Smith"";
+				tmp_10.Age = 39;
+				".Replace("tmp_A", "tmp_" + MacroProcessor.NextTempCounter));
+			TestCs(@"#useSequenceExpressions;
+				with (FindById(personId)::p)
+				{
+					.FavoriteColor = Color.Red;
+					.Age = 39;
+				}
+			", @"
+				var p = FindById(personId);
+				var tmp_A = p;
+				tmp_A.FavoriteColor = Color.Red;
+				tmp_A.Age = 39;
+			".Replace("tmp_A", "tmp_" + MacroProcessor.NextTempCounter));
+		}
+
 		[Test]
 		public void Bug_2021_01_VarDeclProblem()
 		{

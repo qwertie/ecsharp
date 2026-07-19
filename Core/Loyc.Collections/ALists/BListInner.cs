@@ -5,6 +5,7 @@ namespace Loyc.Collections.Impl
 	using System.Linq;
 	using System.Text;
 	using System.Diagnostics;
+	using System.Diagnostics.CodeAnalysis;
 
 	/// <summary>Internal implementation class. Shared code of all BList internal nodes.</summary>
 	[Serializable]
@@ -49,6 +50,7 @@ namespace Loyc.Collections.Impl
 		public override long CountSizeInBytes(int sizeOfT, int sizeOfK) =>
 			base.CountSizeInBytes(sizeOfT, sizeOfK) + 4 * IntPtr.Size + _highestKey.Length * sizeOfK;
 
+		[MemberNotNull(nameof(_highestKey))]
 		private void GetHighestKeys()
 		{
 			_highestKey = new K[_children.Length - 1];
@@ -95,7 +97,7 @@ namespace Loyc.Collections.Impl
 			return i;
 		}
 
-		internal override int DoSingleOperation(ref AListSingleOperation<K, T> op, out AListNode<K, T> splitLeft, out AListNode<K, T> splitRight)
+		internal override int DoSingleOperation(ref AListSingleOperation<K, T> op, out AListNode<K, T>? splitLeft, out AListNode<K, T>? splitRight)
 		{
 			Debug.Assert(!IsFrozen || op.Mode == AListOperation.Retrieve);
 
@@ -170,7 +172,7 @@ namespace Loyc.Collections.Impl
 			return sizeChange;
 		}
 
-		protected sealed override bool HandleUndersizedOrAggregateChanged(int i, IAListTreeObserver<K, T> tob)
+		protected sealed override bool HandleUndersizedOrAggregateChanged(int i, IAListTreeObserver<K, T>? tob)
 		{
 			// Child i is undersized or its highest key changed. Update _highestKey if possible.
 			bool returnAggChg = i >= _childCount-1;
@@ -180,7 +182,7 @@ namespace Loyc.Collections.Impl
 			return base.HandleUndersizedOrAggregateChanged(i, tob) | returnAggChg;
 		}
 
-		protected sealed override bool HandleUndersized(int i, IAListTreeObserver<K, T> tob)
+		protected sealed override bool HandleUndersized(int i, IAListTreeObserver<K, T>? tob)
 		{
 			if (_highestKey == null) // it's null if called from base constructor
 				GetHighestKeys();
@@ -198,7 +200,7 @@ namespace Loyc.Collections.Impl
 			return amUndersized;
 		}
 
-		protected new AListInnerBase<K, T> HandleChildSplit(int i, AListNode<K, T> splitLeft, ref AListNode<K, T> splitRight, IAListTreeObserver<K, T> tob)
+		protected new AListInnerBase<K, T>? HandleChildSplit(int i, AListNode<K, T> splitLeft, ref AListNode<K, T>? splitRight, IAListTreeObserver<K, T>? tob)
 		{
 			// Update _highestKey. base.HandleChildSplit will call LLInsert
 			// which will update _highestKey for the newly inserted right child,
@@ -250,7 +252,7 @@ namespace Loyc.Collections.Impl
 				{
 					var key = _highestKey[i];
 					var expected = _children[i].Node.GetLastItem();
-					Debug.Assert((key == null && expected == null) || key.Equals(expected));
+					Debug.Assert((key == null && expected == null) || key!.Equals(expected));
 				}
 			}
 		}

@@ -15,10 +15,10 @@ namespace Loyc.Syntax
 		public virtual bool PrintTriviaExplicitly { get; set; }
 		public virtual bool CompatibilityMode { get; set; }
 		public virtual bool CompactMode { get; set; }
-		public virtual string IndentString { get; set; }
-		public virtual string NewlineString { get; set; }
-		public virtual ILiteralPrinter LiteralPrinter { get; set; }
-		public virtual Action<ILNode, IndexRange, int> SaveRange { get; set; }
+		public virtual string IndentString { get; set; } = null!;
+		public virtual string NewlineString { get; set; } = null!;
+		public virtual ILiteralPrinter LiteralPrinter { get; set; } = null!;
+		public virtual Action<ILNode, IndexRange, int> SaveRange { get; set; } = null!;
 
 		public void CopyFrom(ILNodePrinterOptions original)
 		{

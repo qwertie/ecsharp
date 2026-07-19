@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
+    <LangVersion>12.0</LangVersion>
     <!--Change path to "obj" folder to avoid a weird error when there is also a .NET Standard version. NOTE: reportedly, changing new-style project files in the same way doesn't work.-->
     <BaseIntermediateOutputPath>..\Bin\obj.netfx\Loyc.Essentials</BaseIntermediateOutputPath>
     <ProjectGuid>{DF642FB7-25EB-424D-8E92-6C046F42D4A9}</ProjectGuid>
@@ -39,6 +40,15 @@
     <FileAlignment>512</FileAlignment>
     <NoWarn>1591, 1573, 0419</NoWarn>
   </PropertyGroup>
+  <!-- Nullability: disable broken warnings and include attribute file -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);nullable</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\NullableAttributes.cs">
+      <Link>NullableAttributes.cs</Link>
+    </Compile>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' or '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
   </PropertyGroup>
@@ -60,7 +70,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;NET47,NET472</DefineConstants>
     <DebugType>Full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -68,7 +78,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;NET47,NET472</DefineConstants>
     <DocumentationFile>..\Bin\Release\Loyc.Essentials.xml</DocumentationFile>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -101,17 +111,32 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="System.Numerics" />
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="Collections\Adapters\AddAdapter.cs" />
     <Compile Include="Collections\Adapters\DictionaryAsSink.cs" />
     <Compile Include="Collections\Adapters\ListAsSink.cs" />
+    <Compile Include="Collections\Adapters\ReadOnlyArraySlice.cs" />
     <Compile Include="Collections\Adapters\ReadOnlyListAsListSource.cs" />
     <Compile Include="Collections\Adapters\ROLSlice.cs" />
+    <Compile Include="Collections\Adapters\ScannableEnumerable.cs" />
     <Compile Include="Collections\Adapters\SelectDictionaryFromKeys.cs" />
     <Compile Include="Collections\Adapters\SparseListSourceSlice.cs" />
     <Compile Include="Collections\BaseClasses\CollectionWrapper.cs" />
@@ -122,6 +147,7 @@
     </Compile>
     <Compile Include="Collections\HelperClasses\DictionaryWithChangeEvents.cs" />
     <Compile Include="Collections\BaseClasses\DictionaryWrapper.cs" />
+    <Compile Include="Collections\HelperClasses\Empty.cs" />
     <Compile Include="Collections\HelperClasses\ListWithChangeEvents.cs" />
     <Compile Include="Collections\BaseClasses\ListWrapper.cs" />
     <Compile Include="Collections\ExtensionMethods\IPush, IPop.cs" />
@@ -154,6 +180,11 @@
     </Compile>
     <Compile Include="Collections\HelperClasses\CollectionWithChangeEvents.cs" />
     <Compile Include="Collections\BaseClasses\SetWrapper.cs" />
+    <Compile Include="Collections\Implementations\MultiMap.cs" />
+    <Compile Include="Compatibility\ArrayBufferWriter.cs" />
+    <Compile Include="Compatibility\ArraySegment.cs" />
+    <Compile Include="Graphs\GraphMethods.cs" />
+    <Compile Include="Graphs\LGExt.cs" />
     <Compile Include="MessageSinks\LogMessage.cs" />
     <Compile Include="MessageSinks\MessageHolder.cs" />
     <Compile Include="MessageSinks\LogException.cs" />
@@ -199,10 +230,51 @@
     <Compile Include="Collections\Implementations\InternalList.cs" />
     <Compile Include="Collections\Implementations\WeakKeyComparer.cs" />
     <Compile Include="Collections\Implementations\WeakKeyDictionary.cs" />
+    <Compile Include="SyncLib\Binary\SyncBinary.cs" />
+    <Compile Include="SyncLib\Binary\SyncBinary.FieldIdMode.cs" />
+    <Compile Include="SyncLib\Binary\SyncBinary.Options.cs" />
+    <Compile Include="SyncLib\Binary\SyncBinary.Reader.cs" />
+    <Compile Include="SyncLib\Binary\SyncBinary.ReaderState.cs" />
+    <Compile Include="SyncLib\Binary\SyncBinary.Writer.cs" />
+    <Compile Include="SyncLib\Binary\SyncBinary.WriterState.cs" />
+    <Compile Include="SyncLib\FieldId.cs" />
+    <Compile Include="SyncLib\Impl\IListBuilder.cs" />
+    <Compile Include="SyncLib\Impl\ISyncField.cs" />
+    <Compile Include="SyncLib\Impl\ISyncObject.cs" />
+    <Compile Include="SyncLib\Impl\ListLoader.cs" />
+    <Compile Include="SyncLib\Impl\ListSaver.cs" />
+    <Compile Include="SyncLib\Impl\ObjectSyncher.cs" />
+    <Compile Include="SyncLib\Impl\ObjectTable.cs" />
+    <Compile Include="SyncLib\Impl\SyncDateTime.cs" />
+    <Compile Include="SyncLib\Impl\SyncEnum.cs" />
+    <Compile Include="SyncLib\Impl\SyncList.cs" />
+    <Compile Include="SyncLib\Impl\SyncPrimitive.out.cs" />
+    <Compile Include="SyncLib\Impl\SyncTimeSpan.cs" />
+    <Compile Include="SyncLib\ISyncManager.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ISyncManager.ecs</DependentUpon>
+    </Compile>
+    <Compile Include="SyncLib\ObjectMode.cs" />
+    <Compile Include="SyncLib\SyncManagerExt.cs" />
+    <Compile Include="SyncLib\SyncMode.cs" />
+    <Compile Include="SyncLib\SyncObjectList.cs" />
+    <Compile Include="SyncLib\SyncType.cs" />
+    <Compile Include="SyncLib\SyncTypeRegistry.cs" />
+    <Compile Include="SyncLib\TypeStuff.cs" />
+    <Compile Include="SyncLib\TypeTagAttribute.cs" />
+    <Compile Include="SyncLib\TypeTagRegistry.cs" />
+    <Compile Include="SyncLib\Impl\WriterStateBase.cs" />
     <Compile Include="Utilities\ByteArrayInString.cs" />
     <Compile Include="Utilities\G.cs" />
     <Compile Include="Utilities\EzStopwatch.cs" />
     <Compile Include="Utilities\Extensions.cs" />
+    <None Include="packages.config" />
+    <None Include="SyncLib\Impl\SyncPrimitive.ecs" />
+    <None Include="SyncLib\ISyncManager.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>ISyncManager.out.cs</LastGenOutput>
+    </None>
     <None Include="Utilities\GRange.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>GRange.out.cs</LastGenOutput>
@@ -227,15 +299,18 @@
     <Compile Include="MessageSinks\BasicSinks.cs" />
     <Compile Include="Utilities\MiniTest.cs" />
     <Compile Include="Utilities\PrintHelpers.cs" />
+    <Compile Include="Utilities\AmbientService.cs" />
     <Compile Include="Utilities\SavedValue.cs" />
     <Compile Include="Utilities\RunTests.cs" />
     <Compile Include="Strings\StringExt.cs" />
+    <Compile Include="Utilities\StreamScanner.cs" />
     <Compile Include="Utilities\ThreadEx.cs" />
+    <Compile Include="Utilities\Traits.cs" />
     <Compile Include="Utilities\Triplet.cs" />
     <Compile Include="Utilities\ValueComparer.cs" />
     <Compile Include="Compatibility\WeakReference.cs" />
+    <Compile Include="Utilities\void.cs" />
     <Compile Include="Utilities\WrapperBase.cs" />
-    <Compile Include="void.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -286,4 +361,5 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
+  <ItemGroup />
 </Project>

@@ -30,12 +30,12 @@ namespace Loyc.Collections
 	{
 		public static readonly Set<T> Empty = new Set<T>();
 		internal InternalSet<T> _set;
-		IEqualityComparer<T> _comparer;
+		IEqualityComparer<T>? _comparer;
 		int _count;
 
 		public Set(IEnumerable<T> list) : this(list, InternalSet<T>.DefaultComparer) { }
-		public Set(IEqualityComparer<T> comparer) : this(null, comparer) { }
-		public Set(IEnumerable<T> list, IEqualityComparer<T> comparer)
+		public Set(IEqualityComparer<T>? comparer) : this(null, comparer) { }
+		public Set(IEnumerable<T>? list, IEqualityComparer<T>? comparer)
 		{
 			_set = new InternalSet<T>();
 			_comparer = comparer;
@@ -49,8 +49,8 @@ namespace Loyc.Collections
 				_set = InternalSet<T>.Empty;
 			}
 		}
-		public Set(InternalSet<T> set, IEqualityComparer<T> comparer) : this(set, comparer, set.Count()) { }
-		internal Set(InternalSet<T> set, IEqualityComparer<T> comparer, int count)
+		public Set(InternalSet<T> set, IEqualityComparer<T>? comparer) : this(set, comparer, set.Count()) { }
+		internal Set(InternalSet<T> set, IEqualityComparer<T>? comparer, int count)
 		{
 			Debug.Assert(count >= 0);
 			_set = set;
@@ -61,7 +61,9 @@ namespace Loyc.Collections
 
 		public bool IsEmpty { get { return _count == 0; } }
 		public InternalSet<T> InternalSet { get { return _set; } }
-		public IEqualityComparer<T> Comparer
+		/// <summary>Returns the comparer, or null if the set uses reference equality
+		/// (see <see cref="Impl.InternalSet{T}.DefaultComparer"/>).</summary>
+		public IEqualityComparer<T>? Comparer
 		{
 			get {
 				if (_comparer == null && !_set.HasRoot)
@@ -71,7 +73,7 @@ namespace Loyc.Collections
 		}
 
 		bool IEquatable<Set<T>>.Equals(Set<T> rhs) { return SetEquals(rhs); }
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return obj is Set<T> && SetEquals((Set<T>)obj);
 		}
@@ -113,7 +115,7 @@ namespace Loyc.Collections
 			public bool MoveNext() { return _e.MoveNext(); }
 
 			void IDisposable.Dispose() { }
-			object System.Collections.IEnumerator.Current { get { return Current; } }
+			object? System.Collections.IEnumerator.Current { get { return Current; } }
 			void System.Collections.IEnumerator.Reset() { throw new NotSupportedException(); }
 		}
 
@@ -230,7 +232,7 @@ namespace Loyc.Collections
 		}
 		public Set<T> Intersect(Set<T> other) { return Intersect(other._set, other.Comparer); }
 		public Set<T> Intersect(MSet<T> other) { return Intersect(other._set, other.Comparer); }
-		internal Set<T> Intersect(InternalSet<T> other, IEqualityComparer<T> otherComparer)
+		internal Set<T> Intersect(InternalSet<T> other, IEqualityComparer<T>? otherComparer)
 		{
 			Debug.Assert(_set.IsRootFrozen);
 			var set2 = _set;

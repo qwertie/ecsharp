@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,6 +36,7 @@ namespace Loyc.Collections
 
 		public T First => this[0];
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("empty")]
 		public T PopFirst(out bool empty)
 		{
 			if (_count != 0)
@@ -73,6 +75,7 @@ namespace Loyc.Collections
 				return defaultValue;
 			}
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			int i = _start + index;
@@ -97,10 +100,11 @@ namespace Loyc.Collections
 			return slice;
 		}
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIfNull("index")]
 		public T NextHigherItem(ref int? index)
 		{
 			index += _start;
-			T next = _list.NextHigherItem(ref index);
+			T? next = _list.NextHigherItem(ref index);
 			index -= _start;
 			if (index >= _count)
 			{
@@ -110,10 +114,11 @@ namespace Loyc.Collections
 			return next;
 		}
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIfNull("index")]
 		public T NextLowerItem(ref int? index)
 		{
 			index += _start;
-			T next = _list.NextLowerItem(ref index);
+			T? next = _list.NextLowerItem(ref index);
 			index -= _start;
 			if (index < 0)
 			{
@@ -128,10 +133,10 @@ namespace Loyc.Collections
 		public IEnumerator<KeyValuePair<int, T>> GetItemEnumerator()
 		{
 			int? index = null;
-			T item = NextHigherItem(ref index);
+			T? item = NextHigherItem(ref index);
 			while (index != null)
 			{
-				yield return new KeyValuePair<int, T>(index.Value, item);
+				yield return new KeyValuePair<int, T>(index.Value, item!);
 				item = NextHigherItem(ref index);
 			}
 		}

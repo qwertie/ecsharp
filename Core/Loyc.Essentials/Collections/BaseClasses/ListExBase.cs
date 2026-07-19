@@ -22,10 +22,10 @@ namespace Loyc.Collections.Impl
 		{
 			get {
 				bool fail;
-				T value = TryGet(index, out fail);
+				T? value = TryGet(index, out fail);
 				if (fail)
 					ThrowIndexOutOfRange(index);
-				return value;
+				return value!;
 			}
 			set {
 				if (!TrySet(index, value))

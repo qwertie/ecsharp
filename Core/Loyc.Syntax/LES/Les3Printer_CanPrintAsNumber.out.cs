@@ -14,14 +14,14 @@ using Loyc.Syntax.Lexing;
 
 // 0162=Unreachable code detected; 0642=Possibly mistaken empty statement
 
-#pragma warning disable 162, 642
+#pragma warning disable 162, 642, 8600, 8602, 8603, 8604, 8625
 
 namespace Loyc.Syntax.Les
 {
 	partial class Les3Printer
 	{
-		[ThreadStatic] static LexerSource<UString> src;	// provides the APIs expected by LLLPG
-		[ThreadStatic] static NullMessageSink msgCounter;
+		[ThreadStatic] static LexerSource<UString>? src;	// provides the APIs expected by LLLPG
+		[ThreadStatic] static NullMessageSink? msgCounter;
 
 		
 		public static bool CanPrintAsNumber(UString textValue, Symbol typeMarker)

@@ -8,6 +8,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Loyc.Collections
 {
@@ -84,6 +85,7 @@ namespace Loyc.Collections
 			get { return _list[_offset + index]; }
 		}
 		/// <inheritdoc/>
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			return _list.TryGet(_offset + index, out fail);
@@ -105,7 +107,7 @@ namespace Loyc.Collections
 		public static bool operator ==(NegListSource<T> a, NegListSource<T> b) { return a.Equals(b); }
 		public static bool operator !=(NegListSource<T> a, NegListSource<T> b) { return !a.Equals(b); }
 		/// <inheritdoc cref="Loyc.WrapperBase{T}.Equals"/>
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			if (obj is NegListSource<T>)
 				return Equals((NegListSource<T>)obj);
@@ -116,7 +118,7 @@ namespace Loyc.Collections
 			return _list.GetHashCode() ^ _offset.GetHashCode();
 		}
 		/// <summary>Returns ToString() of the wrapped list.</summary>
-		public override string ToString()
+		public override string? ToString()
 		{
 			return _list.ToString();
 		}

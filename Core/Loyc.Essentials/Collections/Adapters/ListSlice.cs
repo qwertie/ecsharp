@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Loyc.Math;
 
 namespace Loyc.Collections.MutableListExtensionMethods
@@ -88,6 +89,7 @@ namespace Loyc.Collections
 			get { return this[_count - 1]; }
 		}
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T PopFirst(out bool fail)
 		{
 			if (_count != 0) {
@@ -98,6 +100,7 @@ namespace Loyc.Collections
 			fail = true;
 			return default(T);
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T PopLast(out bool fail)
 		{
 			if (_count != 0) {
@@ -143,6 +146,7 @@ namespace Loyc.Collections
 				return defaultValue;
 			}
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			if ((uint)index < (uint)_count)

@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Loyc.Math;
@@ -38,6 +39,7 @@ namespace Loyc.Collections
 
 		#region IListSource<Num> Members
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public Num TryGet(int index, out bool fail)
 		{
 			if (fail = ((uint)index >= (uint)_count))

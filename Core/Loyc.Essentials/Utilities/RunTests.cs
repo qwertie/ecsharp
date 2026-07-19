@@ -30,15 +30,15 @@ namespace Loyc.MiniTest
 			int errorCount = 0;
 
 			MethodInfo[] methods = o.GetType().GetMethods();
-			MethodInfo setup = GetSetup(methods);
-			MethodInfo teardown = GetTeardown(methods);
+			MethodInfo? setup = GetSetup(methods);
+			MethodInfo? teardown = GetTeardown(methods);
 
 			foreach (MethodInfo method in methods)
 			{
-				object testAttr = IsTest(method);
+				object? testAttr = IsTest(method);
 				if (testAttr != null)
 				{
-					object fails = testAttr is TestAttribute ? ((TestAttribute)testAttr).Fails : null;
+					object? fails = testAttr is TestAttribute ? ((TestAttribute)testAttr).Fails : null;
 					testCount++;
 					try {
 						Console.Write("{0}.{1}", o.GetType().NameWithGenericArgs(), method.Name);
@@ -49,7 +49,7 @@ namespace Loyc.MiniTest
 					}
 					catch (TargetInvocationException tie)
 					{
-						Exception exc = tie.InnerException;
+						Exception exc = tie.InnerException!;
 
 						// Find out if it matches an expected exception
 						// TODO: look for attribute by string instead
@@ -97,7 +97,7 @@ namespace Loyc.MiniTest
 			return failures;
 		}
 
-		private static object IsTest(MethodInfo info)
+		private static object? IsTest(MethodInfo info)
 		{
 			if (info.IsPublic) {
 				// this lets us know if a method is a valid [Test] method
@@ -107,7 +107,7 @@ namespace Loyc.MiniTest
 			return null;
 		}
 
-		private static MethodInfo GetMethodWithAttribute(MethodInfo[] methods, string attrName)
+		private static MethodInfo? GetMethodWithAttribute(MethodInfo[] methods, string attrName)
 		{
 			// find a method with a given attribute type
 			foreach (MethodInfo method in methods) {
@@ -120,13 +120,13 @@ namespace Loyc.MiniTest
 			return null;
 		}
 
-		private static MethodInfo GetSetup(MethodInfo[] methods)
+		private static MethodInfo? GetSetup(MethodInfo[] methods)
 		{
 			// Gets the setup method - returns null if there is none
 			return GetMethodWithAttribute(methods, nameof(SetUpAttribute));
 		}
 
-		private static MethodInfo GetTeardown(MethodInfo[] methods)
+		private static MethodInfo? GetTeardown(MethodInfo[] methods)
 		{
 			// Gets the teardown method - returns null if there is none
 			return GetMethodWithAttribute(methods, nameof(TearDownAttribute));

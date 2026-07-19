@@ -38,7 +38,7 @@ namespace Loyc.Syntax.Les
 		protected NodeStyle _style;
 		protected int _numberBase;
 		protected TokenType _type; // predicted type of the current token
-		protected object _value; // if !_textValue.IsNull, this must be the type marker of a literal
+		protected object? _value; // if !_textValue.IsNull, this must be the type marker of a literal
 		protected UString _textValue;
 		protected int _startPosition;
 
@@ -181,13 +181,13 @@ namespace Loyc.Syntax.Les
 		/// <remarks>This method recognizes LES and EC#-style string syntax.</remarks>
 		[Obsolete("Please call the same method in Les3Lexer instead")]
 		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool les3TQIndents = false) =>
-			Les3Lexer.UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation, les3TQIndents);
+			Les3Lexer.UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation, les3TQIndents, true);
 
 		#endregion
 
 		#region Identifier & Symbol parsing (includes @true, @false, @null, named floats) (including public ParseIdentifier())
 
-		internal static Dictionary<UString, object> NamedLiterals = new Dictionary<UString, object>()
+		internal static Dictionary<UString, object?> NamedLiterals = new Dictionary<UString, object?>()
 		{
 			{ "true", true },
 			{ "false", false },
@@ -209,7 +209,7 @@ namespace Loyc.Syntax.Les
 			{ "-inf.d", double.NegativeInfinity }
 		};
 
-		protected object ParseIdValue(bool isFancy)
+		protected object? ParseIdValue(bool isFancy)
 		{
 			if (SkipValueParsing)
 				return _value = GSymbol.Empty;
@@ -221,7 +221,7 @@ namespace Loyc.Syntax.Les
 				id = ParseIdentifier(ref original, Error, out checkForNamedLiteral);
 				Debug.Assert(original.IsEmpty);
 				if (checkForNamedLiteral) {
-					object namedValue;
+					object? namedValue;
 					if (NamedLiterals.TryGetValue(id, out namedValue)) {
 						_type = TT.Literal;
 						return _value = namedValue;
@@ -256,12 +256,12 @@ namespace Loyc.Syntax.Les
 		protected Dictionary<UString, Symbol> _idCache = new Dictionary<UString,Symbol>();
 		protected Symbol IdToSymbol(UString ustr)
 		{
-			Symbol sym;
+			Symbol? sym;
 			if (!_idCache.TryGetValue(ustr, out sym)) {
-				string str = ustr.ToString();
+				string str = ustr.ToString()!; // UString.ToString() is declared nullable but never returns null here
 				_idCache[str] = sym = (Symbol) str;
 			}
-			return sym;
+			return sym!; // sym is non-null: found (MaybeNullWhen false) or just assigned
 		}
 
 		/// <summary>Parses an LES2-style identifier such as <c>foo</c>, <c>@foo</c>, 
@@ -287,7 +287,7 @@ namespace Loyc.Syntax.Les
 				// expecting: (BQString | Star(Set("[0-9a-zA-Z_'#~!%^&*-+=|<>/?:.@$]") | IdExtLetter))
 				c = source.PopFirst(out fail);
 				if (c == '`') {
-					Les3Lexer.UnescapeString(ref source, (char)c, false, onError, parsed);
+					Les3Lexer.UnescapeString(ref source, (char)c, false, onError, parsed, default, false, true);
 				} else {
 					while (SpecialIdSet.Contains(c) || c >= 128 && char.IsLetter((char)c)) {
 						parsed.Append((char)c);
@@ -326,7 +326,7 @@ namespace Loyc.Syntax.Les
 
 			Pair<Symbol, TokenType> sym;
 			if (!_opCache.TryGetValue(opText, out sym)) {
-				string opStr = opText.ToString();
+				string opStr = opText.ToString()!; // UString.ToString() is declared nullable but never returns null here
 				_opCache[opText] = sym = GetOpNameAndType(opStr);
 			}
 			_value = sym.A;
@@ -374,7 +374,7 @@ namespace Loyc.Syntax.Les
 		#endregion
 
 		[ThreadStatic]
-		static StringBuilder _tempsb;
+		static StringBuilder? _tempsb;
 		static StringBuilder TempSB()
 		{
 			var sb = _tempsb;

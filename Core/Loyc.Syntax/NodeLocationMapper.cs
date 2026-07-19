@@ -35,8 +35,9 @@ namespace Loyc.Syntax
 	public class LNodeRangeMapper
 	{
 		// These dictionaries map locations in a file to input nodes
-		public BMultiMap<int, Pair<ILNode, int>> _startLocations = new BMultiMap<int, Pair<ILNode, int>>(null, null);
-		public BMultiMap<int, Pair<ILNode, int>> _endLocations   = new BMultiMap<int, Pair<ILNode, int>>(null, null);
+		// null comparers request BMultiMap's default comparers (see its constructor docs)
+		public BMultiMap<int, Pair<ILNode, int>> _startLocations = new BMultiMap<int, Pair<ILNode, int>>(null!, null!);
+		public BMultiMap<int, Pair<ILNode, int>> _endLocations   = new BMultiMap<int, Pair<ILNode, int>>(null!, null!);
 
 		/// <summary>Associates a node with a range.</summary>
 		/// <remarks>Typically this method is set as the value of 
@@ -85,7 +86,7 @@ namespace Loyc.Syntax
 			Scan(_endLocations, targetRange.EndIndex, targetRange, 1, maxSearchResults * 1, candidates);
 			Scan(_endLocations, targetRange.EndIndex, targetRange, -1, maxSearchResults * 2, candidates);
 
-			var sorted = new BMultiMap<float, Pair<ILNode, IndexRange>>(null, (p, q) => 0);
+			var sorted = new BMultiMap<float, Pair<ILNode, IndexRange>>(null!, (p, q) => 0); // null = default key comparer
 			foreach (var candidate in candidates)
 			{
 				if (!trim || sorted[candidate.Value].StartIndex < maxSearchResults)

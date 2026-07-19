@@ -1,11 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
 namespace Loyc.Collections
 {
+	// They want me to put "where K1: notnull" and "where K2: notnull" constraints on Bijection. I disagree. The warning says:
+	// type 'K1' cannot be used as...'TKey' in...'IDictionary<TKey, TValue>'. Nullability of...'K1' doesn't match 'notnull' constraint.
+	#pragma warning disable 8714
+
 	/// <summary>A bijection is a one-to-one function and its inverse. It is 
 	/// implemented with a pair of dictionaries, one that maps K1 to K2 and
 	/// another that maps K2 to K1.</summary>
@@ -123,7 +128,7 @@ namespace Loyc.Collections
 
 		public bool Remove(K1 key)
 		{
-			K2 value;
+			K2? value;
 			if (_map.TryGetValue(key, out value)) {
 				G.Verify(_map.Remove(key));
 				G.Verify(_inverse._map.Remove(value));
@@ -140,13 +145,14 @@ namespace Loyc.Collections
 					GetType().NameWithGenericArgs(), _map.Count, _inverse._map.Count));
 		}
 
-		public bool TryGetValue(K1 key, out K2 value)
+		public bool TryGetValue(K1 key, [MaybeNullWhen(false)] out K2 value)
 		{
 			return _map.TryGetValue(key, out value);
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public K2 TryGet(K1 key, out bool fail)
 		{
-			K2 value = default;
+			K2? value = default;
 			fail = key == null || !TryGetValue(key, out value);
 			return value;
 		}
@@ -156,7 +162,7 @@ namespace Loyc.Collections
 			get { return _map[key]; }
 			set
 			{
-				K2 oldValue;
+				K2? oldValue;
 				if (_map.TryGetValue(key, out oldValue))
 					Remove(key);
 				Add(key, value);

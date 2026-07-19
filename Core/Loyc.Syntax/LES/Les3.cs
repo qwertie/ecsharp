@@ -65,17 +65,17 @@ namespace Loyc.Syntax.Les
 		Symbol GetTypeMarkerSymbol(UString typeMarker, bool isNumericLiteral)
 		{
 			var pair = Pair.Create(typeMarker, isNumericLiteral);
-			if (!_typeMarkers.TryGetValue(pair, out Symbol typeMarkerSym))
-				_typeMarkers[pair] = typeMarkerSym = (Symbol)(isNumericLiteral ? "_" + (string)typeMarker : typeMarker);
+			if (!_typeMarkers.TryGetValue(pair, out Symbol? typeMarkerSym))
+				_typeMarkers[pair] = typeMarkerSym = (Symbol)(isNumericLiteral ? "_" + (string)typeMarker : typeMarker)!; // Symbol cast is nullable, but input is non-null
 			return typeMarkerSym;
 		}
 
 		[Obsolete("Please call StandardLiteralHandlers.Value.TryParse(UString, Symbol) instead")]
-		public static object ParseLiteral(Symbol typeMarker, UString unescapedText, out string syntaxError)
+		public static object? ParseLiteral(Symbol typeMarker, UString unescapedText, out string? syntaxError)
 		{
 			var result = StandardLiteralHandlers.Value.TryParse(unescapedText, typeMarker);
 			syntaxError = result.Right.HasValue ? result.Right.Value.Formatted : null;
-			return result.Left.Or(null);
+			return result.Left.Or(null!); // Maybe<object>.Or requires non-null, but null is the intended default here
 		}
 
 		protected UString GetUnescapedString(bool hasEscapes, bool isTripleQuoted)
@@ -130,17 +130,17 @@ namespace Loyc.Syntax.Les
 		/// sequences: <c>\n \r \' \" \0</c> etc. C#-style verbatim strings are 
 		/// NOT supported.
 		/// </remarks>
-		public static string UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, UString indentation = default(UString), bool allowExtraIndent = false)
+		public static string UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, UString indentation = default(UString), bool allowExtraIndent = false, bool parseAsBytes = true)
 		{
 			var sb = new StringBuilder();
-			UnescapeQuotedString(ref sourceText, onError, sb, indentation, allowExtraIndent);
+			UnescapeQuotedString(ref sourceText, onError, sb, indentation, allowExtraIndent, parseAsBytes);
 			return sb.ToString();
 		}
 
 		/// <summary>Parses a normal or triple-quoted string that still includes 
 		/// the quotes (see documentation of the first overload) into a 
 		/// StringBuilder.</summary>
-		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool allowExtraIndent = false)
+		public static void UnescapeQuotedString(ref UString sourceText, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool allowExtraIndent = false, bool parseAsBytes = true)
 		{
 			bool isTripleQuoted = false, fail;
 			char quoteType = (char)sourceText.PopFirst(out fail);
@@ -150,7 +150,7 @@ namespace Loyc.Syntax.Les
 				sourceText = sourceText.Substring(2);
 				isTripleQuoted = true;
 			}
-			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation, allowExtraIndent))
+			if (!UnescapeString(ref sourceText, quoteType, isTripleQuoted, onError, sb, indentation, allowExtraIndent, parseAsBytes))
 				onError(sourceText.InternalStart, Localize.Localized("String literal did not end properly"));
 		}
 
@@ -158,15 +158,35 @@ namespace Loyc.Syntax.Les
 		/// have been stripped out. If triple-quote parsing was requested, stops 
 		/// parsing at three quote marks; otherwise, stops parsing at a single 
 		/// end-quote or newline.</summary>
+		/// <param name="allowExtraIndent">After each newline, indentation matching
+		///   the previous line is ignored. When this parameter is true, an additional 
+		///   one tab or three spaces is ignored if the initial indent matched.</param>
+		/// <param name="parseAsBytes">If this is true, LES parsing mode is used.
+		///   This mode assumes that the string represents a sequence of bytes, 
+		///   even though it is stored as WTF-16 in memory. In particular, it 
+		///   allows the \xNN escape sequence which represents a byte. If the byte NN
+		///   is between 0x80 and 0xFF, it is encoded as 0xDC80 + NN. As a side effect,
+		///   lone surrogate code units between 0xDC80 and 0xDCFF are recoded in UTF-8
+		///   form and then translated to three WTF-16 code units (each of which is
+		///   between 0xDC80 and 0xDCFF). If this parameter is false, this behavior
+		///   is turned off and \xNN is parsed the same way as \u00NN.</param>
 		/// <returns>true if parsing stopped at one or three quote marks, or false
 		/// if parsing stopped at the end of the input string or at a newline (in
 		/// a string that is not triple-quoted).</returns>
 		/// <remarks>This method recognizes LES and EC#-style string syntax.</remarks>
-		public static bool UnescapeString(ref UString sourceText, char quoteType, bool isTripleQuoted, Action<int, string> onError, StringBuilder sb, UString indentation = default(UString), bool allowExtraIndent = false)
+		public static bool UnescapeString(
+			ref UString sourceText, 
+			char quoteType,
+			bool isTripleQuoted,
+			Action<int, string> onError,
+			StringBuilder sb,
+			UString indentation = default(UString),
+			bool allowExtraIndent = false,
+			bool parseAsBytes = true)
 		{
 			Debug.Assert(quoteType == '"' || quoteType == '\'' || quoteType == '`');
 			bool fail;
-			for (; ; )
+			for (;;)
 			{
 				if (sourceText.IsEmpty)
 					return false;
@@ -176,21 +196,21 @@ namespace Loyc.Syntax.Les
 					EscapeC category = 0;
 					int c = ParseHelpers.UnescapeChar(ref sourceText, ref category);
 					if ((c == quoteType || c == '\n') && sourceText.InternalStart == i0 + 1)
-					{
 						return c == quoteType; // end of string
-					}
-					if ((category & EscapeC.Unrecognized) != 0)
-					{
+
+					if ((category & EscapeC.Unrecognized) != 0) {
 						// This backslash was ignored by UnescapeChar
 						onError(i0, @"Unrecognized escape sequence '\{0}' in string".Localized(PrintHelpers.EscapeCStyle(sourceText[0, ' '].ToString(), EscapeC.Control)));
-					}
-					else if ((category & EscapeC.HasInvalid6DigitEscape) != 0)
+					} else if ((category & EscapeC.HasInvalid6DigitEscape) != 0)
 						onError(i0, @"Invalid 6-digit \u code treated as 5 digits".Localized());
+
 					sb.AppendCodePoint(c);
-					if ((category & EscapeC.BackslashX) != 0 && c >= 0x80)
-						DetectUtf8(sb);
-					else if (c.IsInRange(0xDC00, 0xDFFF))
-						RecodeSurrogate(sb);
+					if (parseAsBytes) {
+						if ((category & EscapeC.BackslashX) != 0 && c >= 0x80)
+							DetectUtf8(sb);
+						else if (c.IsInRange(0xDC80, 0xDCFF))
+							RecodeSurrogate(sb);
+					}
 				}
 				else
 				{
@@ -323,12 +343,13 @@ namespace Loyc.Syntax.Les
 		}
 
 		// To prevent collisions between the single invalid UTF-8 byte 0xFF,
-		// which is coded as 0xDCFF and the three-byte sequence represented
-		// by \uDCFF, and also to allow round-tripping of UTF8 encodings of 
+		// which is coded as 0xDCFF, and the three-byte sequence represented
+		// by U+DCFF, and also to allow round-tripping of UTF8 encodings of 
 		// UTF16 surrogates, this function's job is to treat "low" surrogates 
-		// in range 0xDC00 to 0xDFFF as if they were three UTF-8 bytes 
+		// in range 0xDC80 to 0xDFFF as if they were three UTF-8 bytes 
 		// recoded individually:
 		//     \uDCFF => 0xED 0xB3 0xBF => 0xDCED 0xDCB3 0xDCBF
+		// 
 		// by avoiding collisions, the UTF-16 output from this lexer can be 
 		// used to reconstruct the byte stream it represents in all cases.
 		// If the final LESv3 spec disallows individual surrogate characters
@@ -336,7 +357,7 @@ namespace Loyc.Syntax.Les
 		static void RecodeSurrogate(StringBuilder sb)
 		{
 			int c = sb[sb.Length - 1];
-			Debug.Assert(c.IsInRange(0xDC00, 0xDFFF));
+			Debug.Assert(c.IsInRange(0xDC80, 0xDCFF));
 			int b1 = 0xE0 | (c >> 12);
 			int b2 = 0x80 | ((c >> 6) & 0x3F);
 			int b3 = 0x80 | (c & 0x3F);
@@ -380,7 +401,7 @@ namespace Loyc.Syntax.Les
 			}
 
 			Debug.Assert(first != '\'');
-			Symbol name = (Symbol)("'" + op);
+			Symbol name = (Symbol)("'" + op)!; // string->Symbol cast is nullable, but input is non-null
 			
 			if (length >= 2 && first == last && (last == '+' || last == '-' || last == '!'))
 				return TokenType.PreOrSufOp;
@@ -406,7 +427,7 @@ namespace Loyc.Syntax.Les
 				if (first == '.')
 					return Pair.Create(CodeSymbols.Dot, TokenType.Dot);
 			}
-			return Pair.Create((Symbol)("'" + op), GetOperatorTokenType(op));
+			return Pair.Create((Symbol)("'" + op)!, GetOperatorTokenType(op)); // string->Symbol cast is nullable, but input is non-null
 		}
 
 		#endregion
@@ -415,11 +436,11 @@ namespace Loyc.Syntax.Les
 	[EditorBrowsable(EditorBrowsableState.Never)] // used only by syntax highlighter
 	public partial class Les3Parser : BaseParserForList<Token, int>
 	{
-		LNodeFactory F;
+		LNodeFactory F = null!; // set by Reset(), which is called from the base constructor
 		ILiteralParser _literalParser;
 
 		public Les3Parser(IList<Token> list, ISourceFile file, IMessageSink sink, IParsingOptions options, int startIndex = 0)
-			: base(list, prev => new Token((int)TokenType.EOF, prev.EndIndex, 0, null), (int)TokenType.EOF, file, startIndex) {
+			: base(list, prev => new Token((int)TokenType.EOF, prev.EndIndex, 0, default(NodeStyle), null), (int)TokenType.EOF, file, startIndex) {
 			_literalParser = options?.LiteralParser ?? StandardLiteralHandlers.Value;
 			ErrorSink = sink;
 		}
@@ -481,7 +502,7 @@ namespace Loyc.Syntax.Les
 			return n.SetBaseStyle(NodeStyle.PrefixNotation);
 		}
 
-		protected LNode MissingExpr(Token tok, string error = null, bool afterToken = false)
+		protected LNode MissingExpr(Token tok, string? error = null, bool afterToken = false)
 		{
 			int startIndex = afterToken ? tok.EndIndex : tok.StartIndex;
 			LNode missing = F.Id(S.Missing, startIndex, tok.EndIndex);
@@ -494,7 +515,7 @@ namespace Loyc.Syntax.Les
 
 		protected Precedence PrefixPrecedenceOf(Token t)
 		{
-			var prec = _precMap.Find(OperatorShape.Prefix, t.Value);
+			var prec = _precMap.Find(OperatorShape.Prefix, t.Value!); // operator tokens always have a Symbol value
 			if (prec == LesPrecedence.Illegal)
 				ErrorSink.Write(Severity.Error, F.Id(t),
 					"Operator `{0}` cannot be used as a prefix operator", t.Value);
@@ -518,15 +539,15 @@ namespace Loyc.Syntax.Les
 			if (opTok.Type() == TokenType.Id) {
 				var opTok2 = LT(li + 1);
 				if (opTok2.Type() == TokenType.NormalOp && opTok.EndIndex == opTok2.StartIndex)
-					prec = _precMap.Find(OperatorShape.Infix, opTok2.Value);
+					prec = _precMap.Find(OperatorShape.Infix, opTok2.Value!); // operator tokens always have a Symbol value
 				else {
 					// Oops, LesPrecedenceMap doesn't yet support non-single-quote ops
 					// (because it's shared with LESv2 which doesn't have them)
 					// TODO: improve performance by avoiding this concat
-					prec = _precMap.Find(OperatorShape.Infix, (Symbol)("'" + opTok.Value.ToString()));
+					prec = _precMap.Find(OperatorShape.Infix, (Symbol)("'" + opTok.Value!.ToString()));
 				}
 			} else
-				prec = _precMap.Find(OperatorShape.Infix, opTok.Value);
+				prec = _precMap.Find(OperatorShape.Infix, opTok.Value!); // operator tokens always have a Symbol value
 			bool result = context.CanParse(prec);
 			if (!context.CanMixWith(prec))
 				Error(li, "Operator \"{0}\" cannot be mixed with the infix operator to its left. Add parentheses to clarify the code's meaning.", LT(li).Value);

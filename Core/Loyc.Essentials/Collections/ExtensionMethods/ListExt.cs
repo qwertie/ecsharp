@@ -6,6 +6,7 @@ using Loyc.Collections.Impl;
 using Loyc.Math;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Loyc.Graphs;
 
 namespace Loyc.Collections
 {
@@ -125,13 +126,16 @@ namespace Loyc.Collections
 			if (count > 0) {
 				for (int i = index; i < list.Count - count; i++)
 					list[i] = list[i + count];
+				#pragma warning disable CS8620 // Nullability: this warning is for enlarging, not shrinking
 				Resize(list, list.Count - count);
+				#pragma warning restore CS8620
 			}
 		}
 		
 		/// <summary>Resizes a list by removing items from the list (if it is too 
-		/// long) or adding <c>default(T)</c> values to the end (if it is too short).</summary>
-		public static void Resize<T>(this List<T> list, int newSize)
+		/// long) or adding <c>default(T)</c> values to the end (if it is too short).
+		/// T must be nullable!</summary>
+		public static void Resize<T>(this List<T?> list, int newSize)
 		{
 			int dif = newSize - list.Count;
 			if (dif > 0) {
@@ -146,7 +150,7 @@ namespace Loyc.Collections
 
 		/// <summary>Resizes a list by removing items from the list (if it is too 
 		/// long) or adding <c>default(T)</c> values to the end (if it is too short).</summary>
-		public static void Resize<T>(this IList<T> list, int newSize)
+		public static void Resize<T>(this IList<T?> list, int newSize)
 		{
 			int dif = newSize - list.Count;
 			if (dif > 0) {
@@ -159,17 +163,17 @@ namespace Loyc.Collections
 			}
 		}
 
-		public static void MaybeEnlarge<T>(this List<T> list, int minSize)
+		public static void MaybeEnlarge<T>(this List<T?> list, int minSize)
 		{
 			int dif = minSize - list.Count;
 			while (dif-- > 0)
-				list.Add(default(T));
+				list.Add(default(T)!);
 		}
-		public static void MaybeEnlarge<T>(this IList<T> list, int minSize)
+		public static void MaybeEnlarge<T>(this IList<T?> list, int minSize)
 		{
 			int dif = minSize - list.Count;
 			while (dif-- > 0)
-				list.Add(default(T));
+				list.Add(default(T)!);
 		}
 
 		public static bool AddIfNotPresent<TList, T>(this TList list, T item) where TList : IList<T>
@@ -225,11 +229,11 @@ namespace Loyc.Collections
 		/// Items from the first and second sequence are initially paired together, and when
 		/// one sequence ends, the other sequence's remaining values are paired 
 		/// with a default value.</summary>
-		public static IEnumerable<Pair<A, B>> ZipLonger<A, B>(this IEnumerable<A> a, IEnumerable<B> b)
+		public static IEnumerable<Pair<A?, B?>> ZipLonger<A, B>(this IEnumerable<A> a, IEnumerable<B> b)
 		{
 			return ZipLonger(a, b, default(A), default(B));
 		}
-		
+
 		/// <summary>Returns a sequence as long as the longer of two sequences.
 		/// Items from the first and second sequence are initially paired together, 
 		/// and when one sequence ends, the other sequence's remaining values are 
@@ -241,7 +245,7 @@ namespace Loyc.Collections
 		/// first sequence, the remaining items of the first sequence are paired with 
 		/// this value. Otherwise, this value is not used.</param>
 		public static IEnumerable<Pair<A, B>> ZipLonger<A, B>(this IEnumerable<A> a, IEnumerable<B> b, A defaultA, B defaultB)
-		{
+		{	
 			IEnumerator<A> ea = a.GetEnumerator();
 			IEnumerator<B> eb = b.GetEnumerator();
 			bool successA, successB;
@@ -371,16 +375,56 @@ namespace Loyc.Collections
 		}
 
 		private static void Sort<T>(this IList<T> list, int index, int count, Comparison<T> comp, 
-		                            int[] indexes, int quickSelectElems = int.MaxValue)
+		                            int[]? indexes, int quickSelectElems = int.MaxValue)
 		{
 			CheckParam.IsInRange("index", index, 0, list.Count);
 			CheckParam.IsInRange("count", count, 0, list.Count - index);
 			SortCore(list, index, count, comp, indexes, quickSelectElems);
 		}
 
+		public static List<T> SortedTopologically<T>(this IEnumerable<T> startingItems, 
+			Func<T, IEnumerable<T>> getDependencies, Action<T>? onCycle = null)
+		{
+			var results = new List<T>();
+
+			GraphMethodsBase<TopoSortNode<T>, TopoSortNode<T>, List<TopoSortNode<T>>>.TopologicalSort(
+				startingItems.Select(t => new TopoSortNode<T>(t, getDependencies)),
+				new AddAdapter<TopoSortNode<T>, List<T>>((item, r) => r.Add(item.Item), results),
+				onCycle == null ? null : new Action<TopoSortNode<T>>(item => onCycle(item.Item)));
+
+			return results;
+		}
+
+		// A helper type for SortedTopologically()
+		struct TopoSortNode<T> : IOutbound<List<TopoSortNode<T>>>, ITo<TopoSortNode<T>>
+		{
+			public readonly T Item;
+			public Func<T, IEnumerable<T>> _getDependencies;
+			public TopoSortNode(T item, Func<T, IEnumerable<T>> getDependencies) { 
+				Item = item;
+				_getDependencies = getDependencies;
+				_outbound = null;
+			}
+
+			List<TopoSortNode<T>>? _outbound;
+			public List<TopoSortNode<T>> Outbound {
+				get {
+					if (_outbound == null) {
+						_outbound = new List<TopoSortNode<T>>();
+						foreach (var dep in _getDependencies(Item))
+							_outbound.Add(new TopoSortNode<T>(dep, _getDependencies));
+					}
+					return _outbound;
+				}
+			}
+
+			public TopoSortNode<T> To => this;
+		}
+
+
 		// Used by Sort, StableSort, SortLowestK, SortLowestKStable.
 		private static void SortCore<T>(this IList<T> list, int index, int count, Comparison<T> comp, 
-		                                int[] indexes, int quickSelectElems)
+		                                int[]? indexes, int quickSelectElems)
 		{
 			// This code duplicates the code in InternalList.Sort(), except
 			// that it also supports stable sorting (indexes parameter) and
@@ -539,7 +583,7 @@ namespace Loyc.Collections
 		public static R[] SelectArray<T, R>(this T[] input, Func<T,R> selector)
 		{
 			if (input == null)
-				return null;
+				return null!; // Nullability contract broken, and there's no attribute like [return: MaybeNullIfNull("input")]
 			R[] result = new R[input.Length];
 			for (int i = 0; i < result.Length; i++)
 				result[i] = selector(input[i]);
@@ -550,7 +594,7 @@ namespace Loyc.Collections
 		public static R[] SelectArray<T, R>(this IReadOnlyList<T> input, Func<T,R> selector)
 		{
 			if (input == null)
-				return null;
+				return null!; // Nullability contract broken, and there's no attribute like [return: MaybeNullIfNull("input")]
 			R[] result = new R[input.Count];
 			for (int i = 0; i < result.Length; i++)
 				result[i] = selector(input[i]);
@@ -632,9 +676,37 @@ namespace Loyc.Collections
 		public static void InsertRangeHelper<T>(IList<T> list, int index, int spaceNeeded)
 		{
 			int c = list.Count;
+			#pragma warning disable CS8620 // It's okay, we're about to "fill in" the blank spaces we're creating
 			list.Resize(c + spaceNeeded);
- 			for (int i = c - 1; i >= index; i--)
+			#pragma warning restore CS8620
+			for (int i = c - 1; i >= index; i--)
 				list[i + spaceNeeded] = list[i];
+		}
+
+		/// <summary>A companion to <see cref="MemoryExtensions.SequenceEqual{T}"/> that 
+		/// computes a hashcode for a list.</summary>
+		public static int SequenceHashCode<T>(this ReadOnlyMemory<T> list) => SequenceHashCode(list.Span);
+
+		/// <summary>A companion to <see cref="MemoryExtensions.SequenceEqual{T}"/> that 
+		/// computes a hashcode for a list.</summary>
+		public static int SequenceHashCode<T>(this ReadOnlySpan<T> span)
+		{
+			// I am no expert in hash functions.
+			int hc = 517617279; // a random number
+			for (int i = 0; i < span.Length; i++) {
+				var item = span[i];
+				hc = hc * 257 ^ (item != null ? item.GetHashCode() : 0);
+			}
+			return hc;
+		}
+
+		public static int SequenceHashCode(this ReadOnlySpan<byte> span)
+		{
+			int hc = 517617279; // a random number
+			for (int i = 0; i < span.Length; i++) {
+				hc = ((hc << 8) + hc) ^ span[i];
+			}
+			return hc;
 		}
 	}
 }

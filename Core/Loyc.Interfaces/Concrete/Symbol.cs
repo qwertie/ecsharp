@@ -28,6 +28,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Loyc.Collections;
 
@@ -85,10 +86,10 @@ namespace Loyc
 		public override string ToString() { return Name; }
 
 		public override int GetHashCode() { return 5432 + _id ^ (_pool.PoolId << 16); }
-		public override bool Equals(object b) { return ReferenceEquals(this, b); }
-		public          bool Equals(Symbol b) { return this == b; }
+		public override bool Equals(object? b) { return ReferenceEquals(this, b); }
+		public          bool Equals(Symbol? b) { return this == b; }
 		
-		public int CompareTo(Symbol other)
+		public int CompareTo(Symbol? other)
 		{
 			if (other == this) return 0;
 			if (other == null) return 1;
@@ -122,10 +123,10 @@ namespace Loyc
 
 		#endregion
 
-		public static explicit operator Symbol(string s) => s == null ? null : GSymbol.Get(s);
+		[return: NotNullIfNotNull("s")]
+		public static explicit operator Symbol?(string? s) => GSymbol.Get((UString) s);
+		public static explicit operator Symbol?(UString s) => GSymbol.Get(s);
 		public static explicit operator string(Symbol s) => s.Name;
-		// TODO: switch to UString dictionary to avoid the need to call ToString().
-		public static explicit operator Symbol(UString s) => GSymbol.Get(s);
 		public static explicit operator UString(Symbol s) => new UString(s.Name);
 		
 		/// <summary>Alias for <see cref="GSymbol.Get(string)"/>. This function was 
@@ -142,9 +143,11 @@ namespace Loyc
 	/// </remarks>
 	public class GSymbol
 	{
-		static public Symbol Get(UString name) => Pool.Get(name);
-		static public Symbol GetIfExists(UString name) => Pool.GetIfExists(name);
-		static public Symbol GetById(int id) { return Pool.GetById(id); }
+		[return: NotNullIfNotNull("name")]
+		static public Symbol? Get(string? name) => Pool.Get(name);
+		static public Symbol? Get(UString name) => Pool.Get(name);
+		static public Symbol? GetIfExists(UString name) => Pool.GetIfExists(name);
+		static public Symbol? GetById(int id) { return Pool.GetById(id); }
 
 		static public readonly Symbol Empty;
 		static public readonly SymbolPool Pool;
@@ -152,7 +155,7 @@ namespace Loyc
 		static GSymbol()
 		{
 			Pool = new SymbolPool(0, false, 0);
-			Empty = Pool.Get("");
+			Empty = Pool.Get("")!;
 			Debug.Assert(Empty.Id == 0 && Empty.Name == "");
 			Debug.Assert(((Symbol)Empty).Pool == Pool);
 		}
@@ -181,9 +184,9 @@ namespace Loyc
 	/// </remarks>
 	public class SymbolPool : IAutoCreatePool<UString, Symbol>, IReadOnlyCollection<Symbol>
 	{
-		protected internal IDictionary<int, Symbol> _idMap; // created on-demand
+		protected internal IDictionary<int, Symbol>? _idMap; // created on-demand
 		protected internal IDictionary<UString, Symbol> _map;
-		protected internal WeakValueDictionary<UString, Symbol> _weakMap; // same as _map, or null
+		protected internal WeakValueDictionary<UString, Symbol>? _weakMap; // same as _map, or null
 		protected internal int _nextId;
 		protected readonly int _poolId;
 		protected static int _nextPoolId = 1;
@@ -230,15 +233,19 @@ namespace Loyc
 		/// generally doesn't matter, as Symbols are compared by reference, not by 
 		/// ID.
 		/// </remarks>
-		public Symbol Get(UString name)
+		public Symbol? Get(UString name)
 		{
-			Get(name, out Symbol result);
+			Get(name, out Symbol? result);
 			return result;
 		}
+		[return: NotNullIfNotNull("name")]
+		public Symbol? Get(string? name) => Get((UString) name);
 
-		/// <inheritdoc cref="Get(string)"/>
-		public Symbol this[UString name] { get { return Get(name); } }
-		
+		#pragma warning disable CS8766 // Nullability doesn't match interface
+		/// <inheritdoc cref="Get(UString)"/>
+		public Symbol? this[UString name] => Get(name);
+		#pragma warning restore CS8766
+
 		/// <summary>Creates a Symbol in this pool with a specific ID, or verifies 
 		/// that the requested Name-Id pair is present in the pool.</summary>
 		/// <param name="name">Name to find or create.</param>
@@ -265,38 +272,45 @@ namespace Loyc
 		}
 
 		/// <summary>Workaround for lack of covariant return types in C#</summary>
-		protected virtual void Get(UString name, out Symbol sym)
+		protected virtual void Get(UString name, out Symbol? sym)
 		{
-			if ((sym = GetIfExists(name)) == null)
-				lock (_map) {
-					if ((sym = GetIfExists(name)) != null)
-						// It is possible for another thread to have added 'name' to
-						// '_map' while we were waiting to acquire the lock.
-						// If that has happened, then we want to return now.
-						return;
+			if ((sym = GetIfExists(name)!) == null) {
+				if (!name.IsNull)
+					GetOrCreate(name, out sym);
+			}
+		}
+		void GetOrCreate(UString name, out Symbol? sym)
+		{
+			lock (_map) {
+				if ((sym = GetIfExists(name)!) != null)
+					// It is possible for another thread to have added 'name' to
+					// '_map' while we were waiting to acquire the lock.
+					// If that has happened, then we want to return now.
+					return;
 
-					if (_idMap != null)
-						while (_idMap.ContainsKey(_nextId))
-							_nextId++;
+				if (_idMap != null)
+					while (_idMap.ContainsKey(_nextId))
+						_nextId++;
 
-					sym = AddSymbol(NewSymbol(_nextId, name.ToString()));
-					_nextId++;
-				}
+				sym = AddSymbol(NewSymbol(_nextId, name.ToString()!));
+				_nextId++;
+			}
 		}
 
 		/// <summary>Workaround for lack of covariant return types in C#</summary>
 		protected virtual void Get(UString name, int id, out Symbol sym)
 		{
-			if ((sym = GetIfExists(name)) != null) {
+			if ((sym = GetIfExists(name)!) != null) {
 				if (sym.Id != id)
 					throw new ArgumentException("Symbol already exists with a different ID than requested.");
 			} else lock (_map) {
 				AutoCreateIdMap();
-				if (_idMap.ContainsKey(id))
+				if (_idMap!.ContainsKey(id))
 					throw new ArgumentException("ID is already assigned to a different name than requested.");
-				sym = AddSymbol(NewSymbol(id, name.ToString()));
+				sym = AddSymbol(NewSymbol(id, name.ToString() ?? ""));
 			}
 		}
+		//[MemberNotNull(nameof(_idMap))]
 		private void AutoCreateIdMap()
 		{
 			if (_idMap == null)
@@ -320,9 +334,12 @@ namespace Loyc
 		/// <param name="name">Symbol Name to find</param>
 		/// <returns>Returns the existing Symbol if found; returns null if the name 
 		/// was not found, or if the name itself was null.</returns>
-		public Symbol GetIfExists(UString name)
+		public Symbol? GetIfExists(UString name)
 		{
-			Symbol sym;
+			if (name.IsNull)
+				return null;
+
+			Symbol? sym;
 			lock (_map) {
 				_map.TryGetValue(name, out sym);
 				
@@ -342,8 +359,8 @@ namespace Loyc
 		[Obsolete("I don't think this is being used. Let me know if I'm mistaken. qwertie256@gmail.com")]
 		public Symbol GetGlobalOrCreateHere(string name)
 		{
-			Symbol sym = GSymbol.Pool.GetIfExists(name);
-			return sym ?? Get(name);
+			Symbol? sym = GSymbol.Pool.GetIfExists(name);
+			return sym ?? Get(name)!;
 		}
 
 		/// <summary>Gets a symbol by its ID, or null if there is no such symbol.</summary>
@@ -356,12 +373,12 @@ namespace Loyc
 		/// GetById() or Get(string name, int id) is called.
 		/// </remarks>
 		/// <returns>The requested Symbol, or null if not found.</returns>
-		public Symbol GetById(int id)
+		public Symbol? GetById(int id)
 		{
 			lock(_map) {
 				AutoCreateIdMap();
-				Symbol sym;
-				if (_idMap.TryGetValue(id, out sym)) {
+				Symbol? sym;
+				if (_idMap!.TryGetValue(id, out sym)) {
 					Debug.Assert(sym != null);
 					return sym;
 				}
@@ -434,9 +451,13 @@ namespace Loyc
 		{
 			_factory = factory;
 		}
-		public new SymbolE Get(UString name)
+		public new SymbolE Get(string name)
 		{
-			return (SymbolE)base.Get(name);
+			return (SymbolE)base.Get(name)!;
+		}
+		public new SymbolE? Get(UString name)
+		{
+			return (SymbolE?)base.Get(name);
 		}
 		public new SymbolE Get(UString name, int id)
 		{
@@ -446,13 +467,13 @@ namespace Loyc
 		{
  			return _factory(new Symbol(id, name, this));
 		}
-		public new SymbolE GetIfExists(UString name)
+		public new SymbolE? GetIfExists(UString name)
 		{
-			return (SymbolE)base.GetIfExists(name);
+			return (SymbolE?)base.GetIfExists(name);
 		}
-		public new SymbolE GetById(int id)
+		public new SymbolE? GetById(int id)
 		{
-			return (SymbolE)base.GetById(id);
+			return (SymbolE?)base.GetById(id);
 		}
 		
 		#region IEnumerable<Symbol> Members

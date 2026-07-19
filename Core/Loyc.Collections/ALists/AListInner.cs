@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Loyc.Collections.Impl
 {
@@ -39,7 +40,7 @@ namespace Loyc.Collections.Impl
 
 		#endregion
 
-		private AListInnerBase<int, T> AutoHandleChildSplit(int i, AListNode<int, T> splitLeft, ref AListNode<int, T> splitRight, IAListTreeObserver<int, T> tob)
+		private AListInnerBase<int, T>? AutoHandleChildSplit(int i, AListNode<int, T>? splitLeft, ref AListNode<int, T>? splitRight, IAListTreeObserver<int, T>? tob)
 		{
 			if (splitLeft == null)
 			{
@@ -49,7 +50,7 @@ namespace Loyc.Collections.Impl
 			return HandleChildSplit(i, splitLeft, ref splitRight, tob);
 		}
 
-		private int PrepareToInsertAt(uint index, out Entry e, IAListTreeObserver<int, T> tob)
+		private int PrepareToInsertAt(uint index, out Entry e, IAListTreeObserver<int, T>? tob)
 		{
 			Debug.Assert(index <= TotalCount);
 
@@ -61,7 +62,7 @@ namespace Loyc.Collections.Impl
 			return i;
 		}
 
-		public override AListNode<int, T> Insert(uint index, T item, out AListNode<int, T> splitRight, IAListTreeObserver<int, T> tob)
+		public override AListNode<int, T>? Insert(uint index, T item, out AListNode<int, T>? splitRight, IAListTreeObserver<int, T>? tob)
 		{
 			Debug.Assert(!IsFrozen);
 			Entry e;
@@ -76,7 +77,7 @@ namespace Loyc.Collections.Impl
 			return splitLeft == null ? null : HandleChildSplit(i, splitLeft, ref splitRight, tob);
 		}
 
-		public override AListNode<int, T> InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<int, T> splitRight, IAListTreeObserver<int, T> tob)
+		public override AListNode<int, T>? InsertRange(uint index, IListSource<T> source, ref int sourceIndex, out AListNode<int, T>? splitRight, IAListTreeObserver<int, T>? tob)
 		{
 			Debug.Assert(!IsFrozen);
 			Entry e;
@@ -84,7 +85,7 @@ namespace Loyc.Collections.Impl
 
 			// Perform the insert
 			int oldSourceIndex = sourceIndex;
-			AListNode<int, T> splitLeft;
+			AListNode<int, T>? splitLeft;
 			do {
 				splitLeft = e.Node.InsertRange(index - e.Index, source, ref sourceIndex, out splitRight, tob);
 			} while (sourceIndex < source.Count && splitLeft == null);
@@ -97,13 +98,13 @@ namespace Loyc.Collections.Impl
 			return splitLeft == null ? null : HandleChildSplit(i, splitLeft, ref splitRight, tob);
 		}
 
-		internal override int DoSparseOperation(ref AListSparseOperation<T> op, int index, out AListNode<int, T> splitLeft, out AListNode<int, T> splitRight)
+		internal override int DoSparseOperation(ref AListSparseOperation<T> op, int index, out AListNode<int, T>? splitLeft, out AListNode<int, T>? splitRight)
 		{
 			Debug.Assert(!IsFrozen);
 			Debug.Assert(op.Source == null || op.SourceCount == op.Source.Count);
 			AssertValid();
 			Entry e = default(Entry);
-			
+
 			// Perform the insert/replace
 			int change = 0, i = 0;
 			do {
@@ -113,7 +114,7 @@ namespace Loyc.Collections.Impl
 					AutoClone(ref _children[i].Node, this, op.tob);
 					e = _children[i];
 				}
-				change += e.Node.DoSparseOperation(ref op, index - (int)e.Index, out splitLeft, out splitRight);
+				change += e.Node!.DoSparseOperation(ref op, index - (int)e.Index, out splitLeft, out splitRight);
 			} while (op.SourceIndex < op.SourceCount && splitLeft == null && index + op.SourceIndex < TotalCount);
 			
 			// Adjust base index of nodes that follow
@@ -132,9 +133,10 @@ namespace Loyc.Collections.Impl
 			}
 		}
 		
+		[return: MaybeNull]
 		internal override T SparseGetNearest(ref int? index, int direction)
 		{
-			int i = index.Value <= 0 ? 0 : BinarySearchI((uint)index.Value);
+			int i = index!.Value <= 0 ? 0 : BinarySearchI((uint)index.Value);
 			if (i >= _childCount) {
 				if (direction < 0)
 					i = _childCount - 1;
@@ -167,7 +169,7 @@ namespace Loyc.Collections.Impl
 		/// <param name="move">Move semantics (avoids freezing the nodes of the other tree)</param>
 		/// <param name="append">Operation to perform (true => append)</param>
 		/// <returns>Normally null, or left half in case node is split</returns>
-		public virtual AListInnerBase<int, T> Combine(AListInnerBase<int, T> other, int heightDifference, out AListNode<int, T> splitRight, IAListTreeObserver<int, T> tob, bool move, bool append)
+		public virtual AListInnerBase<int, T>? Combine(AListInnerBase<int, T> other, int heightDifference, out AListNode<int, T>? splitRight, IAListTreeObserver<int, T>? tob, bool move, bool append)
 		{
 			Debug.Assert(!IsFrozen && heightDifference >= 0);
 			if (heightDifference != 0)

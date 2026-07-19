@@ -1,4 +1,4 @@
-﻿using Loyc.Collections.Impl;
+using Loyc.Collections.Impl;
 /*
  * Created by SharpDevelop.
  * User: Pook
@@ -9,6 +9,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Loyc.Collections
 {
@@ -26,6 +27,7 @@ namespace Loyc.Collections
 		{
 			get { return _list[_list.Count - 1 - index]; }
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public sealed override T TryGet(int index, out bool fail)
 		{
 			return _list.TryGet(_list.Count - 1 - index, out fail);

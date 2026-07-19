@@ -91,6 +91,10 @@ namespace Loyc.Collections
 
 	#region IDictionary variants: IDictionaryAndReadOnly, IDictionaryImpl
 
+	// They want me to put a "where K: notnull" constraint on these. I disagree. The warning says:
+	// type 'K' cannot be used as...'TKey' in...'IDictionary<TKey, TValue>'. Nullability of...'K' doesn't match 'notnull' constraint.
+	#pragma warning disable 8714 
+
 	/// <summary>This interface is meant to be implemented by read-only dictionary
 	/// classes that originally implemented <see cref="IDictionary{K, V}"/> and now want
 	/// to add its read-only version, <see cref="IReadOnlyDictionary{K, V}"/>.</summary>
@@ -111,7 +115,7 @@ namespace Loyc.Collections
 	/// of <see cref="IListImpl{T}"/>.) Variables should not have this type (except in
 	/// disambiguation methods, which immediately cast the variable to another type).
 	/// </remarks>
-	public interface IDictionaryImpl<K, V> : IDictionary<K, V>, IDictionaryAndReadOnly<K, V>, IDictionarySink<K, V>, IDictionarySource<K, V>, IMIndexed<K, V> { }
+	public interface IDictionaryImpl<K, V> : IDictionary<K, V>, IDictionaryAndReadOnly<K, V>, IDictionarySink<K, V>, IDictionarySource<K, V>, IMIndexed<K, V>, ITryGet<K, V> { }
 
 	#endregion
 }

@@ -101,12 +101,12 @@ namespace Loyc.Essentials.Tests
 		[Test]
 		public void EqualsTest()
 		{
-			Either<int, string> left = 5;
-			Either<int[], string> left2 = new int[1] { 3 };
-			Either<int[], string> left3 = (int[])null;
-			Either<int, string> right0 = "HELLO";
-			Either<int, string> right = "hello".ToUpper();
-			Either<int, string> right2 = (string)null;
+			Either<int, string?> left = 5;
+			Either<int[]?, string> left2 = new int[1] { 3 };
+			Either<int[]?, string> left3 = (int[]?)null;
+			Either<int, string?> right0 = "HELLO";
+			Either<int, string?> right = "hello".ToUpper();
+			Either<int, string?> right2 = (string?)null;
 
 			Assert.IsTrue(left.Equals(left));
 			Assert.IsTrue(right.Equals(right));
@@ -125,7 +125,7 @@ namespace Loyc.Essentials.Tests
 			Assert.IsFalse(right.Equals(right2));
 			Assert.IsFalse(right2.Equals(right));
 
-			Assert.IsFalse(right2.Equals((object)null));
+			Assert.IsFalse(right2.Equals((object?)null));
 			Assert.IsFalse(right2.Equals(left3));
 
 			Assert.IsTrue(left.Equals((IEither<int, string>)left));

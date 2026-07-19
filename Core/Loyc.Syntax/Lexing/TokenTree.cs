@@ -59,13 +59,13 @@ namespace Loyc.Syntax.Lexing
 		#region ToString, Equals, GetHashCode
 
 		public override string ToString() => ToString(Token.ToStringStrategy);
-		public string ToString(Func<Token, ICharSource, string> toStringStrategy = null, ICharSource sourceCode = null)
+		public string ToString(Func<Token, ICharSource, string>? toStringStrategy = null, ICharSource? sourceCode = null)
 		{
 			StringBuilder sb = new StringBuilder();
 			AppendTo(sb, toStringStrategy ?? Token.ToStringStrategy, sourceCode);
 			return sb.ToString();
 		}
-		void AppendTo(StringBuilder sb, Func<Token, ICharSource, string> toStringStrategy, ICharSource sourceCode, int prevEndIndex = 0)
+		void AppendTo(StringBuilder sb, Func<Token, ICharSource, string> toStringStrategy, ICharSource? sourceCode, int prevEndIndex = 0)
 		{
 			Token prev = new Token((ushort)0, prevEndIndex, 0);
 			for (int i = 0; i < Count; i++)
@@ -73,7 +73,7 @@ namespace Loyc.Syntax.Lexing
 				Token t = this[i];
 				if (t.StartIndex != prev.EndIndex || t.StartIndex <= 0)
 					sb.Append(' ');
-				sb.Append(toStringStrategy(t, sourceCode));
+				sb.Append(toStringStrategy(t, sourceCode!)); // strategy accepts a null ICharSource
 				if (t.Value is TokenTree)
 				{
 					var subtree = ((TokenTree)t.Value);
@@ -85,7 +85,7 @@ namespace Loyc.Syntax.Lexing
 			}
 		}
 
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 		{
 			return Equals(obj as TokenTree);
 		}
@@ -93,7 +93,7 @@ namespace Loyc.Syntax.Lexing
 		/// <remarks>Because <see cref="LNode"/>s are compared by value and not by 
 		/// reference, and LNodes can contain TokenTrees, TokenTrees should also be
 		/// compared by value.</remarks>
-		public bool Equals(TokenTree other)
+		public bool Equals(TokenTree? other)
 		{
 			if (other == null) return false;
 			return LinqToLists.SequenceEqual<Token>(this, other);
@@ -153,10 +153,10 @@ namespace Loyc.Syntax.Lexing
 		{
 			var kind = token.Kind;
 			Symbol kSym = GSymbol.Empty;
-			Symbol id;
+			Symbol? id;
 			if (kind != TokenKind.Id) {
 				int k = (int)kind >> TokenKindShift;
-				kSym = _kindAttrTable.TryGet(k, null);
+				kSym = _kindAttrTable.TryGet(k, null)!; // k is always in range of the table (see KindAttrTable)
 			}
 
 			var r = new SourceRange(file, token.StartIndex, token.Length);
@@ -170,7 +170,7 @@ namespace Loyc.Syntax.Lexing
 			} else if (kind == TokenKind.Id && (id = token.Value as Symbol) != null) {
 				return LNode.Id(id, r, token.Style);
 			} else {
-				return LNode.Trivia(kSym, token.Value, r, token.Style);
+				return LNode.Trivia(kSym, token.Value!, r, token.Style); // LNode.Trivia tolerates a null value
 			}
 		}
 

@@ -4,6 +4,7 @@ namespace Loyc.Collections.Impl
 	using System;
 	using System.Collections.Generic;
 	using System.Diagnostics;
+	using System.Diagnostics.CodeAnalysis;
 	using System.Runtime.CompilerServices;
 
 	/// <summary>A compact auto-enlarging array structure that is intended to be 
@@ -50,7 +51,8 @@ namespace Loyc.Collections.Impl
 	/// implementation even if you choose not to use InternalList(T) instances.
 	/// </remarks>
 	[Serializable]
-	public struct InternalList<T> : IListAndListSource<T>, IListRangeMethods<T>, ICloneable<InternalList<T>>, IHasMFirst<T>, IHasMLast<T>
+	public struct InternalList<T> : IListAndListSource<T>, 
+		IListRangeMethods<T>, ICloneable<InternalList<T>>, IHasMFirst<T>, IHasMLast<T>, IScannable<T>
 	{
 		public static readonly T[] EmptyArray = EmptyArray<T>.Value;
 		public static readonly InternalList<T> Empty = new InternalList<T>(EmptyArray<T>.Value, 0);
@@ -104,6 +106,9 @@ namespace Loyc.Collections.Impl
 					_array = InternalList.CopyToNewArray(_array, _count, value);
 			}
 		}
+
+		public ref T FirstRef => ref _array[0];
+		public ref T LastRef => ref _array[_count - 1];
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		public T First
@@ -173,7 +178,7 @@ namespace Loyc.Collections.Impl
 					Capacity = newSize;
 				} else {
 					for (int i = newSize; i < _count; i++)
-						_array[i] = default(T);
+						_array[i] = default(T)!;
 					_count = newSize;
 				}
 			}
@@ -278,23 +283,23 @@ namespace Loyc.Collections.Impl
 			_count = InternalList.RemoveAt(index, count, _array, _count);
 		}
 
-        public T this[int index]
+		public T this[int index]
 		{
-	        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			[DebuggerStepThrough]
 			get { 
 				Debug.Assert((uint)index < (uint)_count);
 				return _array[index];
 			}
-	        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			set {
 				Debug.Assert((uint)index < (uint)_count);
 				_array[index] = value;
 			}
 		}
-        public T this[int index, T defaultValue]
+		public T this[int index, T defaultValue]
 		{
-	        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get {
 				if ((uint)index < (uint)_count)
 					return _array[index];
@@ -304,7 +309,7 @@ namespace Loyc.Collections.Impl
 
 		public void Pop()
 		{
-			_array[_count - 1] = default(T);
+			_array[_count - 1] = default(T)!;
 			_count--;
 		}
 
@@ -354,7 +359,7 @@ namespace Loyc.Collections.Impl
 			InternalList.Move(_array, from, to);
 		}
 
-		#region Boilerplate
+			#region Boilerplate
 
 		public int IndexOf(T item) { return IndexOf(item, 0); }
 		public int IndexOf(T item, int index)
@@ -400,6 +405,7 @@ namespace Loyc.Collections.Impl
 		//        subcount = _count - start;
 		//    return InternalList.GetIterator(_array, start, subcount);
 		//}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			if ((uint)index < (uint)_count) {
@@ -436,6 +442,13 @@ namespace Loyc.Collections.Impl
 			Array.Copy(_array, start, copy, 0, subcount);
 			return new InternalList<T>(copy, subcount);
 		}
+
+		public Span<T> AsSpan() => _array.AsSpan(0, _count);
+		public Memory<T> AsMemory() => _array.AsMemory(0, _count);
+		public T[] AsArray() => _count == _array.Length ? _array : ToArray();
+
+		public InternalList.Scanner<T> Scan() => new InternalList.Scanner<T>(AsMemory());
+		IScanner<T> IScan<T>.Scan() => Scan();
 	}
 
 	/// <summary>
@@ -456,53 +469,34 @@ namespace Loyc.Collections.Impl
 			return new InternalList<T>(array, count);
 		}
 
-		public static T[] CopyToNewArray<T>(T[] _array, int _count, int newCapacity)
+		public static T[] CopyToNewArray<T>(T[] array) => CopyToNewArray(array.AsSpan(), array.Length);
+		public static T[] CopyToNewArray<T>(T[] array, int count, int newCapacity) => CopyToNewArray(array.AsSpan(0, count), newCapacity);
+		public static T[] CopyToNewArray<T>(Span<T> array, int newCapacity)
 		{
 			T[] a = new T[newCapacity];
-			if (_array == null)
-				return a;
-			Array.Copy(_array, a, _count);
+			array.CopyTo(a.AsSpan());
 			return a;
 		}
-		
-		public static T[] CopyToNewArray<T>(T[] array)
-		{
-			return CopyToNewArray(array, array.Length, array.Length);
-		}
 
-		public static void Fill<T>(T[] array, T value)
-		{
-			for (int i = 0; i < array.Length; i++)
-				array[i] = value;
-		}
+		[Obsolete("Please use `array.AsSpan().Fill(value)` instead")]
+		public static void Fill<T>(T[] array, T value) => array.AsSpan().Fill(value);
+		[Obsolete("Please use `array.AsSpan(start, count).Fill(value)` instead")]
+		public static void Fill<T>(T[] array, int start, int count, T value) => array.AsSpan(start, count).Fill(value);
 		
-		public static void Fill<T>(T[] array, int start, int count, T value)
-		{
-			if (count > 0)
-			{
-				// Just for fun, let's unroll the loop
-				start--;
-				if ((count & 1) != 0)
-					array[++start] = value;
-				while ((count -= 2) >= 0)
-				{
-					array[++start] = value;
-					array[++start] = value;
-				}
-			}
-		}
-		
-		public static int BinarySearch<T>(T[] array, int count, T k, Comparer<T> comp, bool lowerBound)
+		public static int BinarySearch<T>(T[] _array, int _count, T k, Comparer<T> compare, bool lowerBound)
+			=> BinarySearch(_array.AsSpan(0, _count), k, compare, lowerBound);
+		/// <inheritdoc cref="BinarySearch{T, K}(T[], int, K, Func{T, K, int}, bool)"/>
+		public static int BinarySearch<T>(ReadOnlySpan<T> _array, T k, Comparer<T> compare, bool lowerBound) 
 		{
 			int low = 0;
-			int high = count - 1;
+			int high = _array.Length - 1;
 			int invert = -1;
 
 			while (low <= high)
 			{
 				int mid = low + ((high - low) >> 1);
-				T midk = array[mid];
-				int c = comp.Compare(midk, k);
+				T midk = _array[mid];
+				int c = compare.Compare(midk, k);
 				if (c < 0)
 					low = mid + 1;
 				else {
@@ -547,9 +541,12 @@ namespace Loyc.Collections.Impl
 		///     int b = InternalList.BinarySearch(array, 6, i => i.CompareTo(17));
 		/// </example>
 		public static int BinarySearch<T, K>(T[] _array, int _count, K k, Func<T, K, int> compare, bool lowerBound)
+			=> BinarySearch(_array.AsSpan(0, _count), k, compare, lowerBound);
+		/// <inheritdoc cref="BinarySearch{T, K}(T[], int, K, Func{T, K, int}, bool)"/>
+		public static int BinarySearch<T, K>(ReadOnlySpan<T> _array, K k, Func<T, K, int> compare, bool lowerBound) 
 		{
 			int low = 0;
-			int high = _count - 1;
+			int high = _array.Length - 1;
 			int invert = -1;
 
 			while (low <= high)
@@ -579,10 +576,14 @@ namespace Loyc.Collections.Impl
 		/// <param name="data">State information to be passed to compare()</param>
 		/// <param name="count">Number of items in the list being searched</param>
 		/// <param name="compare">Comparison method that is given the current index 
-		/// to examine and the state parameter "data".</param>
+		/// to examine (first parameter) and the state parameter "data". It needs to 
+		/// return a number less than zero if index should be lowered (e.g. the value 
+		/// at the current index is too high and the list is sorted in ascending order),
+		/// or a number greater than zero if the index should be increased, or zero
+		/// if the value at the current index is equal to whatever is being sought.</param>
 		/// <param name="lowerBound">Whether to find the "lower bound" in case there
-		/// are duplicates in the list. If duplicates exist of the search key k 
-		/// exist, the lowest index of a matching duplicate is returned. This
+		/// are duplicates in the list. If duplicates exist of the value being 
+		/// sought, the lowest index of a matching duplicate is returned. This
 		/// search mode may be slightly slower when a match exists.</param>
 		/// <returns>The index of the matching index, if found. If no exact
 		/// match was found, this method returns the bitwise complement of an
@@ -693,35 +694,40 @@ namespace Loyc.Collections.Impl
 			}
 			return array;
 		}
-		
-		public static int RemoveAt<T>(int index, T[] array, int count)
+
+		public static int RemoveAt<T>(int index, T[] array, int count) => RemoveAt(index, array.AsSpan(0, count));
+		public static int RemoveAt<T>(int index, Span<T> array)
 		{
+			int count = array.Length;
 			Debug.Assert((uint)index < (uint)count);
-			Array.Copy(array, index + 1, array, index, count - index - 1);
+			array.Slice(index + 1).CopyTo(array.Slice(index));
 			//for (int i = index; i + 1 < count; i++)
 			//	array[i] = array[i + 1];
-			array[count - 1] = default(T);
+			array[count - 1] = default(T)!; // Clear unused element of the array
 			return count - 1;
 		}
-		
-		public static int RemoveAt<T>(int index, int removeCount, T[] array, int count)
+
+		public static int RemoveAt<T>(int index, int removeCount, T[] array, int count) => RemoveAt(index, removeCount, array.AsSpan(0, count));
+		public static int RemoveAt<T>(int index, int removeCount, Span<T> array)
 		{
+			int count = array.Length;
 			Debug.Assert((uint)index <= (uint)count);
 			Debug.Assert((uint)(index + removeCount) <= (uint)count);
 			Debug.Assert(removeCount >= 0);
 			if (removeCount > 0)
 			{
-				Array.Copy(array, index + removeCount, array, index, count - index - removeCount);
+				array.Slice(index + removeCount).CopyTo(array.Slice(index));
 				//for (int i = index; i + removeCount < count; i++)
 				//	array[i] = array[i + removeCount];
-				for (int i = count - removeCount; i < count; i++)
-					array[i] = default(T);
+				for (int i = count - removeCount; i < array.Length; i++)
+					array[i] = default(T)!; // Clear unused region of the array
 				return count - removeCount;
 			}
 			return count;
 		}
 
-		public static void Move<T>(T[] array, int from, int to)
+		public static void Move<T>(T[] array, int from, int to) => Move(array.AsSpan(), from, to);
+		public static void Move<T>(Span<T> array, int from, int to)
 		{
 			T saved = array[from];
 			if (to < from) {
@@ -866,32 +872,61 @@ namespace Loyc.Collections.Impl
 
 		public struct Enumerator<T> : IEnumerator<T>
 		{
-			private T[] _array;
-			private int _startAt, _index, _stopAt;
-			private T _current;
+			private ReadOnlyMemory<T> _array;
+			private int _index;
+			private T? _current;
 
-			public Enumerator(T[] array, int startAt, int stopAt)
+			public Enumerator(ReadOnlyMemory<T> array)
 			{
 				_array = array;
-				_startAt = startAt;
-				_stopAt = stopAt;
-				_index = _startAt - 1;
-				_current = default(T);
+				_index = -1;
+				_current = default;
 			}
+			public Enumerator(T[] array, int startAt, int stopAt) 
+				: this(array.AsMemory(startAt, stopAt - startAt)) { }
+
 			public bool MoveNext()
 			{
 				int i = _index + 1;
-				if (i < _stopAt)
+				if ((uint) i < (uint) _array.Length)
 				{
-					_current = _array[_index = i];
+					_current = _array.Span[_index = i];
 					return true;
 				}
 				return false;
 			}
-			public T Current => _current;
-			object System.Collections.IEnumerator.Current => Current;
+			public T Current => _current!;
+			object? System.Collections.IEnumerator.Current => Current;
 			public void Dispose() { }
-			public void Reset() => _index = _startAt - 1;
+			public void Reset() => _index = -1;
+		}
+
+		/// <summary>Implements <see cref="IScanner{T}"/> for <see cref="Memory{T}"/>.</summary>
+		public struct Scanner<T> : IScanner<T>
+		{
+			private ReadOnlyMemory<T> _array;
+			private int _index;
+			public Scanner(ReadOnlyMemory<T> array)
+			{
+				_array = array;
+				_index = 0;
+			}
+
+			public bool CanScanBackward => true;
+
+			public ReadOnlyMemory<T> Read(int skip, int minLength, ref Memory<T> buffer)
+			{
+				_index += skip;
+				if ((uint)_index > (uint)_array.Length) {
+					if (skip < 0) {
+						_index = 0;
+						CheckParam.ThrowBadArgument(nameof(skip), "Attempted to rewind before beginning of array");
+					} else {
+						_index = _array.Length;
+					}
+				}
+				return _array.Slice(_index);
+			}
 		}
 	}
 }

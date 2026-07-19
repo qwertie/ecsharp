@@ -33,9 +33,9 @@ namespace Loyc.Collections.Impl
 		public CollectionWithChangeEvents(TColl wrappedObject) : base(wrappedObject) 
 			=> _asSet = wrappedObject as ISet<T>;
 
-		public virtual event ListChangingHandler<T, ICollection<T>> ListChanging;
-		public virtual event ListChangingHandler<T, ICollection<T>> ListChanged;
-		public ISet<T> _asSet;
+		public virtual event ListChangingHandler<T, ICollection<T>>? ListChanging;
+		public virtual event ListChangingHandler<T, ICollection<T>>? ListChanged;
+		public ISet<T>? _asSet;
 
 		void ICollection<T>.Add(T item) => Add(item);
 		public override void Add(T item) => TryAdd(item);
@@ -68,7 +68,7 @@ namespace Loyc.Collections.Impl
 			if ((ListChanged ?? ListChanging) == null)
 				_obj.Clear();
 			else if (!IsEmpty) {
-				var oldItems = ListChanged != null ? new DList<T>(_obj) : (_obj as IReadOnlyList<T>).AsListSource();
+				var oldItems = ListChanged != null ? new DList<T>(_obj) : (_obj as IReadOnlyList<T>)?.AsListSource();
 				var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Reset, 0, -_obj.Count, EmptyList<T>.Value, oldItems);
 				ListChanging?.Invoke(this, info);
 				_obj.Clear();

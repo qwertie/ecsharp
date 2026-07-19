@@ -273,7 +273,7 @@ namespace Loyc.Collections
 		/// this value, as FVList is not designed to handle mutable contents!</remarks>
 		public abstract FVList<T> Prior { get; }
 
-		public VListBlock<T> PriorBlock { get { return Prior._block; } }
+		public VListBlock<T>? PriorBlock { get { return Prior._block; } }
 
 		/// <summary>Returns true if this block has exclusive ownership of mutable 
 		/// items in the prior block. Returns false if the prior block is entirely 
@@ -334,7 +334,7 @@ namespace Loyc.Collections
 		public int ChainLength {
 			get {
 				int len;
-				VListBlock<T> b = this;
+				VListBlock<T>? b = this;
 				for(len = 1; (b = b.Prior._block) != null; len++) {}
 				return len;
 			}
@@ -352,7 +352,7 @@ namespace Loyc.Collections
 		public abstract VListBlock<T> Add(int localCount, T item);
 
 		/// <summary>Adds an item to the "front" of an immutable FVList.</summary>
-		public static VListBlock<T> Add(VListBlock<T> self, int localCount, T item)
+		public static VListBlock<T> Add(VListBlock<T>? self, int localCount, T item)
 		{
 			if (self != null)
 				return self.Add(localCount, item);
@@ -370,7 +370,7 @@ namespace Loyc.Collections
 		/// immutable list, but this method can return a reference that includes 
 		/// mutable items.</remarks>
 		public abstract FVList<T> SubList(int localIndex);
-		public static FVList<T> SubList(VListBlock<T> self, int localCount, int offset)
+		public static FVList<T> SubList(VListBlock<T>? self, int localCount, int offset)
 		{
 			if (offset < 0)
 				throw new IndexOutOfRangeException();
@@ -385,7 +385,7 @@ namespace Loyc.Collections
 		{
 			if (!list.IsEmpty)
 				if (--list._localCount <= 0)
-					list = list._block.Prior;
+					list = list._block!.Prior;
 			return list;
 		}
 
@@ -396,7 +396,7 @@ namespace Loyc.Collections
 		/// <exception cref="IndexOutOfRangeException">distanceFromFront was out of range.</exception>
 		/// <returns>The block resulting from the insert (may or may not be 'this')</returns>
 		/// <remarks>This method is for use by immutable VLists only.</remarks>
-		public static VListBlock<T> Insert(VListBlock<T> self, int localCount, T item, int distanceFromFront)
+		public static VListBlock<T> Insert(VListBlock<T>? self, int localCount, T item, int distanceFromFront)
 		{
 			if (self == null) {
 				Debug.Assert(localCount == 0);
@@ -428,7 +428,7 @@ namespace Loyc.Collections
 		/// range.</exception>
 		/// <returns>The FVList containing the inserted items.</returns>
 		/// <remarks>This method is for use by immutable VLists only.</remarks>
-		public static FVList<T> InsertRange(VListBlock<T> self, int localCount, IReadOnlyList<T> items, int distanceFromFront, bool isRVList)
+		public static FVList<T> InsertRange(VListBlock<T>? self, int localCount, IReadOnlyList<T> items, int distanceFromFront, bool isRVList)
 		{
 			if (self == null) {
 				Debug.Assert(localCount == 0);
@@ -467,7 +467,7 @@ namespace Loyc.Collections
 				FVList<T> replace1 = SubList(localCount - distanceFromFront);
 				FVList<T> replace2 = replace1.WithoutFirst(1);
 				replace2.Add(item);
-				replace2._block = replace2._block.AddRange(front, replace1);
+				replace2._block = replace2._block!.AddRange(front, replace1);
 				replace2._localCount = replace2._block._immCount; // no competing threads
 				return replace2;
 			}
@@ -502,7 +502,7 @@ namespace Loyc.Collections
 
 		/// <summary>Adds a list of items to an immutable VList (not a FVList).</summary>
 		/// <remarks>This method is for use by immutable RVLists only.</remarks>
-		public static VList<T> AddRange(VListBlock<T> self, int localCount, IEnumerator<T> items)
+		public static VList<T> AddRange(VListBlock<T>? self, int localCount, IEnumerator<T> items)
 		{
 			while (items.MoveNext())
 			{
@@ -514,7 +514,7 @@ namespace Loyc.Collections
 
 		/// <summary>Adds a list of items to an immutable FVList.</summary>
 		/// <remarks>This method is for use by immutable VLists only.</remarks>
-		public static FVList<T> AddRange(VListBlock<T> self, int localCount, IReadOnlyList<T> items, bool isRVList)
+		public static FVList<T> AddRange(VListBlock<T>? self, int localCount, IReadOnlyList<T> items, bool isRVList)
 		{
 			int itemCount = items.Count;
 			if (isRVList) {
@@ -547,7 +547,7 @@ namespace Loyc.Collections
 		/// (adding them front-first to our front would reverse their order).
 		/// <para/>
 		/// This method is for use by immutable VLists only.</remarks>
-		public static FVList<T> AddRange(VListBlock<T> self, int localCount, FVList<T> front, FVList<T> back)
+		public static FVList<T> AddRange(VListBlock<T>? self, int localCount, FVList<T> front, FVList<T> back)
 		{
 			if (front == back || front.IsEmpty)
 				return new FVList<T>(self, localCount); // no change
@@ -615,7 +615,7 @@ namespace Loyc.Collections
 						// Check for the copy-causing-sharing-failure problem
 						FVList<T> subList2 = list.WithoutFirst(list.Count - subList.Count);
 						Debug.Assert(subList2.Count == subList.Count);
-						if (subList2._block.Prior == subList._block.Prior) {
+						if (subList2._block!.Prior == subList._block!.Prior) {
 							Debug.Assert(subList2._localCount == subList._localCount);
 							EqualityComparer<T> comparer = EqualityComparer<T>.Default;
 							bool fail = false;
@@ -692,7 +692,7 @@ namespace Loyc.Collections
 		/// are allowed and refer to blocks prior to 'self'.</param>
 		/// <remarks>This method may change self and/or other blocks in the chain 
 		/// so that the returned FVList contains no mutable items.</remarks>
-		public static FVList<T> EnsureImmutable(VListBlock<T> self, int localCount)
+		public static FVList<T> EnsureImmutable(VListBlock<T>? self, int localCount)
 		{
 			// Deal with nonpositive localCount or a request for an empty list
 			FVList<T> prior;
@@ -717,7 +717,7 @@ namespace Loyc.Collections
 					// Make all prior blocks immutable if we own them
 					VListBlock<T> cur = self;
 					while (priorIsOwned) {
-						Debug.Assert(prior._block.IsMutable);
+						Debug.Assert(prior._block!.IsMutable);
 						Debug.Assert(prior._block.ImmCount <= prior._localCount);
 						// clear MutableFlag and make all items in prior._block immutable
 						cur = prior._block;
@@ -748,7 +748,7 @@ namespace Loyc.Collections
 			// enough mutables to satisfy the caller's request (usually there are).
 			if (w.IsOwner) {
 				for(;;) {
-					int mutablesHere = cur._localCount - cur._block.ImmCount;
+					int mutablesHere = cur._localCount - cur._block!.ImmCount;
 					Debug.Assert(mutablesHere >= 0);
 					if (mutablesNeeded - mutablesHere <= 0)
 						return;
@@ -758,7 +758,7 @@ namespace Loyc.Collections
 							// no need to copy the current block; go to the prior one
 							post = cur;
 							cur = cur._block.Prior;
-							Debug.Assert(cur._block.ImmCount > 0);
+							Debug.Assert(cur._block!.ImmCount > 0);
 						}
 						break; 
 					}
@@ -814,14 +814,14 @@ namespace Loyc.Collections
 			Debug.Assert (frontBlockMustBeReplaced == (cur == w.InternalVList));
 
 			// Our next task: find the first block (stop) that we DON'T have to copy.
-			Debug.Assert(!cur._block.PriorIsOwned);
+			Debug.Assert(!cur._block!.PriorIsOwned);
 			FVList<T> stop = cur;
 			int itemsToReplace = cur._localCount;
 
 			stop = stop._block.Prior;
 			while (!stop.IsEmpty && itemsToReplace < mutablesNeeded)
 			{
-				Debug.Assert(stop._localCount <= stop._block.ImmCount);
+				Debug.Assert(stop._localCount <= stop._block!.ImmCount);
 				itemsToReplace += stop._localCount;
 				stop = stop._block.Prior;
 			}
@@ -834,20 +834,20 @@ namespace Loyc.Collections
 			FWList<T> w_temp = new FWList<T>(stop._block, stop._localCount, false);
 			Debug.Assert(w_temp.Count == stop.Count);
 			while (e.MoveNext()) {
-				MuAddEmpty(w_temp, 1, frontBlockMustBeReplaced 
+				MuAddEmpty(w_temp, 1, frontBlockMustBeReplaced
 					? VListBlockArray<T>.MAX_BLOCK_LEN : itemsToReplace);
-				w_temp.Block[w_temp.LocalCount - 1] = e.Current;
+				w_temp.Block![w_temp.LocalCount - 1] = e.Current;
 				itemsToReplace--;
 			}
 			Debug.Assert(itemsToReplace == 0);
-			Debug.Assert(frontBlockMustBeReplaced || w_temp.LocalCount == w_temp.Block.Capacity);
+			Debug.Assert(frontBlockMustBeReplaced || w_temp.LocalCount == w_temp.Block!.Capacity);
 
 			// Cleanup: if w owns cur, relinquish ownership of cur. This is not 
 			// strictly necessary, but occasionally it allows some other FVList or 
 			// FWList to use the list after we release it.
-			bool w_owns_cur = cur._block == w.Block ? w.IsOwner : post._block.PriorIsOwned;
+			bool w_owns_cur = cur._block == w.Block ? w.IsOwner : post._block!.PriorIsOwned;
 			if (w_owns_cur)
-				cur._block.MuClear(cur._localCount);
+				cur._block!.MuClear(cur._localCount);
 
 			// Finally, configure post._block.Prior or w to point to w_temp.
 			Debug.Assert(w_temp.IsOwner);
@@ -857,7 +857,7 @@ namespace Loyc.Collections
 				w.LocalCount = w_temp.LocalCount;
 				w.IsOwner = w_temp.IsOwner;
 			} else
-				((VListBlockArray<T>)post._block)._prior = 
+				((VListBlockArray<T>)post._block!)._prior =
 					w_temp.InternalVList;
 		}
 
@@ -869,7 +869,7 @@ namespace Loyc.Collections
 			int count = 0;
 			FVList<T> cur = new FVList<T>(w.Block, w.LocalCount);
 			for (;;) {
-				Debug.Assert(cur._localCount >= cur._block.ImmCount);
+				Debug.Assert(cur._localCount >= cur._block!.ImmCount);
 				count += cur._localCount - cur._block.ImmCount;
 				if (!cur._block.PriorIsOwned)
 					return count;
@@ -888,7 +888,7 @@ namespace Loyc.Collections
 		public static void MuAdd(WListProtected<T> w, T item)
 		{
 			MuAddEmpty(w, 1, VListBlockArray<T>.MAX_BLOCK_LEN);
-			w.Block[w.LocalCount - 1] = item;
+			w.Block![w.LocalCount - 1] = item;
 		}
 
 		public static void MuAddEmpty(WListProtected<T> w, int count) 
@@ -955,7 +955,7 @@ namespace Loyc.Collections
 		protected static int MuAllocBlock(WListProtected<T> w, int newBlockSizeLimit)
 		{
 			Debug.Assert(newBlockSizeLimit > 0 && newBlockSizeLimit <= VListBlockArray<T>.MAX_BLOCK_LEN);
-			Debug.Assert(!w.IsOwner || w.LocalCount == w.Block.Capacity);
+			Debug.Assert(!w.IsOwner || w.LocalCount == w.Block!.Capacity);
 			int capacity = Math.Min(newBlockSizeLimit, w.Count + 2);
 			w.Block = new VListBlockArray<T>(new FVList<T>(w.Block, w.LocalCount), capacity, true);
 			w.LocalCount = 0;
@@ -983,14 +983,14 @@ namespace Loyc.Collections
 				// start moving at frontmost position
 				for (int i = 0; i < count; i++)
 				{
-					to._block[to._localCount - 1] = from._block[from._localCount - 1];
+					to._block![to._localCount - 1] = from._block![from._localCount - 1];
 					to = to.Tail;
 					from = from.Tail;
 				}
 			} else {
 				// start moving at backmost position (slower)
 				for (int i = count; i > 0; i--)
-					to._block[to._localCount - i] = from._block[from._localCount - i];
+					to._block![to._localCount - i] = from._block![from._localCount - i];
 			}
 		}
 
@@ -1001,8 +1001,8 @@ namespace Loyc.Collections
 			
 			// Remove mutable items (that w owns) from the front
 			while(w.IsOwner) {
-				while (w.LocalCount > w.Block.ImmCount) {
-					w.Block[--w.LocalCount] = default(T);
+				while (w.LocalCount > w.Block!.ImmCount) {
+					w.Block[--w.LocalCount] = default(T)!;
 					if (--count <= 0)
 						return;
 				}
@@ -1038,7 +1038,7 @@ namespace Loyc.Collections
 		public abstract T Front(int localCount);
 
 		/// <summary>Converts any kind of FVList to an array, quickly.</summary>
-		public static T[] ToArray(VListBlock<T> self, int localCount, bool isRList)
+		public static T[] ToArray(VListBlock<T>? self, int localCount, bool isRList)
 		{
 			Debug.Assert(localCount >= 0);
 			
@@ -1077,7 +1077,7 @@ namespace Loyc.Collections
 
 		#region LINQ-like methods
 
-		public virtual FVList<T> Where(int _localCount, Func<T,bool> filter, WListProtected<T> forWList)
+		public virtual FVList<T> Where(int _localCount, Func<T,bool> filter, WListProtected<T>? forWList)
 		{
 			return Transform(this, _localCount, (int i, ref T item) =>
 			{
@@ -1089,7 +1089,7 @@ namespace Loyc.Collections
 		{
 			return @new.HasValue && EqualityComparer.Equals(@new.Value, old);
 		}
-		public virtual FVList<T> SelectMany(int _localCount, Func<T, IReadOnlyList<T>> map, bool isRList, WListProtected<T> forWList)
+		public virtual FVList<T> SelectMany(int _localCount, Func<T, IReadOnlyList<T>> map, bool isRList, WListProtected<T>? forWList)
 		{
 			Debug.Assert(_localCount > 0);
 
@@ -1142,7 +1142,7 @@ namespace Loyc.Collections
 			}
 		}
 
-		public virtual FVList<T> SmartSelect(int _localCount, Func<T, T> map, WListProtected<T> forWList)
+		public virtual FVList<T> SmartSelect(int _localCount, Func<T, T> map, WListProtected<T>? forWList)
 		{
 			Debug.Assert(_localCount > 0);
 
@@ -1237,13 +1237,13 @@ namespace Loyc.Collections
 			return output;
 		}*/
 
-		protected static FVList<T> MakeResult(VListBlock<T> _block, int _localCount, WListProtected<T> forWList)
+		protected static FVList<T> MakeResult(VListBlock<T>? _block, int _localCount, WListProtected<T>? forWList)
 		{
 			if (forWList != null)
 				forWList.InternalVList = new FVList<T>(_block, _localCount);
 			return new FVList<T>(_block, _localCount);
 		}
-		protected static FVList<T> MakeResult(T item, WListProtected<T> forWList)
+		protected static FVList<T> MakeResult(T item, WListProtected<T>? forWList)
 		{
 			FVList<T> output = new FVList<T>(new VListBlockOfTwo<T>(item, forWList != null), 1);
 			if (forWList != null)
@@ -1253,7 +1253,7 @@ namespace Loyc.Collections
 			}
 			return output;
 		}
-		protected static FVList<T> MakeResult(T _1, T _2, WListProtected<T> forWList)
+		protected static FVList<T> MakeResult(T _1, T _2, WListProtected<T>? forWList)
 		{
 			FVList<T> output = new FVList<T>(new VListBlockOfTwo<T>(_1, _2, forWList != null), 2);
 			if (forWList != null)
@@ -1268,7 +1268,7 @@ namespace Loyc.Collections
 		/// <param name="x">Method to apply to each item in the list</param>
 		/// <returns>A list formed from transforming all items in the list</returns>
 		/// <remarks>See the documentation of FVList.Transform() for more information.</remarks>
-		public static FVList<T> Transform(VListBlock<T> _block, int _localCount, VListTransformer<T> x, bool isRList, WListProtected<T> forWList)
+		public static FVList<T> Transform(VListBlock<T>? _block, int _localCount, VListTransformer<T> x, bool isRList, WListProtected<T>? forWList)
 		{
 			FVList<T> output = FVList<T>.Empty;
 
@@ -1281,7 +1281,7 @@ namespace Loyc.Collections
 			int count, i = -1, inc = 1;
 			int commonTailLength = 0;
 
-			VListBlockOfTwo<T> two = _block as VListBlockOfTwo<T>;
+			VListBlockOfTwo<T>? two = _block as VListBlockOfTwo<T>;
 			if (two != null)
 			{
 				// Optimization: handle numerous cases on short lists
@@ -1376,7 +1376,7 @@ namespace Loyc.Collections
 				e = new VList<T>.Enumerator(new FVList<T>(_block, _localCount));
 				e.MoveNext(); // always true
 
-				count = _localCount + _block.PriorCount;
+				count = _localCount + _block!.PriorCount;
 				if (!isRList) {
 					i = count;
 					inc = -1;

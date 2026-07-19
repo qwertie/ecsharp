@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -56,6 +57,7 @@ namespace Loyc.Collections
 		/// <c>IsSet(i)</c> returns true. This method must accept any integer as 
 		/// input, including invalid indexes.
 		/// </remarks>
+		[return: MaybeNull]
 		T NextHigherItem(ref int? index);
 
 		/// <summary>Decreases <c>index</c> by at least one to reach the next index
@@ -72,6 +74,7 @@ namespace Loyc.Collections
 		/// <c>IsSet(i)</c> returns true. This method must accept any integer as 
 		/// input, including invalid indexes.
 		/// </remarks>
+		[return: MaybeNull]
 		T NextLowerItem(ref int? index);
 
 		/// <summary>Determines whether a value exists at the specified index.</summary>
@@ -114,9 +117,11 @@ namespace Loyc.Collections
 		{
 			int? i = null;
 			for (;;) {
+				#pragma warning disable 8600
 				T value = list.NextHigherItem(ref i);
 				if (i == null) break;
-				yield return new KeyValuePair<int, T>(i.Value, value);
+				yield return new KeyValuePair<int, T>(i.Value, value!);
+				#pragma warning restore 8600
 			}
 		}
 	}

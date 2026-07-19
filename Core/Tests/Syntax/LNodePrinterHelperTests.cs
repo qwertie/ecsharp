@@ -12,7 +12,7 @@ using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.Syntax.Tests
 {
-	public delegate Pair<PrinterHelper, StringBuilder> LNodePrinterHelperFactory<PrinterHelper>(string indent = ". ", string newline = "\n", Action<ILNode, IndexRange, int> saveRange = null, bool allowNewlineRevocation = true, string labelIndent = " ", string subexprIndent = "  ") where PrinterHelper : ILNodePrinterHelper<PrinterHelper>;
+	public delegate Pair<PrinterHelper, StringBuilder> LNodePrinterHelperFactory<PrinterHelper>(string indent = ". ", string newline = "\n", Action<ILNode, IndexRange, int>? saveRange = null, bool allowNewlineRevocation = true, string labelIndent = " ", string subexprIndent = "  ") where PrinterHelper : ILNodePrinterHelper<PrinterHelper>;
 
 	public class LNodePrinterHelperTests<PrinterHelper> : TestHelpers where PrinterHelper : ILNodePrinterHelper<PrinterHelper>
 	{

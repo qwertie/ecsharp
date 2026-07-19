@@ -19,27 +19,27 @@ namespace Loyc.Syntax.Les
 		static readonly string[] _fileExtensions = new[] { "les3" };
 		public IEnumerable<string> FileExtensions { get { return _fileExtensions; } }
 
-		void ILNodePrinter.Print(LNode node, StringBuilder target, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options)
+		void ILNodePrinter.Print(LNode node, StringBuilder target, IMessageSink? sink, ParsingMode? mode, ILNodePrinterOptions? options)
 		{
 			Print((ILNode)node, target, sink, mode, options);
 		}
-		void ILNodePrinter.Print(IEnumerable<LNode> nodes, StringBuilder target, IMessageSink sink, ParsingMode mode, ILNodePrinterOptions options)
+		void ILNodePrinter.Print(IEnumerable<LNode> nodes, StringBuilder target, IMessageSink? sink, ParsingMode? mode, ILNodePrinterOptions? options)
 		{
 			Print(nodes, target, sink, mode, options);
 		}
-		public void Print(ILNode node, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
+		public void Print(ILNode node, StringBuilder target, IMessageSink? sink = null, ParsingMode? mode = null, ILNodePrinterOptions? options = null)
 		{
 			CheckParam.IsNotNull("target", target);
 			var p = new Les3Printer(target, sink, options);
 			p.Print(node);
 		}
-		public string Print(ILNode node, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
+		public string Print(ILNode node, IMessageSink? sink = null, ParsingMode? mode = null, ILNodePrinterOptions? options = null)
 		{
 			StringBuilder target = new StringBuilder();
 			Print(node, target, sink, mode, options);
 			return target.ToString();
 		}
-		public void Print(IEnumerable<ILNode> nodes, StringBuilder target, IMessageSink sink = null, ParsingMode mode = null, ILNodePrinterOptions options = null)
+		public void Print(IEnumerable<ILNode> nodes, StringBuilder target, IMessageSink? sink = null, ParsingMode? mode = null, ILNodePrinterOptions? options = null)
 		{
 			CheckParam.IsNotNull("target", target);
 			var p = new Les3Printer(target, sink, options);
@@ -58,12 +58,12 @@ namespace Loyc.Syntax.Les
 		{
 			return new Les3Lexer(text, fileName, msgs) { SpacesPerTab = options.SpacesPerTab };
 		}
-		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink msgs, IParsingOptions options)
+		public IListSource<LNode> Parse(ICharSource text, string fileName, IMessageSink? msgs, IParsingOptions options)
 		{
-			var lexer = Tokenize(text, fileName, msgs, options);
+			var lexer = Tokenize(text, fileName, msgs!, options); // null msgs is tolerated downstream (ErrorSink field is nullable)
 			return Parse(lexer, msgs, options);
 		}
-		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink msgs, IParsingOptions options)
+		public IListSource<LNode> Parse(ILexer<Token> input, IMessageSink? msgs, IParsingOptions options)
 		{
 			if (options.PreserveComments) {
 				// Filter out whitespace, including some newlines (those directly inside square brackets or parentheses)
@@ -78,9 +78,9 @@ namespace Loyc.Syntax.Les
 		}
 
 		[ThreadStatic]
-		static Les3Parser _parser;
+		static Les3Parser? _parser;
 
-		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink msgs, IParsingOptions options)
+		public IListSource<LNode> Parse(IListSource<Token> input, ISourceFile file, IMessageSink? msgs, IParsingOptions options)
 		{
 			// For efficiency we'd prefer to re-use our _parser object, but
 			// when parsing lazily, we can't re-use it because another parsing 
@@ -91,11 +91,11 @@ namespace Loyc.Syntax.Les
 			// certain arbitrary size. Also, ParseExprs() is always greedy 
 			// so we can always re-use _parser in that case.
 			if (options.Mode == ParsingMode.Expressions || file.Text.TryGet(255).HasValue) {
-				Les3Parser parser = _parser;
+				Les3Parser? parser = _parser;
 				if (parser == null)
-					_parser = parser = new Les3Parser(input.AsList(), file, msgs, options);
+					_parser = parser = new Les3Parser(input.AsList(), file, msgs!, options); // null msgs is tolerated (ErrorSink field is nullable)
 				else {
-					parser.ErrorSink = msgs;
+					parser.ErrorSink = msgs!; // null msgs is tolerated (ErrorSink field is nullable)
 					parser.Reset(input.AsList(), file, options);
 				}
 				if (options.Mode == ParsingMode.Expressions)
@@ -103,7 +103,7 @@ namespace Loyc.Syntax.Les
 				else
 					return parser.Start(new Holder<TokenType>(TokenType.Semicolon)).Buffered();
 			} else {
-				var parser = new Les3Parser(input.AsList(), file, msgs, options);
+				var parser = new Les3Parser(input.AsList(), file, msgs!, options); // null msgs is tolerated (ErrorSink field is nullable)
 				return parser.Start(new Holder<TokenType>(TokenType.Semicolon)).Buffered();
 			}
 		}

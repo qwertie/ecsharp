@@ -23,7 +23,7 @@ namespace Loyc.Syntax
 		
 		[EditorBrowsable(EditorBrowsableState.Never)] public override object Value => NoValue.Value;
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LiteralNode WithValue(object value) { throw new InvalidOperationException("WithValue(): this is an IdNode, cannot change Value."); }
-		[EditorBrowsable(EditorBrowsableState.Never)] public override LNode Target { get { return null; } }
+		[EditorBrowsable(EditorBrowsableState.Never)] public override LNode? Target { get { return null; } }
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LNodeList Args { get { return LNodeList.Empty; } }
 		public override CallNode WithArgs(LNodeList args) { return new StdComplexCallNode(this, args, Range); }
 
@@ -58,7 +58,7 @@ namespace Loyc.Syntax
 		public abstract override LiteralNode WithValue(object value);
 
 		[EditorBrowsable(EditorBrowsableState.Never)] public override Symbol Name { get { return GSymbol.Empty; } }
-		[EditorBrowsable(EditorBrowsableState.Never)] public override LNode Target { get { return null; } }
+		[EditorBrowsable(EditorBrowsableState.Never)] public override LNode? Target { get { return null; } }
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LNodeList Args { get { return LNodeList.Empty; } }
 		public override CallNode WithArgs(LNodeList args) { return new StdComplexCallNode(this, args, Range); }
 
@@ -100,7 +100,7 @@ namespace Loyc.Syntax
 		}
 		[EditorBrowsable(EditorBrowsableState.Never)] public override object Value => NoValue.Value;
 		[EditorBrowsable(EditorBrowsableState.Never)] public override UString TextValue => default(UString);
-		[EditorBrowsable(EditorBrowsableState.Never)] public override Symbol TypeMarker => null;
+		[EditorBrowsable(EditorBrowsableState.Never)] public override Symbol? TypeMarker => null;
 		[EditorBrowsable(EditorBrowsableState.Never)] public override LiteralNode WithValue(object value) { throw new InvalidOperationException("WithValue(): this is a CallNode, cannot change Value."); }
 		public abstract override LNode Target { get; }
 		public abstract override LNodeList Args { get; }
@@ -154,7 +154,7 @@ namespace Loyc.Syntax
 		public sealed override LNode Select(Func<LNode, Maybe<LNode>> selector, ReplaceOpt options = ReplaceOpt.ProcessAttrs)
 		{
 			var node = (options & ReplaceOpt.ProcessAttrs) != 0 ? WithAttrs(selector) : this;
-			LNode target = node.Target, newTarget = selector(node.Target).Or(EmptySplice);
+			LNode? target = node.Target, newTarget = selector(node.Target!).Or(EmptySplice); // Target isn't null because node is a call
 			if (newTarget != null && newTarget != target)
 				return node.With(newTarget, Args.WhereSelect(selector));
 			else
@@ -163,7 +163,7 @@ namespace Loyc.Syntax
 		public override LNode SelectMany(Func<LNode, IReadOnlyList<LNode>> selector, ReplaceOpt options = ReplaceOpt.ProcessAttrs)
 		{
 			var node = (options & ReplaceOpt.ProcessAttrs) != 0 ? WithAttrs(selector) : this;
-			LNode target = node.Target, newTarget = LNode.List(selector(node.Target)).AsLNode(CodeSymbols.Splice);
+			LNode? target = node.Target, newTarget = LNode.List(selector(node.Target!)).AsLNode(CodeSymbols.Splice); // Target isn't null because node is a call
 			LNodeList newArgs = Args.SmartSelectMany(selector);
 			if (newTarget != null && newTarget != target)
 				return node.With(newTarget, newArgs);

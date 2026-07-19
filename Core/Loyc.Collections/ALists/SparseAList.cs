@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc.Collections.Impl;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Collections.Specialized;
 
 namespace Loyc.Collections
@@ -39,7 +40,7 @@ namespace Loyc.Collections
 		public SparseAList(int maxNodeSize) : base(maxNodeSize) { }
 		public SparseAList(int maxLeafSize, int maxInnerSize) : base(maxLeafSize, maxInnerSize) { }
 		public SparseAList(SparseAList<T> items, bool keepListChangingHandlers) : base(items, keepListChangingHandlers) { }
-		protected SparseAList(AListBase<int, T> original, AListNode<int, T> section) : base(original, section) { }
+		protected SparseAList(AListBase<int, T> original, AListNode<int, T>? section) : base(original, section) { }
 		
 		#endregion
 
@@ -67,7 +68,7 @@ namespace Loyc.Collections
 			Debug.Assert(op.SourceCount <= (int)(_count - index) || op.IsInsert);
 			if (_listChanging != null) {
 				if (op.Source == null)
-					op.Source = new Repeated<T>(op.WriteEmpty ? default(T) : op.Item, op.SourceCount);
+					op.Source = new Repeated<T>(op.WriteEmpty ? default(T)! : op.Item, op.SourceCount);
 				if (op.IsInsert)
 					CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, (int)index, op.SourceCount, op.Source, EmptyList<T>.Value));
 				else
@@ -76,7 +77,7 @@ namespace Loyc.Collections
 			if (_root == null || _root.IsFrozen)
 				AutoCreateOrCloneRoot();
 
-			AListNode<int, T> splitLeft, splitRight;
+			AListNode<int, T>? splitLeft, splitRight;
 			int sizeChange = 0;
 			do {
 				sizeChange += _root.DoSparseOperation(ref op, (int)index, out splitLeft, out splitRight);
@@ -282,6 +283,7 @@ namespace Loyc.Collections
 			return false;
 		}
 
+		[return: MaybeNull]
 		public T NextHigherItem(ref int? index)
 		{
 			if (_root != null)
@@ -299,6 +301,7 @@ namespace Loyc.Collections
 			return default(T);
 		}
 
+		[return: MaybeNull]
 		public T NextLowerItem(ref int? index)
 		{
 			if (_root != null && (index == null || index > 0))
@@ -325,7 +328,7 @@ namespace Loyc.Collections
 			// a loop; SparseGetNearest is an O(log N) operation.
 			for (int? i = -1; ; prev = i.Value) {
 				i++;
-				T value = _root.SparseGetNearest(ref i, +1);
+				T? value = _root.SparseGetNearest(ref i, +1);
 				if (isDefault && prev + 1 != (i ?? Count))
 					return prev + 1; // empty space matches the item
 				if (i == null)

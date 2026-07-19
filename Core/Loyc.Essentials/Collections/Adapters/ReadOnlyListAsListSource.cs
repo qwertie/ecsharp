@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace Loyc.Collections
 		public static IListSource<T> AsListSource<T>(this IReadOnlyList<T> c)
 		{
 			if (c == null)
-				return null;
+				return null!; // Nullability contract broken, and there's no attribute like [return: MaybeNullIfNull("c")]
 			var listS = c as IListSource<T>;
 			if (listS != null)
 				return listS;
@@ -46,6 +47,7 @@ namespace Loyc.Collections
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => (_obj as System.Collections.IEnumerable).GetEnumerator();
 
 		public T this[int index, T defaultValue] => (uint)index >= (uint)_obj.Count ? defaultValue : _obj[index];
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			return (fail = (uint)index >= (uint)_obj.Count) ? default(T) : _obj[index];

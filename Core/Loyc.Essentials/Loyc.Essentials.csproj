@@ -1,24 +1,57 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- Nullability is broken in .NET Standard 2.0/2.1; use Core 3.1 for correct IntelliSense.
+         In Visual Studio, use the dropdown at the top-left of any .cs file to choose netcoreapp3.1 -->
+    <TargetFrameworks>netcoreapp3.1;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <LangVersion>10.0</LangVersion>
     <OutputPath>..\Bin\$(Configuration)\</OutputPath>
-    <NoWarn>1591, 1573, 0419, 1587, 1574</NoWarn>
+    <NoWarn>1591, 1573, 0419, 1587, 1574, 1658</NoWarn>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>OpenSourceKey.snk</AssemblyOriginatorKeyFile>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
+  
+  <!-- Nullability: disable broken warnings in .NET Standard 2.0/2.1 and include attribute file -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1'">
+    <NoWarn>$(NoWarn);nullable</NoWarn><!-- Suppress nullability warnings -->
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\NullableAttributes.cs" />
+  </ItemGroup>
+  
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
     <DocumentationFile>..\Bin\$(Configuration)\$(TargetFramework)\Loyc.Essentials.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.csproj"/>
+    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.csproj" />
     <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+    <Compile Update="Collections\ExtensionMethods\EnumerableExt.out.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>EnumerableExt.ecs</DependentUpon>
+    </Compile>
     <Compile Update="Collections\ExtensionMethods\LinqToLists.out.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>LinqToLists.ecs</DependentUpon>
     </Compile>
+    <Compile Update="SyncLib\Impl\SyncPrimitive.out.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SyncPrimitive.ecs</DependentUpon>
+    </Compile>
+    <Compile Update="SyncLib\ISyncManager.out.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ISyncManager.ecs</DependentUpon>
+    </Compile>
+    <None Update="Collections\ExtensionMethods\EnumerableExt.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>EnumerableExt.out.cs</LastGenOutput>
+    </None>
     <None Update="Collections\ExtensionMethods\LinqToLists.ecs">
       <Generator>LLLPG</Generator>
       <LastGenOutput>LinqToLists.out.cs</LastGenOutput>
@@ -46,6 +79,14 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>GRange.ecs</DependentUpon>
     </Compile>
+    <None Update="SyncLib\Impl\SyncPrimitive.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>SyncPrimitive.out.cs</LastGenOutput>
+    </None>
+    <None Update="SyncLib\ISyncManager.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>ISyncManager.out.cs</LastGenOutput>
+    </None>
     <None Update="Utilities\GRange.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>GRange.out.cs</LastGenOutput>

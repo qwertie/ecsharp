@@ -10,7 +10,7 @@ namespace Loyc.Collections
 	{
 		#region Caching facility
 
-		[ThreadStatic] public static SimpleCache<object> _objectCache;
+		[ThreadStatic] public static SimpleCache<object>? _objectCache;
 		
 		/// <summary>Passes the object through a thread-static instance of <see cref="SimpleCache{o}"/>.</summary>
 		/// <remarks>If o is a string, an alternative to Caching is interning 

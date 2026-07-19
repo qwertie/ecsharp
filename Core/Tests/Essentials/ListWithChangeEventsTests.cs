@@ -102,11 +102,11 @@ namespace Loyc.Essentials.Tests
 			ListChangingHandler<T, IListSource<T>> handler = (sender, args) =>
 			{
 				numEvents++;
-				ExpectList(args.OldItems, oldItems);
-				ExpectList(args.NewItems, newItems);
+				ExpectList(args.OldItems!, oldItems);
+				ExpectList(args.NewItems!, newItems);
 				ExpectList(sender, listDuringEvent);
 				AreEqual(index, args.Index);
-				AreEqual(args.SizeChange, args.NewItems.Count - args.OldItems.Count);
+				AreEqual(args.SizeChange, args.NewItems!.Count - args.OldItems!.Count);
 			};
 			if (checkChangedEvent)
 			{

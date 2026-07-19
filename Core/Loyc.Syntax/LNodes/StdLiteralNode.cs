@@ -11,8 +11,8 @@ namespace Loyc.Syntax
 		V _value;
 		public SimpleValue(V value) => _value = value;
 		public UString GetTextValue(SourceRange range) => default(UString);
-		public Symbol GetTypeMarker(SourceRange range) => null;
-		public object GetValue(SourceRange range) => _value;
+		public Symbol? GetTypeMarker(SourceRange range) => null;
+		public object GetValue(SourceRange range) => _value!; // may be null (e.g. LNode.Literal(null)), but ILiteralValue.Value isn't marked nullable
 	}
 
 	internal class StdLiteralNode<TValue> : LiteralNode where TValue : ILiteralValueProvider
@@ -27,7 +27,7 @@ namespace Loyc.Syntax
 		protected TValue _value;
 		public override object Value => _value.GetValue(Range);
 		public override UString TextValue => _value.GetTextValue(Range);
-		public override Symbol TypeMarker => _value.GetTypeMarker(Range);
+		public override Symbol? TypeMarker => _value.GetTypeMarker(Range);
 
 		public override LiteralNode WithValue(object value) => cov_Clone(new SimpleValue<object>(value));
 

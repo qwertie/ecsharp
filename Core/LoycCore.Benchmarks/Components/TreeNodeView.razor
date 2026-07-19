@@ -1,0 +1,102 @@
+@* One node of the benchmark tree (recursive). Groups get a checkbox that toggles
+   all descendants; leaves get a checkbox, a status dot, and a clickable name that
+   shows the benchmark's results. *@
+
+@if (Node.IsLeaf)
+{
+    var leaf = Node.Leaf!;
+    <div class="tree-leaf @(IsViewed(leaf.Path) ? "viewed" : "")">
+        <input type="checkbox" checked="@Selection.Contains(leaf.Path)"
+               @onchange="e => OnLeafChecked(leaf.Path, (bool)e.Value!)" />
+        <span class="status-dot @GetStatusClass(leaf.Path)" title="@GetStatusTitle(leaf.Path)"></span>
+        <a class="leaf-name" title="@leaf.Description" @onclick="() => OnView.InvokeAsync(leaf.Path)">@Node.Name</a>
+    </div>
+}
+else
+{
+    <details open class="tree-group">
+        <summary>
+            <input type="checkbox" checked="@AreAllSelected()" @onchange="e => OnGroupChecked((bool)e.Value!)"
+                   @onclick:stopPropagation="true" />
+            <span class="group-name">@Node.Name</span>
+            <span class="group-count">@GetVisibleLeaves().Count()</span>
+        </summary>
+        <div class="tree-children">
+            @foreach (var child in GetVisibleChildren())
+            {
+                <TreeNodeView Node="child" Selection="Selection" Filter="@Filter"
+                              OnSelectionChanged="OnSelectionChanged" OnView="OnView"
+                              ViewedPath="@ViewedPath" Queue="Queue" />
+            }
+        </div>
+    </details>
+}
+
+@code {
+    [Parameter, EditorRequired] public BenchmarkTreeNode Node { get; set; } = null!;
+    [Parameter, EditorRequired] public HashSet<string> Selection { get; set; } = null!;
+    [Parameter] public string Filter { get; set; } = "";
+    [Parameter] public string? ViewedPath { get; set; }
+    [Parameter, EditorRequired] public BenchmarkQueueService Queue { get; set; } = null!;
+    [Parameter] public EventCallback OnSelectionChanged { get; set; }
+    [Parameter] public EventCallback<string> OnView { get; set; }
+
+    bool IsViewed(string path) => path == ViewedPath;
+
+    /// <summary>True if the leaf survives the sidebar's filter box (also used by
+    /// Home to decide which top-level groups to show).</summary>
+    public static bool Matches(BenchmarkLeaf leaf, string filter)
+        => filter.Length == 0 || leaf.Path.Contains(filter, StringComparison.OrdinalIgnoreCase);
+
+    IEnumerable<BenchmarkLeaf> GetVisibleLeaves()
+        => Node.DescendantLeaves().Where(l => Matches(l, Filter));
+
+    IEnumerable<BenchmarkTreeNode> GetVisibleChildren()
+        => Node.Children.Where(c => c.DescendantLeaves().Any(l => Matches(l, Filter)));
+
+    bool AreAllSelected()
+    {
+        var leaves = GetVisibleLeaves().ToList();
+        return leaves.Count > 0 && leaves.All(l => Selection.Contains(l.Path));
+    }
+
+    async Task OnLeafChecked(string path, bool isChecked)
+    {
+        SetSelected(path, isChecked);
+        await OnSelectionChanged.InvokeAsync();
+    }
+
+    async Task OnGroupChecked(bool isChecked)
+    {
+        foreach (var leaf in GetVisibleLeaves())
+            SetSelected(leaf.Path, isChecked);
+        await OnSelectionChanged.InvokeAsync();
+    }
+
+    void SetSelected(string path, bool selected)
+    {
+        if (selected)
+            Selection.Add(path);
+        else
+            Selection.Remove(path);
+    }
+
+    string GetStatusClass(string path)
+    {
+        var job = Queue.Jobs.LastOrDefault(j => j.Leaf.Path == path);
+        return job?.Status switch {
+            JobStatus.Running => "running",
+            JobStatus.Queued => "queued",
+            JobStatus.Failed => "failed",
+            _ => Queue.FindLatestResult(path) != null ? "done" : "none",
+        };
+    }
+
+    string GetStatusTitle(string path) => GetStatusClass(path) switch {
+        "running" => "Running…",
+        "queued" => "Queued",
+        "failed" => "Last run failed",
+        "done" => "Has results",
+        _ => "Not run yet",
+    };
+}

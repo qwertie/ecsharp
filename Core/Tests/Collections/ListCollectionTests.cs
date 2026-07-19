@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +11,7 @@ namespace Loyc.Collections.Tests
 	/// <summary>A test class for collections that implement IListSource{int} and 
 	/// are cloneable, such as AList, BList and DList.</summary>
 	[TestFixture]
-	public class ListCollectionTests<ListT> : TestHelpers where ListT : IListSource<int>, ICollection<int>, ICloneable<ListT>
+	public class ListCollectionTests<ListT> : CollectionTests<ListT, int> where ListT : IListSource<int>, ICollection<int>, ICloneable<ListT>
 	{
 		protected Func<ListT> _newList;
 		protected bool _isSorted;
@@ -19,6 +19,12 @@ namespace Loyc.Collections.Tests
 		protected Random _r;
 
 		public ListCollectionTests(Func<ListT> newList, int randomSeed, bool isSorted)
+			: base(newList,
+				new[] { 1, 2, 3, 4 },
+				new[] { 0, int.MinValue, int.MaxValue },
+				new[] { 90, 80, 70, 60, 50, 40, 30, 20, 10, 0 },
+				new byte[200].With(array => new Random(randomSeed).NextBytes(array))
+					.Select(x => x * 10).ToArray())
 		{
 			_newList = newList;
 			_isSorted = isSorted;

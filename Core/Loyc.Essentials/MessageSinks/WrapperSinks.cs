@@ -1,4 +1,4 @@
-﻿//
+//
 // Decorator types, which wrap an existing IMessageSink and modify its behavior
 //
 using System;
@@ -46,11 +46,11 @@ namespace Loyc
 		{
  			if (Passes(level)) Target.Write(level, context, format);
 		}
-		public void Write(Severity level, TContext context, string format, object arg0, object arg1 = null)
+		public void Write(Severity level, TContext context, string format, object? arg0, object? arg1 = null)
 		{
  			if (Passes(level)) Target.Write(level, context, format, arg0, arg1);
 		}
-		public void Write(Severity level, TContext context, string format, params object[] args)
+		public void Write(Severity level, TContext context, string format, params object?[] args)
 		{
  			if (Passes(level)) Target.Write(level, context, format, args);
 		}
@@ -65,10 +65,10 @@ namespace Loyc
 	}
 
 	/// <summary>Alias for SeverityMessageFilter&lt;object>.</summary>
-	public class SeverityMessageFilter : SeverityMessageFilter<object>, IMessageSink
+	public class SeverityMessageFilter : SeverityMessageFilter<object?>, IMessageSink
 	{
 		/// <inheritdoc cref="SeverityMessageFilter{TContext}(IMessageSink{TContext}, Severity, bool)"/>
-		public SeverityMessageFilter(IMessageSink<object> target, Severity minSeverity, bool includeDetails = true)
+		public SeverityMessageFilter(IMessageSink<object?> target, Severity minSeverity, bool includeDetails = true)
 			: base(target, minSeverity, includeDetails) { }
 	}
 
@@ -80,11 +80,11 @@ namespace Loyc
 	/// <see cref="Target"/> message sink.</remarks>
 	public class MessageFilter : IMessageSink
 	{
-		public Func<Severity, object, string, bool> Filter { get; set; }
-		public Func<Severity, bool> TypeFilter { get; set; }
+		public Func<Severity, object?, string?, bool>? Filter { get; set; }
+		public Func<Severity, bool>? TypeFilter { get; set; }
 		public IMessageSink Target { get; set; }
 
-		public MessageFilter(IMessageSink target, Func<Severity, object, string, bool> filter) 
+		public MessageFilter(IMessageSink target, Func<Severity, object?, string?, bool> filter) 
 		{
 			Filter = filter;
 			Target = target;
@@ -94,22 +94,22 @@ namespace Loyc
 			TypeFilter = filter;
 			Target = target;
 		}
-		bool Passes(Severity level, object context, string format)
+		bool Passes(Severity level, object? context, string? format)
 		{
 			return Filter != null && Filter(level, context, format)
 				|| TypeFilter != null && TypeFilter(level);
 		}
-		public void Write(Severity level, object context, string format)
+		public void Write(Severity level, object? context, string format)
 		{
 			if (Passes(level, context, format))
 				Target.Write(level, context, format);
 		}
-		public void Write(Severity level, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity level, object? context, string format, object? arg0, object? arg1 = null)
 		{
 			if (Passes(level, context, format))
 				Target.Write(level, context, format, arg0, arg1);
 		}
-		public void Write(Severity level, object context, string format, params object[] args)
+		public void Write(Severity level, object? context, string format, params object?[] args)
 		{
 			if (Passes(level, context, format))
 				Target.Write(level, context, format, args);
@@ -139,13 +139,13 @@ namespace Loyc
 				if (sink != null)
 					sink.Write(level, context, format);
 		}
-		public void  Write(Severity level, TContext context, string format, object arg0, object arg1 = null)
+		public void  Write(Severity level, TContext context, string format, object? arg0, object? arg1 = null)
 		{
  			foreach(var sink in _list)
 				if (sink != null)
 					sink.Write(level, context, format, arg0, arg1);
 		}
-		public void  Write(Severity level, TContext context, string format, params object[] args)
+		public void  Write(Severity level, TContext context, string format, params object?[] args)
 		{
 			foreach (var sink in _list)
 				if (sink != null)
@@ -162,26 +162,36 @@ namespace Loyc
 	}
 
 	/// <summary>Alias for MessageSplitter&lt;object>.</summary>
-	public class MessageMulticaster : MessageMulticaster<object>, IMessageSink
+	public class MessageMulticaster : MessageMulticaster<object?>, IMessageSink
 	{
-		public MessageMulticaster(IEnumerable<IMessageSink<object>> targets) : base(targets) { }
-		public MessageMulticaster(params IMessageSink<object>[] targets) : base(targets) { }
+		public MessageMulticaster(IEnumerable<IMessageSink<object?>> targets) : base(targets) { }
+		public MessageMulticaster(params IMessageSink<object?>[] targets) : base(targets) { }
 		public MessageMulticaster() : base() { }
 	}
 
+	// Note:  original constraint "where TContext: class" gives an error I don't 
+	// understand in the derived class MessageSinkWithContext:
+	//   The type 'object?' cannot be used as type parameter 'TContext' in the
+	//   generic type or method 'MessageSinkWithContext<TContext>'. Nullability of type
+	//   argument 'object?' doesn't match 'class' constraint.
+	// So I modified the class to remove the constraint (which necessetated the creation
+	// of MessageSinkFromDelegate<TContext> alongside the existing MessageSinkFromDelegate).
 	/// <summary>A message sink wrapper that has a default value for the context 
 	/// parameter, which is used when the context provided is null, and an optional 
 	/// message prefix which is inserted at the beginning of the format string.</summary>
-	public class MessageSinkWithContext<TContext> : IMessageSink<TContext> where TContext: class
+	public class MessageSinkWithContext<TContext> : IMessageSink<TContext>
 	{
-		IMessageSink<TContext> _target { get; set; }
+		readonly IMessageSink<TContext> WriteToDefault = new MessageSinkFromDelegate<TContext>(
+			(type, ctx, format, args) => MessageSink.Default.Write(type, ctx, format, args));
+
+		IMessageSink<TContext>? _target;
 		public IMessageSink<TContext> Target
 		{
-			get { return _target ?? MessageSink.Default; }
+			get { return _target ?? WriteToDefault; }
 			set { _target = value; }
 		}
 		public TContext DefaultContext { get; set; }
-		public string MessagePrefix { get; set; }
+		public string? MessagePrefix { get; set; }
 
 		/// <summary>Initializes the wrapper.</summary>
 		/// <param name="target">Message sink to which all messages are forwarded. If this parameter 
@@ -199,9 +209,9 @@ namespace Loyc
 		/// fix this by storing two separate MessagePrefix strings in this object, one
 		/// for each situation, but that's currently not implemented as it is simpler to
 		/// just ask users not to put braces in prefixes.</param>
-		public MessageSinkWithContext(IMessageSink<TContext> target, TContext defaultContext, string messagePrefix = null, bool scrubPrefix = true)
+		public MessageSinkWithContext(IMessageSink<TContext>? target, TContext defaultContext, string? messagePrefix = null, bool scrubPrefix = true)
 		{
-			Target = target;
+			_target = target;
 			DefaultContext = defaultContext;
 			if (scrubPrefix && messagePrefix != null)
 				messagePrefix = messagePrefix.Replace("{", "{{").Replace("}", "}}");
@@ -231,7 +241,7 @@ namespace Loyc
 			}
 			Target.Write(level, context ?? DefaultContext, format);
 		}
-		public void Write(Severity level, TContext context, string format, params object[] args)
+		public void Write(Severity level, TContext context, string format, params object?[] args)
 		{
 			if (MessagePrefix != null)
 			{
@@ -241,7 +251,7 @@ namespace Loyc
 			}
 			Target.Write(level, context ?? DefaultContext, format, args);
 		}
-		public void Write(Severity level, TContext context, string format, object arg0, object arg1 = null)
+		public void Write(Severity level, TContext context, string format, object? arg0, object? arg1 = null)
 		{
 			if (MessagePrefix != null)
 			{
@@ -254,9 +264,9 @@ namespace Loyc
 	}
 
 	/// <summary>Alias for MessageSinkWithContext&lt;object>.</summary>
-	public class MessageSinkWithContext : MessageSinkWithContext<object>, IMessageSink
+	public class MessageSinkWithContext : MessageSinkWithContext<object?>, IMessageSink
 	{
-		public MessageSinkWithContext(IMessageSink target, object defaultContext, string messagePrefix = null, bool scrubPrefix = true)
+		public MessageSinkWithContext(IMessageSink? target, object? defaultContext, string? messagePrefix = null, bool scrubPrefix = true)
 			: base(target, defaultContext, messagePrefix, scrubPrefix) { }
 	}
 }

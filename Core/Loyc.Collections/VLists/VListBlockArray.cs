@@ -81,7 +81,7 @@ namespace Loyc.Collections
 					Debug.Assert(localIndex < _immCount);
 					return _array[localIndex];
 				} else {
-					return _prior._block[localIndex + _prior._localCount];
+					return _prior._block![localIndex + _prior._localCount];
 				}
 			}
 			set {
@@ -92,7 +92,7 @@ namespace Loyc.Collections
 					_array[localIndex] = value;
 				} else {
 					Debug.Assert(ImmCount == 0);
-					_prior._block[localIndex + _prior._localCount] = value;
+					_prior._block![localIndex + _prior._localCount] = value;
 				}
 			}
 		}
@@ -130,7 +130,7 @@ namespace Loyc.Collections
 		public override T Front(int localCount)
 		{
 			if (localCount == 0)
-				return _prior._block.Front(_prior._localCount);
+				return _prior._block!.Front(_prior._localCount);
 			else {
 				Debug.Assert(localCount > 0 && localCount <= _immCount);
 				return _array[localCount - 1];
@@ -219,7 +219,7 @@ namespace Loyc.Collections
 
 			FVList<T> list = new FVList<T>(this, localIndex);
 			while (list._localCount <= 0) {
-				FVList<T> prior = list._block.Prior;
+				FVList<T> prior = list._block!.Prior;
 				list._block = prior._block;
 				list._localCount += prior._localCount;
 			}
@@ -236,12 +236,12 @@ namespace Loyc.Collections
 			// to clear the items.
 			if (ImmCount > 0) {
 				for (int i = ImmCount; i < localCountWithMutables; i++)
-					_array[i] = default(T);
+					_array[i] = default(T)!;
 			}
 			bool priorIsOwned = PriorIsOwned;
 			_immCount &= ImmCountMask;
 			if (priorIsOwned)
-				_prior._block.MuClear(_prior._localCount); // tail call
+				_prior._block!.MuClear(_prior._localCount); // tail call
 		}
 		
 		protected override void BlockToArray(T[] array, int arrayOffset, int localCount, bool isRList)

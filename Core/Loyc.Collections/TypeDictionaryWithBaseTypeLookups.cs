@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -27,7 +28,7 @@ namespace Loyc.Collections
 	public class TypeDictionaryWithBaseTypeLookups<Value> : IDictionaryAndReadOnly<Type, Value>, IAdd<KeyValuePair<Type, Value>>
 	{
 		Dictionary<Type, Value> _dict;
-		Dictionary<RuntimeTypeHandle, Maybe<Value>> _cache = null;
+		Dictionary<Type, Maybe<Value>>? _cache = null;
 
 		public TypeDictionaryWithBaseTypeLookups() => _dict = new Dictionary<Type, Value>();
 		public TypeDictionaryWithBaseTypeLookups(IDictionary<Type, Value> copy) => _dict = new Dictionary<Type, Value>(copy);
@@ -84,29 +85,29 @@ namespace Loyc.Collections
 			_dict.Clear();
 		}
 
-		public bool TryGetValue(Type type, out Value value)
+		public bool TryGetValue(Type type, [MaybeNullWhen(false)] out Value value)
 		{
-			Dictionary<RuntimeTypeHandle, Maybe<Value>> cache = _cache;
+			Dictionary<Type, Maybe<Value>>? cache = _cache;
 			if (cache == null) {
 				if (_dict.Count == 0) {
 					value = default;
 					return false;
 				}
-				_cache = cache = new Dictionary<RuntimeTypeHandle, Maybe<Value>>();
-			} else if (cache.TryGetValue(type.TypeHandle, out var maybe)) {
-				value = maybe.Or(default);
+				_cache = cache = new Dictionary<Type, Maybe<Value>>();
+			} else if (cache.TryGetValue(type, out var maybe)) {
+				value = maybe.Or(default!);
 				return maybe.HasValue;
 			}
 
 			// Search for the type itself first, then base classes, then interfaces
 			if (_dict.TryGetValue(type, out value)) {
-				cache.Add(type.TypeHandle, value);
+				cache.Add(type, value);
 				return true;
 			}
 
 			for (var type2 = type; type2.BaseType != null; type2 = type2.BaseType)
 				if (_dict.TryGetValue(type2.BaseType, out value)) {
-					cache[type.TypeHandle] = value;
+					cache[type] = value;
 					return true;
 				}
 
@@ -114,11 +115,11 @@ namespace Loyc.Collections
 			// It looks like the order is the result of a depth-first search.
 			foreach (var iface in type.GetInterfaces())
 				if (_dict.TryGetValue(iface, out value)) {
-					cache.Add(type.TypeHandle, value);
+					cache.Add(type, value);
 					return true;
 				}
 
-			cache.Add(type.TypeHandle, new Maybe<Value>());
+			cache.Add(type, new Maybe<Value>());
 			return false;
 		}
 	}

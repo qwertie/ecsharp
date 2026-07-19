@@ -40,7 +40,7 @@ namespace Loyc.Syntax.Impl
 		protected InternalList<object> _indentStack;
 		private InternalList<Revokable> _revokableNewlines;
 		private InternalList<Triplet<ILNode, IndexRange, int>> _unsavedRanges;
-		private Action<ILNode, IndexRange, int> _saveRange;
+		private Action<ILNode, IndexRange, int>? _saveRange;
 
 		public StringBuilder StringBuilder
 		{
@@ -61,12 +61,12 @@ namespace Loyc.Syntax.Impl
 		/// output is locked in (after you call <see cref="EndNode()"/>).</summary>
 		/// <remarks>The third parameter of the method is the node's depth in the
 		/// syntax tree (e.g. 3 means that the node has three known parents).</remarks>
-		public Action<ILNode, IndexRange, int> SaveRange
+		public Action<ILNode, IndexRange, int>? SaveRange
 		{
 			get => _saveRange;
 		}
 
-		public LNodePrinterHelper(StringBuilder s, Action<ILNode, IndexRange, int> saveRange = null,
+		public LNodePrinterHelper(StringBuilder s, Action<ILNode, IndexRange, int>? saveRange = null,
 			bool allowNewlineRevocation = true,
 			string indent = "\t", string newline = "\n",
 			string labelIndent = "  ", string bracketIndent = "  ",
@@ -116,17 +116,17 @@ namespace Loyc.Syntax.Impl
 			Newline = 1,
 			/// <summary>A delayed indent requested by Newline(deferIndent: true)</summary>
 			Indent = 2,
-			/// <summary>Flag set by <see cref="BeginNode"/>/
+			/// <summary>Flag set by <see cref="BeginNode"/></summary>
 			NodeStarted = 4,
 			/// <summary>Flag set by <see cref="EndNode"/></summary>
 			NodeEnded = 8,
 			NodeChanged = NodeStarted | NodeEnded,
 			/// <summary>A special flag that is needed to stop FlushIndent from interfering with newlines</summary>
 			CollapsableNewlineWasJustWritten = 16
-	}
+		}
 
-	/// <inheritdoc/>
-	public virtual LNodePrinterHelper Write(char c)
+		/// <inheritdoc/>
+		public virtual LNodePrinterHelper Write(char c)
 		{
 			if (_pendingAction != 0)
 				FlushPending(c);
@@ -318,13 +318,13 @@ namespace Loyc.Syntax.Impl
 		}
 
 		/// <inheritdoc/>
-		public virtual LNodePrinterHelper Indent(PrinterIndentHint modeHint = null)
+		public virtual LNodePrinterHelper Indent(PrinterIndentHint? modeHint = null)
 		{
-			_indentStack.Add(modeHint);
+			_indentStack.Add(modeHint!); // null is a valid entry meaning "default indent"
 			return this;
 		}
 		/// <inheritdoc/>
-		public virtual LNodePrinterHelper Dedent(PrinterIndentHint modeHint = null)
+		public virtual LNodePrinterHelper Dedent(PrinterIndentHint? modeHint = null)
 		{
 			if (modeHint != null && modeHint != _indentStack.Last)
 				CheckParam.ThrowBadArgument(nameof(modeHint), "Dedent mismatch: arg {0} != {1} on stack", modeHint, _indentStack.Last);
@@ -545,8 +545,8 @@ namespace Loyc.Syntax.Impl
 		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Newline(bool deferIndent) => Newline(deferIndent);
 		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.NewlineIsRequiredHere() => NewlineIsRequiredHere();
 		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.FlushIndent() => FlushIndent();
-		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Indent(PrinterIndentHint modeHint) => Indent(modeHint);
-		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Dedent(PrinterIndentHint modeHint) => Dedent(modeHint);
+		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Indent(PrinterIndentHint? modeHint) => Indent(modeHint);
+		ILNodePrinterHelper IPrinterHelper<ILNodePrinterHelper>.Dedent(PrinterIndentHint? modeHint) => Dedent(modeHint);
 		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.BeginNode(ILNode node) => BeginNode(node);
 		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.EndNode() => EndNode();
 		ILNodePrinterHelper ILNodePrinterHelper<ILNodePrinterHelper>.BeginNode(ILNode node, PrinterIndentHint indentHint) => BeginNode(node, indentHint);

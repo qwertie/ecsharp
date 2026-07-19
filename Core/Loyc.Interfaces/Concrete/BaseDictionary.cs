@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Loyc.Collections.Impl
 {
@@ -12,6 +13,7 @@ namespace Loyc.Collections.Impl
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(PREFIX + "DictionaryDebugView`2" + SUFFIX)]
     public abstract class DictionaryBase<TKey, TValue> : IDictionaryAndReadOnly<TKey, TValue>
+		where TKey: notnull
     {
         private const string PREFIX = "System.Collections.Generic.Mscorlib_";
         private const string SUFFIX = ",mscorlib,Version=2.0.0.0,Culture=neutral,PublicKeyToken=b77a5c561934e089";
@@ -21,7 +23,7 @@ namespace Loyc.Collections.Impl
         public abstract void Add(TKey key, TValue value);
         public abstract bool ContainsKey(TKey key);
         public abstract bool Remove(TKey key);
-        public abstract bool TryGetValue(TKey key, out TValue value);
+        public abstract bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value);
         public abstract IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator();
         /// <summary>Implementation of the setter for this[].</summary>
         /// <remarks>The setter alone (without the getter) is not allowed to be virtual 
@@ -30,10 +32,10 @@ namespace Loyc.Collections.Impl
 
         public bool IsReadOnly => false;
         public bool IsEmpty => Count != 0;
-        public TValue TryGet(TKey key, out bool fail)
+        public TValue TryGet(TKey key, [MaybeNullWhen(false)] out bool fail)
         {
-            fail = !TryGetValue(key, out TValue value);
-            return value;
+            fail = !TryGetValue(key, out TValue? value);
+            return value!;
         }
 
         public ICollection<TKey> Keys
@@ -57,7 +59,7 @@ namespace Loyc.Collections.Impl
         {
             get
             {
-                TValue value;
+                TValue? value;
                 if (!this.TryGetValue(key, out value))
                     throw new KeyNotFoundException();
 
@@ -76,7 +78,7 @@ namespace Loyc.Collections.Impl
 
         public bool Contains(KeyValuePair<TKey, TValue> item)
         {
-            TValue value;
+            TValue? value;
             if (!this.TryGetValue(item.Key, out value))
                 return false;
 

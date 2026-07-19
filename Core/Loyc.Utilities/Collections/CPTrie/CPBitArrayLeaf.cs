@@ -1,4 +1,4 @@
-﻿// http://www.codeproject.com/KB/recipes/cptrie.aspx
+// http://www.codeproject.com/KB/recipes/cptrie.aspx
 namespace Loyc.Collections.Impl
 {
 	using System;
@@ -100,19 +100,19 @@ namespace Loyc.Collections.Impl
 				// Move to next section
 				k = (k & ~0x1F) + 0x20;
 			}
-			return k + MathEx.FindFirstOne(f >> (k & 0x1F));
+			return k + MathEx.PositionOfLeastSignificantOne(f >> (k & 0x1F));
 		}
 
 		private int FindPrevInUse(int k)
 		{
 			uint f = _flags[k >> 5] & ((1u << (k & 0x1F)) - 1u);
 			if (f != 0)
-				return (k & ~0x1F) | MathEx.FindLastOne(f);
+				return (k & ~0x1F) | MathEx.PositionOfMostSignificantOne(f);
 
 			for (int section = (k >> 5) - 1; section >= 0; section--)
 			{
 				if (_flags[section] != 0)
-					return (section << 5) | MathEx.FindLastOne(_flags[section]);
+					return (section << 5) | MathEx.PositionOfMostSignificantOne(_flags[section]);
 			}
 			return -1;
 		}
@@ -181,7 +181,7 @@ namespace Loyc.Collections.Impl
 				uint f = _flags[section];
 				if (f == 0)
 					continue;
-				for (int i = MathEx.FindFirstOne(f); i < 32; i++) {
+				for (int i = MathEx.PositionOfLeastSignificantOne(f); i < 32; i++) {
 					if ((f & (1 << i)) != 0) // IsPresent(k)
 					{
 						// Get the key and value
@@ -219,7 +219,7 @@ namespace Loyc.Collections.Impl
 			{
 				if (_flags[i] != 0xFFFFFFFF)
 				{
-					int fz = MathEx.FindFirstZero(_flags[i]);
+					int fz = MathEx.PositionOfLeastSignificantZero(_flags[i]);
 					_flags[i] |= (1u << fz);
 					_valueCount++;
 					return ((i - 8) << 5) + fz;
@@ -365,7 +365,7 @@ namespace Loyc.Collections.Impl
 				Debug.Assert(section < 8);
 				uint f = _flags[section];
 				if (f != 0)
-					return MathEx.FindFirstOne(f) + (section << 5);
+					return MathEx.PositionOfLeastSignificantOne(f) + (section << 5);
 			}
 		}
 
@@ -381,7 +381,7 @@ namespace Loyc.Collections.Impl
 				Debug.Assert(section >= 0);
 				uint f = _flags[section];
 				if (f != 0)
-					return MathEx.FindFirstOne(f) + (section << 5);
+					return MathEx.PositionOfLeastSignificantOne(f) + (section << 5);
 			}
 		}
 

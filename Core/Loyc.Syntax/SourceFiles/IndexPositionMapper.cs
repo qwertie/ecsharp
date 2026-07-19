@@ -6,6 +6,7 @@ using Loyc.Utilities;
 using Loyc.MiniTest;
 using Loyc.Collections.Impl;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Loyc.Syntax
 {
@@ -43,7 +44,7 @@ namespace Loyc.Syntax
 		/// will be considered to have the file name and line number specified by 
 		/// this object. If this is null, IndexToLine() will return a blank file 
 		/// name ("").</param>
-		public IndexPositionMapper(CharSource source, ILineColumnFile startingPos = null)
+		public IndexPositionMapper(CharSource source, ILineColumnFile? startingPos = null)
 		{
 			Reset(source, startingPos);
 		}
@@ -57,11 +58,13 @@ namespace Loyc.Syntax
 		// this[_lineOffsets[2]] would be the first character of the third line.
 		protected InternalList<int> _lineOffsets = InternalList<int>.Empty;
 		protected bool _offsetsComplete = false;
-		protected ILineColumnFile _startingPos = null;
+		protected ILineColumnFile? _startingPos = null;
 
 		/// <summary>Reinitializes the object (as though the constructor were called again).</summary>
+		[MemberNotNull(nameof(_source))]
 		protected void Reset(CharSource source, string fileName) { Reset(source, new LineColumnFile(fileName, 1, 1)); }
-		protected void Reset(CharSource source, ILineColumnFile startingPos = null)
+		[MemberNotNull(nameof(_source))]
+		protected void Reset(CharSource source, ILineColumnFile? startingPos = null)
 		{
 			_source = source;
 			_lineOffsets = InternalList<int>.Empty;
@@ -71,7 +74,7 @@ namespace Loyc.Syntax
 
 		public string FileName
 		{
-			get { return _startingPos == null ? null : _startingPos.FileName; }
+			get { return _startingPos == null ? null! : _startingPos.FileName; } // returns null historically; IFileName.FileName is declared non-null
 		}
 
 		protected LineColumnFile NewSourcePos(int Line, int PosInLine)
@@ -169,7 +172,7 @@ namespace Loyc.Syntax
 	[Obsolete("Please use IndexPositionMapper<IListSource<char>> or IndexPositionMapper<UString> instead.")]
 	public class IndexPositionMapper : IndexPositionMapper<IListSource<char>>
 	{
-		public IndexPositionMapper(IListSource<char> source, SourcePos startingPos = null) : base(source, startingPos) {}
+		public IndexPositionMapper(IListSource<char> source, SourcePos? startingPos = null) : base(source, startingPos) {}
 		public IndexPositionMapper(IListSource<char> source, string fileName) : base(source, fileName) {}
 	}
 }

@@ -11,7 +11,7 @@ namespace Loyc.Utilities.Tests
 	[TestFixture]
 	public class UGTests : TestHelpers
 	{
-		KeyValuePair<string, string> P(string k, string v) { return new KeyValuePair<string, string>(k, v); }
+		KeyValuePair<string, string?> P(string k, string? v) { return new KeyValuePair<string, string?>(k, v); }
 
 		[Test]
 		public void TestProcessCommandLineArguments1()
@@ -19,9 +19,9 @@ namespace Loyc.Utilities.Tests
 			string commandLine = "-abZ -ab123 and -a=Foo --Apple:No -b plantain --a %TEMP% @notExpanded --banana -Z --empty=";
 			var args = G.SplitCommandLineArguments(commandLine);
 
-			var shortOpts = new Dictionary<char, string> { { 'a', null }, { 'b', "banana" } };
+			var shortOpts = new Dictionary<char, string?> { { 'a', null }, { 'b', "banana" } };
 			var twoArgOptions = new InvertibleSet<string>(new[] { "banana" });
-			var options = new DList<KeyValuePair<string, string>>();
+			var options = new DList<KeyValuePair<string, string?>>();
 			UG.ProcessCommandLineArguments(args, options, null, shortOpts, twoArgOptions, expandEnvVars: false);
 
 			ExpectList(args.AsListSource(), "-abZ", "and", "%TEMP%", "@notExpanded", "-Z");
@@ -44,7 +44,7 @@ namespace Loyc.Utilities.Tests
 
 			// Expand command line and ensure that the arg limit is enforced
 			List<string> args = G.SplitCommandLineArguments("\"@" + file1 + "\" \"lazy dog\"");
-			var options = new DList<KeyValuePair<string, string>>();
+			var options = new DList<KeyValuePair<string, string?>>();
 			var msgs = new MessageHolder();
 			using (MessageSink.SetDefault(msgs))
 				UG.ProcessCommandLineArguments(args, options, atFolder, null, null, 5);

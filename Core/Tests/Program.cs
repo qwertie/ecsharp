@@ -13,6 +13,7 @@ using Loyc.Geometry;
 using Loyc.Syntax.Lexing;
 using Loyc.Syntax.Les;
 using Loyc.Syntax.Tests;
+using Loyc.SyncLib.Tests;
 
 namespace Loyc.Tests
 {
@@ -23,6 +24,7 @@ namespace Loyc.Tests
 		public static readonly VList<Pair<string, Func<int>>> Menu = new VList<Pair<string, Func<int>>>()
 		{
 			new Pair<string,Func<int>>("Run unit tests of Loyc.Essentials.dll",  Loyc_Essentials),
+			new Pair<string,Func<int>>("Run unit tests of Loyc.SyncLib.dll",     Loyc_SyncLib),
 			new Pair<string,Func<int>>("Run unit tests of Loyc.Math.dll",        Loyc_Math),
 			new Pair<string,Func<int>>("Run unit tests of Loyc.Collections.dll", Loyc_Collections),
 			new Pair<string,Func<int>>("Run unit tests of Loyc.Syntax.dll",      Loyc_Syntax),
@@ -43,7 +45,7 @@ namespace Loyc.Tests
 				yield return k.KeyChar;
 		}
 
-		public static int RunMenu(IList<Pair<string, Func<int>>> menu, IEnumerator<char> input = null)
+		public static int RunMenu(IList<Pair<string, Func<int>>> menu, IEnumerator<char>? input = null)
 		{
 			var reader = input ?? ConsoleChars();
 			int errorCount = 0;
@@ -83,6 +85,12 @@ namespace Loyc.Tests
 		public static int Loyc_Essentials()
 		{
 			return MiniTest.RunTests.RunMany(
+				new InternalListScannerTests(_seed),
+				new ScannableEnumerableTests(_seed),
+				new ScannableEnumerableTests(_seed, 200_000),
+				new BufferedSequenceScannerTests(_seed),
+				new StreamScannerTests(_seed),
+				new MultiMapTests(_seed),
 				new EitherTests(),
 				new BaisTests(),
 				new ListExtTests(),
@@ -106,7 +114,33 @@ namespace Loyc.Tests
 				SelectDictionaryFromKeysTests.TestObjects[0],
 				SelectDictionaryFromKeysTests.TestObjects[1],
 				new GTests(),
-				new PrintHelpersTests());
+				new PrintHelpersTests()
+			);
+		}
+		public static int Loyc_SyncLib()
+		{
+			return MiniTest.RunTests.RunMany(
+				new SyncBinaryWriterTests(),
+				new SyncBinaryGoldenTests(),
+				new SyncBinaryTests(false),
+				new SyncBinaryTests(true),
+				new SyncBinaryReaderTests(),
+				new SyncJsonWriterTests(),
+				new SyncJsonTests(newtonCompat: true, false, false),
+				new SyncJsonTests(newtonCompat: true, true, false),
+				new SyncJsonTests(newtonCompat: false, false, false),
+				new SyncJsonTests(newtonCompat: false, true, true),
+				new SyncJsonReaderTests(),
+				new SyncJsonSchemaTests(),
+				new SyncDynamicJsonTests(),
+				new SyncProtobufTests(false),
+				new SyncProtobufTests(true),
+				new SyncProtobufSchemaTests(),
+				#if !DotNet45 // SyncProtobufInteropTests needs the protobuf-net package, which isn't referenced by the .NET Framework build
+				new SyncProtobufInteropTests(),
+				#endif
+				new SyncMalformedInputTests()
+			);
 		}
 		public static int Loyc_Collections()
 		{
@@ -132,7 +166,7 @@ namespace Loyc.Tests
 				new DequeTests<DList<int>>(delegate() { return new DList<int>(); }),
 				new DequeTests<AList<int>>(delegate() { return new AList<int>(); }),
 				new DequeTests<SparseAList<int>>(delegate() { return new SparseAList<int>(); }),
-				new DictionaryTests<BDictionary<object, object>>(true, true),
+				new DictionaryTests<BDictionary<object, object?>>(true, true),
 				new ListTests<AList<int>>(false, delegate(int n) { var l = new AList<int>(); l.Resize(n); return l; }),
 				new ListRangeTests<AList<int>>(false, delegate() { return new AList<int>(); }, 12345),
 				new ListTests<SparseAList<int>>(false, delegate(int n) { var l = new SparseAList<int>(); l.Resize(n); return l; }, 12345),
@@ -158,7 +192,8 @@ namespace Loyc.Tests
 			return MiniTest.RunTests.RunMany(
 				new MathExTests(),
 				new LineMathTests(),
-				new PointMathTests());
+				new PointMathTests()
+			);
 		}
 		public static int Loyc_Syntax()
 		{
@@ -183,7 +218,8 @@ namespace Loyc.Tests
 				new StreamCharSourceTests(),
 				new ParseHelpersTests(),
 				new LexerSourceTests_Calculator(),
-				new ParserSourceTests_Calculator());
+				new ParserSourceTests_Calculator()
+			);
 		}
 		public static int Loyc_Utilities()
 		{
@@ -195,7 +231,8 @@ namespace Loyc.Tests
 				new UGTests(),
 				new GoInterfaceTests(),
 				new CPTrieTests(),
-				new KeylessHashtableTests());
+				new KeylessHashtableTests()
+			);
 		}
 	}
 }

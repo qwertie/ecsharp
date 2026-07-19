@@ -14,6 +14,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Loyc.MiniTest;
 
@@ -35,7 +36,7 @@ namespace Loyc.Collections
 
 		#region Constructors
 
-		internal WList(VListBlock<T> block, int localCount, bool isOwner)
+		internal WList(VListBlock<T>? block, int localCount, bool isOwner)
 			: base(block, localCount, isOwner) {}
 		public WList() {} // empty list is all null
 		public WList(T itemZero, T itemOne)
@@ -65,7 +66,7 @@ namespace Loyc.Collections
 		public new T this[int index]
 		{
 			get {
-				return Block.RGet(index, LocalCount);
+				return Block!.RGet(index, LocalCount);
 			}
 			set {
 				if ((uint)index >= (uint)Count)
@@ -84,7 +85,7 @@ namespace Loyc.Collections
 		public T this[int index, T defaultValue]
 		{
 			get {
-				Block.RGet(index, LocalCount, ref defaultValue);
+				Block!.RGet(index, LocalCount, ref defaultValue);
 				return defaultValue;
 			}
 		}
@@ -107,9 +108,10 @@ namespace Loyc.Collections
 
 		#region IListSource<T> Members
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public new T TryGet(int index, out bool fail)
 		{
-			T value = default(T);
+			T value = default(T)!;
 			fail = Block == null || !Block.RGet(index, LocalCount, ref value);
 			return value;
 		}
@@ -143,7 +145,7 @@ namespace Loyc.Collections
 		{
 			WList<T> newList = new WList<T>();
 			if (LocalCount != 0)
-				Block.Where(LocalCount, filter, newList);
+				Block!.Where(LocalCount, filter, newList);
 			return newList;
 		}
 
@@ -185,7 +187,7 @@ namespace Loyc.Collections
 		{
 			WList<T> newList = new WList<T>();
 			if (LocalCount != 0)
-				Block.SmartSelect(LocalCount, map, newList);
+				Block!.SmartSelect(LocalCount, map, newList);
 			return newList;
 		}
 
@@ -220,7 +222,7 @@ namespace Loyc.Collections
 		{
 			get {
 				try {
-					return Block.Front(LocalCount);
+					return Block!.Front(LocalCount);
 				} catch (NullReferenceException) {
 					throw new EmptySequenceException();
 				}

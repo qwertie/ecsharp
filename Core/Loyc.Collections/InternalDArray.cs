@@ -2,6 +2,7 @@ using Loyc.Collections.Impl;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -30,12 +31,12 @@ namespace Loyc.Collections
 					if (mappedIndex == -1) {
 						_list.PushFirst(value);
 					} else {
-						_list.InsertRange(0, new Repeated<T>(default(T), -mappedIndex));
+						_list.InsertRange(0, new Repeated<T>(default(T)!, -mappedIndex));
 						_list[0] = value;
 					}
 				} else {
 					if (mappedIndex > _list.Count)
-						_list.InsertRange(_list.Count, new Repeated<T>(default(T), mappedIndex - _list.Count));
+						_list.InsertRange(_list.Count, new Repeated<T>(default(T)!, mappedIndex - _list.Count));
 					_list.PushLast(value);
 				}
 			}
@@ -43,7 +44,7 @@ namespace Loyc.Collections
 		
 		public T this[int index, T defaultValue] {
 			get {
-				T value = TryGet(index, out bool fail);
+				T value = TryGet(index, out bool fail)!;
 				return fail ? defaultValue : value;
 			}
 		}
@@ -59,6 +60,7 @@ namespace Loyc.Collections
 		public IListSource<T> Slice(int start, int count) => new NegListSlice<T>(this, start, count);
 		
 		public T TryGet(int index, T defaultValue) => this[index, defaultValue];
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			int mappedIndex = index - _startIndex;

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc.Collections.Impl;
 using Loyc.MiniTest;
+using Loyc.Syntax.Les;
 using S = Loyc.Syntax.CodeSymbols;
 
 namespace Loyc.Syntax
@@ -52,11 +53,11 @@ namespace Loyc.Syntax
 		[Test]
 		public void Test_NoNullChildrenAllowed()
 		{
-			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call((LNode)null, LNode.Missing));
-			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(CodeSymbols.Sub, LNode.List((LNode)null)));
-			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.Id(CodeSymbols.Sub), LNode.List((LNode)null)));
-			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.List((LNode)null), CodeSymbols.Sub, LNode.List(LNode.Id("x"))));
-			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.List((LNode)null), LNode.Id(CodeSymbols.Sub), LNode.List(LNode.Id("x"))));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call((LNode?) null, LNode.Missing));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(CodeSymbols.Sub, LNode.List((LNode?) null)));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.Id(CodeSymbols.Sub), LNode.List((LNode?) null)));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.List((LNode?) null), CodeSymbols.Sub, LNode.List(LNode.Id("x"))));
+			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.List((LNode?) null), LNode.Id(CodeSymbols.Sub), LNode.List(LNode.Id("x"))));
 			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Id("x"))).PlusAttr(null));
 			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(CodeSymbols.Sub, LNode.List(LNode.Id("x"))).PlusArg(null));
 			Assert.ThrowsAny<ArgumentNullException>(() => LNode.Call(LNode.Id(CodeSymbols.Sub), LNode.List(LNode.Id("x"))).PlusAttr(null));
@@ -119,6 +120,85 @@ namespace Loyc.Syntax
 			var assign2 = assign.WithAttrs(F.Call(Foo));
 			var expected = assign2.PlusAttrBefore(F.TriviaNewline).PlusTrailingTrivia(comment);
 			Assert.AreEqual(expected, assign2.IncludingTriviaFrom(add));
+		}
+
+		[Test]
+		public void TestExt_MatchesPattern_1()
+		{
+			var les3 = Les3LanguageService.Value;
+			LNode candidate = les3.ParseSingle("Foo(x, y + z)");
+
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("x + $x"), out var captures));
+			Assert.IsTrue(captures == null || captures.Count == 0);
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("Foo($x, y)"), out captures));
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("Foo($x, y + z, zzz)"), out captures));
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("Foo($x)"), out captures));
+			
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("Foo($x, $y)"), out captures));
+			Assert.AreEqual(2, captures.Count);
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("$x(x, $y)"), out captures));
+			Assert.AreEqual(2, captures.Count);
+		}
+
+		[Test]
+		public void TestExt_MatchesPattern_2()
+		{
+			var les3 = Les3LanguageService.Value;
+			var candidate = les3.ParseSingle("1 + 2");
+
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("1 - 2"), out var captures));
+			Assert.IsTrue(captures == null || captures.Count == 0);
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("x + $x"), out captures));
+			
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("1 + $x"), out captures));
+			Assert.AreEqual(1, captures.Count);
+			
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("$x + $x"), out captures, true));
+			Assert.AreEqual(1, captures.Count);
+			// OMG the order is reversed.
+			// I bet no one is using this, then.
+			Assert.AreEqual(new KeyValuePair<Symbol,LNode>((Symbol)"x", les3.ParseSingle("#splice(2, 1)")), captures.Single());
+
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("$x + $x"), out captures, false));
+
+			candidate = les3.ParseSingle("123 + 123");
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("$N + $N"), out captures, false));
+			Assert.AreEqual(1, captures.Count);
+			Assert.AreEqual(new KeyValuePair<Symbol,LNode>((Symbol)"N", LNode.Literal(123)), captures.Single());
+		}
+
+		[Test]
+		public void TestExt_MatchesPattern_3()
+		{
+			var les3 = Les3LanguageService.Value;
+			var candidate = les3.ParseSingle("@Attr 2 + 3 * 4");
+			
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("$x + $y"), out var captures, out var unmatchedAttrs));
+			Assert.AreEqual(2, captures.Count);
+			Assert.AreEqual(1, unmatchedAttrs.Count);
+
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("@($a) $x + $y"), out captures, out unmatchedAttrs));
+			Assert.AreEqual(3, captures.Count);
+			Assert.AreEqual(0, unmatchedAttrs.Count);
+
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("@Blah $x + $y"), out captures, out unmatchedAttrs));
+			
+			candidate = les3.ParseSingle("((@Attr1 2 + 3 * 4))");
+			Assert.AreEqual(2, candidate.AttrCount); // 1 normal attribute + 1 parens trivia
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("@($(..attrs)) 2 + $y"), out captures, out unmatchedAttrs));
+			Assert.AreEqual(2, captures.Count);
+			Assert.AreEqual(0, unmatchedAttrs.Count);
+			
+			// TODO: Probably this should not fail; we're treating the attribute list like an 
+			//       argument list, but they are used differently.
+			Assert.IsFalse(candidate.MatchesPattern(les3.ParseSingle("@Attr1 2 + $y"), out captures, out unmatchedAttrs));
+			
+			// OTOH If the attribute list pattern has $(..list) in it, then maybe we should
+			// treat the attribute list like an argument list.
+			Assert.IsTrue(candidate.MatchesPattern(les3.ParseSingle("@$(.._) @Attr1 @$(.._) 2 + $y"), out captures, out unmatchedAttrs));
+			Assert.AreEqual(0, unmatchedAttrs.Count);
+
+			// TODO: tests with attributes inside subexpressions
 		}
 	}
 }

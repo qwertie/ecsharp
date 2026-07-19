@@ -14,6 +14,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Loyc.MiniTest;
 
@@ -34,7 +35,7 @@ namespace Loyc.Collections
 
 		#region Constructors
 
-		internal FWList(VListBlock<T> block, int localCount, bool isOwner)
+		internal FWList(VListBlock<T>? block, int localCount, bool isOwner)
 			: base(block, localCount, isOwner) {}
 		public FWList() {} // empty list is all null
 		public FWList(int initialSize)
@@ -72,7 +73,7 @@ namespace Loyc.Collections
 		public new T this[int index]
 		{
 			get {
-				return Block.FGet(index, LocalCount);
+				return Block!.FGet(index, LocalCount);
 			}
 			set {
 				if ((uint)index >= (uint)Count)
@@ -90,7 +91,7 @@ namespace Loyc.Collections
 		public T this[int index, T defaultValue]
 		{
 			get {
-				Block.FGet(index, LocalCount, ref defaultValue);
+				Block!.FGet(index, LocalCount, ref defaultValue);
 				return defaultValue;
 			}
 		}
@@ -113,9 +114,10 @@ namespace Loyc.Collections
 
 		#region IListSource<T> Members
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public new T TryGet(int index, out bool fail)
 		{
-			T value = default(T);
+			T value = default(T)!;
 			fail = Block == null || !Block.FGet(index, LocalCount, ref value);
 			return value;
 		}
@@ -149,7 +151,7 @@ namespace Loyc.Collections
 		{
 			FWList<T> newList = new FWList<T>();
 			if (LocalCount != 0)
-				Block.Where(LocalCount, keep, newList);
+				Block!.Where(LocalCount, keep, newList);
 			return newList;
 		}
 
@@ -192,7 +194,7 @@ namespace Loyc.Collections
 		{
 			FWList<T> newList = new FWList<T>();
 			if (LocalCount != 0)
-				Block.SmartSelect(LocalCount, map, newList);
+				Block!.SmartSelect(LocalCount, map, newList);
 			return newList;
 		}
 
@@ -226,7 +228,7 @@ namespace Loyc.Collections
 		public T First
 		{
 			get {
-				return Block.Front(LocalCount);
+				return Block!.Front(LocalCount);
 			}
 		}
 		/// <summary>Removes the front item (at index 0) from the list and returns it.</summary>

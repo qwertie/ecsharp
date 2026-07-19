@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Loyc.Collections;
 using Loyc.Collections.Impl;
 using System.Collections;
@@ -100,6 +101,7 @@ namespace Loyc.Collections
 	public struct NestedEnumerator<Frame, T> : IEnumerator<T>
 		where Frame : IEnumeratorFrame<Frame, T>
 	{
+		[AllowNull]
 		T _current;
 		Frame _frame;
 		InternalList<Frame> _stack;
@@ -134,7 +136,7 @@ namespace Loyc.Collections
 				}
 			}
 		}
-		object System.Collections.IEnumerator.Current { get { return _current; } }
+		object? System.Collections.IEnumerator.Current { get { return _current; } }
 		void System.Collections.IEnumerator.Reset() { throw new NotSupportedException(); }
 		void IDisposable.Dispose() {}
 	}

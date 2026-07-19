@@ -243,6 +243,7 @@ namespace Loyc.Syntax
 		public static readonly Symbol DotDot = GSymbol.Get("'..");           //!< ".." Binary range operator (exclusive)
 		public static readonly Symbol DotDotDot = GSymbol.Get("'...");       //!< "..." Binary range operator (inclusive)
 		public static readonly Symbol DotDotLT = GSymbol.Get("'..<");        //!< "..<" Swift uses this instead of ".."
+		public static readonly Symbol SufDotDot = GSymbol.Get("'suf..");     //!< ".." Unary suffix range operator (exclusive)
 		public static readonly Symbol Tuple = GSymbol.Get("'tuple");         //!< "'tuple": (1, "a") <=> @'tuple(1, "a")
 		public static readonly Symbol QuickBind = GSymbol.Get("'=:");        //!< "=:" Quick variable-creation operator (variable name on right). ":::" may be a synonym
 		public static readonly Symbol QuickBindAssign = GSymbol.Get("':=");  //!< ":=" Quick variable-creation operator (variable name on left)

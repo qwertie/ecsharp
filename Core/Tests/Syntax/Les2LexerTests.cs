@@ -26,7 +26,7 @@ namespace Loyc.Syntax.Les
 		Pair<string, Symbol> Num(int x) => L(x.ToString(), "_");
 		Pair<string, Symbol> Num(float x) => L(x.ToString(), "_f");
 		Pair<string, Symbol> Num(double x) => L(x.ToString(), "_d");
-		Pair<string, Symbol> Str(string v) => L(v, null);
+		Pair<string, Symbol> Str(string v) => L(v, "");
 		Pair<string, Symbol> Sym(string v) => L(v, "s");
 
 		[Test]
@@ -37,7 +37,7 @@ namespace Loyc.Syntax.Les
 				_("hello"), _("',"), _("world"), _("'!"));
 			Case("this is\t\"just\"1 lexer test '!'",
 				A(TT.Id, TT.Id, TT.Literal, TT.Literal, TT.Id, TT.Id, TT.Literal),
-				_("this"), _("is"), L("just", null), Num(1), _("lexer"), _("test"), L("!", "c"));
+				_("this"), _("is"), L("just", ""), Num(1), _("lexer"), _("test"), L("!", "c"));
 			Case(@"12:30", A(TT.Literal, TT.NormalOp, TT.Literal), Num(12), _("':"), Num(30));
 			Case(@"c+='0'", A(TT.Id, TT.Assignment, TT.Literal), _("c"), _("'+="), L("0","c"));
 			Case("// hello\n\r\n\r/* world */",
@@ -69,8 +69,8 @@ namespace Loyc.Syntax.Les
 		[Test]
 		public void IdLikeLiterals()
 		{
-			Case("@null",           A(TT.Literal),               new object[] {null});
-			Case("@true@false",     A(TT.Literal, TT.Literal),  true, false);
+			Case("@null",           A(TT.Literal),               new object?[] {null});
+			Case("@true@false",     A(TT.Literal, TT.Literal),   true, false);
 			Case("@foo",            A(TT.Id),                     _("foo"));
 			Case("@`true`@`false`", A(TT.Id, TT.Id),              _("true"), _("false"));
 		}
@@ -298,7 +298,7 @@ namespace Loyc.Syntax.Les
 				_("Foo"), _(""), null, _(""), _(""), _("'?!"), null);
 		}
 
-		void Case(string input, TokenType[] tokenTypes, params object[] values)
+		void Case(string input, TokenType[] tokenTypes, params object?[] values)
 		{
 			Debug.Assert(values.Length <= tokenTypes.Length);
 			
@@ -318,7 +318,7 @@ namespace Loyc.Syntax.Les
 					Assert.AreEqual(values[i] == (object)ERROR, error);
 					if (!error) {
 						if (values[i] is Pair<string, Symbol>)
-							Assert.AreEqual(values[i], L(token.TextValue(lexer).ToString(), token.TypeMarker?.Name));
+							Assert.AreEqual(values[i], L(token.TextValue(lexer).ToString()!, token.TypeMarker?.Name ?? ""));
 						else
 							Assert.AreEqual(values[i], token.Value);
 					}

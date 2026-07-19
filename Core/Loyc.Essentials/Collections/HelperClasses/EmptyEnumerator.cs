@@ -2,19 +2,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Loyc.Collections
 {
 	/// <summary>Helper class: an empty enumerator.</summary>
-	[Serializable]
-	public class EmptyEnumerator<T> : IEnumerator<T>, IEnumerator
+	public static class EmptyEnumerator<T>
 	{
-		public static readonly IEnumerator<T> Value = new EmptyEnumerator<T>();
-
-		public T Current { get { return default(T); } }
-		object IEnumerator.Current { get { return this.Current; } }
-		public void Dispose() { }
-		public bool MoveNext() { return false; }
-		public void Reset() { }
+		public static readonly List<T>.Enumerator Value = new List<T>().GetEnumerator();
 	}
 }

@@ -1112,10 +1112,10 @@ namespace Loyc.Ecs.Tests
 			// Larger example
 			string text = 
 				"static string Display(object x) => x switch {\n" +
-				"  Point { X: 0, Y: 0 } p => \"origin\",\n" +
-				"  Point { X: var a, Y: var b } => $\"({a}, {b})\",\n" +
-				"  _ => \"unknown\"\n" +
-				"};";
+				"    Point { X: 0, Y: 0 } p => \"origin\",\n" +
+				"    Point { X: var a, Y: var b } => $\"({a}, {b})\",\n" +
+				"    _ => \"unknown\"\n" +
+				"  };";
 			body = F.Braces(
 				Lambda(F.Var(F.Call(S.Deconstruct, F.Call(_("Point")), F.NamedArg(_("X"), zero), F.NamedArg(_("Y"), zero)), _("p")), String("origin")),
 				Lambda(      F.Call(S.Deconstruct, F.Call(_("Point")), F.NamedArg(_("X"), F.Var(null, a)), F.NamedArg(_("Y"), F.Var(null, b))), F.Call(S.Substitute, String("({a}, {b})"))),

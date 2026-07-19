@@ -1,4 +1,4 @@
-﻿#importMacros(Loyc.LLPG); // Only needed if compiling with LeMP Custom Tool
+#importMacros(Loyc.LLPG); // Only needed if compiling with LeMP Custom Tool
 using System;
 using System.Text;
 using System.Collections.Generic;
@@ -49,15 +49,17 @@ namespace Loyc.Syntax.Tests
 	public partial class Calculator
 	{
 		public Dictionary<string,double> Vars = new Dictionary<string,double>();
-		public ParserSource<Token> Src { get; set; } // LLLPG API
+		
+		public this(
+			public ParserSource<Token> Src { get; set; } // LLLPG API
+		) {}
 
 		public static double Calculate(string input)
 		{
 			var lexer = new CalculatorLexer(input);
 			Token EOF = new Token((int) TT.EOF, input.Length, 0);
-			var parser = new Calculator() { 
-				Src = new ParserSource<Token>(lexer, EOF, lexer.SourceFile)
-			};
+			var parser = new Calculator(
+				new ParserSource<Token>(lexer, EOF, lexer.SourceFile));
 			
 			return parser.Expr();
 		}

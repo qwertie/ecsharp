@@ -104,7 +104,7 @@ namespace Loyc.Collections
 		public BList(BList<T> items, bool keepListChangingHandlers) 
 			: base(items, keepListChangingHandlers) { _compareItems = items._compareItems; }
 
-		protected BList(BList<T> original, AListNode<T, T> section) 
+		protected BList(BList<T> original, AListNode<T, T>? section)
 			: base(original, section) { _compareItems = original._compareItems; }
 
 		#endregion
@@ -428,7 +428,7 @@ namespace Loyc.Collections
 			if (!found)
 				return -1;
 
-			object searchFor2 = searchFor;
+			object? searchFor2 = searchFor;
 			while (item == null ? searchFor != null : !item.Equals(searchFor2))
 			{
 				if (++index >= Count)

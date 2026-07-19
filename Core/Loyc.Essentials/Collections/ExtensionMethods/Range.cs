@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Loyc.Collections
 {
@@ -36,30 +37,30 @@ namespace Loyc.Collections
 		}
 		public static T PopFirst<R,T>(ref R range) where R:IFRange<T>
 		{
-			T next = range.PopFirst(out bool fail);
-			return fail ? throw new EmptySequenceException() : next;
+			T? next = range.PopFirst(out bool fail);
+			return fail ? throw new EmptySequenceException() : next!;
 		}
 		public static Maybe<T> TryPopFirst<R, T>(ref R range) where R : IFRange<T>
 		{
-			T next = range.PopFirst(out bool fail);
-			return fail ? default(Maybe<T>) : next;
+			T? next = range.PopFirst(out bool fail);
+			return fail ? default(Maybe<T>) : next!;
 		}
-		public static bool TryPopFirst<R, T>(ref R range, out T item) where R : IFRange<T>
+		public static bool TryPopFirst<R, T>(ref R range, [MaybeNullWhen(false)] out T item) where R : IFRange<T>
 		{
 			item = range.PopFirst(out bool fail);
 			return !fail;
 		}
 		public static T PopLast<R, T>(ref R range) where R : IBRange<T>
 		{
-			T next = range.PopLast(out bool fail);
-			return fail ? throw new EmptySequenceException() : next;
+			T? next = range.PopLast(out bool fail);
+			return fail ? throw new EmptySequenceException() : next!;
 		}
 		public static Maybe<T> TryPopLast<R, T>(ref R range) where R : IBRange<T>
 		{
-			T next = range.PopLast(out bool fail);
-			return fail ? default(Maybe<T>) : next;
+			T? next = range.PopLast(out bool fail);
+			return fail ? default(Maybe<T>) : next!;
 		}
-		public static bool TryPopLast<R, T>(ref R range, out T item) where R : IBRange<T>
+		public static bool TryPopLast<R, T>(ref R range, [MaybeNullWhen(false)] out T item) where R : IBRange<T>
 		{
 			item = range.PopLast(out bool fail);
 			return !fail;

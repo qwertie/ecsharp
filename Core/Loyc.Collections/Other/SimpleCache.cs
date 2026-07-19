@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Diagnostics;
 using Loyc.MiniTest;
@@ -54,13 +55,14 @@ namespace Loyc.Collections
 
 		public SimpleCache() : this(1024, null) { }
 		public SimpleCache(int maxSize) : this(maxSize, null) { }
-		public SimpleCache(int maxSize, IEqualityComparer<T> comparer) 
+		public SimpleCache(int maxSize, IEqualityComparer<T>? comparer)
 		{
 			_maxSize = maxSize;
 			_comparer = (comparer == null ? EqualityComparer<T>.Default : comparer);
 			Clear();
 		}
-		public T Cache(T obj)
+		[return: NotNullIfNotNull("obj")]
+		public T? Cache(T? obj)
 		{
 			if (obj == null)
 				return null;
@@ -87,7 +89,7 @@ namespace Loyc.Collections
 						G.Swap<T>(ref _table[index1], ref _table[index2]);
 					else {
 						_table[index1] = _table[index2];
-						_table[index2] = null;
+						_table[index2] = null!; // null represents an empty slot
 						
 						// Handle a rare case that can allow a duplicate cache 
 						// entry later on, eventually leading to an Assert 
@@ -97,7 +99,7 @@ namespace Loyc.Collections
 							if (_table[index3] != null 
 								&& (_comparer.GetHashCode(_table[index3]) & _mask) == index2) {
 								_table[index2] = _table[index3];
-								_table[index3] = null;
+								_table[index3] = null!; // null represents an empty slot
 								index2 = index3;
 								continue;
 							}
@@ -147,6 +149,7 @@ namespace Loyc.Collections
 			Debug.Assert(_cacheMisses == oldMisses + oldInUse);
 			_cacheMisses -= oldInUse;
 		}
+		[MemberNotNull(nameof(_table))]
 		public void Clear()
 		{
 			_table = new T[_maxSize < 32 ? (_maxSize < 16 ? 8 : 16) : 32];

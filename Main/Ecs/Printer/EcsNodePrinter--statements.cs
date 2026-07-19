@@ -629,7 +629,9 @@ namespace Loyc.Ecs
 					PrefixSpace(EP.Lambda);
 					_out.Write("=>");
 					PrefixSpace(EP.Lambda);
+					_out.Indent(PrinterIndentHint.Subexpression);
 					PrintExpr(body, EP.Lambda.RightContext(StartExpr));
+					_out.Dedent(PrinterIndentHint.Subexpression);
 					return SPResult.NeedSemicolon;
 				}
 			}

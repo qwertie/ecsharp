@@ -5,6 +5,7 @@
     <BaseIntermediateOutputPath>..\Bin\obj.netfx\LoycCore.Tests</BaseIntermediateOutputPath>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <LangVersion>12.0</LangVersion>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{CAF59F03-A21D-4F84-A3B5-1A58977AD32F}</ProjectGuid>
@@ -49,13 +50,13 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\Bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DotNet45</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\Bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;DotNet45</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>Loyc.Tests.RunCoreTests</StartupObject>
@@ -95,7 +96,13 @@
     <AssemblyOriginatorKeyFile>OpenSourceKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -104,7 +111,16 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
+    </Reference>
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq">
@@ -116,8 +132,10 @@
   <ItemGroup>
     <Compile Include="Collections\ALists\AListBaseTests.cs" />
     <Compile Include="Collections\ALists\BMultiMapTests.cs" />
+    <Compile Include="Collections\CollectionTests.cs" />
     <Compile Include="Collections\HeapTests.cs" />
     <Compile Include="Collections\InternalDArrayTests.cs" />
+    <Compile Include="Collections\MultiMapTests.cs" />
     <Compile Include="Collections\ReadOnlyDictionaryTests.cs" />
     <Compile Include="Collections\TypeDictionaryWithBaseTypeLookupsTests.cs" />
     <Compile Include="Collections\VLists\FVListTests.cs" />
@@ -136,6 +154,7 @@
     <Compile Include="Essentials\HashTagsTests.cs" />
     <Compile Include="Essentials\ListExtTests.cs" />
     <Compile Include="Essentials\LocalizeTests.cs" />
+    <Compile Include="Essentials\ScannableTests.cs" />
     <Compile Include="Essentials\SliceTests.cs" />
     <Compile Include="Math\MathExTests.cs" />
     <Compile Include="Essentials\PrintHelpersTests.cs" />
@@ -155,6 +174,32 @@
     <Compile Include="Collections\MapTests.cs" />
     <Compile Include="Collections\SetTests.cs" />
     <Compile Include="Collections\ALists\SparseAListTests.cs" />
+    <Compile Include="SyncLib\BigStandardModel.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>BigStandardModel.ecs</DependentUpon>
+    </Compile>
+    <Compile Include="SyncLib\FamilySync.cs" />
+    <Compile Include="SyncLib\HomePageCalendarExample.cs" />
+    <Compile Include="SyncLib\OtherExampleTypes.cs" />
+    <Compile Include="SyncLib\PersonSync.cs" />
+    <Compile Include="SyncLib\SmallObjectSync.cs" />
+    <Compile Include="SyncLib\StringDictionarySync.cs" />
+    <Compile Include="SyncLib\SyncBinaryGoldenTests.cs" />
+    <Compile Include="SyncLib\SyncBinaryReaderTests.cs" />
+    <Compile Include="SyncLib\SyncBinaryTests.cs" />
+    <Compile Include="SyncLib\SyncBinaryWriterTests.cs" />
+    <Compile Include="SyncLib\SyncJsonReaderTests.cs" />
+    <Compile Include="SyncLib\SyncJsonSchemaTests.cs" />
+    <Compile Include="SyncLib\SyncJsonTests.cs" />
+    <Compile Include="SyncLib\SyncJsonWriterTests.cs" />
+    <Compile Include="SyncLib\SyncLibTests.cs" />
+    <Compile Include="SyncLib\SyncLibTests.Dynamic.cs" />
+    <Compile Include="SyncLib\SyncLibTests.Fuzz.cs" />
+    <Compile Include="SyncLib\SyncLibTests.Values.cs" />
+    <Compile Include="SyncLib\SyncMalformedInputTests.cs" />
+    <Compile Include="SyncLib\SyncProtobufSchemaTests.cs" />
+    <Compile Include="SyncLib\SyncProtobufTests.cs" />
     <Compile Include="Syntax\StandardLiteralHandlersTests.cs" />
     <Compile Include="Syntax\IndentTokenGeneratorTests.cs" />
     <Compile Include="Syntax\IndexPositionMapperTests.cs" />
@@ -228,7 +273,13 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="OpenSourceKey.snk" />
+    <None Include="packages.config" />
+    <None Include="SyncLib\BigStandardModel.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>BigStandardModel.out.cs</LastGenOutput>
+    </None>
     <None Include="Syntax\LexerSourceTest.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>LexerSourceTest.out.cs</LastGenOutput>
@@ -262,6 +313,14 @@
     <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.net45.csproj">
       <Project>{94bc16e0-2f14-4747-82f8-cfa22ad558ca}</Project>
       <Name>Loyc.Utilities.net45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Loyc.SyncLib.SyncJson\Loyc.SyncLib.SyncJson.net45.csproj">
+      <Project>{062b2f70-4355-4c4b-b863-16f02de60d5e}</Project>
+      <Name>Loyc.SyncLib.SyncJson.net45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Loyc.SyncLib.SyncProtobuf\Loyc.SyncLib.SyncProtobuf.net45.csproj">
+      <Project>{7C2A1D64-9B3E-4D21-8F5A-2A9C1E0B7F31}</Project>
+      <Name>Loyc.SyncLib.SyncProtobuf.net45</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

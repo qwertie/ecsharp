@@ -1,6 +1,7 @@
 using Loyc.Collections.Impl;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -10,7 +11,8 @@ namespace Loyc.Collections
 	/// <remarks>
 	/// Original source: datavault project. License: Apache License 2.0
 	/// </remarks>
-    public sealed class WeakKeyDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
+    [Obsolete("It is proposed to use the standard `ConditionalWeakTable` class instead.")]
+	public sealed class WeakKeyDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
         where TKey : class
     {
         // All keys actually have type WeakKeyReference<TKey>; the key type is 
@@ -20,10 +22,10 @@ namespace Loyc.Collections
         private WeakKeyComparer<TKey> comparer;
 
         public WeakKeyDictionary()
-            : this(0, null) { }
+            : this(0, EqualityComparer<TKey>.Default) { }
 
         public WeakKeyDictionary(int capacity)
-            : this(capacity, null) { }
+            : this(capacity, EqualityComparer<TKey>.Default) { }
 
         public WeakKeyDictionary(IEqualityComparer<TKey> comparer)
             : this(0, comparer) { }
@@ -61,7 +63,7 @@ namespace Loyc.Collections
             return this.dictionary.Remove(key);
         }
 
-        public override bool TryGetValue(TKey key, out TValue value)
+        public override bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
         {
             return this.dictionary.TryGetValue(key, out value);
         }
@@ -82,11 +84,11 @@ namespace Loyc.Collections
             foreach (KeyValuePair<object, TValue> kvp in this.dictionary)
             {
                 WeakKeyReference<TKey> weakKey = (WeakKeyReference<TKey>)(kvp.Key);
-                TKey key = weakKey.Target;
+                TKey? key = weakKey.Target;
                 TValue value = kvp.Value;
                 if (weakKey.IsAlive)
                 {
-                    yield return new KeyValuePair<TKey, TValue>(key, value);
+                    yield return new KeyValuePair<TKey, TValue>(key!, value);
                 }
             }
         }
@@ -97,7 +99,7 @@ namespace Loyc.Collections
         // of dead key-value pairs that were eliminated.
         public void RemoveCollectedEntries()
         {
-            List<object> toRemove = null;
+            List<object>? toRemove = null;
             foreach (KeyValuePair<object, TValue> pair in this.dictionary)
             {
                 WeakKeyReference<TKey> weakKey = (WeakKeyReference<TKey>)(pair.Key);

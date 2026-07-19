@@ -1,13 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29911.84
+# Visual Studio Version 18
+VisualStudioVersion = 18.8.12009.203 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loyc.Essentials", "Loyc.Essentials\Loyc.Essentials.csproj", "{90E5977C-DD09-47CA-BEB2-3491780E6138}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loyc.Collections", "Loyc.Collections\Loyc.Collections.csproj", "{C3F9D5D5-ED9A-40D2-B196-A7D82A498250}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loyc.Math", "Loyc.Math\Loyc.Math.csproj", "{C457790D-1EE6-432A-8540-BC04A5963798}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loyc.SyncLib.SyncJson", "Loyc.SyncLib.SyncJson\Loyc.SyncLib.SyncJson.csproj", "{E4A8FFC3-D7BE-4570-B20C-89689F134C26}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loyc.SyncLib.SyncProtobuf", "Loyc.SyncLib.SyncProtobuf\Loyc.SyncLib.SyncProtobuf.csproj", "{A1B2C3D4-5E6F-4A1B-9C2D-3E4F5A6B7C8D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loyc.Syntax", "Loyc.Syntax\Loyc.Syntax.csproj", "{1B5A837A-42EC-485D-97E7-7FD39BBB8609}"
 EndProject
@@ -16,6 +20,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoycCore.Tests", "Tests\LoycCore.Tests.csproj", "{91432F90-BFEB-42E3-9A81-5C1E14651564}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loyc.Interfaces", "Loyc.Interfaces\Loyc.Interfaces.csproj", "{AA2CBEDC-0DF4-48BE-B87D-C0D17527EE03}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoycCore.Benchmarks", "LoycCore.Benchmarks\LoycCore.Benchmarks.csproj", "{7F31DE49-EFBF-1D60-4E07-E5E5A9C9EEC9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +41,14 @@ Global
 		{C457790D-1EE6-432A-8540-BC04A5963798}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C457790D-1EE6-432A-8540-BC04A5963798}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C457790D-1EE6-432A-8540-BC04A5963798}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4A8FFC3-D7BE-4570-B20C-89689F134C26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4A8FFC3-D7BE-4570-B20C-89689F134C26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4A8FFC3-D7BE-4570-B20C-89689F134C26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4A8FFC3-D7BE-4570-B20C-89689F134C26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1B2C3D4-5E6F-4A1B-9C2D-3E4F5A6B7C8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-5E6F-4A1B-9C2D-3E4F5A6B7C8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2C3D4-5E6F-4A1B-9C2D-3E4F5A6B7C8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-5E6F-4A1B-9C2D-3E4F5A6B7C8D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1B5A837A-42EC-485D-97E7-7FD39BBB8609}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1B5A837A-42EC-485D-97E7-7FD39BBB8609}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B5A837A-42EC-485D-97E7-7FD39BBB8609}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -51,6 +65,10 @@ Global
 		{AA2CBEDC-0DF4-48BE-B87D-C0D17527EE03}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA2CBEDC-0DF4-48BE-B87D-C0D17527EE03}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA2CBEDC-0DF4-48BE-B87D-C0D17527EE03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F31DE49-EFBF-1D60-4E07-E5E5A9C9EEC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F31DE49-EFBF-1D60-4E07-E5E5A9C9EEC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F31DE49-EFBF-1D60-4E07-E5E5A9C9EEC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F31DE49-EFBF-1D60-4E07-E5E5A9C9EEC9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

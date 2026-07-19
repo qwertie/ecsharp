@@ -1,4 +1,4 @@
-// Generated from AlgebraicDataType.ecs by LeMP custom tool. LeMP version: 2.9.0.3
+// Generated from AlgebraicDataType.ecs by LeMP custom tool. LeMP version: 30.1.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -33,9 +33,7 @@ namespace LeMP.ecs
 			{
 				LNode baseName;
 				LNodeList attrs, baseTypes, body;
-				if ((attrs = classDecl.Attrs).IsEmpty | true && (i = attrs.FirstIndexWhere(a => a.IsIdNamed(__alt))) != null && classDecl.Calls(CodeSymbols.Class, 3) && (baseName = classDecl.Args[0]) != null && classDecl.Args[1].Calls(CodeSymbols.AltList) && classDecl.Args[2].Calls(CodeSymbols.Braces)) {
-					baseTypes = classDecl.Args[1].Args;
-					body = classDecl.Args[2].Args;
+				if ((attrs = classDecl.Attrs).IsEmpty | true && (i = attrs.FirstIndexWhere(a => a.IsIdNamed(__alt))) != null && classDecl.Calls(CodeSymbols.Class, 3) && (baseName = classDecl.Args[0]) != null && classDecl.Args[1].Calls(CodeSymbols.AltList) && (baseTypes = classDecl.Args[1].Args).IsEmpty | true && classDecl.Args[2].Calls(CodeSymbols.Braces) && (body = classDecl.Args[2].Args).IsEmpty | true) {
 					attrs = attrs.RemoveAt(i.Value);
 					var adt = new AltType(attrs, baseName, baseTypes, null);
 					adt.ScanClassBody(body);
@@ -145,8 +143,7 @@ namespace LeMP.ecs
 							child.AddParts(parts);
 							child.ScanClassBody(childBody);
 							_children.Add(child);
-						} else if ((attrs = stmt.Attrs).IsEmpty | true && (i = attrs.FirstIndexWhere(a => a.IsIdNamed(__alt))) != null && stmt.CallsMin(CodeSymbols.Constructor, 3) && stmt.Args[1].IsIdNamed((Symbol) "#this") && stmt.Args[2].Calls(CodeSymbols.AltList) && (rest = new LNodeList(stmt.Args.Slice(3))).IsEmpty | true && rest.Count <= 1) {
-							parts = stmt.Args[2].Args;
+						} else if ((attrs = stmt.Attrs).IsEmpty | true && (i = attrs.FirstIndexWhere(a => a.IsIdNamed(__alt))) != null && stmt.CallsMin(CodeSymbols.Constructor, 3) && stmt.Args[1].IsIdNamed((Symbol) "#this") && stmt.Args[2].Calls(CodeSymbols.AltList) && (parts = stmt.Args[2].Args).IsEmpty | true && (rest = new LNodeList(stmt.Args.Slice(3))).IsEmpty | true && rest.Count <= 1) {
 							attrs.RemoveAt(i.Value);
 							_constructorAttrs.AddRange(attrs);
 							if (rest.Count > 0 && rest[0].Calls(S.Braces))

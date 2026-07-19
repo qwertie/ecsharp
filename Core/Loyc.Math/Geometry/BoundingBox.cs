@@ -218,11 +218,11 @@ namespace Loyc.Geometry
 			return new Point<T>(MathEx.Average(self.X1, self.X2), MathEx.Average(self.Y1, self.Y2));
 		}
 
-		public static BoundingBox<T> ToBoundingBox<T>(this IEnumerable<Point<T>> pts) where T : IConvertible, IComparable<T>, IEquatable<T>
+		public static BoundingBox<T>? ToBoundingBox<T>(this IEnumerable<Point<T>> pts) where T : IConvertible, IComparable<T>, IEquatable<T>
 		{
 			return ToBoundingBox(pts.GetEnumerator());
 		}
-		public static BoundingBox<T> ToBoundingBox<T>(this IEnumerator<Point<T>> e) where T : IConvertible, IComparable<T>, IEquatable<T>
+		public static BoundingBox<T>? ToBoundingBox<T>(this IEnumerator<Point<T>> e) where T : IConvertible, IComparable<T>, IEquatable<T>
 		{
 			if (!e.MoveNext())
 				return null;
@@ -235,20 +235,20 @@ namespace Loyc.Geometry
 		{
 			return new BoundingBox<T>(seg.A, seg.B);
 		}
-		public static BoundingBox<T> Union<T>(this IEnumerable<BoundingBox<T>> e) where T : IConvertible, IComparable<T>, IEquatable<T>
+		public static BoundingBox<T>? Union<T>(this IEnumerable<BoundingBox<T>> e) where T : IConvertible, IComparable<T>, IEquatable<T>
 		{
 			return Union(e.GetEnumerator());
 		}
-		public static BoundingBox<T> Union<T>(this IEnumerator<BoundingBox<T>> e) where T : IConvertible, IComparable<T>, IEquatable<T>
+		public static BoundingBox<T>? Union<T>(this IEnumerator<BoundingBox<T>> e) where T : IConvertible, IComparable<T>, IEquatable<T>
 		{
-			BoundingBox<T> bb = null;
+			BoundingBox<T>? bb = null;
 			while (e.MoveNext())
 				if ((bb = e.Current) != null)
 					break;
 			while (e.MoveNext()) {
 				var bb2 = e.Current;
 				if (bb2 != null)
-					bb = bb.Union(bb2);
+					bb = bb!.Union(bb2); // bb != null: first loop breaks only on non-null
 			}
 			return bb;
 		}

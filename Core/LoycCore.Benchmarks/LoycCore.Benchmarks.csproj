@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Benchmark</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>1591;1573;0419</NoWarn>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>true</GenerateTargetFrameworkAttribute>
+
+    <!-- Benchmarks compare against the retired BinaryFormatter ("old binary serialization").
+         On .NET 9+ this requires the System.Runtime.Serialization.Formatters compat package
+         plus this opt-in switch. -->
+    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+
+    <!-- Workstation, non-concurrent GC gives benchmarks lower variance than the
+         Server GC that ASP.NET Core uses by default. -->
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+    <!-- Compile everything fully optimized up front: with tiered compilation on,
+         short warmups can measure tier-0 code and skew the first benchmark run. -->
+    <TieredCompilation>false</TieredCompilation>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj" />
+    <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj" />
+    <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.csproj" />
+    <ProjectReference Include="..\Loyc.Math\Loyc.Math.csproj" />
+    <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.csproj" />
+    <ProjectReference Include="..\Loyc.SyncLib.SyncJson\Loyc.SyncLib.SyncJson.csproj" />
+    <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Blazor-ApexCharts" Version="6.1.0" />
+    <PackageReference Include="MessagePack" Version="3.1.7" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="protobuf-net" Version="3.2.56" />
+    <PackageReference Include="System.Runtime.Serialization.Formatters" Version="10.0.9" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Resources\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

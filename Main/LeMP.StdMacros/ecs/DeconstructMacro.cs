@@ -104,14 +104,15 @@ namespace LeMP.ecs
 			LNode id;
 			if (node.ArgCount == 1 && (id = node.Args[0]).IsId && !id.HasPAttrs()) {
 				object value;
-				if (context.ScopedProperties.TryGetValue("$" + id.Name.Name, out value)) {
+				if (context.ScopedProperties.TryGetValue("$" + id.Name.Name, out value) ||
+					context.ScopedProperties.TryGetValue(id.Name, out value)) {
 					if (value is LNode)
 						return ((LNode)value).WithRange(id.Range);
 					else
 						context.Sink.Warning(id, "The specified scoped property is not a syntax tree. "+
 							"Use `#getScopedProperty({0})` to insert it as a literal.", EcsNodePrinter.PrintId(id.Name));
 				} else {
-					context.Sink.Error(id, "There is no macro property in scope named `{0}`", id.Name);
+					context.Sink.Warning(id, "There is no macro property in scope named `{0}`", id.Name);
 				}
 			}
 			return null;

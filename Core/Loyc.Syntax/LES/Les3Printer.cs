@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using System.Numerics;
 using System.Globalization;
@@ -25,7 +26,7 @@ namespace Loyc.Syntax.Les
 			set { CheckParam.IsNotNull("value", value); _out.StringBuilder = value; }
 		}
 
-		IMessageSink _messageSink;
+		IMessageSink? _messageSink;
 		/// <summary>Target for warning messages.</summary>
 		public IMessageSink MessageSink {
 			get { return _messageSink ?? Loyc.MessageSink.Default; }
@@ -34,7 +35,8 @@ namespace Loyc.Syntax.Les
 
 		private Les3PrinterOptions _o;
 		public Les3PrinterOptions Options { get { return _o; } }
-		public void SetOptions(ILNodePrinterOptions options)
+		[MemberNotNull(nameof(_o))]
+		public void SetOptions(ILNodePrinterOptions? options)
 		{
 			_o = options as Les3PrinterOptions ?? new Les3PrinterOptions(options);
 		}
@@ -43,16 +45,16 @@ namespace Loyc.Syntax.Les
 
 		#region Constructor, fields, and Print()
 
-		internal Les3Printer(StringBuilder target = null, IMessageSink sink = null, ILNodePrinterOptions options = null)
+		internal Les3Printer(StringBuilder? target = null, IMessageSink? sink = null, ILNodePrinterOptions? options = null)
 		{
-			MessageSink = sink;
+			_messageSink = sink;
 			SetOptions(options);
 			var newline = string.IsNullOrEmpty(_o.NewlineString) ? "\n" : _o.NewlineString;
 			_out = new LNodePrinterHelper(target ?? new StringBuilder(), _o.SaveRange, true, _o.IndentString ?? "\t", newline);
 		}
 
 		protected LNodePrinterHelper _out;
-		protected ILNode _n;
+		protected ILNode? _n;
 		protected Precedence _context = Precedence.MinValue;
 		protected NewlineContext _nlContext = NewlineContext.NewlineUnsafe;
 		protected bool _inParensOrBracks = false;
@@ -68,7 +70,7 @@ namespace Loyc.Syntax.Les
 			return SB;
 		}
 
-		public StringBuilder Print(ILNode node, string suffix = null)
+		public StringBuilder Print(ILNode node, string? suffix = null)
 		{
 			Print(node, Precedence.MinValue, suffix, NewlineContext.NewlineSafeBefore | NewlineContext.NewlineSafeAfter);
 
@@ -80,7 +82,7 @@ namespace Loyc.Syntax.Les
 
 		static readonly Precedence AttributeContext = new Precedence(120);
 
-		protected void Print(ILNode node, Precedence context, string suffix = null, NewlineContext nlContext = NewlineContext.AutoDetect)
+		protected void Print(ILNode node, Precedence context, string? suffix = null, NewlineContext nlContext = NewlineContext.AutoDetect)
 		{
 			if (nlContext == NewlineContext.AutoDetect)
 			{
@@ -100,7 +102,7 @@ namespace Loyc.Syntax.Les
 			}
 		}
 
-		protected void PrintCore(ILNode node, string suffix, bool avoidKwExprBraceAmbiguity = false)
+		protected void PrintCore(ILNode node, string? suffix, bool avoidKwExprBraceAmbiguity = false)
 		{
 			_n = node;
 			int parenCount = PrintAttrsAndLeadingTrivia(node, _nlContext);
@@ -192,23 +194,23 @@ namespace Loyc.Syntax.Les
 		// Conservatively returns true if `first` and `second` may need a semicolon 
 		// between them to avoid the ambiguity where the parser could consider braces 
 		// in `second` to be a continuation of a keyword expression in `first`.
-		private bool NeedSemicolonBetween(ILNode first, ILNode second)
+		private bool NeedSemicolonBetween(ILNode first, ILNode? second)
 		{
 			if (StartsWithBraces(second)) {
-				Func<ILNode, bool> hasKeywordExpr = null;
+				Func<ILNode, bool>? hasKeywordExpr = null;
 				return first.Any(hasKeywordExpr = n => {
-					return n.IsId() && n.Name.Name.StartsWith("#") || n.Any(hasKeywordExpr);
+					return n.IsId() && n.Name.Name.StartsWith("#") || n.Any(hasKeywordExpr!);
 				});
 			}
 			return false;
 		}
 		
 		// Conservatively returns true if `node` may begin with a '{' token
-		private bool StartsWithBraces(ILNode node)
+		private bool StartsWithBraces(ILNode? node)
 		{
 			if (node == null || !node.IsCall())
 				return false;
-			return node.Name == S.Braces || StartsWithBraces(node.Target) || StartsWithBraces(node.TryGet(0, null));
+			return node.Name == S.Braces || StartsWithBraces(node.Target) || StartsWithBraces(node.TryGet(0, null!)); // null default means "no child"; StartsWithBraces accepts null
 		}
 
 		protected void StartToken(LesColorCode kind, Chars charSet) { StartToken(kind, charSet, charSet); }
@@ -434,7 +436,7 @@ namespace Loyc.Syntax.Les
 					if (_o.WarnAboutUnprintableLiterals)
 						MessageSink.Write(result.Right.Value);
 
-					typeMarker = typeMarker ?? (Symbol)MemoizedTypeName.Get(value.GetType());
+					typeMarker = typeMarker ?? (Symbol)MemoizedTypeName.Get(value!.GetType()); // value is non-null here: value==null with typeMarker==null was handled by the first branch
 					if (textValue.IsEmpty)
 					{
 						if (sb.Length != 0)
@@ -483,7 +485,7 @@ namespace Loyc.Syntax.Les
 				}
 				else if (CanPrintAsNumber(text, typeMarker))
 				{
-					WriteToken(text.ToString(), kind = LesColorCode.Number, Chars.NumberStart, Chars.NumberEnd);
+					WriteToken(text.ToString() ?? "", kind = LesColorCode.Number, Chars.NumberStart, Chars.NumberEnd);
 					_out.Write(typeMarker.Name.Slice(1));
 					return;
 				}
@@ -581,7 +583,7 @@ namespace Loyc.Syntax.Les
 			Semicolons = 1, // semicolons as separator (tuple)
 			BracedBlock = 2 // semicolons and newlines (braced block)
 		}
-		void PrintArgListCore(NegListSlice<ILNode> args, char leftDelim, char rightDelim, ArgListStyle style, bool spacesInside = false, ILNode leftBracket = null)
+		void PrintArgListCore(NegListSlice<ILNode> args, char leftDelim, char rightDelim, ArgListStyle style, bool spacesInside = false, ILNode? leftBracket = null)
 		{
 			var outerInParensOrBracks = _inParensOrBracks;
 			_inParensOrBracks = style == ArgListStyle.BracedBlock;
@@ -605,7 +607,7 @@ namespace Loyc.Syntax.Les
 					Space(_o.SpacesBetweenAppendedStatements);
 				}
 			} else {
-				string semicolon = (style == ArgListStyle.Normal ? null : ";");
+				string? semicolon = (style == ArgListStyle.Normal ? null : ";");
 				for (int i = 0; i < args.Count; i++) {
 					if (i != 0)
 						Space(_o.SpaceAfterComma && !_out.IsAtStartOfLine);
@@ -632,7 +634,7 @@ namespace Loyc.Syntax.Les
 		{
 			bool anyNewlines = false;
 			if (args.Count > 0) {
-				var next = args[0];
+				ILNode? next = args[0];
 				bool append = ShouldAppendStmt(next);
 				for (int i = 0; next != null; i++) {
 					if (initialNewline || i != 0) {
@@ -644,7 +646,7 @@ namespace Loyc.Syntax.Les
 						}
 					}
 					var stmt = next;
-					next = args[i + 1, null];
+					next = args[i + 1, null!]; // null default means "past the end"
 					append = next != null ? ShouldAppendStmt(next) : false;
 					bool semicolon = append || _o.UseRedundantSemicolons || NeedSemicolonBetween(stmt, next);
 					Print(stmt, Precedence.MinValue, semicolon ? ";" : null, NewlineContext.StatementLevel);
@@ -738,7 +740,7 @@ namespace Loyc.Syntax.Les
 			}
 			return true;
 		}
-		bool PrintOpName(Symbol opName, ILNode target, bool isBinaryOp)
+		bool PrintOpName(Symbol opName, ILNode? target, bool isBinaryOp)
 		{
 			if (target != null && target.AttrCount() == 0)
 				target = null; // optimize usual case
@@ -841,7 +843,7 @@ namespace Loyc.Syntax.Les
 		private bool TryToPrintCallAsKeywordExpression(ILNode node, bool allowComma)
 		{
 			if (!LesPrecedence.SuperExpr.CanAppearIn(_context) 
-				|| !IsKeywordExpression(node, out int exprListSize, out ILNode braces)
+				|| !IsKeywordExpression(node, out int exprListSize, out ILNode? braces)
 				|| !allowComma && exprListSize > 1)
 				return false;
 			
@@ -907,7 +909,7 @@ namespace Loyc.Syntax.Les
 			return true;
 		}
 
-		private bool IsKeywordExpression(ILNode node, out int exprListSize, out ILNode bracedBlock)
+		private bool IsKeywordExpression(ILNode node, out int exprListSize, out ILNode? bracedBlock)
 		{
 			bracedBlock = null;
 			exprListSize = 1;
@@ -983,7 +985,7 @@ namespace Loyc.Syntax.Les
 			return false;
 		}
 
-		private void PrintTrailingTrivia(ILNode node, int parenCount, string suffix, NewlineContext nlContext)
+		private void PrintTrailingTrivia(ILNode node, int parenCount, string? suffix, NewlineContext nlContext)
 		{
 			bool newlineSafePoint = (nlContext & NewlineContext.NewlineSafeAfter) != 0;
 			// Putting comments inside parens allows them to be associated with an
@@ -1136,13 +1138,13 @@ namespace Loyc.Syntax.Les
 		
 		static string GetRawText(ILNode rawTextNode)
 		{
-			object value = rawTextNode.Value;
+			object? value = rawTextNode.Value;
 			if (value == null || value == NoValue.Value) {
-				var node = rawTextNode.TryGet(0, null);
+				var node = rawTextNode.TryGet(0, null!); // null default means "no child"
 				if (node != null)
 					value = node.Value;
 			}
-			return (value ?? rawTextNode.Name).ToString();
+			return (value ?? rawTextNode.Name).ToString() ?? "";
 		}
 
 		#endregion

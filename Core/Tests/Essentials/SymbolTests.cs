@@ -12,7 +12,7 @@ namespace Loyc.Essentials.Tests
 		[Test]
 		public void BasicChecks()
 		{
-			Assert.AreEqual(GSymbol.Empty, GSymbol.Get(null));
+			Assert.AreEqual(null, GSymbol.Get(null));
 			Assert.AreEqual(0, GSymbol.Get("").Id);
 			Assert.AreEqual(GSymbol.Empty, GSymbol.GetById(0));
 

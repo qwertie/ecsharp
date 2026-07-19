@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Loyc.Collections.Impl;
 using Loyc.Math;
 
@@ -129,7 +130,7 @@ namespace Loyc.Collections
 		public AList(int maxNodeSize) : base(maxNodeSize) { }
 		public AList(int maxLeafSize, int maxInnerSize) : base(maxLeafSize, maxInnerSize) { }
 		public AList(AList<T> items, bool keepListChangingHandlers) : base(items, keepListChangingHandlers) { }
-		protected AList(AListBase<int, T> original, AListNode<int, T> section) : base(original, section) { }
+		protected AList(AListBase<int, T> original, AListNode<int, T>? section) : base(original, section) { }
 		
 		#endregion
 
@@ -173,7 +174,7 @@ namespace Loyc.Collections
 				if (_root == null || _root.IsFrozen)
 					AutoCreateOrCloneRoot();
 
-				AListNode<int, T> splitLeft, splitRight;
+				AListNode<int, T>? splitLeft, splitRight;
 				splitLeft = _root.Insert((uint)index, item, out splitRight, _observer);
 				if (splitLeft != null) // redundant 'if' optimization
 					AutoSplit(splitLeft, splitRight);
@@ -192,7 +193,7 @@ namespace Loyc.Collections
 			if ((uint)index > (uint)_count)
 				throw new IndexOutOfRangeException();
 
-			IListSource<T> source = list as IListSource<T>;
+			IListSource<T>? source = list as IListSource<T>;
 			if (source == null)
 				source = new InternalList<T>(list);
 
@@ -206,8 +207,8 @@ namespace Loyc.Collections
 			try {
 				while (sourceIndex < sourceCount)
 				{
-					AListNode<int, T> splitLeft, splitRight;
-					splitLeft = _root.InsertRange((uint)index, source, ref sourceIndex, out splitRight, _observer);
+					AListNode<int, T>? splitLeft, splitRight;
+					splitLeft = _root!.InsertRange((uint)index, source, ref sourceIndex, out splitRight, _observer);
 					AutoSplit(splitLeft, splitRight);
 				}
 			} finally {
@@ -225,7 +226,7 @@ namespace Loyc.Collections
 				// This benchmarks as slightly faster than `return _root[index]` when the root
 				// is a leaf (AListLeaf<T> is sealed); effect on deeper trees is negligible.
 				var leaf = _root as AListLeaf<T>;
-				return leaf != null ? leaf._list[index] : ((AListInner<T>)_root)[(uint)index];
+				return leaf != null ? leaf._list[index] : ((AListInner<T>)_root!)[(uint)index];
 			}
 			set {
 				if ((_freezeMode & (FreezeMode)1) != 0) // Frozen or FrozenForConcurrency, but not FrozenForListChanging
@@ -256,7 +257,7 @@ namespace Loyc.Collections
 			if (_listChanging != null)
 				CallListChanging(new ListChangeInfo<T>(this, NotifyCollectionChangedAction.Replace, (int)index, 0, ListExt.Single(value)));
 			++_version;
-			if (_root.IsFrozen)
+			if (_root!.IsFrozen)
 				AutoCreateOrCloneRoot();
 			_root.SetAt(index, value, _observer);
 			CheckPoint();
@@ -410,7 +411,7 @@ namespace Loyc.Collections
 		{
 			if (_treeHeight == 1)
 			{
-				if (_root.IsFrozen)
+				if (_root!.IsFrozen)
 					AutoCreateOrCloneRoot();
 				var leaf = (AListLeaf<T>)_root;
 				leaf.Sort((int)start, (int)subcount, comp);
@@ -500,7 +501,7 @@ namespace Loyc.Collections
 				// values. Two candidates are random, and one is the first element.
 				uint offset0 = (uint)_r.Next((int)count - 2) + 1;
 				uint offset2 = (uint)_r.Next((int)count - 1) + 1;
-				T pivot0 = _root[start + offset0];
+				T pivot0 = _root![start + offset0];
 				T pivot2 = _root[start + offset2];
 				if (comp(pivot0, pivot1) > 0)
 				{
@@ -638,7 +639,7 @@ namespace Loyc.Collections
 		public AListBase(int maxNodeSize) : base(maxNodeSize) { }
 		public AListBase(int maxLeafSize, int maxInnerSize) : base(maxLeafSize, maxInnerSize) { }
 		public AListBase(AListBase<T> items, bool keepListChangingHandlers) : base(items, keepListChangingHandlers) { }
-		protected AListBase(AListBase<int, T> original, AListNode<int, T> section) : base(original, section) { }
+		protected AListBase(AListBase<int, T> original, AListNode<int, T>? section) : base(original, section) { }
 
 		#endregion
 
@@ -719,12 +720,12 @@ namespace Loyc.Collections
 
 		protected void InsertRange(int index, AListBase<T> source, bool move)
 		{
-			if (source._root.IsLeaf || source._maxLeafSize != _maxLeafSize) {
+			if (source._root!.IsLeaf || source._maxLeafSize != _maxLeafSize) {
 				InsertRange(index, (IListSource<T>)source);
 				if (move)
 					source.Clear();
 			} else {
-				AListBase<T> rightSection = null;
+				AListBase<T>? rightSection = null;
 				int rightSize;
 				if ((rightSize = Count - index) != 0)
 					rightSection = RemoveSection(index, rightSize);
@@ -752,7 +753,7 @@ namespace Loyc.Collections
 			if (newSize < Count)
 				RemoveRange(newSize, Count - newSize);
 			else if (newSize > Count)
-				InsertRange(Count, new Repeated<T>(default(T), newSize - Count));
+				InsertRange(Count, new Repeated<T>(default(T)!, newSize - Count));
 		}
 		
 		#endregion
@@ -836,7 +837,7 @@ namespace Loyc.Collections
 				// Fire ListChanging on both lists, and block further notifications
 				var temp = _listChanging;
 				var tempO = other._listChanging;
-				Exception e = null;
+				Exception? e = null;
 				if (temp != null)
 					CallListChanging(new ListChangeInfo<T>(this, NotifyCollectionChangedAction.Add, insertAt, other.Count, other));
 				if (tempO != null) {
@@ -868,8 +869,8 @@ namespace Loyc.Collections
 				BeginInsertRange(insertAt, other, other.Count);
 				int amtInserted = 0;
 				try {
-					AListNode<int, T> splitLeft, splitRight;
-					splitLeft = ((AListInner<T>)_root).Combine((AListInner<T>)other._root, heightDifference, out splitRight, _observer, move, append);
+					AListNode<int, T>? splitLeft, splitRight;
+					splitLeft = ((AListInner<T>)_root!).Combine((AListInner<T>)other._root!, heightDifference, out splitRight, _observer, move, append);
 					amtInserted = other.Count;
 					if (move)
 						other.ClearInternal(true);
@@ -910,7 +911,7 @@ namespace Loyc.Collections
 			if (isEmpty)
 				return Maybe<T>.NoValue;
 			RemoveAt(0);
-			return result;
+			return result!;
 		}
 
 		Maybe<T> IDeque<T>.TryPeekFirst()
@@ -925,7 +926,7 @@ namespace Loyc.Collections
 			if (isEmpty)
 				return Maybe<T>.NoValue;
 			RemoveAt(Count-1);
-			return result;
+			return result!;
 		}
 
 		Maybe<T> IDeque<T>.TryPeekLast()

@@ -11,7 +11,7 @@ namespace Loyc.Syntax.Les
 {
 	internal sealed class Les2PrinterWriter : LNodePrinterHelper
 	{
-		public Les2PrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "", Action<ILNode, IndexRange, int> saveRange = null)
+		public Les2PrinterWriter(StringBuilder sb, string indentString = "\t", string lineSeparator = "\n", string labelIndent = "", Action<ILNode, IndexRange, int>? saveRange = null)
 			: base(sb, saveRange, false, indentString, lineSeparator, labelIndent, "  ", 4) { }
 
 		internal bool JustWroteSymbolOrSpecialId;

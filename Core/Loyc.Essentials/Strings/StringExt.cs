@@ -92,7 +92,7 @@ namespace Loyc
 		public static string SafeSubstring(this string s, int startIndex, int length = int.MaxValue)
 		{
 			if (s == null)
-				return null;
+				return null!; // Nullability contract broken, and there's no attribute like [return: MaybeNullIfNull("s")]
 			if ((uint)startIndex > (uint)s.Length)
 			{
 				if (startIndex < 0) {
@@ -123,10 +123,10 @@ namespace Loyc
 		{
 			if (!value.MoveNext())
 				return string.Empty;
-			StringBuilder sb = new StringBuilder (value.Current.ToString());
+			StringBuilder sb = new StringBuilder (value.Current?.ToString());
 			while (value.MoveNext()) {
 				sb.Append(separator);
-				sb.Append(value.Current.ToString());
+				sb.Append(value.Current?.ToString());
 			}
 			return sb.ToString();
 		}

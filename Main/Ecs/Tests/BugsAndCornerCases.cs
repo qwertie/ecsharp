@@ -243,5 +243,14 @@ namespace Loyc.Ecs.Tests
 			stmt = F.Vars(F.Of(_(S.Tuple), F.Var(FooNullable, x), F.Var(FooBracks, T)), a, b);
 			Stmt("#var(@'tuple !(Foo? x, #var(Foo[], T)), a, b);", stmt);
 		}
+		
+		[Test]
+		public void WackyStrings()
+		{
+			Expr(@"Foo(""💩\u007F\u0080\u00A1"")", 
+				F.Call(Foo, String("💩\u007F\u0080\u00A1")), Mode.ParserTest);
+			Expr(@"Foo(""￭\uDC00\uDCFF\uDFFF"", ""\uD800\uDB7F\uDBFF"")", 
+				F.Call(Foo, String("￭\uDC00\uDCFF\uDFFF"), String("\uD800\uDB7F\uDBFF")));
+		}
 	}
 }

@@ -10,7 +10,7 @@ namespace Loyc.Collections.Impl
 	/// classes but sometimes useful in other cases.</summary>
 	public class TestHelpers : Assert
 	{
-		protected static void ExpectList<T>(IReadOnlyList<T> list, params T[] expected)
+		protected static void ExpectList<T>(IReadOnlyList<T>? list, params T[]? expected)
 		{
 			ExpectList(list, expected as IList<T>, false);
 		}
@@ -18,19 +18,28 @@ namespace Loyc.Collections.Impl
 		/// When testing a buggy collection type, the enumerator might behave 
 		/// differently than the indexer, so this alternate comparer is provided.
 		/// </summary>
-		protected static void ExpectListByEnumerator<T>(IReadOnlyList<T> list, params T[] expected)
+		protected static void ExpectListByEnumerator<T>(IReadOnlyList<T>? list, params T[]? expected)
 		{
 			ExpectList(list, expected as IList<T>, true);
 		}
-		public static void ExpectList<T>(IReadOnlyList<T> list, IList<T> expected, bool useEnumerator = false)
+		public static void ExpectList<T>(IReadOnlyList<T>? list, IList<T>? expected, bool useEnumerator = false)
 		{
-			Assert.AreEqual(expected.Count, list.Count);
+			if (list == null || expected == null) {
+				Assert.AreEqual(list, expected);
+				return;
+			}
 			if (useEnumerator)
-				ExpectList(list, expected);
+				ExpectList((IEnumerable<T>) list, expected);
 			else
 			{
-				for (int i = 0; i < expected.Count; i++)
-					Assert.AreEqual(expected[i], list[i]);
+				for (int i = 0; i < expected.Count; i++) {
+					try {
+						Assert.AreEqual(expected[i], list[i]);
+					} catch (Exception e) {
+						throw new AssertionException($"Lists differ at index {i}:\n{e.Message}");
+					}
+				}
+				Assert.AreEqual(expected.Count, list.Count, "List lengths differ");
 			}
 		}
 		public static void ExpectList<T>(IEnumerable<T> list, IEnumerable<T> expected)
@@ -39,8 +48,12 @@ namespace Loyc.Collections.Impl
 			int i = 0;
 			foreach (T expectedItem in expected)
 			{
-				Assert.That(listE.MoveNext());
-				Assert.AreEqual(expectedItem, listE.Current);
+				try {
+					Assert.That(listE.MoveNext());
+					Assert.AreEqual(expectedItem, listE.Current);
+				} catch (Exception e) {
+					throw new AssertionException($"Lists differ at index {i}: {e.Message}");
+				}
 				i++;
 			}
 			Assert.IsFalse(listE.MoveNext());

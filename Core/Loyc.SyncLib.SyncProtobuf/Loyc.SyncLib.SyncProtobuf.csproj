@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Nullability is broken in .NET Standard 2.0/2.1; use Core 3.1 for correct IntelliSense.
+         In Visual Studio, use the dropdown at the top-left of any .cs file to choose netcoreapp3.1 -->
+    <TargetFrameworks>netcoreapp3.1;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <LangVersion>10.0</LangVersion>
+    <OutputPath>..\Bin\$(Configuration)\</OutputPath>
+    <NoWarn>1591, 1573, 0419, 1587, 1574, 1658</NoWarn>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>OpenSourceKey.snk</AssemblyOriginatorKeyFile>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <!-- Nullability: disable broken warnings in .NET Standard 2.0/2.1 and include attribute file -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1'">
+    <NoWarn>$(NoWarn);nullable</NoWarn><!-- Suppress nullability warnings -->
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\NullableAttributes.cs" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <Optimize>true</Optimize>
+    <DocumentationFile>..\Bin\$(Configuration)\$(TargetFramework)\Loyc.SyncLib.SyncProtobuf.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Loyc.Interfaces\Loyc.Interfaces.csproj" />
+    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj" />
+    <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+  </ItemGroup>
+</Project>

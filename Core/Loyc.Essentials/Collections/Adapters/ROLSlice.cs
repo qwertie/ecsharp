@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Loyc.Collections;
@@ -67,6 +68,7 @@ namespace Loyc.Collections
 			get { return this[_count - 1]; }
 		}
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("empty")]
 		public T PopFirst(out bool empty)
 		{
 			if (_count != 0)
@@ -78,6 +80,7 @@ namespace Loyc.Collections
 			empty = true;
 			return default(T);
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("empty")]
 		public T PopLast(out bool empty)
 		{
 			if (_count != 0)
@@ -118,6 +121,7 @@ namespace Loyc.Collections
 				return defaultValue;
 			}
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			int i = _start + index;

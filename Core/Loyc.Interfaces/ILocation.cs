@@ -22,7 +22,7 @@ namespace Loyc
 	/// </remarks>
 	public interface ILocation
 	{
-		object Location { get; }
+		object? Location { get; }
 	}
 	
 	[Obsolete("This was renamed to ILocation")]

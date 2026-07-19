@@ -1,6 +1,7 @@
 using Loyc.Collections.Impl;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -33,6 +34,7 @@ namespace Loyc.Collections
 		{
 			_list = list;
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public sealed override T TryGet(int index, out bool fail)
 		{
 			return _list.TryGet(index, out fail);
@@ -53,6 +55,7 @@ namespace Loyc.Collections
 		{
 			return GetEnumerator();
 		}
+		[return: MaybeNull]
 		public T NextHigherItem(ref int? index)
 		{
 			if (index == null || index.Value < 0)
@@ -68,6 +71,7 @@ namespace Loyc.Collections
 			if (fail) index = null;
 			return result;
 		}
+		[return: MaybeNull]
 		public T NextLowerItem(ref int? index)
 		{
 			if (index == null || index >= Count)

@@ -15,7 +15,7 @@ using Loyc.Collections;	// optional (many handy interfaces & classes)
 using Loyc.Syntax.Lexing;	// For BaseLexer
 namespace Loyc.Syntax.Les
 {
-	#pragma warning disable 162, 642
+	#pragma warning disable 162, 642, 8600, 8602, 8603, 8604, 8625
 	using TT = TokenType;	// Abbreviate TokenType as TT
 	using P = LesPrecedence;
 	using S = CodeSymbols;

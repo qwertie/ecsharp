@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Loyc.Collections.Impl
 {
@@ -20,6 +21,7 @@ namespace Loyc.Collections.Impl
 	{
 		#region IListSource<T> Members
 
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public abstract T TryGet(int index, out bool fail);
 		public abstract override int Count { get; }
 		
@@ -29,10 +31,10 @@ namespace Loyc.Collections.Impl
 		{ 
 			get {
 				bool fail;
-				T value = TryGet(index, out fail);
+				T? value = TryGet(index, out fail);
 				if (fail)
 					ThrowIndexOutOfRange(index);
-				return value;
+				return value!;
 			}
 		}
 		
@@ -58,7 +60,7 @@ namespace Loyc.Collections.Impl
 		public override IEnumerator<T> GetEnumerator()
 		{
 			bool fail;
-			T value;
+			T? value;
 			int count = Count;
 			int i = 0;
 			for (;; ++i) {
@@ -67,7 +69,7 @@ namespace Loyc.Collections.Impl
 					throw new EnumerationException();
 				if (fail)
 					break;
-				yield return value;
+				yield return value!;
 			}
 			Debug.Assert(i >= Count);
 		}
@@ -81,10 +83,10 @@ namespace Loyc.Collections.Impl
 		{
 			get {
 				bool fail;
-				T value = TryGet(index, out fail);
+				T? value = TryGet(index, out fail);
 				if (fail)
 					ThrowIndexOutOfRange(index);
-				return value;
+				return value!;
 			}
 			set { throw new ReadOnlyException(); }
 		}

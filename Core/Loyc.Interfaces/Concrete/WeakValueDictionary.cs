@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Loyc.Threading;
 using Loyc.Collections.Impl;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Loyc.Collections
 {
@@ -21,8 +22,10 @@ namespace Loyc.Collections
 	/// by calling AutoCleanup().
 	/// </remarks>
 	public class WeakValueDictionary<K,V> : DictionaryBase<K,V>, ICloneable<WeakValueDictionary<K, V>> where V : class
+		where K: notnull
 	{
-		static readonly WeakReference<V> WeakNull = new WeakReference<V>(null);
+		// <V?> causes problems elsewhere. We don't know if V is nullable, but must shut up the compiler
+		static readonly WeakReference<V> WeakNull = new WeakReference<V>(null!);
 		Dictionary<K, WeakReference<V>> _dict;
 		int _accessCounter;
 
@@ -71,7 +74,7 @@ namespace Loyc.Collections
 		public override void Add(K key, V value)
 		{
 			_accessCounter += 4;
-			_dict.TryGetValue(key, out WeakReference<V> wv);
+			_dict.TryGetValue(key, out WeakReference<V>? wv);
 			if (wv != null) {
 				if (wv.TryGetTarget(out var _) || wv == WeakNull)
 					throw new KeyAlreadyExistsException();
@@ -86,7 +89,7 @@ namespace Loyc.Collections
 		public override bool ContainsKey(K key)
 		{
 			_accessCounter++;
-			_dict.TryGetValue(key, out WeakReference<V> wv);
+			_dict.TryGetValue(key, out WeakReference<V>? wv);
 			if (wv != null)
 				if (wv.TryGetTarget(out var _))
 					return true;
@@ -101,10 +104,14 @@ namespace Loyc.Collections
 			return _dict.Remove(key);
 		}
 
-		public override bool TryGetValue(K key, out V value)
+		// It claims "'value' must have a non-null value when exiting with 'true'"
+		// But this is wrong? V could be instantiated as a nullable type!
+		#pragma warning disable 8762
+
+		public override bool TryGetValue(K key, [MaybeNullWhen(false)] out V value)
 		{
 			_accessCounter++;
-			_dict.TryGetValue(key, out WeakReference<V> wv);
+			_dict.TryGetValue(key, out WeakReference<V>? wv);
 			if (wv != null)
 			{
 				wv.TryGetTarget(out value);
@@ -123,7 +130,7 @@ namespace Loyc.Collections
 			{
 				kvp.Value.TryGetTarget(out var target);
 				if (target != null || kvp.Value == WeakNull)
-					yield return new KeyValuePair<K, V>(kvp.Key, target);
+					yield return new KeyValuePair<K, V>(kvp.Key, target!);
 			}
 			_accessCounter += Count;
 		}
@@ -131,11 +138,15 @@ namespace Loyc.Collections
 		protected override void SetValue(K key, V value)
 		{
 			_accessCounter += 3;
-			_dict.TryGetValue(key, out WeakReference<V> wv);
-			if (wv != null && (value == null) == (wv == WeakNull))
-				wv.SetTarget(value);
-			else
-				_dict[key] = value == null ? WeakNull : new WeakReference<V>(value);
+			if (value == null)
+				_dict[key] = WeakNull;
+			else {
+				_dict.TryGetValue(key, out WeakReference<V>? wv);
+				if (wv != null && wv != WeakNull)
+					wv.SetTarget(value);
+				else
+					_dict[key] = new WeakReference<V>(value);
+			}
 		}
 	}
 }

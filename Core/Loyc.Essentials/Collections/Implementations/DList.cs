@@ -6,13 +6,14 @@ namespace Loyc.Collections
 	using System.Diagnostics;
 	using Loyc.Collections.Impl;
 	using System.Runtime.CompilerServices;
+	using System.Diagnostics.CodeAnalysis;
 
 	/// <summary>
-	/// A compact auto-enlarging list that efficiently supports supports insertions 
-	/// at the beginning or end of the list.
+	///   A compact auto-enlarging list, similar to <see cref="List{T}"/>, that efficiently 
+	///   supports supports insertions at the beginning or end of the list.
 	/// </summary><remarks>
-	/// An <a href="http://core.loyc.net/collections/dlist.html">article</a>
-	/// about this class is available.
+	///   An <a href="http://core.loyc.net/collections/dlist.html">article</a>
+	///   about this class is available.
 	/// </remarks>
 	/// <seealso cref="InternalDList{T}"/>
 	/// <seealso cref="DList"/>
@@ -20,7 +21,7 @@ namespace Loyc.Collections
 	#if !CompactFramework
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
 	#endif
-	public class DList<T> : IListEx<T>, IDeque<T>, IListRangeMethods<T>, ICloneable<DList<T>> //, IGetIteratorSlice<T>
+	public class DList<T> : IListEx<T>, IDeque<T>, IListRangeMethods<T>, ICloneable<DList<T>>//, IScannable<T> //, IGetIteratorSlice<T>
 	{
 		protected InternalDList<T> _dlist = InternalDList<T>.Empty;
 
@@ -205,6 +206,7 @@ namespace Loyc.Collections
 		{
 			return _dlist.TrySet(index, value);
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T TryGet(int index, out bool fail)
 		{
 			return _dlist.TryGet(index, out fail);
@@ -365,6 +367,13 @@ namespace Loyc.Collections
 		{
 			return new ListSlice<T>(this, start, count);
 		}
+
+		/// <summary>Rearranges the collection if necessary so that all elements
+		/// are in a single contiguous block of memory, then returns that block.</summary>
+		/// <remarks>Caution: the memory block is shared with the DList. If
+		/// you add or remove items in the DList, it may or may not allocate 
+		/// a new memory block that will be independent of the memory block.</remarks>
+		public Memory<T> AsContiguousMemory() => _dlist.AsContiguousMemory();
 	}
 
 	/// <summary>
@@ -372,7 +381,7 @@ namespace Loyc.Collections
 	/// also implements the IList interface.
 	/// </summary>
 	[Serializable()]
-	public class DList : DList<object>, System.Collections.IList
+	public class DList : DList<object?>, System.Collections.IList
 	{
 		public bool IsFixedSize
 		{
@@ -385,7 +394,7 @@ namespace Loyc.Collections
 			if (arrayIndex < 0 || array.Length - arrayIndex < Count)
 				throw new ArgumentOutOfRangeException("arrayIndex");
 			
-			foreach(object obj in this)
+			foreach(object? obj in this)
 				array.SetValue(obj, arrayIndex++);
 		}
 		public bool IsSynchronized
@@ -396,11 +405,11 @@ namespace Loyc.Collections
 		{
 			get { return this; }
 		}
-		public new void Remove(object obj)
+		public new void Remove(object? obj)
 		{
 			base.Remove(obj);
 		}
-		public new int Add(object obj)
+		public new int Add(object? obj)
 		{
 			base.Add(obj);
 			return Count - 1;

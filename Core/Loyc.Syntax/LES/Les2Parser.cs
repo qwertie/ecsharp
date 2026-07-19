@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Diagnostics;
-using Loyc;
-using Loyc.Utilities;
 using Loyc.Syntax.Lexing;
 using Loyc.Collections;
 using Loyc.Syntax;
@@ -25,7 +21,7 @@ namespace Loyc.Syntax.Les
 	/// </remarks>
 	public partial class Les2Parser : BaseParserForList<Token, int>
 	{
-		protected LNodeFactory F;
+		protected LNodeFactory F = null!; // set by Reset(), which is called from the base constructor
 		protected Les2PrecedenceMap _prec = Les2PrecedenceMap.Default;
 
 		new const TT EOF = TT.EOF;
@@ -89,15 +85,15 @@ namespace Loyc.Syntax.Les
 		{
 			if (t.TypeInt == (int)TT.BQOperator)
 				return LesPrecedence.Prefix;
-			return _prec.Find(OperatorShape.Prefix, t.Value);
+			return _prec.Find(OperatorShape.Prefix, t.Value!); // operator tokens always have a Symbol value
 		}
 		protected Precedence SuffixPrecedenceOf(Token t)
 		{ 
-			return _prec.Find(OperatorShape.Suffix, t.Value);
+			return _prec.Find(OperatorShape.Suffix, t.Value!); // operator tokens always have a Symbol value
 		}
 		protected Precedence InfixPrecedenceOf(Token t) 
 		{
-			return _prec.Find(OperatorShape.Infix, t.Value);
+			return _prec.Find(OperatorShape.Infix, t.Value!); // operator tokens always have a Symbol value
 		}
 
 		// This is virtual so that a syntax highlighter can easily override and colorize it

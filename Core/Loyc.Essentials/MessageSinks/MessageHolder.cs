@@ -11,7 +11,7 @@ namespace Loyc
 	/// <summary>A message sink that puts the messages it receives in a list.</summary>
 	public class MessageHolder : IMessageSink, ICloneable<MessageHolder>
 	{
-		List<LogMessage> _messages;
+		List<LogMessage>? _messages;
 
 		public IList<LogMessage> List
 		{
@@ -24,15 +24,15 @@ namespace Loyc
 				msg.WriteTo(sink);
 		}
 
-		public void Write(Severity level, object context, string format)
+		public void Write(Severity level, object? context, string format)
 		{
 			List.Add(new LogMessage(level, context, format));
 		}
-		public void Write(Severity level, object context, string format, object arg0, object arg1 = null)
+		public void Write(Severity level, object? context, string format, object? arg0, object? arg1 = null)
 		{
 			List.Add(new LogMessage(level, context, format, arg0, arg1));
 		}
-		public void Write(Severity level, object context, string format, params object[] args)
+		public void Write(Severity level, object? context, string format, params object?[] args)
 		{
 			List.Add(new LogMessage(level, context, format, args));
 		}

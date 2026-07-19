@@ -20,10 +20,11 @@ namespace Loyc.Collections.Impl
 		[DebuggerDisplay("Index = {Index}, Node = {Node}")]
 		protected internal struct Entry
 		{
-			// Normally this is the base index of the items in Node (the first entry 
+			// Normally this is the base index of the items in Node (the first entry
 			// uses Index differently; see documentation of _children)
 			public uint Index;
-			// Child node
+			// Child node. Not annotated as nullable, but empty slots (at indexes
+			// >= _childCount) hold null; all in-range slots hold non-null nodes.
 			public AListNode<K, T> Node;
 		}
 
@@ -218,7 +219,7 @@ namespace Loyc.Collections.Impl
 		}
 		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		protected bool PrepareToInsert(int i, IAListTreeObserver<K, T> tob)
+		protected bool PrepareToInsert(int i, IAListTreeObserver<K, T>? tob)
 		{
 			AutoClone(ref _children[i].Node, this, tob);
 
@@ -228,7 +229,7 @@ namespace Loyc.Collections.Impl
 			}
 			return true;
 		}
-		protected void TryToShiftItemsToSiblings(int i, IAListTreeObserver<K, T> tob)
+		protected void TryToShiftItemsToSiblings(int i, IAListTreeObserver<K, T>? tob)
 		{
 			Debug.Assert(_children[i].Node.CapacityLeft == 0);
 			// Pick a sibling to transfer items to. Don't bother unless we can move at least two.
@@ -248,7 +249,7 @@ namespace Loyc.Collections.Impl
 		/// replacing [i] and [i+1] with splitLeft and splitRight. Notifies 'tob' 
 		/// of the replacement, and checks whether this node itself needs to split.</summary>
 		/// <returns>Value of splitLeft to be returned to parent (non-null if splitting)</returns>
-		protected AListInnerBase<K, T> HandleChildSplit(int i, AListNode<K, T> splitLeft, ref AListNode<K, T> splitRight, IAListTreeObserver<K, T> tob)
+		protected AListInnerBase<K, T>? HandleChildSplit(int i, AListNode<K, T> splitLeft, ref AListNode<K, T>? splitRight, IAListTreeObserver<K, T>? tob)
 		{
 			Debug.Assert(splitLeft != null && splitRight != null);
 
@@ -256,7 +257,7 @@ namespace Loyc.Collections.Impl
 
 			_children[i].Node = splitLeft;
 
-			LLInsert(i + 1, splitRight, 0);
+			LLInsert(i + 1, splitRight!, 0);
 			_children[i + 1].Index = _children[i].Index + splitLeft.TotalCount;
 			AssertValid();
 
@@ -264,7 +265,7 @@ namespace Loyc.Collections.Impl
 			return AutoSplit(out splitRight);
 		}
 
-		protected virtual AListInnerBase<K, T> AutoSplit(out AListNode<K, T> splitRight)
+		protected virtual AListInnerBase<K, T>? AutoSplit(out AListNode<K, T>? splitRight)
 		{
 			if (_childCount > _maxNodeSize) {
 				return SplitAt(LocalCount >> 1, out splitRight);
@@ -345,7 +346,7 @@ namespace Loyc.Collections.Impl
 			}
 		}
 
-		public override void SetAt(uint index, T item, IAListTreeObserver<K, T> tob)
+		public override void SetAt(uint index, T item, IAListTreeObserver<K, T>? tob)
 		{
 			Debug.Assert(!IsFrozen);
 			int i = BinarySearchI(index);
@@ -361,7 +362,7 @@ namespace Loyc.Collections.Impl
 			return _children[i].Index;
 		}
 
-		public override bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T> tob)
+		public override bool RemoveAt(uint index, uint count, IAListTreeObserver<K, T>? tob)
 		{
 			Debug.Assert(!IsFrozen);
 			AssertValid();
@@ -380,7 +381,7 @@ namespace Loyc.Collections.Impl
 					adjustedCount = count + index - e.Index;
 					adjustedIndex = 0;
 					if (adjustedCount == e.Node.TotalCount && tob == null)
-						e.Node = null; // check below
+						e.Node = null!; // local sentinel meaning "child will be empty"; checked below
 				}
 
 				if (e.Node == null) {
@@ -407,7 +408,7 @@ namespace Loyc.Collections.Impl
 			return undersizedOrAggChg;
 		}
 
-		internal AListInnerBase<K, T> HandleChildCloned(int i, AListNode<K, T> childClone, IAListTreeObserver<K, T> tob)
+		internal AListInnerBase<K, T>? HandleChildCloned(int i, AListNode<K, T> childClone, IAListTreeObserver<K, T>? tob)
 		{
 			Debug.Assert(childClone.LocalCount == _children[i].Node.LocalCount);
 			Debug.Assert(childClone.TotalCount == _children[i].Node.TotalCount);
@@ -420,7 +421,7 @@ namespace Loyc.Collections.Impl
 			return self != this ? self : null;
 		}
 
-		protected virtual bool HandleUndersizedOrAggregateChanged(int i, IAListTreeObserver<K, T> tob)
+		protected virtual bool HandleUndersizedOrAggregateChanged(int i, IAListTreeObserver<K, T>? tob)
 		{
 			if (_children[i].Node.IsUndersized)
 				return HandleUndersized(i, tob);
@@ -437,14 +438,14 @@ namespace Loyc.Collections.Impl
 		/// <param name="i">Index of undersized child</param>
 		/// <param name="tob">Observer to notify about node movements</param>
 		/// <returns>True iff this node has become undersized.</returns>
-		protected virtual bool HandleUndersized(int i, IAListTreeObserver<K, T> tob)
+		protected virtual bool HandleUndersized(int i, IAListTreeObserver<K, T>? tob)
 		{
 			AListNode<K, T> node = _children[i].Node;
 			Debug.Assert(!node.IsFrozen);
 
 			// Examine the fullness of the siblings of e.Node.
 			uint ui = (uint)i;
-			AListNode<K, T> left = null, right = null;
+			AListNode<K, T>? left = null, right = null;
 			int leftCap = 0, rightCap = 0;
 			if (ui-1u < (uint)_children.Length) {
 				AutoClone(ref _children[ui-1u].Node, this, tob);
@@ -474,7 +475,7 @@ namespace Loyc.Collections.Impl
 				if (left != null && itemsToMoveLeft >= 0)
 					left.TakeFromRight(node, Math.Min(itemsToMoveLeft, node.LocalCount), tob);
 				if (node.TotalCount > 0) {
-					uint rightAdjustment = right.TakeFromLeft(node, node.LocalCount, tob);
+					uint rightAdjustment = right!.TakeFromLeft(node, node.LocalCount, tob);
 					_children[i+1].Index -= rightAdjustment;
 				}
 
@@ -520,12 +521,12 @@ namespace Loyc.Collections.Impl
 				for (int j = i; j < newCCount; j++)
 					_children[j] = _children[j + 1];
 			}
-			_children[newCCount] = new Entry { Node = null, Index = uint.MaxValue };
+			_children[newCCount] = new Entry { Node = null!, Index = uint.MaxValue }; // empty slot
 			_childCount--;
 			return false;
 		}
 
-		internal override uint TakeFromRight(AListNode<K, T> sibling, int localsToMove, IAListTreeObserver<K, T> tob)
+		internal override uint TakeFromRight(AListNode<K, T> sibling, int localsToMove, IAListTreeObserver<K, T>? tob)
 		{
 			Debug.Assert(localsToMove <= sibling.LocalCount && LocalCount + localsToMove <= _maxNodeSize);
 
@@ -552,7 +553,7 @@ namespace Loyc.Collections.Impl
 			return totalCountMoved;
 		}
 
-		internal override uint TakeFromLeft(AListNode<K, T> sibling, int localsToMove, IAListTreeObserver<K, T> tob)
+		internal override uint TakeFromLeft(AListNode<K, T> sibling, int localsToMove, IAListTreeObserver<K, T>? tob)
 		{
 			Debug.Assert(!IsFrozen);
 			var left = (AListInnerBase<K, T>)sibling;

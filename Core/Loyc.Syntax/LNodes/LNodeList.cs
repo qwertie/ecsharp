@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -83,6 +84,7 @@ namespace Loyc.Syntax
 		public LNodeList RemoveAt(int index) => new LNodeList(_list.RemoveAt(index));
 		IListSource<LNode> IListSource<LNode>.Slice(int start, int count) => Slice(start, count);
 		public Slice_<LNode> Slice(int start, int count = int.MaxValue) => _list.Slice(start, count);
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public LNode TryGet(int index, out bool fail) => _list.TryGet(index, out fail);
 		IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
 		LNodeList ICloneable<LNodeList>.Clone() => this;
@@ -155,7 +157,7 @@ namespace Loyc.Syntax
 		public static bool operator !=(LNodeList lhs, LNodeList rhs) => lhs._list != rhs._list;
 
 		public bool Equals(LNodeList other) => _list == other._list;
-		public override bool Equals(object rhs) => rhs is LNodeList && Equals((LNodeList)rhs);
+		public override bool Equals(object? rhs) => rhs is LNodeList && Equals((LNodeList)rhs);
 		public override int GetHashCode() => _list.GetHashCode();
 		public override string ToString() => string.Join(", ", _list);
 	}

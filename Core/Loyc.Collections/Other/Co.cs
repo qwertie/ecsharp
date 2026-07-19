@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Loyc.Collections.Impl;
@@ -75,8 +76,8 @@ namespace Loyc.Utilities
 	/// <typeparam name="T">Type of item being enumerated.</typeparam>
 	public struct Co<T> : IEnumerable<T>
 	{
-		internal IEnumerator<Co<T>> _e;
-		internal T _value;
+		internal IEnumerator<Co<T>>? _e;
+		[AllowNull] internal T _value;
 		public Co(IEnumerator<Co<T>> e) { _e = e; _value = default(T); }
 		public Co(T value)              { _e = null; _value = value; }
 		public static implicit operator Co<T>(T e) { return new Co<T>(e); }

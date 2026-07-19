@@ -10,6 +10,10 @@ using Loyc.MiniTest;
 using Loyc.Math;
 using Loyc.Threading;
 using Loyc.Collections;
+using System.Runtime.CompilerServices;
+using System.Reflection;
+using System.Linq.Expressions;
+using System.Numerics;
 
 namespace Loyc
 {
@@ -120,17 +124,21 @@ namespace Loyc
 		
 		/// <summary>Returns <c>action(obj)</c>. This method lets you embed statements 
 		/// in any expression.</summary>
-		public static R Do<T, R>(this T obj, Func<T, R> action)
-		{
-			return action(obj);
-		}
+		public static R Do<T, R>(this T obj, Func<T, R> action) => action(obj);
 
-		/// <summary>Returns true. This method has no effect; it is used to do an action in a conditional expression.</summary>
+		/// <summary>Returns true. This method has no effect; it is used to do an action 
+		/// in a conditional expression.</summary>
 		/// <param name="value">Ignored.</param>
 		/// <returns>True.</returns>
-		public static bool True<T>(T value) { return true; }
+		public static bool True<T>(T value) => true;
 		
-        /// <summary>This method simply calls the delegate provided and returns true. It is used to do an action in a conditional expression.</summary>
+		/// <summary>This method simply assigns a value to a variable and returns the 
+		/// value. For example, <c>G.Var(out int x, 777)</c> creates a variable called 
+		/// x with a value of 777, and returns 777.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static T Var<T>(out T var, T value) => var = value;
+
+		/// <summary>This method simply calls the delegate provided and returns true. It is used to do an action in a conditional expression.</summary>
 		/// <returns>True</returns>
 		public static bool True(Action action) { action(); return true; }
 
@@ -145,12 +153,12 @@ namespace Loyc
 			static Comparison<T> GetC() {
 				if (typeof(T).IsValueType)
 					return (a, b) => a.CompareTo(b);
-				return (Comparison<T>)Delegate.CreateDelegate(typeof(Comparison<T>), null, typeof(IComparable<T>).GetMethod("CompareTo"));
+				return (Comparison<T>)Delegate.CreateDelegate(typeof(Comparison<T>), null, typeof(IComparable<T>).GetMethod("CompareTo")!);
 			}
 			static Func<T, T, int> GetF() {
 				if (typeof(T).IsValueType)
 					return (a, b) => a.CompareTo(b);
-				return (Func<T, T, int>)Delegate.CreateDelegate(typeof(Func<T, T, int>), null, typeof(IComparable<T>).GetMethod("CompareTo"));
+				return (Func<T, T, int>)Delegate.CreateDelegate(typeof(Func<T, T, int>), null, typeof(IComparable<T>).GetMethod("CompareTo")!);
 			}
 		}
 		/// <summary>Gets a <see cref="Comparison{T}"/> for the specified type.</summary>
@@ -192,7 +200,7 @@ namespace Loyc
 			return list;
 		}
 
-		static char[] _invalids;
+		static char[]? _invalids;
 
 		/// <summary>Replaces characters in <c>text</c> that are not allowed in 
 		/// file names with the specified replacement character.</summary>
@@ -226,13 +234,14 @@ namespace Loyc
 
 		/// <summary>Same as <c>Debug.Assert</c> except that the argument is 
 		/// evaluated even in a Release build.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool Verify(bool condition)
 		{
 			Debug.Assert(condition);
 			return condition;
 		}
 
-		static Dictionary<char, string> HtmlEntityTable;
+		static Dictionary<char, string>? HtmlEntityTable;
 
 		/// <summary>Gets a bare HTML entity name for an ASCII character, or null if
 		/// there is no entity name for the given character, e.g. 
@@ -242,7 +251,7 @@ namespace Loyc
 		/// Some HTML entities have multiple names; this function returns one of them.
 		/// There is a name in this table for all ASCII punctuation characters.
 		/// </remarks>
-		public static string BareHtmlEntityNameForAscii(char c)
+		public static string? BareHtmlEntityNameForAscii(char c)
 		{
 			if (HtmlEntityTable == null)
 				HtmlEntityTable = new Dictionary<char,string>() {
@@ -256,22 +265,25 @@ namespace Loyc
 					{'_', "lowbar"}, {'`', "grave"},  {'{', "lcub"},   {'}', "rcub"},
 					{'|', "vert"},   {'~', "tilde"}, // {(char)0xA0, "nbsp"}
 				};
-			string name;
-			HtmlEntityTable.TryGetValue(c, out name);
+			HtmlEntityTable.TryGetValue(c, out string? name);
 			return name;
 		}
 
 		#region Math methods don't really belong here
-		// These methods are used by Loyc.Syntax which doesn't reference Loyc.Math and 
-		// therefore can't use MathEx
+		// These methods are used by Loyc.Syntax / Loyc.SyncLib, which don't reference
+		// Loyc.Math and therefore can't use MathEx.
 
 		/// <summary>Returns the number of bits that are set in the specified integer.</summary>
 		public static int CountOnes(byte x)
 		{
-			int X = x;
-			X -= ((X >> 1) & 0x55);
-			X = (((X >> 2) & 0x33) + (X & 0x33));
-			return (X & 0x0F) + (X >> 4);
+#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47 || NET48
+				int X = x;
+				X -= ((X >> 1) & 0x55);
+				X = (((X >> 2) & 0x33) + (X & 0x33));
+				return (X & 0x0F) + (X >> 4);
+#else
+			return BitOperations.PopCount(x);
+			#endif
 		}
 
 		/// <summary>Returns the number of bits that are set in the specified integer.</summary>
@@ -283,15 +295,19 @@ namespace Loyc
 		/// <inheritdoc cref="CountOnes(int)"/>
 		public static int CountOnes(uint x)
 		{
-			// 32-bit recursive reduction using SWAR... but first step 
-			// is mapping 2-bit values into sum of 2 1-bit values in 
-			// sneaky way
-			x -= ((x >> 1) & 0x55555555);
-			x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
-			x = (((x >> 4) + x) & 0x0f0f0f0f);
-			x += (x >> 8);
-			x += (x >> 16);
-			return (int)(x & 0x0000003f);
+			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47 || NET48
+				// 32-bit recursive reduction using SWAR... but first step 
+				// is mapping 2-bit values into sum of 2 1-bit values in 
+				// sneaky way
+				x -= ((x >> 1) & 0x55555555);
+				x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
+				x = (((x >> 4) + x) & 0x0f0f0f0f);
+				x += (x >> 8);
+				x += (x >> 16);
+				return (int)(x & 0x0000003f);
+			#else
+				return BitOperations.PopCount(x);
+			#endif
 		}
 
 
@@ -307,12 +323,16 @@ namespace Loyc
 		/// <inheritdoc cref="Log2Floor(int)"/>
 		public static int Log2Floor(uint x)
 		{
-			x |= (x >> 1);
-			x |= (x >> 2);
-			x |= (x >> 4);
-			x |= (x >> 8);
-			x |= (x >> 16);
-			return (CountOnes(x) - 1);
+			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47 || NET48
+				x |= (x >> 1);
+				x |= (x >> 2);
+				x |= (x >> 4);
+				x |= (x >> 8);
+				x |= (x >> 16);
+				return (CountOnes(x) - 1);
+			#else
+				return BitOperations.Log2(x);
+			#endif
 		}
 		/// <summary>
 		/// Returns the floor of the base-2 logarithm of x. e.g. 1024 -> 10, 1000 -> 9
@@ -327,6 +347,70 @@ namespace Loyc
 			if (x < 0)
 				return -1;
 			return Log2Floor((uint)x);
+		}
+
+		public static int LeadingZeroCount(uint i)
+		{
+			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47 || NET48
+				return 31 - PositionOfMostSignificantOne(i);
+			#else
+				return BitOperations.LeadingZeroCount(i);
+			#endif
+		}
+
+		/// <summary>Returns the bit position of the most-significant '1' bit in a uint, or -1 
+		/// the input is zero.</summary>
+		public static int PositionOfMostSignificantOne(uint i)
+		{
+			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47 || NET48
+				int result = 31;
+				if (i >> 16 == 0)
+				{
+					i <<= 16;
+					result -= 16;
+				}
+				if (i >> 24 == 0)
+				{
+					i <<= 8;
+					result -= 8;
+				}
+				if (i >> 28 == 0)
+				{
+					i <<= 4;
+					result -= 4;
+				}
+				if (i >> 30 == 0)
+				{
+					i <<= 2;
+					result -= 2;
+				}
+				if (i >> 31 == 0)
+				{
+					result -= 1;
+					if (i == 0)
+					{
+						Debug.Assert(result == 0);
+						return -1;
+					}
+				}
+				return result;
+			#else
+				return 31 - BitOperations.LeadingZeroCount(i);
+			#endif
+		}
+
+		/// <summary>Returns the bit position of the most-significant '1' bit in a uint, or -1 
+		/// the input is zero.</summary>
+		public static int PositionOfMostSignificantOne(ulong i)
+		{
+			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47 || NET48
+				if ((uint) i == i)
+					return PositionOfMostSignificantOne((uint) i);
+				else
+					return PositionOfMostSignificantOne((uint)(i >> 32)) + 32;
+			#else
+				return 63 - BitOperations.LeadingZeroCount(i);
+			#endif
 		}
 
 		#region ShiftLeft and ShiftRight for floating point
@@ -421,6 +505,61 @@ namespace Loyc
 				return digit == 62 ? digit62 : digit63;
 		}
 
+		/// <summary>Decodes a UTF-8 (technically, WTF-8) character starting at 
+		///   <c>span[index]</c>, incrementing index by the number of bytes in the 
+		///   character.</summary>
+		/// <returns>The decoded UCS32 code point. If the byte sequence 
+		///   is not valid UTF-8, this method returns <c>-span[index]</c>
+		///   and increases <c>index</c> by one.</returns>
+		/// <exception cref="IndexOutOfRangeException">span[index] is invalid.</exception>
+		public static int DecodeUTF8Char(ReadOnlySpan<byte> span, ref int index)
+		{
+			var a = span[index++];
+			if (a < 0x80) {
+				return a;
+			} else if ((uint)index < (uint)span.Length) {
+				var b = span[index];
+				if ((b & 0xC0) == 0x80 && a >= 0b1100_0000) {
+					if (a < 0b1110_0000) { // two-byte code point
+						index++;
+						return ((a & 0b01_1111) << 6) | (b & 0b11_1111);
+					} else if ((uint)(index + 1) < (uint)span.Length) {
+						var c = span[index + 1];
+						if ((c & 0xC0) == 0x80) {
+							if (a < 0b1111_0000) { // three-byte code point
+								index += 2;
+								return ((a & 0b1111) << 12) | ((b & 0b11_1111) << 6) | (c & 0b11_1111);
+							} else if ((uint)(index + 2) < (uint)span.Length) {
+								var d = span[index + 2];
+								if ((d & 0xC0) == 0x80) {
+									if (c < 0b1111_1000) { // four-byte code point
+										index += 3;
+										return ((a & 0b0111) << 18) | ((b & 0b11_1111) << 12)
+											| (c & 0b11_1111) << 6 | (d & 0b11_1111);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			return -a;
+		}
+
+		/// <summary>Gets the integer value for the specified hex digit, or -1 if 
+		/// the character is not a hex digit.</summary>
+		public static int HexDigitValue(char c)
+		{
+			if (c >= '0' && c <= '9')
+				return c - '0';
+			if (c >= 'A' && c <= 'F')
+				return c - 'A' + 10;
+			if (c >= 'a' && c <= 'f')
+				return c - 'a' + 10;
+			else
+				return -1;
+		}
+
 		static Func<int, WordWrapCharType> _getWordWrapCharType = GetWordWrapCharType;
 
 		/// <summary>This function controls the default character categorization used by 
@@ -506,7 +645,7 @@ namespace Loyc
 		/// ensure that the hyphen is actually displayed on the screen. For simplicity, this 
 		/// replacement is not part of the wrapping algorithm itself. 
 		/// </remarks>
-		public static List<string> WordWrap(IEnumerable<Pair<int, int>> paragraph, int lineWidth, Func<int, WordWrapCharType> getCharType = null)
+		public static List<string> WordWrap(IEnumerable<Pair<int, int>> paragraph, int lineWidth, Func<int, WordWrapCharType>? getCharType = null)
 		{
 			getCharType = getCharType ?? _getWordWrapCharType;
 			if (lineWidth == int.MaxValue)
@@ -565,6 +704,39 @@ namespace Loyc
 			if (sb.Length != 0)
 				output.Add(sb.ToString());
 			return output;
+		}
+
+		/// <summary>Given an expression that refers to a method or property, such as
+		/// <c>(Class c) => c.Method(0, 0)</c>, this function returns the 
+		/// System.Reflection.MethodInfo object associated with the method/property.
+		/// You can use an expression like <c>(Class c) => c.Prop</c> to get a property's
+		/// getter, but you can't get the setter because C# 9 doesn't support them in 
+		/// expression trees.</summary>
+		/// <exception cref="InvalidCastException">The expression was not in the expected format.</exception>
+		public static MemberInfo GetMethodInfo<T, TResult>(Expression<Func<T, TResult>> code)
+		{
+			if (code.Body is MemberExpression me)
+				return ((PropertyInfo)me.Member).GetGetMethod()!;
+			//else if (code.Body is BinaryExpression be && be.NodeType == ExpressionType.Assign)
+			//	return ((PropertyInfo)((MemberExpression)be.Left).Member).GetSetMethod()!;
+			else
+				return ((MethodCallExpression)code.Body).Method;
+		}
+
+		/// <summary>Given an expression that refers to a static method or property, 
+		/// such as <c>() => Class.Method(0, 0)</c>, this function returns the 
+		/// System.Reflection.MethodInfo object associated with the method/property.
+		/// You can use an expression like <c>() => Class.Prop</c> to get a property's
+		/// getter, but you can't get the setter because C# 9 doesn't support them in 
+		/// expression trees.</summary>
+		public static MethodInfo GetMethodInfo<TResult>(Expression<Func<TResult>> code)
+		{
+			if (code.Body is MemberExpression me)
+				return ((PropertyInfo)me.Member).GetGetMethod()!;
+			//else if (code.Body is BinaryExpression be && be.NodeType == ExpressionType.Assign)
+			//	return ((PropertyInfo)((MemberExpression)be.Left).Member).GetSetMethod()!;
+			else
+				return ((MethodCallExpression)code.Body).Method;
 		}
 	}
 

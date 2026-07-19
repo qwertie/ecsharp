@@ -12,6 +12,6 @@ namespace Loyc.Syntax
 		/// <summary><see cref="LNode.TextValue"/> returns whatever this returns.</summary>
 		UString GetTextValue(SourceRange range);
 		/// <summary><see cref="LNode.TypeMarker"/> returns whatever this returns.</summary>
-		Symbol GetTypeMarker(SourceRange range);
+		Symbol? GetTypeMarker(SourceRange range);
 	}
 }

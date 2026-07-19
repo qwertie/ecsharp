@@ -10,31 +10,31 @@ using Loyc.Collections.MutableListExtensionMethods;
 namespace Loyc.Collections.Tests
 {
 	[TestFixture]
-	public class DictionaryTests<DictT> : TestHelpers where DictT : ICollection<KeyValuePair<object,object>>, IDictionary<object,object>, IAddRange<KeyValuePair<object,object>>, ICloneable<DictT>, new()
+	public class DictionaryTests<DictT> : TestHelpers where DictT : ICollection<KeyValuePair<object,object?>>, IDictionary<object,object?>, IAddRange<KeyValuePair<object,object?>>, ICloneable<DictT>, new()
 	{
 		bool _tryNullKey, _isSortedDict;
 		public DictionaryTests(bool tryNullKey = false, bool isSortedDict = false) { _tryNullKey = tryNullKey; _isSortedDict = isSortedDict; }
 
-		protected static KeyValuePair<object, object> P(object key, object value) { return new KeyValuePair<object, object>(key, value); }
-		protected static KeyValuePair<object, object>[] Ps(params KeyValuePair<object, object>[] ps) { return ps; }
+		protected static KeyValuePair<object, object?> P(object key, object? value) { return new KeyValuePair<object, object?>(key, value); }
+		protected static KeyValuePair<object, object?>[] Ps(params KeyValuePair<object, object?>[] ps) { return ps; }
 		
 		Random _r = new Random();
 
-		public DictT New(params KeyValuePair<object, object>[] members)
+		public DictT New(params KeyValuePair<object, object?>[] members)
 		{
 			var dict = new DictT();
 			dict.AddRange(members);
 			return dict;
 		}
 
-		protected bool Remove(DictT dict, KeyValuePair<object, object> pair) { return ((ICollection<KeyValuePair<object, object>>)dict).Remove(pair); }
-		protected bool Remove(DictT dict, object key, object value) { return Remove(dict, P(key, value)); }
-		protected int Count(DictT dict) { return ((IDictionary<object, object>)dict).Count; }
+		protected bool Remove(DictT dict, KeyValuePair<object, object?> pair) { return ((ICollection<KeyValuePair<object, object?>>)dict).Remove(pair); }
+		protected bool Remove(DictT dict, object key, object? value) { return Remove(dict, P(key, value)); }
+		protected int Count(DictT dict) { return ((IDictionary<object, object?>)dict).Count; }
 
 		[Test]
 		public void TestAllTheBasics()
 		{
-			object value;
+			object? value;
 			var dict = new DictT();
 			Assert.IsFalse(dict.IsReadOnly);
 			Assert.AreEqual(0, Count(dict));
@@ -79,7 +79,7 @@ namespace Loyc.Collections.Tests
 			Assert.That(dict.Contains(P(2.0, null)));
 			Assert.That(!dict.Contains(P(2.0, 2.0)));
 			
-			var array = new KeyValuePair<object, object>[6];
+			var array = new KeyValuePair<object, object?>[6];
 			dict.CopyTo(array, 1);
 			Assert.AreEqual(array[0], array[5]);
 			array[5] = P(-1, null); // The standard Dictionary throws a nonsensical 
@@ -101,25 +101,25 @@ namespace Loyc.Collections.Tests
 			ExpectSet(dict, P("2", 2), P(2F, null), P(2UL, "You're a 2ul!"));
 
 			if (_tryNullKey) {
-				Assert.That(!dict.TryGetValue(null, out value));
-				dict.Add(null, 15);
-				ExpectSet(dict, P(null, 15), P("2", 2), P(2F, null), P(2UL, "You're a 2ul!"));
-				Assert.That(dict.ContainsKey(null));
-				Assert.That(dict.Contains(P(null, 15)));
-				Assert.That(!dict.Contains(P(null, null)));
-				Assert.AreEqual(15, dict[null]);
-				Assert.That(dict.TryGetValue(null, out value));
+				Assert.That(!dict.TryGetValue(null!, out value));
+				dict.Add(null!, 15);
+				ExpectSet(dict, P(null!, 15), P("2", 2), P(2F, null), P(2UL, "You're a 2ul!"));
+				Assert.That(dict.ContainsKey(null!));
+				Assert.That(dict.Contains(P(null!, 15)));
+				Assert.That(!dict.Contains(P(null!, null)));
+				Assert.AreEqual(15, dict[null!]);
+				Assert.That(dict.TryGetValue(null!, out value));
 				Assert.AreEqual(15, value);
 				dict.Remove(2UL);
-				dict[null] = "(Nothing in Visual Basic)";
-				ExpectSet(dict, P(null, "(Nothing in Visual Basic)"), P("2", 2), P(2F, null));
+				dict[null!] = "(Nothing in Visual Basic)";
+				ExpectSet(dict, P(null!, "(Nothing in Visual Basic)"), P("2", 2), P(2F, null));
 			}
 		}
 
 		[Test]
 		public void AddingAndRemoving()
 		{
-			var dict1 = new Dictionary<object,object>();
+			var dict1 = new Dictionary<object,object?>();
 			var dict2 = new DictT();
 
 			// Add a random amount, then remove a random amount. Repeatedly.
@@ -129,7 +129,7 @@ namespace Loyc.Collections.Tests
 					dict1[p.Key] = p.Value;
 					dict2[p.Key] = p.Value;
 				}
-				ExpectSet(dict2, new HashSet<KeyValuePair<object, object>>(dict1));
+				ExpectSet(dict2, new HashSet<KeyValuePair<object, object?>>(dict1));
 				double chance = _r.NextDouble();
 				var removePlan = dict1.Where(p => _r.NextDouble() > chance).ToList().Randomized();
 				bool removePair = _r.Next(2) != 0;
@@ -144,7 +144,7 @@ namespace Loyc.Collections.Tests
 						Assert.That(!dict2.Remove(pair.Key));
 					}
 				}
-				ExpectSet(dict2, new HashSet<KeyValuePair<object, object>>(dict1));
+				ExpectSet(dict2, new HashSet<KeyValuePair<object, object?>>(dict1));
 			}
 			
 			// Empty it out one item at a time.
@@ -172,10 +172,10 @@ namespace Loyc.Collections.Tests
 			ExpectSet(dict2, P("black", "white"), P("foo", "bar"), P(1, 2), P(2, 4), P(4, 16), P(16, 256));
 
 			if (_tryNullKey) {
-				dict2.AddRange(Ps(P(null, 0)));
+				dict2.AddRange(Ps(P(null!, 0)));
 				Assert.That(dict2.Remove("black"));
 				Assert.That(dict2.Remove("foo"));
-				ExpectSet(dict2, P(null, 0), P(1, 2), P(2, 4), P(4, 16), P(16, 256));
+				ExpectSet(dict2, P(null!, 0), P(1, 2), P(2, 4), P(4, 16), P(16, 256));
 			}
 		}
 	}

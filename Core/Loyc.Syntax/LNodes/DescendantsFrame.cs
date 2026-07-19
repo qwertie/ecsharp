@@ -91,7 +91,7 @@ namespace Loyc.Syntax
 				goto case 4;
 			case 4: // return head
 				subMode = SubMode(NodeScanMode.YieldLocalHead);
-				frame = new DescendantsFrame(_node.Target, subMode);
+				frame = new DescendantsFrame(_node.Target!, subMode); // case 3 verified Target != null
 				_step = 5;
 				return -1;
 			case 5: // consider whether to return args

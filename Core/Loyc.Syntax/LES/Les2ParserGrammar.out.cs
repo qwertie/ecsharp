@@ -19,8 +19,9 @@ namespace Loyc.Syntax.Les {
 	using S = CodeSymbols;
 	using P = LesPrecedence;
 
-	// 0162=Unreachable code detected; 0642=Possibly mistaken empty statement
-	#pragma warning disable 162, 642
+	// 0162=Unreachable code detected; 0642=Possibly mistaken empty statement;
+	// 86xx=nullability (the generated code is not annotated)
+	#pragma warning disable 162, 642, 8600, 8602, 8603, 8604, 8625
 
 	public partial class Les2Parser
 	{

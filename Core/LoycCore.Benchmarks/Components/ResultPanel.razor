@@ -1,0 +1,154 @@
+@* Shows everything known about one benchmark: status/progress, charts, log, CSV link. *@
+
+@if (Leaf == null)
+{
+    <div class="placeholder">Select a benchmark on the left to see its results.</div>
+}
+else
+{
+    <div class="result-header">
+        <h2>@Leaf.Path</h2>
+        @if (!string.IsNullOrEmpty(Leaf.Description))
+        {
+            <p class="description">@Leaf.Description</p>
+        }
+    </div>
+
+    @if (_job != null && _job.Status == JobStatus.Running)
+    {
+        <div class="progress-row">
+            <progress max="1" value="@_result!.ProgressFraction"></progress>
+            <span>@((_result.ProgressFraction * 100).ToString("0"))% — @(_result.ProgressNote ?? "running…")</span>
+        </div>
+    }
+    else if (_job != null && _job.Status == JobStatus.Queued)
+    {
+        <p class="status-note">Queued — waiting for earlier benchmarks to finish.</p>
+    }
+
+    @if (_result == null)
+    {
+        <div class="placeholder">No results yet. Queue this benchmark to run it.</div>
+    }
+    else
+    {
+        @if (_result.Error != null)
+        {
+            <pre class="error">@_result.Error</pre>
+        }
+
+        @if (_result.Failures.Count > 0)
+        {
+            <div class="sub-failures" role="alert">
+                <div class="sub-failures-head">
+                    ⚠ @_result.Failures.Count sub-benchmark@(_result.Failures.Count == 1 ? "" : "s")
+                    failed and @(_result.Failures.Count == 1 ? "was" : "were") excluded from the charts
+                </div>
+                <ul>
+                    @foreach (var f in _result.Failures)
+                    {
+                        <li>
+                            <span class="fail-series">@f.Series</span>
+                            <span class="fail-case">[@f.Case]</span>
+                            — @f.Reason
+                            @if (!string.IsNullOrEmpty(f.Details))
+                            {
+                                <details>
+                                    <summary>stack trace</summary>
+                                    <pre>@f.Details</pre>
+                                </details>
+                            }
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <p class="run-info">
+            Run @_result.StartedUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+            @if (_result.ElapsedSeconds > 0)
+            {
+                <text> · took @_result.ElapsedSeconds.ToString("0.#") s</text>
+            }
+            · <a href="/api/result.csv?path=@Uri.EscapeDataString(Path!)" target="_blank">CSV</a>
+            · <a href="/api/result?path=@Uri.EscapeDataString(Path!)" target="_blank">JSON</a>
+        </p>
+
+        @foreach (var graph in GetGraphs())
+        {
+            <ResultChart Model="graph" Points="_points" Version="_chartVersion" />
+        }
+
+        @if (_result.LogLines.Count > 0)
+        {
+            <details class="log" open="@(_points.Count == 0)">
+                <summary>Log (@_result.LogLines.Count lines)</summary>
+                <pre>@string.Join("\n", _result.LogLines)</pre>
+            </details>
+        }
+    }
+}
+
+@code {
+    [Parameter] public string? Path { get; set; }
+    // Bumped by the parent on every queue change; used only as a trigger to re-check
+    // the viewed path — the charts are NOT re-rendered unless the viewed benchmark's
+    // own content actually changes (see _chartVersion / the signature below).
+    [Parameter] public int Version { get; set; }
+    [Inject] BenchmarkRegistry Registry { get; set; } = null!;
+    [Inject] BenchmarkQueueService Queue { get; set; } = null!;
+
+    BenchmarkLeaf? Leaf;
+    BenchmarkJob? _job;
+    BenchmarkRunResult? _result;
+    List<EzDataPoint> _points = new();
+
+    // The version handed to ResultChart. It only advances when the viewed path's
+    // result content changes, so an unrelated running benchmark can't force charts
+    // to re-render.
+    int _chartVersion;
+    long _signature = long.MinValue;
+
+    protected override void OnParametersSet()
+    {
+        Leaf = Path == null ? null : Registry.Find(Path);
+        _job = Path == null ? null : Queue.Jobs.LastOrDefault(j => j.Leaf.Path == Path
+            && j.Status is JobStatus.Queued or JobStatus.Running);
+
+        var latest = Path == null ? null : Queue.FindLatestResult(Path);
+        long sig = ComputeSignature(latest);
+        if (sig != _signature) {
+            _signature = sig;
+            _result = latest?.Snapshot();
+            _points = _result?.Points ?? new List<EzDataPoint>();
+            _chartVersion++;
+        }
+    }
+
+    // A cheap fingerprint of everything the view depends on. When it is unchanged we
+    // skip snapshotting and keep the same chart version, so ResultChart stays put.
+    long ComputeSignature(BenchmarkRunResult? r)
+    {
+        long h = (Path ?? "").GetHashCode();
+        h = h * 31 + (int)(_job?.Status ?? JobStatus.Completed);
+        if (r == null)
+            return h;
+        lock (r) {
+            h = h * 31 + r.StartedUtc.Ticks;
+            h = h * 31 + r.Points.Count;
+            h = h * 31 + r.LogLines.Count;
+            h = h * 31 + r.Failures.Count;
+        }
+        return h;
+    }
+
+    IEnumerable<GraphModel> GetGraphs()
+    {
+        if (_result == null)
+            yield break;
+        var graphIds = _points.Select(p => p.GraphId?.ToString() ?? "").Distinct().ToList();
+        foreach (var id in graphIds.OrderBy(id => _result.Graphs.TryGetValue(id, out var g) ? g.Order : 0)
+                                   .ThenBy(id => id, StringComparer.Ordinal))
+            yield return _result.Graphs.TryGetValue(id, out var graph) ? graph : new GraphModel(id) { Title = id };
+    }
+}

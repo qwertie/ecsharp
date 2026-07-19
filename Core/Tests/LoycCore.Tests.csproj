@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>10.0</LangVersion>
     <OutputPath>..\Bin\$(Configuration)\</OutputPath>
     <OutputType>Exe</OutputType>
     <NoWarn>1591, 1573, 0419</NoWarn>
@@ -12,17 +14,30 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj"/>
-    <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj"/>
-    <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.csproj"/>
-    <ProjectReference Include="..\Loyc.Math\Loyc.Math.csproj"/>
-    <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.csproj"/>
+    <ProjectReference Include="..\Loyc.Essentials\Loyc.Essentials.csproj" />
+    <ProjectReference Include="..\Loyc.Collections\Loyc.Collections.csproj" />
+    <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.csproj" />
+    <ProjectReference Include="..\Loyc.Math\Loyc.Math.csproj" />
+    <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.csproj" />
+    <ProjectReference Include="..\Loyc.SyncLib.SyncJson\Loyc.SyncLib.SyncJson.csproj" />
+    <ProjectReference Include="..\Loyc.SyncLib.SyncProtobuf\Loyc.SyncLib.SyncProtobuf.csproj" />
     <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="protobuf-net" Version="2.4.9" />
+    <Compile Update="SyncLib\BigStandardModel.out.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>BigStandardModel.ecs</DependentUpon>
+    </Compile>
     <Compile Update="Syntax\LexerSourceTest.out.cs">
       <DependentUpon>LexerSourceTest.ecs</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Update="SyncLib\BigStandardModel.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>BigStandardModel.out.cs</LastGenOutput>
+    </None>
     <None Update="Syntax\LexerSourceTest.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>LexerSourceTest.out.cs</LastGenOutput>

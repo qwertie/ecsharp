@@ -144,7 +144,7 @@ namespace Loyc.Syntax.Les
 				stmt);
 		}
 
-		protected override MessageHolder Test(Mode mode, int errorsExpected, LNodePrinterOptions printerOptions, string text, params LNode[] expected)
+		protected override MessageHolder Test(Mode mode, int errorsExpected, LNodePrinterOptions? printerOptions, string text, params LNode[] expected)
 		{
 			var messages = new MessageHolder();
 			var les3 = Les3LanguageService.Value;

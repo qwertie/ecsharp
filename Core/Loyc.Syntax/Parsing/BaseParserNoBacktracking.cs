@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Loyc.Collections;
@@ -49,6 +50,7 @@ namespace Loyc.Syntax
 		{
 			Reset(sequence, eofToken, file);
 		}
+		[MemberNotNull(nameof(_sequence), nameof(EofToken))]
 		protected void Reset(Enumerator sequence, Token eofToken, ISourceFile file, int startIndex = 0)
 		{
 			_sequence = sequence;

@@ -1,4 +1,4 @@
-// Generated from UsingMultiMacro.ecs by LeMP custom tool. LeMP version: 2.9.0.3
+// Generated from UsingMultiMacro.ecs by LeMP custom tool. LeMP version: 30.1.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -44,8 +44,7 @@ namespace LeMP.ecs
 			{
 				LNode outerNamespace;
 				LNodeList args;
-				if (multiName.Calls(CodeSymbols.Dot) || multiName.Calls(CodeSymbols.Of)) { } else if (multiName.IsCall && (outerNamespace = multiName.Target) != null) {
-					args = multiName.Args;
+				if (multiName.Calls(CodeSymbols.Dot) || multiName.Calls(CodeSymbols.Of)) { } else if (multiName.IsCall && (outerNamespace = multiName.Target) != null && (args = multiName.Args).IsEmpty | true) {
 					// Allow Namespace { stuff; } as alternate notation; just ignore the braces
 					if (args.Count == 1 && args[0].Calls(S.Braces))
 						args = args[0].Args;

@@ -181,11 +181,13 @@ namespace Loyc.Syntax.Lexing
 				InputPosition += li;
 		}
 
-		ISourceFile ILexer<Token>.SourceFile { get { return base.SourceFile; } }
-		public new LexerSourceFile<CharSrc> SourceFile { get { return base.SourceFile; } }
+		// Note: these can return null after Reset(..., newSourceFile: false), but that
+		// contradicts the contract of ILexer<Token>.SourceFile, which is never null.
+		ISourceFile ILexer<Token>.SourceFile { get { return base.SourceFile!; } }
+		public new LexerSourceFile<CharSrc> SourceFile { get { return base.SourceFile!; } }
 
 		void IDisposable.Dispose() {}
-		public Token Current { get { return _current.Or(default(Token)); } }
+		public Token Current { get { return _current.Or(default(Token)!); } }
 		object System.Collections.IEnumerator.Current { get { return _current; } }
 		void System.Collections.IEnumerator.Reset() { Reset(CharSource, FileName, 0); }
 		bool System.Collections.IEnumerator.MoveNext()

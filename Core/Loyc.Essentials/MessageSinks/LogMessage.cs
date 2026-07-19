@@ -12,11 +12,11 @@ namespace Loyc
 	/// Typically used with <see cref="MessageHolder"/>.</summary>
 	public struct LogMessage : ILocation, ILogMessage
 	{
-		public LogMessage(Severity type, object context, string format, object arg0, object arg1 = null)
-			: this (type, context, format, new object[2] { arg0, arg1 }) {}
-		public LogMessage(Severity type, object context, string format)
+		public LogMessage(Severity type, object? context, string format, object? arg0, object? arg1 = null)
+			: this (type, context, format, new object?[2] { arg0, arg1 }) {}
+		public LogMessage(Severity type, object? context, string format)
 			: this (type, context, format, EmptyArray<object>.Value) {}
-		public LogMessage(Severity type, object context, string format, params object[] args)
+		public LogMessage(Severity type, object? context, string format, params object?[] args)
 		{
 			Severity = type;
 			Context = context;
@@ -25,10 +25,10 @@ namespace Loyc
 		}
 
 		public Severity Severity { get; set; }
-		public object Context { get; set; }
+		public object? Context { get; set; }
 		public string Format { get; set; }
-		object[] _args;
-		public object[] Args { get => _args; set => _args = value; }
+		object?[] _args;
+		public object?[] Args { get => _args; set => _args = value; }
 		public string Formatted
 		{
 			get {
@@ -45,11 +45,11 @@ namespace Loyc
 			return MessageSink.FormatMessage(Severity, Context, Format, _args);
 		}
 
-		public object Location
+		public object? Location
 		{
 			get { return MessageSink.LocationOf(Context); }
 		}
-		public void WriteTo(IMessageSink<object> sink)
+		public void WriteTo(IMessageSink<object?> sink)
 		{
 			if (_args.Length == 0)
 				sink.Write(Severity, Context, Format);

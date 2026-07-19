@@ -182,7 +182,7 @@ namespace Loyc.Geometry
 		}
 
 		[ThreadStatic]
-		static PointF[] _onePointF;
+		static PointF[]? _onePointF;
 		static PointF[] AsArray(PointF pt) { 
 			if (_onePointF == null) _onePointF = new PointF[1];
 			_onePointF[0] = pt;

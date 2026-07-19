@@ -112,9 +112,9 @@ namespace Loyc.Syntax
 		/// <remarks>This method will be called for a node when there is no trivia 
 		/// associated with that node; the derived class may, for example, want to add 
 		/// `%appendStatement` in certain cases.</remarks>
-		protected abstract LNodeList GetTriviaToAttach(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent);
+		protected abstract LNodeList GetTriviaToAttach(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode? parent, int indexInParent);
 
-		private LNode AttachTriviaTo(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode parent, int indexInParent)
+		private LNode AttachTriviaTo(LNode node, IListSource<Trivia> trivia, TriviaLocation loc, LNode? parent, int indexInParent)
 		{
 			var newAttrs = GetTriviaToAttach(node, trivia, loc, parent, indexInParent);
 			if (loc == TriviaLocation.Leading)
@@ -164,7 +164,7 @@ namespace Loyc.Syntax
 		/// <remarks>Default implementation attaches all trivia to a "missing" node 
 		/// (zero-length identifier). If this method returns null, the source file will truly 
 		/// be empty (containing no trivia either).</remarks>
-		protected virtual LNode GetEmptyResultSet()
+		protected virtual LNode? GetEmptyResultSet()
 		{
 			if (SortedTrivia.Count == 0)
 				return null;
@@ -183,7 +183,7 @@ namespace Loyc.Syntax
 		/// that this method may be called on some nodes to which trivia was
 		/// not attached, when siblings of the same parent had trivia attached.
 		/// </remarks>
-		protected virtual LNode DoneAttaching(LNode node, LNode parent, int indexInParent) { return node; }
+		protected virtual LNode DoneAttaching(LNode node, LNode? parent, int indexInParent) { return node; }
 
 		/// <summary>Attaches trivia to the input nodes provided.</summary>
 		/// <param name="nodes">List of input nodes. This method calls nodes.MoveNext()
@@ -230,14 +230,15 @@ namespace Loyc.Syntax
 		/// precaution is sufficient to preserve trivia in all "streaming" cases, but it
 		/// has worked fine up to now.
 		/// </remarks>
-		protected IEnumerator<Pair<LNode, int>> RunCore(IEnumerator<Pair<LNode, int>> nodes, LNode parent)
+		protected IEnumerator<Pair<LNode, int>> RunCore(IEnumerator<Pair<LNode, int>> nodes, LNode? parent)
 		{
 			SourceRange triviaRange;
 			Maybe<Trivia> trivia = NoValue.Value;
 			InternalList<Trivia> triviaList = InternalList<Trivia>.Empty;
 			
 			int prevIndexInParent = int.MinValue, indexInParent;
-			LNode node, prev;
+			LNode node;
+			LNode? prev;
 			for (prev = null; nodes.MoveNext(); prev = node, prevIndexInParent = indexInParent)
 			{
 				Debug.Assert(triviaList.IsEmpty);
@@ -336,9 +337,9 @@ namespace Loyc.Syntax
 				yield return YieldPrev(ref prev, parent, prevIndexInParent);
 		}
 
-		private bool TryAttachTriviaTo(ref LNode prev, ref InternalList<Trivia> triviaList, TriviaLocation loc, LNode parent, int prevIndexInParent)
+		private bool TryAttachTriviaTo(ref LNode? prev, ref InternalList<Trivia> triviaList, TriviaLocation loc, LNode? parent, int prevIndexInParent)
 		{
-			var prev2 = AttachTriviaTo(prev, triviaList, loc, parent, prevIndexInParent);
+			var prev2 = AttachTriviaTo(prev!, triviaList, loc, parent, prevIndexInParent); // callers only pass non-null prev
 			if (prev2 != null) {
 				prev = prev2;
 				triviaList.Clear();
@@ -347,14 +348,14 @@ namespace Loyc.Syntax
 			return false;
 		}
 
-		private Pair<LNode, int> YieldPrev(ref LNode prev, LNode parent, int prevIndexInParent)
+		private Pair<LNode, int> YieldPrev(ref LNode? prev, LNode? parent, int prevIndexInParent)
 		{
-			var node = DoneAttaching(prev, parent, prevIndexInParent) ?? prev;
+			var node = DoneAttaching(prev!, parent, prevIndexInParent) ?? prev!; // callers only pass non-null prev
 			prev = null;
 			return new Pair<LNode, int>(node, prevIndexInParent);
 		}
 
-		private void InjectTriviaInChildren(LNode parent, out SourceRange triviaRange, out Maybe<Trivia> trivia, int indexInParent, ref LNode node)
+		private void InjectTriviaInChildren(LNode? parent, out SourceRange triviaRange, out Maybe<Trivia> trivia, int indexInParent, ref LNode node)
 		{
 			// Current trivia's range is within node's range: Apply it to 
 			// the node's children, if any. First gather list of children

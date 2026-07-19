@@ -27,7 +27,7 @@ namespace Loyc.Syntax.Les
 		protected LNode _(string name) { return F.Id(name); }
 		protected LNode _(Symbol name) { return F.Id(name); }
 		protected LNode Number(object value) { return F.Literal(value, "_"); }
-		protected LNode String(object value) { return F.Literal(value, (string)null); }
+		protected LNode String(object value) { return F.Literal(value, (string?) null); }
 
 		protected static LNode Op(LNode node) { return node.SetBaseStyle(NodeStyle.Operator); }
 		protected LNode OnNewLine(LNode node) => node.PlusAttrBefore(F.TriviaNewline);
@@ -393,7 +393,7 @@ namespace Loyc.Syntax.Les
 			Exact = 3, // Parse statements, and expect exact (rather than equivalent) printer output
 		}
 
-		protected void ExpectMessageContains(MessageHolder messages, params string[] substrings)
+		protected void ExpectMessageContains(MessageHolder messages, params string?[] substrings)
 		{
 			foreach (var msg in messages.List)
 				for (int i = 0; i < substrings.Length; i++)

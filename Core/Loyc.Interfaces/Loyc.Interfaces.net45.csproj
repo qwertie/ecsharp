@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
+    <LangVersion>12.0</LangVersion>
     <!--Change path to "obj" folder to avoid a weird error when there is also a .NET Standard version. NOTE: reportedly, changing new-style project files in the same way doesn't work.-->
     <BaseIntermediateOutputPath>..\Bin\obj.netfx\Loyc.Interfaces</BaseIntermediateOutputPath>
     <ProjectGuid>{834F7631-149C-4172-83C2-C6BF9F8BF26B}</ProjectGuid>
@@ -39,6 +40,15 @@
     <FileAlignment>512</FileAlignment>
     <NoWarn>1591, 1573, 0419, 1574, 1587</NoWarn>
   </PropertyGroup>
+  <!-- Nullability: disable broken warnings and include attribute file -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);nullable</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\NullableAttributes.cs">
+      <Link>NullableAttributes.cs</Link>
+    </Compile>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' or '$(Configuration)' == 'Release' ">
     <Optimize>true</Optimize>
   </PropertyGroup>
@@ -61,7 +71,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;NET47,NET472</DefineConstants>
     <DebugType>Full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -69,7 +79,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;NET47,NET472</DefineConstants>
     <DocumentationFile>..\Bin\Release\Loyc.Interfaces.xml</DocumentationFile>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -105,7 +115,20 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core" />
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -115,6 +138,7 @@
     <Compile Include="Collections\ICharSource.cs" />
     <Compile Include="Collections\IDictionarySource.cs" />
     <Compile Include="Collections\INotifyListChanged.cs" />
+    <Compile Include="Collections\IScannable.cs" />
     <Compile Include="Collections\ITuple.cs" />
     <Compile Include="Concrete\BaseDictionary.cs" />
     <Compile Include="Concrete\Either.cs" />
@@ -129,6 +153,9 @@
     <Compile Include="Concrete\UString.cs" />
     <Compile Include="Concrete\ValueCollection.cs" />
     <Compile Include="Concrete\WeakValueDictionary.cs" />
+    <Compile Include="Graphs\IEdge.cs" />
+    <Compile Include="Graphs\IGraph.cs" />
+    <Compile Include="Graphs\INode.cs" />
     <Compile Include="ILocation.cs" />
     <Compile Include="Concrete\Localize.cs" />
     <Compile Include="Concrete\Maybe.cs" />
@@ -175,7 +202,9 @@
     <Compile Include="Concrete\SavedThreadLocal.cs" />
     <Compile Include="Concrete\ScratchBuffer.cs" />
     <Compile Include="Syntax\ParsingMode.cs" />
+    <None Include="app.config" />
     <None Include="OpenSourceKey.snk" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

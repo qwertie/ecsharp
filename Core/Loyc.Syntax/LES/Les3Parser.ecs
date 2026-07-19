@@ -16,7 +16,7 @@ using S = CodeSymbols;
 
 partial class Les3Parser
 {
-	#rawText("#pragma warning disable 162, 642");
+	#rawText("#pragma warning disable 162, 642, 8600, 8602, 8603, 8604, 8625");
 
 	protected new const TT EOF = TT.EOF;
 
@@ -40,19 +40,19 @@ partial class Les3Parser
 	alias("\n" = TT.Newline);
 
 	members {
-		Dictionary<UString, LNode> _sharedTrees;
+		Dictionary<UString, LNode>? _sharedTrees;
 		
 		// These two variables are used for detecting and reporting a "comma is not allowed"
 		// error in case of ambiguous input like `Foo(.keyword y, z)`
 		bool _isCommaSeparatedListContext;
-		string _listContextName;
+		string? _listContextName;
 
 		void MissingEndMarker(LNode previousExpr, TokenType endMarker)
 		{
 			var location = new SourceRange(SourceFile, LT(-1).EndIndex + 1);
 			ErrorSink.Write(Severity.Error, location, "Expected '{0}'", endMarker == TT.Comma ? ',' : ';');
 		}
-		public LNodeList ExprList(string listContextName, LNode firstItem = null, bool presumeCommaSeparated = true)
+		public LNodeList ExprList(string listContextName, LNode? firstItem = null, bool presumeCommaSeparated = true)
 		{
 			var endMarker = default(TT);
 			return ExprList(listContextName, ref endMarker, firstItem, presumeCommaSeparated, isBracedBlock: false);
@@ -121,7 +121,7 @@ partial class Les3Parser
 	// A sequence of expressions separated by commas OR semicolons.
 	// The `ref endMarker` parameter tells the caller if semicolons were used.
 	[LL(1)]
-	public ExprList[string listContextName, ref TokenType separatorType, LNode firstItem = null, bool presumeCommaSeparated = true, bool isBracedBlock = false] returns [LNodeList result] :
+	public ExprList[string listContextName, ref TokenType separatorType, LNode? firstItem = null, bool presumeCommaSeparated = true, bool isBracedBlock = false] returns [LNodeList result] :
 		{
 			bool oldCommaSeparatedContext = _isCommaSeparatedListContext;
 			string oldListContext = _listContextName;

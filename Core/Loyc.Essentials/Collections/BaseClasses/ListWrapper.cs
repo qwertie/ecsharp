@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,6 +30,7 @@ namespace Loyc.Collections.Impl
 
 		public virtual int IndexOf(T item) => _obj.IndexOf(item);
 		public virtual IListSource<T> Slice(int start, int count = int.MaxValue) => new ListSlice<T>(_obj, start, count);
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public virtual T TryGet(int index, out bool fail) => (fail = (uint)index >= (uint)_obj.Count) ? default(T) : _obj[index];
 	}
 }

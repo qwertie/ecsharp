@@ -35,9 +35,12 @@ namespace Loyc.Collections
 	/// able to associate multiple values with a single key, use 
 	/// <see cref="BMultiMap{K,V}"/> instead. 
 	/// <para/>
-	/// If you need to store only keys, not values, use <see cref="BList{K}"/> 
+	/// If you need to store only keys, not values, use <see cref="BList{K}"/>
 	/// instead (but note that BList does allow duplicate keys).
 	/// </remarks>
+	// They want me to put a "where K: notnull" constraint on BDictionary. I disagree. The warning says:
+	// type 'K' cannot be used as...'TKey' in...'IDictionary<TKey, TValue>'. Nullability of...'K' doesn't match 'notnull' constraint.
+	#pragma warning disable 8714
 	[Serializable]
 	public class BDictionary<K, V> : AListBase<K, KeyValuePair<K, V>>,
 		ICollectionEx<KeyValuePair<K, V>>, IAddRange<KeyValuePair<K, V>>, ICloneable<BDictionary<K, V>>, 
@@ -101,7 +104,7 @@ namespace Loyc.Collections
 		public BDictionary(BDictionary<K,V> items, bool keepListChangingHandlers) 
 			: base(items, keepListChangingHandlers) { _compareKeys = items._compareKeys; }
 
-		protected BDictionary(BDictionary<K, V> original, AListNode<K, KeyValuePair<K,V>> section) 
+		protected BDictionary(BDictionary<K, V> original, AListNode<K, KeyValuePair<K,V>>? section)
 			: base(original, section) { _compareKeys = original._compareKeys; }
 
 		#endregion
