@@ -6,6 +6,19 @@ layout: article
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v30.2: July 19, 2026 ###
+
+This release is mostly about the new [SyncLib](http://core.loyc.net/synclib) serialization framework in Loyc Core (see the [Loyc Core version history](http://core.loyc.net/version-history.html)). LeMP and EC# had minor changes:
+
+#### Enhanced C#: ####
+
+- EC# now allows (and prints) an indent after a method's `=>`
+- Bug fix: fixed two bugs in string literal parsing/printing
+
+#### LeMP macros: ####
+
+- Added `##filter` and `##filterOut` macros
+
 ### v30.1: June 15, 2022 ###
 
 - Potentially breaking: support for .NET 4.5 has been removed (.NET 4.7 is still supported temporarily)
