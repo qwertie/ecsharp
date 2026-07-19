@@ -10,6 +10,10 @@ The ecsharp repository holds several tools for enhancing .NET and C# development
   One of these libraries (Loyc.Syntax) supports [universal syntax trees](http://loyc.net/loyc-trees),
   [LES2 and LES3](http://loyc.net/les).
 
+- [SyncLib](http://core.loyc.net/synclib), a fast and flexible serialization framework
+  whose defining idea is that a single "synchronizer" function can both read and write the
+  serialized form of a type. It supports JSON, Protocol Buffers, and a compact binary format.
+
 - [Enhanced C#](http://ecsharp.net) (or EC#) is a liberalization and regularization of the C# language.
   You can think of EC# as a C# _preprocessor_, since only the "front end" part of the project is done.
   The preprocessor consists of three mostly-independent parts,
@@ -38,8 +42,6 @@ How to build
 Open Loyc.netfx.sln in Visual Studio (or Loyc.netstd.sln for the .NET Standard edition), set the build configuration to Debug, and build it!
 
 If you need to change any .ecs or .les source files (Enhanced C# or [LES](http://loyc.net/les/)), you'll need to install the latest LeMP extension for Visual Studio, which can be found on the [Releases page](https://github.com/qwertie/ecsharp/releases). There is no _build step_ for these files, so the extension is not required for building. Unfortunately VS Code is not supported at this time - let me know if you need support.
-
-If Visual Studio complains about OxyPlot, the easiest fix is to unload the LoycCore.Benchmarks project (nothing depends on it). To fix it properly, open Core\Loyc.netstd.sln, right-click the solution, choose "Restore NuGet packages", build the solution (just to make sure it worked), and then return to the original solution.
 
 Visual Studio may complain, while building a .NET Framework 4.7.2 project, that 'Your project does not reference ".NETFramework,Version=v4.7.2" framework...." if you built the .NET Standard version of the same project earlier. To fix this, locate the folder named `obj` inside the project from which the error message originated, delete the entire `obj` folder, and rebuild (the `project.assets.json` file inside that folder seems to be causing the error).
 
