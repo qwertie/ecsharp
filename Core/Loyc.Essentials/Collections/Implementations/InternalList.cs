@@ -54,8 +54,8 @@ namespace Loyc.Collections.Impl
 	public struct InternalList<T> : IListAndListSource<T>, 
 		IListRangeMethods<T>, ICloneable<InternalList<T>>, IHasMFirst<T>, IHasMLast<T>, IScannable<T>
 	{
-		public static readonly T[] EmptyArray = EmptyArray<T>.Value;
-		public static readonly InternalList<T> Empty = new InternalList<T>(EmptyArray<T>.Value, 0);
+		public static readonly T[] EmptyArray = Empty<T>.Array;
+		public static readonly InternalList<T> Empty = new InternalList<T>(Empty<T>.Array, 0);
 		private T[] _array;
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private int _count;

@@ -10,6 +10,7 @@ namespace Loyc.Collections
 	[Serializable]
 	public static class EmptyList<T>
 	{
+		[Obsolete("Use Empty<T>.List instead")]
 		public static readonly IListAndListSource<T> Value = new Repeated<T>(default(T)!, 0);
 	}
 }

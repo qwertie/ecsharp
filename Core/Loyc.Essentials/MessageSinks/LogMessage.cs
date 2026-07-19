@@ -15,7 +15,7 @@ namespace Loyc
 		public LogMessage(Severity type, object? context, string format, object? arg0, object? arg1 = null)
 			: this (type, context, format, new object?[2] { arg0, arg1 }) {}
 		public LogMessage(Severity type, object? context, string format)
-			: this (type, context, format, EmptyArray<object>.Value) {}
+			: this (type, context, format, Empty<object>.Array) {}
 		public LogMessage(Severity type, object? context, string format, params object?[] args)
 		{
 			Severity = type;

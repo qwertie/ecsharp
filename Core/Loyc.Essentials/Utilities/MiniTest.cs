@@ -244,7 +244,7 @@ namespace Loyc.MiniTest
 		{
 			string msg = format;
 			try {
-				msg = format.Localized(args ?? EmptyArray<object?>.Value);
+				msg = format.Localized(args ?? Empty<object?>.Array);
 			} catch(Exception ex) {
 				// Exception occurred while converting arguments to string
 				msg += string.Format(" [FORMATTING:{0}]", ex.GetType().Name);
@@ -335,7 +335,7 @@ namespace Loyc.MiniTest
 					Fail(userMsg, userArgs);
 				} catch (Exception ex) {
 					try {
-						ex.Data["Failed Assertion"] = stdMsg.Localized(stdArgs ?? EmptyArray<object?>.Value);
+						ex.Data["Failed Assertion"] = stdMsg.Localized(stdArgs ?? Empty<object?>.Array);
 					} catch {
 						ex.Data["Failed Assertion"] = stdMsg;
 					}

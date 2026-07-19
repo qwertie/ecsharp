@@ -55,7 +55,7 @@ namespace Loyc.Collections.Impl
 			} else {
 				if (_asSet != null && _asSet.Contains(item))
 					return false;
-				var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, int.MinValue, 1, ListExt.Single(item), EmptyList<T>.Value);
+				var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, int.MinValue, 1, ListExt.Single(item), Empty<T>.List);
 				ListChanging?.Invoke(this, info);
 				_obj.Add(item);
 				ListChanged?.Invoke(this, info);
@@ -69,7 +69,7 @@ namespace Loyc.Collections.Impl
 				_obj.Clear();
 			else if (!IsEmpty) {
 				var oldItems = ListChanged != null ? new DList<T>(_obj) : (_obj as IReadOnlyList<T>)?.AsListSource();
-				var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Reset, 0, -_obj.Count, EmptyList<T>.Value, oldItems);
+				var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Reset, 0, -_obj.Count, Empty<T>.List, oldItems);
 				ListChanging?.Invoke(this, info);
 				_obj.Clear();
 				ListChanged?.Invoke(this, info);
@@ -84,7 +84,7 @@ namespace Loyc.Collections.Impl
 				if (ListChanging != null)
 					if (!_obj.Contains(item))
 						return false;
-				var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, int.MinValue, -1, EmptyList<T>.Value, ListExt.Single(item));
+				var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, int.MinValue, -1, Empty<T>.List, ListExt.Single(item));
 				ListChanging?.Invoke(this, info);
 				bool result = _obj.Remove(item);
 				if (result)

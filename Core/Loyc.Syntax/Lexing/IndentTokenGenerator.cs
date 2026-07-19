@@ -527,7 +527,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			get { return _allIndentTriggers; }
 			[MemberNotNull(nameof(_allIndentTriggers))]
-			set { _allIndentTriggers = value ?? EmptyArray<int>.Value; }
+			set { _allIndentTriggers = value ?? Empty<int>.Array; }
 		}
 
 		/// <summary>A subset of <see cref="AllIndentTriggers"/> that only take 
@@ -539,7 +539,7 @@ namespace Loyc.Syntax.Lexing
 		{
 			get { return _eolIndentTriggers; }
 			[MemberNotNull(nameof(_eolIndentTriggers))]
-			set { _eolIndentTriggers = value ?? EmptyArray<int>.Value; }
+			set { _eolIndentTriggers = value ?? Empty<int>.Array; }
 		}
 
 		/// <summary>Gets or sets the prototype token for end-statement (a.k.a. 

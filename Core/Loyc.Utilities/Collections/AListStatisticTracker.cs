@@ -37,7 +37,7 @@ namespace Loyc.Collections
 
 		protected abstract TSummary Summarize(AListLeafBase<K,T> data);
 		protected abstract TSummary Aggregate(TSummary[] data);
-		protected virtual TSummary EmptyResult => Aggregate(EmptyArray<TSummary>.Value);
+		protected virtual TSummary EmptyResult => Aggregate(Empty<TSummary>.Array);
 
 		public TSummary Summary => GetSummary();
 		public TSummary GetSummary()

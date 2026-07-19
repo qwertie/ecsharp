@@ -593,7 +593,7 @@ namespace Loyc.Syntax.Lexing
 		/// <param name="message">An error message, not including the error location.</param>
 		protected virtual void Error(int lookaheadIndex, string message)
 		{
-			Error(lookaheadIndex, message, EmptyArray<object>.Value);
+			Error(lookaheadIndex, message, Empty<object>.Array);
 		}
 		
 		/// <summary>This method is called to format and handle errors that occur 

@@ -517,7 +517,7 @@ namespace Loyc.Collections
 		{
 			AutoThrow();
 			if (_listChanging != null)
-				CallListChanging(new ListChangeInfo<T>(this, NotifyCollectionChangedAction.Remove, (int)index, -(int)amount, EmptyList<T>.Value));
+				CallListChanging(new ListChangeInfo<T>(this, NotifyCollectionChangedAction.Remove, (int)index, -(int)amount, Empty<T>.List));
 
 			try
 			{
@@ -575,7 +575,7 @@ namespace Loyc.Collections
 			AutoThrow();
 			if (_listChanging != null) {
 				try {
-					CallListChanging(new ListChangeInfo<T>(this, NotifyCollectionChangedAction.Remove, 0, -Count, EmptyList<T>.Value));
+					CallListChanging(new ListChangeInfo<T>(this, NotifyCollectionChangedAction.Remove, 0, -Count, Empty<T>.List));
 				} catch {
 					if (forceClear)
 						JustClear();

@@ -325,7 +325,6 @@ namespace Loyc
 		{
 			return new MessageSinkFromDelegate<TContext>(writer, isEnabled);
 		}
-
 		/// <summary>Creates a message sink that writes to <see cref="MessageSink.Default"/> with a default context to be used
 		/// when <c>Write</c> is called with <c>context: null</c>, so that you 
 		/// can use extension methods like <c>Error(string)</c> that do not 

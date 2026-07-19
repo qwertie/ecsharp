@@ -460,7 +460,7 @@ namespace Loyc.SyncLib
 		char? Sync(FieldId name, char? savable);
 		/// <summary>This method is used by SyncList() extension methods to read 
 		///   or write an array. Users don't need to call it.</summary>
-		/// <param name="list">The list that the caller wants to save.
+		/// <param name="scanner">A scanner for the list that the caller wants to save.
 		///   This parameter is ignored when not saving.</param>
 		/// <param name="saving">The object being saved. This parameter is used to 
 		///   produce an object ID for deduplication, and it can be null if the user 
@@ -484,7 +484,7 @@ namespace Loyc.SyncLib
 		 where Scanner: IScanner<bool> where ListBuilder: IListBuilder<List, bool>;
 		/// <summary>This method is used by SyncList() extension methods to read 
 		///   or write an array. Users don't need to call it.</summary>
-		/// <param name="list">The list that the caller wants to save.
+		/// <param name="scanner">A scanner for the list that the caller wants to save.
 		///   This parameter is ignored when not saving.</param>
 		/// <param name="saving">The object being saved. This parameter is used to 
 		///   produce an object ID for deduplication, and it can be null if the user 
@@ -508,7 +508,7 @@ namespace Loyc.SyncLib
 		 where Scanner: IScanner<char> where ListBuilder: IListBuilder<List, char>;
 		/// <summary>This method is used by SyncList() extension methods to read 
 		///   or write an array. Users don't need to call it.</summary>
-		/// <param name="list">The list that the caller wants to save.
+		/// <param name="scanner">A scanner for the list that the caller wants to save.
 		///   This parameter is ignored when not saving.</param>
 		/// <param name="saving">The object being saved. This parameter is used to 
 		///   produce an object ID for deduplication, and it can be null if the user 

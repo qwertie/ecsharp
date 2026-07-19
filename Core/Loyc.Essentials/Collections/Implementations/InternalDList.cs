@@ -69,7 +69,7 @@ namespace Loyc.Collections.Impl
 	#endif
 	public struct InternalDList<T> : IListSource<T>, IHasFirst<T>, IHasLast<T>, ICloneable<InternalDList<T>>
 	{
-		public static readonly T[] EmptyArray = EmptyArray<T>.Value;
+		public static readonly T[] EmptyArray = Empty<T>.Array;
 		public static readonly InternalDList<T> Empty = new InternalDList<T>(0);
 		internal T[] _array; // Unused regions of the array are default(T)
 		internal int _count, _start;
@@ -681,7 +681,7 @@ namespace Loyc.Collections.Impl
 
 		public void Clear()
 		{
-			_array = EmptyArray<T>.Value;
+			_array = Empty<T>.Array;
 			_count = _start = 0;
 		}
 		public void Resize(int newSize)

@@ -83,7 +83,7 @@ namespace Loyc.Syntax
 			if (!stream.CanSeek)
 				CheckParam.ThrowBadArgument("stream does not support seeking.");
 			_buf = new byte[bufSize];
-			_blk = _blk2 = EmptyArray<char>.Value;
+			_blk = _blk2 = Empty<char>.Array;
 			_stream = stream;
 			_decoder = decoder;
 			_blkStart = _blk2Start = int.MinValue;

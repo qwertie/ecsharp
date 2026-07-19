@@ -60,7 +60,7 @@ namespace LeMP
 		/// <param name="description"></param>
 		/// <param name="names"></param>
 		public LexicalMacroAttribute(string syntax, string description, params string[] names)
-			{ Syntax = syntax; Description = description; Names = names ?? EmptyArray<string>.Value; Mode = MacroMode.PriorityNormal; }
+			{ Syntax = syntax; Description = description; Names = names ?? Empty<string>.Array; Mode = MacroMode.PriorityNormal; }
 
 		public string Syntax { get; protected set; }
 		public string Description { get; protected set; }
@@ -178,7 +178,7 @@ namespace LeMP
 				Names = new string[1] { macro.Method.Name };
 
 			if (deprecateAllNames)
-				DeprecatedNames = (DeprecatedNames ?? EmptyArray<string>.Value).Union(Names).ToArray();
+				DeprecatedNames = (DeprecatedNames ?? Empty<string>.Array).Union(Names).ToArray();
 
 			CheckParam.IsNotNull("macro", macro);
 			Namespace = @namespace;

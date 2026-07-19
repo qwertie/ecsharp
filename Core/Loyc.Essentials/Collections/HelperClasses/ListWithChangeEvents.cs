@@ -44,7 +44,7 @@ namespace Loyc.Collections.Impl
 			if ((ListChanged ?? ListChanging) == null)
 				_obj.Add(item);
 			else {
-				var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, Count, 1, ListExt.Single(item), EmptyList<T>.Value);
+				var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, Count, 1, ListExt.Single(item), Empty<T>.List);
 				ListChanging?.Invoke(this, info);
 				_obj.Add(item);
 				ListChanged?.Invoke(this, info);
@@ -57,7 +57,7 @@ namespace Loyc.Collections.Impl
 				_obj.Clear();
 			else if (!IsEmpty) {
 				var oldItems = ListChanged != null ? new DList<T>(_obj) : (IListSource<T>)this;
-				var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Reset, 0, -_obj.Count, EmptyList<T>.Value, oldItems);
+				var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Reset, 0, -_obj.Count, Empty<T>.List, oldItems);
 				ListChanging?.Invoke(this, info);
 				_obj.Clear();
 				ListChanged?.Invoke(this, info);
@@ -81,7 +81,7 @@ namespace Loyc.Collections.Impl
 			else {
 				if ((uint)index > (uint)Count)
 					CheckParam.ThrowOutOfRange(nameof(index), index, 0, Count);
-				var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, 1, ListExt.Single(item), EmptyList<T>.Value);
+				var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, 1, ListExt.Single(item), Empty<T>.List);
 				ListChanging?.Invoke(this, info);
 				_obj.Insert(index, item);
 				ListChanged?.Invoke(this, info);
@@ -94,7 +94,7 @@ namespace Loyc.Collections.Impl
 				_obj.RemoveAt(index);
 			else {
 				var item = ListExt.Single(_obj[index]); // may throw
-				var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -1, EmptyList<T>.Value, item);
+				var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -1, Empty<T>.List, item);
 				ListChanging?.Invoke(this, info);
 				_obj.RemoveAt(index);
 				ListChanged?.Invoke(this, info);
@@ -118,7 +118,7 @@ namespace Loyc.Collections.Impl
 					CheckParam.ThrowOutOfRange(nameof(index), index, 0, Count);
 				if (listCount != 0) {
 					var list2 = (list as IListSource<T>) ?? new DList<T>(list);
-					var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, list2.Count, list2, EmptyList<T>.Value);
+					var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Add, index, list2.Count, list2, Empty<T>.List);
 					ListChanging?.Invoke(this, info);
 					ListExt.InsertRange(_obj, index, list2);
 					ListChanged?.Invoke(this, info);
@@ -135,7 +135,7 @@ namespace Loyc.Collections.Impl
 				if (oldItems.Count != 0) {
 					if (ListChanged != null)
 						oldItems = new DList<T>(oldItems);
-					var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -oldItems.Count, EmptyList<T>.Value, oldItems);
+					var info = new ListChangeInfo<T>(NotifyCollectionChangedAction.Remove, index, -oldItems.Count, Empty<T>.List, oldItems);
 					ListChanging?.Invoke(this, info);
 					ListExt.RemoveRange(_obj, index, oldItems.Count);
 					ListChanged?.Invoke(this, info);

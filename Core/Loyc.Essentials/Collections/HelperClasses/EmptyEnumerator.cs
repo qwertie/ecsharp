@@ -9,6 +9,7 @@ namespace Loyc.Collections
 	/// <summary>Helper class: an empty enumerator.</summary>
 	public static class EmptyEnumerator<T>
 	{
+		[Obsolete("Use Empty<T>.Enumerator instead")]
 		public static readonly List<T>.Enumerator Value = new List<T>().GetEnumerator();
 	}
 }

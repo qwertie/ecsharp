@@ -147,7 +147,7 @@ namespace Loyc.Syntax
 			for (int i = node.Min; i <= node.Max; i++) {
 				LNode child = node[i], oldChild = child;
 				ProcessChildrenOfOneLiner(ref child);
-				child = AttachTriviaTo(child, EmptyList<Trivia>.Value, TriviaLocation.Leading, node, i);
+				child = AttachTriviaTo(child, Empty<Trivia>.List, TriviaLocation.Leading, node, i);
 				if (child != oldChild)
 					node = node.WithChildChanged(i, child);
 			}

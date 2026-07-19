@@ -421,7 +421,7 @@ namespace Loyc.Ecs.Parser
 
 		protected override void Error(int lookaheadIndex, string message)
 		{
-			Error(lookaheadIndex, message, EmptyArray<object>.Value);
+			Error(lookaheadIndex, message, Empty<object>.Array);
 		}
 		protected override void Error(int lookaheadIndex, string message, params object[] args)
 		{

@@ -390,7 +390,7 @@ namespace Loyc.Collections
 				// Although the entire list might not be changing, a Reset is the
 				// only applicable notification, because we can't provide a list of 
 				// NewItems as required by Replace.
-				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Reset, 0, 0, EmptyList<T>.Value, EmptyList<T>.Value));
+				CallListChanging(new ListChangeInfo<T>(NotifyCollectionChangedAction.Reset, 0, 0, Empty<T>.List, Empty<T>.List));
 			}
 
 			Debug.Assert((_treeHeight == 0) == (_root == null));
@@ -842,7 +842,7 @@ namespace Loyc.Collections
 					CallListChanging(new ListChangeInfo<T>(this, NotifyCollectionChangedAction.Add, insertAt, other.Count, other));
 				if (tempO != null) {
 					try {
-						other.CallListChanging(new ListChangeInfo<T>(this, NotifyCollectionChangedAction.Remove, 0, -other.Count, EmptyList<T>.Value));
+						other.CallListChanging(new ListChangeInfo<T>(this, NotifyCollectionChangedAction.Remove, 0, -other.Count, Empty<T>.List));
 					} catch(Exception e_) {
 						// Ugh. We already notified the first list about the insert, 
 						// so it is too late to abort. Finish the operation and 

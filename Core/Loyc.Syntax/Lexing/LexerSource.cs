@@ -149,7 +149,7 @@ namespace Loyc.Syntax.Lexing
 		protected override void Error_Renamed(int lookaheadIndex, string format)
 			{ Error(lookaheadIndex, format); }
 		public new virtual void Error(int lookaheadIndex, string format)
-			{ Error(lookaheadIndex, format, EmptyArray<object>.Value); }
+			{ Error(lookaheadIndex, format, Empty<object>.Array); }
 		public new virtual void Error(int lookaheadIndex, string format, params object[] args) {
 			// This method is no different than base.Error(), we're just making it public
 			base.Error_Renamed(lookaheadIndex, format, args);

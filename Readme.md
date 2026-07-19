@@ -10,9 +10,9 @@ The ecsharp repository holds several tools for enhancing .NET and C# development
   One of these libraries (Loyc.Syntax) supports [universal syntax trees](http://loyc.net/loyc-trees),
   [LES2 and LES3](http://loyc.net/les).
 
-- [SyncLib](http://core.loyc.net/synclib), a fast and flexible serialization framework
-  whose defining idea is that a single "synchronizer" function can both read and write the
-  serialized form of a type. It supports JSON, Protocol Buffers, and a compact binary format.
+  - [SyncLib](http://core.loyc.net/synclib) is included: a fast & flexible framework for 
+    doing messy real-world (de)serialization with less code and no DTOs. Supports JSON, Protocol Buffers, 
+    and a compact binary format.
 
 - [Enhanced C#](http://ecsharp.net) (or EC#) is a liberalization and regularization of the C# language.
   You can think of EC# as a C# _preprocessor_, since only the "front end" part of the project is done.

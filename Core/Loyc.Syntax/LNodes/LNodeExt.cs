@@ -699,7 +699,7 @@ namespace Loyc.Syntax
 			if (node is LNode) {
 				LNodeList list = GetTrailingTrivia((LNode)node);
 				if (list.IsEmpty)
-					return EmptyList<ILNode>.Value; // avoid boxing in the common case
+					return Empty<ILNode>.List; // avoid boxing in the common case
 				return list;
 			} else {
 				VList<ILNode> list = VList<ILNode>.Empty;
@@ -708,7 +708,7 @@ namespace Loyc.Syntax
 						list.AddRange(a.Args());
 				}
 				if (list.IsEmpty)
-					return EmptyList<ILNode>.Value; // avoid boxing in the common case
+					return Empty<ILNode>.List; // avoid boxing in the common case
 				return list;
 			}
 		}

@@ -1,4 +1,4 @@
-// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 2.9.1.0
+// Generated from Les3Parser.ecs by LeMP custom tool. LeMP version: 30.1.91.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -187,8 +187,8 @@ namespace Loyc.Syntax.Les
 			do {
 				la0 = (TT) LA0;
 				if (la0 == TT.Dot) {
-					if (!isBracedBlock) {
-						if (!IsConjoinedToken(0 + 1)) {
+					if (!IsConjoinedToken(0 + 1)) {
+						if (!isBracedBlock) {
 							Skip();
 							// Line 141: greedy(CompactExpression)*
 							for (;;) {
@@ -471,8 +471,8 @@ namespace Loyc.Syntax.Les
 							}
 						case TT.Colon:
 							{
-								if (!compactMode || IsConjoinedToken(0)) {
-									if ((TT) LA(0 + 1) != TT.Newline) {
+								if ((TT) LA(0 + 1) != TT.Newline) {
+									if (!compactMode || IsConjoinedToken(0)) {
 										if (CanParse(context, 0, out prec))
 											goto match2;
 										else
@@ -484,8 +484,8 @@ namespace Loyc.Syntax.Les
 							}
 						case TT.Id:
 							{
-								if (!compactMode || IsConjoinedToken(0)) {
-									if (!IsContinuator(LT(0).Value) && !compactMode) {
+								if (!IsContinuator(LT(0).Value) && !compactMode) {
+									if (!compactMode || IsConjoinedToken(0)) {
 										if (CanParse(context, 0, out prec))
 											goto match2;
 										else
@@ -497,8 +497,8 @@ namespace Loyc.Syntax.Les
 							}
 						case TT.PreOrSufOp:
 							{
-								if (!compactMode || IsConjoinedToken(0)) {
-									if (context.CanParse(_precMap.Find(OperatorShape.Suffix, LT(0).Value))) {
+								if (context.CanParse(_precMap.Find(OperatorShape.Suffix, LT(0).Value))) {
+									if (!compactMode || IsConjoinedToken(0)) {
 										var t = MatchAny();
 										// line 272
 										e = F.CallSuffixOp(e, _precMap.ToSuffixOpName((Symbol) t.Value), t);
@@ -510,8 +510,8 @@ namespace Loyc.Syntax.Les
 							break;
 						case TT.BQId:
 							{
-								if (!compactMode || IsConjoinedToken(0)) {
-									if (context.CanParse(P.SuffixWord)) {
+								if (context.CanParse(P.SuffixWord)) {
+									if (!compactMode || IsConjoinedToken(0)) {
 										var unit = MatchAny();
 										// line 277
 										e = F.CallInfixOp(e, S.IS, unit, F.Id(unit));

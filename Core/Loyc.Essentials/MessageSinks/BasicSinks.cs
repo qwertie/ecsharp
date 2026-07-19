@@ -179,7 +179,7 @@ namespace Loyc
 		public void Write(Severity level, TContext context, string format)
 		{
 			if (IsEnabled(level))
-				_writer(level, context, format, EmptyArray<object>.Value);
+				_writer(level, context, format, Empty<object>.Array);
 		}
 		public void Write(Severity level, TContext context, string format, object? arg0, object? arg1 = null)
 		{

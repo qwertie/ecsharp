@@ -57,7 +57,7 @@ namespace Loyc.Collections.Impl
 		private void FancySet(K key, V value)
 		{
 			var newItem = ListExt.Single(new KeyValuePair<K, V>(key, value));
-			IListSource<KeyValuePair<K, V>> oldItem = EmptyList<KeyValuePair<K, V>>.Value;
+			IListSource<KeyValuePair<K, V>> oldItem = Empty<KeyValuePair<K, V>>.List;
 			var sizeChange = 1;
 			var action = NotifyCollectionChangedAction.Add;
 			if (_obj.TryGetValueSafe(key, out V? oldValue))
@@ -80,7 +80,7 @@ namespace Loyc.Collections.Impl
 				_obj.Add(key, value);
 			else {
 				var newItem = ListExt.Single(new KeyValuePair<K, V>(key, value));
-				var info = new ListChangeInfo<KeyValuePair<K, V>>(NotifyCollectionChangedAction.Add, int.MinValue, 1, newItem, EmptyList<KeyValuePair<K, V>>.Value);
+				var info = new ListChangeInfo<KeyValuePair<K, V>>(NotifyCollectionChangedAction.Add, int.MinValue, 1, newItem, Empty<KeyValuePair<K, V>>.List);
 				ListChanging?.Invoke(this, info);
 				_obj.Add(key, value);
 				ListChanged?.Invoke(this, info);
@@ -104,7 +104,7 @@ namespace Loyc.Collections.Impl
 				_obj.Clear();
 			else if (!IsEmpty) {
 				var oldItems = new DList<KeyValuePair<K, V>>(_obj);
-				var info = new ListChangeInfo<KeyValuePair<K, V>>(NotifyCollectionChangedAction.Reset, int.MinValue, -oldItems.Count, EmptyList<KeyValuePair<K, V>>.Value, oldItems);
+				var info = new ListChangeInfo<KeyValuePair<K, V>>(NotifyCollectionChangedAction.Reset, int.MinValue, -oldItems.Count, Empty<KeyValuePair<K, V>>.List, oldItems);
 				ListChanging?.Invoke(this, info);
 				_obj.Clear();
 				ListChanged?.Invoke(this, info);
@@ -120,7 +120,7 @@ namespace Loyc.Collections.Impl
 				if (!_obj.Contains(item))
 					return false;
 				var oldItem = ListExt.Single(item);
-				var info = new ListChangeInfo<KeyValuePair<K, V>>(NotifyCollectionChangedAction.Remove, int.MinValue, -1, EmptyList<KeyValuePair<K, V>>.Value, oldItem);
+				var info = new ListChangeInfo<KeyValuePair<K, V>>(NotifyCollectionChangedAction.Remove, int.MinValue, -1, Empty<KeyValuePair<K, V>>.List, oldItem);
 				ListChanging?.Invoke(this, info);
 				var result = _obj.Remove(item);
 				ListChanged?.Invoke(this, info);
@@ -137,7 +137,7 @@ namespace Loyc.Collections.Impl
 				if (!_obj.TryGetValueSafe(key, out V? value))
 					return false;
 				var oldItem = ListExt.Single(new KeyValuePair<K, V>(key, value));
-				var info = new ListChangeInfo<KeyValuePair<K, V>>(NotifyCollectionChangedAction.Remove, int.MinValue, -1, EmptyList<KeyValuePair<K, V>>.Value, oldItem);
+				var info = new ListChangeInfo<KeyValuePair<K, V>>(NotifyCollectionChangedAction.Remove, int.MinValue, -1, Empty<KeyValuePair<K, V>>.List, oldItem);
 				ListChanging?.Invoke(this, info);
 				var result = _obj.Remove(key);
 				ListChanged?.Invoke(this, info);
@@ -153,7 +153,7 @@ namespace Loyc.Collections.Impl
 			{
 				var list2 = new DList<KeyValuePair<K, V>>(list);
 				if (list2.Count != 0) {
-					var info = new ListChangeInfo<KeyValuePair<K, V>>(NotifyCollectionChangedAction.Add, int.MinValue, list2.Count, list2, EmptyList<KeyValuePair<K, V>>.Value);
+					var info = new ListChangeInfo<KeyValuePair<K, V>>(NotifyCollectionChangedAction.Add, int.MinValue, list2.Count, list2, Empty<KeyValuePair<K, V>>.List);
 					ListChanging?.Invoke(this, info);
 					DictionaryExt.AddRange(_obj, list);
 					ListChanged?.Invoke(this, info);

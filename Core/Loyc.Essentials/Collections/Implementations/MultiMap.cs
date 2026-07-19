@@ -92,7 +92,7 @@ namespace Loyc.Collections
 			public List<V>.Enumerator GetEnumerator()
 			{
 				var values = GetValues();
-				return values != null ? values.GetEnumerator() : EmptyEnumerator<V>.Value;
+				return values != null ? values.GetEnumerator() : Empty<V>.Enumerator;
 			}
 
 			public bool Remove(V item)

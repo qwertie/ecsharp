@@ -302,7 +302,7 @@ namespace Loyc.Collections
 			{
 				int index = _map.FirstIndexOf(_key);
 				if (index <= -1)
-					return EmptyEnumerator<V>.Value;
+					return Empty<V>.Enumerator;
 				return GetEnumeratorCore(index);
 			}
 			IEnumerator<V> GetEnumeratorCore(int index)
