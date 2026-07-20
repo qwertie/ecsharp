@@ -27,6 +27,7 @@ namespace Benchmark.Serialization
 		// are normalized per item so the Y axis stays flat as the payload grows.
 		protected GraphModel MakeTimeGraph() => new GraphModel(GraphGroup + ": round-trip time") {
 			Title = GraphGroup + ": round-trip time (write + read)",
+			IsSerializerChart = true,
 			XAxisTitle = XAxisTitle,
 			YAxisTitle = "Nanoseconds per item",
 			YUnit = "ns",
@@ -35,6 +36,7 @@ namespace Benchmark.Serialization
 		};
 		protected GraphModel MakeAllocGraph() => new GraphModel(GraphGroup + ": allocations") {
 			Title = GraphGroup + ": allocations (write + read)",
+			IsSerializerChart = true,
 			XAxisTitle = XAxisTitle,
 			YAxisTitle = "Bytes per item",
 			YUnit = "B",
@@ -43,6 +45,7 @@ namespace Benchmark.Serialization
 		};
 		protected GraphModel MakeSizeGraph() => new GraphModel(GraphGroup + ": payload size") {
 			Title = GraphGroup + ": payload size",
+			IsSerializerChart = true,
 			XAxisTitle = XAxisTitle,
 			YAxisTitle = "Bytes per item",
 			YUnit = "B",

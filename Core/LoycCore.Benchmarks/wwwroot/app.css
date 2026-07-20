@@ -136,6 +136,11 @@ button.small { padding: 2px 8px; font-size: 12px; }
     max-width: 1000px;
 }
 
+/* Layout-only ApexCharts series that separates binary and JSON serializers. */
+.chart-card .apexcharts-legend-series[seriesname=""] {
+    display: none !important;
+}
+
 .error {
     background: #fbeaea; border: 1px solid var(--bad); border-radius: 6px;
     padding: 10px; white-space: pre-wrap; overflow-x: auto;

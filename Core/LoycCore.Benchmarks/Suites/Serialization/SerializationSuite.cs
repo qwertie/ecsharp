@@ -88,7 +88,7 @@ namespace Benchmark.Serialization
 
 			// Lists of a tiny 3-field object (int, string, double)
 			var smallObjects = new Scenario<List<SmallObject>>("Small objects",
-				("Small objects ×5", 5, () => SmallObject.MakeList(5)),
+				("Small objects ×10", 10, () => SmallObject.MakeList(10)),
 				("Small objects ×100", 100, () => SmallObject.MakeList(100)),
 				("Small objects ×10000", 10000, () => SmallObject.MakeList(10000))) {
 				Validate = (a, b) => b != null && a.Count == b.Count && a.Zip(b).All(p => p.First.Equals(p.Second))
@@ -100,16 +100,19 @@ namespace Benchmark.Serialization
 
 			// Dictionary<string, string> with realistic keys and phrase values
 			var stringDict = new Scenario<Dictionary<string, string>>("String dict",
-				("String dict ×5", 5, () => ArrayData.MakeStringDict(5)),
+				("String dict ×10", 10, () => ArrayData.MakeStringDict(10)),
 				("String dict ×100", 100, () => ArrayData.MakeStringDict(100)),
 				("String dict ×10000", 10000, () => ArrayData.MakeStringDict(10000))) {
 				Validate = (a, b) => b != null && a.Count == b.Count
 					&& a.All(p => b.TryGetValue(p.Key, out var v) && v == p.Value) ? null : "dictionary mismatch",
 			};
 			var compact = new SyncJson.Options(compactMode: true);
+			var compatOff = new SyncJson.Options(compactMode: true) { NewtonsoftCompatibility = false };
 			// The natural JSON representation: one JSON object, keys as property names
-			stringDict.Adapters.Add(new SyncJsonAdapter<Dictionary<string, string>>("SyncJson",
+			stringDict.Adapters.Add(new SyncJsonAdapter<Dictionary<string, string>>("SyncJson (Newton-compat)",
 				SyncStringDictAsObject, SyncStringDictAsObject, compact));
+			stringDict.Adapters.Add(new SyncJsonAdapter<Dictionary<string, string>>("SyncJson",
+				SyncStringDictAsObject, SyncStringDictAsObject, compatOff));
 			// Binary has no JSON-object analog, so it stores a list of key/value pairs
 			stringDict.Adapters.Add(new SyncBinaryAdapter<Dictionary<string, string>>("SyncBinary",
 				SyncStringDictAsList, SyncStringDictAsList));
@@ -229,11 +232,11 @@ namespace Benchmark.Serialization
 			Newtonsoft.Json.JsonSerializerSettings? newtonsoftSettings = null,
 			Action<SyncJson.Options>? tweakSyncJson = null)
 		{
-			var compact = new SyncJson.Options(compactMode: true);
+			var compatOn = new SyncJson.Options(compactMode: true) { NewtonsoftCompatibility = true };
 			var compatOff = new SyncJson.Options(compactMode: true) { NewtonsoftCompatibility = false };
-			tweakSyncJson?.Invoke(compact);
+			tweakSyncJson?.Invoke(compatOn);
 			tweakSyncJson?.Invoke(compatOff);
-			scenario.Adapters.Add(new SyncJsonAdapter<T>("SyncJson (Newton-compat)", syncJsonWrite, syncJsonRead, compact));
+			scenario.Adapters.Add(new SyncJsonAdapter<T>("SyncJson (Newton-compat)", syncJsonWrite, syncJsonRead, compatOn));
 			scenario.Adapters.Add(new SyncJsonAdapter<T>("SyncJson", syncJsonWrite, syncJsonRead, compatOff));
 			scenario.Adapters.Add(new SyncBinaryAdapter<T>("SyncBinary", syncBinWrite, syncBinRead));
 			// Markers.None variant: framing markers/type tags off (see the calendar note).

@@ -14,6 +14,9 @@ namespace Benchmark
 		/// <summary>Y-axis unit suffix shown in tooltips/tables, e.g. "µs" or "bytes".</summary>
 		public string YUnit { get; set; } = "";
 		public bool YLogScale { get; set; }
+		/// <summary>True for serializer comparison bar charts, which use the
+		/// serializer ordering, spacing, and fixed Y-axis formatting.</summary>
+		public bool IsSerializerChart { get; set; }
 		/// <summary>True if this is a grouped, stacked bar chart: each entity (e.g.
 		/// serializer) gets one bar per category, split into stacked segments (e.g.
 		/// write + read) that share a group. Series in the same group are stacked;

@@ -51,6 +51,7 @@
     // alphabetically after these.
     static readonly string[] SerializerOrder = {
         "SyncBinary", "SyncBinary (no markers)", "protobuf-net", "MessagePack", "BinaryFormatter",
+        "", // layout-only gap between binary and JSON formats
         "SyncJson", "SyncJson (Newton-compat)", "SyncJson (ISyncManager)", "Newtonsoft.Json", "System.Text.Json",
     };
 
@@ -62,6 +63,13 @@
 
     record ChartPoint(string X, decimal? Y);
     record ChartSeries(string Name, List<ChartPoint> Points, string? Group, string? Color);
+
+    // ApexCharts has no per-series-group gap setting. A transparent all-zero series
+    // reserves one bar slot between the binary and JSON serializer families; the
+    // legend option below keeps this layout-only series out of the legend.
+    const string FormatGapSeries = "";
+    const string FormatGapGroup = "__format-gap";
+    const int SerializerBarStep = 200;
 
     List<ChartSeries> _series = new();
     bool _useBars;
@@ -111,8 +119,38 @@
                 FindColor(g.Key)))
             .ToList();
 
+        // An empty SerializerOrder entry means one invisible layout slot. Insert it
+        // only when this bar chart has known serializers on both sides of the gap.
+        int gapRank = Array.IndexOf(SerializerOrder, "");
+        int firstAfterGap = _series.FindIndex(s => {
+            int rank = GetSerializerRank(s.Name);
+            return rank > gapRank && rank < int.MaxValue;
+        });
+        if (_useBars && gapRank >= 0 && firstAfterGap > 0
+            && _series.Take(firstAfterGap).Any(s => GetSerializerRank(s.Name) < gapRank))
+        {
+            _series.Insert(firstAfterGap, new ChartSeries(
+                FormatGapSeries,
+                parameters.Select(x => new ChartPoint(FormatX(x), 0)).ToList(),
+                Model.Stacked ? FormatGapGroup : null,
+                "rgba(0, 0, 0, 0)"));
+        }
+
         // Log Y only works when every value is positive
         bool logY = Model.YLogScale && points.All(p => p.Value > 0);
+        double? barMaximum = null;
+        int? barTickAmount = null;
+        bool isSerializerBars = _useBars && Model.IsSerializerChart;
+        if (isSerializerBars) {
+            // In stacked charts the visible bar height is the sum of its write/read
+            // segments. Plain bar charts use the largest individual point.
+            double dataMaximum = Model.Stacked
+                ? points.GroupBy(p => (p.Parameter, Serializer: GetBaseName(p.Series)))
+                    .Max(g => g.Sum(p => Math.Max(p.Value, 0)))
+                : points.Max(p => p.Value);
+            barMaximum = Math.Ceiling(dataMaximum / SerializerBarStep) * SerializerBarStep;
+            barTickAmount = (int)(barMaximum / SerializerBarStep);
+        }
         bool anyMappedColor = _series.Any(s => s.Color != null);
         // A shared tooltip lists every series at once (good for line charts and for
         // stacked bars); plain bars use a per-bar tooltip. ApexCharts forbids
@@ -139,12 +177,19 @@
                 new YAxis {
                     Logarithmic = logY,
                     Title = new AxisTitle { Text = Model.YAxisTitle },
-                    Min = logY ? null : Model.YMin,
-                    Max = Model.YMax,
-                    DecimalsInFloat = 2,
+                    Min = isSerializerBars ? Model.YMin ?? 0 : logY ? null : Model.YMin,
+                    Max = Model.YMax ?? barMaximum,
+                    StepSize = isSerializerBars ? SerializerBarStep : null,
+                    TickAmount = Model.YMax.HasValue ? null : barTickAmount,
+                    ForceNiceScale = barMaximum.HasValue || Model.YMax.HasValue ? false : null,
+                    DecimalsInFloat = 0,
                 },
             },
-            Legend = new Legend { Show = _series.Count > 1, Position = LegendPosition.Bottom },
+            Legend = new Legend {
+                Show = _series.Count > 1,
+                ShowForZeroSeries = false,
+                Position = LegendPosition.Bottom,
+            },
             Tooltip = new Tooltip { Shared = sharedTip, Intersect = !sharedTip },
             PlotOptions = new PlotOptions { Bar = new PlotOptionsBar { BorderRadius = 3, ColumnWidth = "75%" } },
         };
