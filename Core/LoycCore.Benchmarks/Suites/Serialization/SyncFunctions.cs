@@ -63,13 +63,13 @@ namespace Benchmark.Serialization
 
 		#region Arrays (each element type needs its own tiny function for type inference)
 
-		public static int[] SyncIntArray<SM>(SM sm, int[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
-		public static long[] SyncLongArray<SM>(SM sm, long[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
+		public static int[] SyncIntArray<SM>(SM sm, int[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
+		public static long[] SyncLongArray<SM>(SM sm, long[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
 		public static double[] SyncDoubleArray<SM>(SM sm, double[]? v) where SM : ISyncManager
-			=> sm.SyncList("list", v)!;
-		public static byte[] SyncByteArray<SM>(SM sm, byte[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
+			=> sm.SyncArray("list", v)!;
+		public static byte[] SyncByteArray<SM>(SM sm, byte[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
 		public static string[] SyncStringArray<SM>(SM sm, string[]? v) where SM : ISyncManager
-			=> sm.SyncList("list", v)!;
+			=> sm.SyncArray("list", v)!;
 
 		#endregion
 

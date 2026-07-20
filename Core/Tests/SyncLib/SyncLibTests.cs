@@ -107,7 +107,7 @@ namespace Loyc.SyncLib.Tests
 
 			static float[] SyncFloats<SM>(SM sm, float[]? value) where SM : ISyncManager
 			{
-				value = sm.SyncList("FloatsArray", value);
+				value = sm.SyncArray("FloatsArray", value);
 				return value!;
 			}
 

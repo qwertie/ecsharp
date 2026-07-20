@@ -87,7 +87,7 @@ namespace Loyc.SyncLib.Tests
 		public void WireFormat_PackedList()
 		{
 			byte[] data = SyncProtobuf.Write(new[] { 1, 2, 3 }, (SyncProtobuf.Writer sm, int[]? v) => {
-				sm.SyncList(("list", 1), v);
+				sm.SyncArray(("list", 1), v);
 				return v!;
 			}).ToArray();
 
@@ -258,7 +258,7 @@ namespace Loyc.SyncLib.Tests
 		public void WireFormat_ByteArrayIsBytes()
 		{
 			byte[] data = SyncProtobuf.Write(new byte[] { 0xDE, 0xAD, 0xBE, 0xEF }, (SyncProtobuf.Writer sm, byte[]? v) => {
-				sm.SyncList(("blob", 1), v);
+				sm.SyncArray(("blob", 1), v);
 				return v!;
 			}).ToArray();
 

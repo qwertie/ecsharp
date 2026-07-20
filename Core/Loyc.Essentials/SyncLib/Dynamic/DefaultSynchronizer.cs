@@ -122,11 +122,11 @@ static class ExtraSynchronizers<SyncManager> where SyncManager : ISyncManager
 	// Lists of bytes/bools/chars get special treatment from the SyncManager
 	// itself (e.g. SyncJson stores byte[] as a Base64 or BAIS string).
 	public static byte[]? Sync(ref SyncManager sync, FieldId name, byte[]? value)
-		=> sync.SyncList(name, value);
+		=> sync.SyncArray(name, value);
 	public static bool[]? Sync(ref SyncManager sync, FieldId name, bool[]? value)
-		=> sync.SyncList(name, value);
+		=> sync.SyncArray(name, value);
 	public static char[]? Sync(ref SyncManager sync, FieldId name, char[]? value)
-		=> sync.SyncList(name, value);
+		=> sync.SyncArray(name, value);
 
 	public static DateTime Sync(ref SyncManager sync, FieldId name, DateTime value)
 		=> new SyncDateAsString<SyncManager>(null, System.Globalization.DateTimeStyles.AllowWhiteSpaces)

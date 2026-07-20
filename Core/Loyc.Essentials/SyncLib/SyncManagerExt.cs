@@ -50,11 +50,10 @@ namespace Loyc.SyncLib
 			return syncField.Sync(ref sync, name, savable);
 		}
 
-		public static E SyncEnumAsString<SM, SyncObj, E>(this SM sync,
+		public static E SyncEnumAsString<SM, E>(this SM sync,
 			FieldId name, E savable, 
 			ObjectMode mode = ObjectMode.Deduplicate)
 				where SM : ISyncManager
-				where SyncObj : ISyncObject<SM, E>
 				where E : struct, Enum
 			=> new SyncEnumAsString<SM, E>().Sync(ref sync, name, savable);
 
@@ -169,7 +168,7 @@ namespace Loyc.SyncLib
 		public static Coll? SyncColl<SM, Coll, T>(this SM sync,
 			FieldId name, Coll? savable, SyncObjectFunc<SM, T> syncItem, Func<int, Coll> alloc,
 			ObjectMode itemMode = ObjectMode.Deduplicate,
-			ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
+			ObjectMode listMode = ObjectMode.List, int tupleLength = -1, T? ignored = default)
 				where SM : ISyncManager
 				where Coll : ICollection<T>
 			=> new SyncList<SM, T, Coll, ObjectSyncher<SM, AsISyncObject<SM, T>, T>>
@@ -225,7 +224,7 @@ namespace Loyc.SyncLib
 				where SyncField : ISyncField<SM, T>
 			=> new SyncList<SM, T, IList<T>, SyncField>(syncItem, listMode, tupleLength, Alloc<T>.List).Sync(ref sync, name, savable);
 
-		public static T[]? SyncList<SM, T, SyncField>(this SM sync,
+		public static T[]? SyncArray<SM, T, SyncField>(this SM sync,
 			FieldId name, T[]? savable, SyncField syncItem,
 			ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 				where SM : ISyncManager

@@ -1,4 +1,4 @@
-// Generated from BigStandardModel.ecs by LeMP custom tool. LeMP version: 30.1.91.0
+// Generated from BigStandardModel.ecs by LeMP custom tool. LeMP version: 30.2.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -449,21 +449,21 @@ namespace Loyc.SyncLib.Tests
 		public BigStandardModelNoMem SyncLists(S sync, BigStandardModelNoMem? obj)
 		{
 			obj = obj ?? new BigStandardModelNoMem(0);
-			obj.BoolArray = sync.SyncList("BoolArray", obj.BoolArray);
-			obj.Int8Array = sync.SyncList("Int8Array", obj.Int8Array);
-			obj.Uint8Array = sync.SyncList("Uint8Array", obj.Uint8Array);
-			obj.Int16Array = sync.SyncList("Int16Array", obj.Int16Array);
-			obj.Uint16Array = sync.SyncList("Uint16Array", obj.Uint16Array);
-			obj.Int32Array = sync.SyncList("Int32Array", obj.Int32Array);
-			obj.Uint32Array = sync.SyncList("Uint32Array", obj.Uint32Array);
-			obj.Int64Array = sync.SyncList("Int64Array", obj.Int64Array);
-			obj.Uint64Array = sync.SyncList("Uint64Array", obj.Uint64Array);
-			obj.SingleArray = sync.SyncList("SingleArray", obj.SingleArray);
-			obj.DoubleArray = sync.SyncList("DoubleArray", obj.DoubleArray);
-			obj.DecimalArray = sync.SyncList("DecimalArray", obj.DecimalArray);
-			obj.BigIntegerArray = sync.SyncList("BigIntegerArray", obj.BigIntegerArray);
-			obj.CharArray = sync.SyncList("CharArray", obj.CharArray);
-			obj.StringArray = sync.SyncList("StringArray", obj.StringArray);
+			obj.BoolArray = sync.SyncArray("BoolArray", obj.BoolArray);
+			obj.Int8Array = sync.SyncArray("Int8Array", obj.Int8Array);
+			obj.Uint8Array = sync.SyncArray("Uint8Array", obj.Uint8Array);
+			obj.Int16Array = sync.SyncArray("Int16Array", obj.Int16Array);
+			obj.Uint16Array = sync.SyncArray("Uint16Array", obj.Uint16Array);
+			obj.Int32Array = sync.SyncArray("Int32Array", obj.Int32Array);
+			obj.Uint32Array = sync.SyncArray("Uint32Array", obj.Uint32Array);
+			obj.Int64Array = sync.SyncArray("Int64Array", obj.Int64Array);
+			obj.Uint64Array = sync.SyncArray("Uint64Array", obj.Uint64Array);
+			obj.SingleArray = sync.SyncArray("SingleArray", obj.SingleArray);
+			obj.DoubleArray = sync.SyncArray("DoubleArray", obj.DoubleArray);
+			obj.DecimalArray = sync.SyncArray("DecimalArray", obj.DecimalArray);
+			obj.BigIntegerArray = sync.SyncArray("BigIntegerArray", obj.BigIntegerArray);
+			obj.CharArray = sync.SyncArray("CharArray", obj.CharArray);
+			obj.StringArray = sync.SyncArray("StringArray", obj.StringArray);
 			obj.BoolList = sync.SyncList("BoolList", obj.BoolList);
 			obj.Int8List = sync.SyncList("Int8List", obj.Int8List);
 			obj.Uint8List = sync.SyncList("Uint8List", obj.Uint8List);
@@ -479,21 +479,21 @@ namespace Loyc.SyncLib.Tests
 			obj.BigIntegerList = sync.SyncList("BigIntegerList", obj.BigIntegerList);
 			obj.CharList = sync.SyncList("CharList", obj.CharList);
 			obj.StringList = sync.SyncList("StringList", obj.StringList);
-			obj.BoolColl = sync.SyncList("BoolColl", obj.BoolColl);
-			obj.Int8Coll = sync.SyncList("Int8Coll", obj.Int8Coll);
-			obj.Uint8Coll = sync.SyncList("Uint8Coll", obj.Uint8Coll);
-			obj.Int16Coll = sync.SyncList("Int16Coll", obj.Int16Coll);
-			obj.Uint16Coll = sync.SyncList("Uint16Coll", obj.Uint16Coll);
-			obj.Int32Coll = sync.SyncList("Int32Coll", obj.Int32Coll);
-			obj.Uint32Coll = sync.SyncList("Uint32Coll", obj.Uint32Coll);
-			obj.Int64Coll = sync.SyncList("Int64Coll", obj.Int64Coll);
-			obj.Uint64Coll = sync.SyncList("Uint64Coll", obj.Uint64Coll);
-			obj.SingleColl = sync.SyncList("SingleColl", obj.SingleColl);
-			obj.DoubleColl = sync.SyncList("DoubleColl", obj.DoubleColl);
-			obj.DecimalColl = sync.SyncList("DecimalColl", obj.DecimalColl);
-			obj.BigIntegerColl = sync.SyncList("BigIntegerColl", obj.BigIntegerColl);
-			obj.CharColl = sync.SyncList("CharColl", obj.CharColl);
-			obj.StringColl = sync.SyncList("StringColl", obj.StringColl);
+			obj.BoolColl = sync.SyncColl("BoolColl", obj.BoolColl);
+			obj.Int8Coll = sync.SyncColl("Int8Coll", obj.Int8Coll);
+			obj.Uint8Coll = sync.SyncColl("Uint8Coll", obj.Uint8Coll);
+			obj.Int16Coll = sync.SyncColl("Int16Coll", obj.Int16Coll);
+			obj.Uint16Coll = sync.SyncColl("Uint16Coll", obj.Uint16Coll);
+			obj.Int32Coll = sync.SyncColl("Int32Coll", obj.Int32Coll);
+			obj.Uint32Coll = sync.SyncColl("Uint32Coll", obj.Uint32Coll);
+			obj.Int64Coll = sync.SyncColl("Int64Coll", obj.Int64Coll);
+			obj.Uint64Coll = sync.SyncColl("Uint64Coll", obj.Uint64Coll);
+			obj.SingleColl = sync.SyncColl("SingleColl", obj.SingleColl);
+			obj.DoubleColl = sync.SyncColl("DoubleColl", obj.DoubleColl);
+			obj.DecimalColl = sync.SyncColl("DecimalColl", obj.DecimalColl);
+			obj.BigIntegerColl = sync.SyncColl("BigIntegerColl", obj.BigIntegerColl);
+			obj.CharColl = sync.SyncColl("CharColl", obj.CharColl);
+			obj.StringColl = sync.SyncColl("StringColl", obj.StringColl);
 
 			return obj;
 		}
@@ -501,21 +501,21 @@ namespace Loyc.SyncLib.Tests
 		public BigStandardModel SyncMemory(S sync, BigStandardModel? obj)
 		{
 			obj = obj ?? new BigStandardModel(0);
-			obj.BoolMemory = sync.SyncList("BoolMemory", obj.BoolMemory);
-			obj.Int8Memory = sync.SyncList("Int8Memory", obj.Int8Memory);
-			obj.Uint8Memory = sync.SyncList("Uint8Memory", obj.Uint8Memory);
-			obj.Int16Memory = sync.SyncList("Int16Memory", obj.Int16Memory);
-			obj.Uint16Memory = sync.SyncList("Uint16Memory", obj.Uint16Memory);
-			obj.Int32Memory = sync.SyncList("Int32Memory", obj.Int32Memory);
-			obj.Uint32Memory = sync.SyncList("Uint32Memory", obj.Uint32Memory);
-			obj.Int64Memory = sync.SyncList("Int64Memory", obj.Int64Memory);
-			obj.Uint64Memory = sync.SyncList("Uint64Memory", obj.Uint64Memory);
-			obj.SingleMemory = sync.SyncList("SingleMemory", obj.SingleMemory);
-			obj.DoubleMemory = sync.SyncList("DoubleMemory", obj.DoubleMemory);
-			obj.DecimalMemory = sync.SyncList("DecimalMemory", obj.DecimalMemory);
-			obj.BigIntegerMemory = sync.SyncList("BigIntegerMemory", obj.BigIntegerMemory);
-			obj.CharMemory = sync.SyncList("CharMemory", obj.CharMemory);
-			obj.StringMemory = sync.SyncList("StringMemory", obj.StringMemory);
+			obj.BoolMemory = sync.SyncMemory("BoolMemory", obj.BoolMemory);
+			obj.Int8Memory = sync.SyncMemory("Int8Memory", obj.Int8Memory);
+			obj.Uint8Memory = sync.SyncMemory("Uint8Memory", obj.Uint8Memory);
+			obj.Int16Memory = sync.SyncMemory("Int16Memory", obj.Int16Memory);
+			obj.Uint16Memory = sync.SyncMemory("Uint16Memory", obj.Uint16Memory);
+			obj.Int32Memory = sync.SyncMemory("Int32Memory", obj.Int32Memory);
+			obj.Uint32Memory = sync.SyncMemory("Uint32Memory", obj.Uint32Memory);
+			obj.Int64Memory = sync.SyncMemory("Int64Memory", obj.Int64Memory);
+			obj.Uint64Memory = sync.SyncMemory("Uint64Memory", obj.Uint64Memory);
+			obj.SingleMemory = sync.SyncMemory("SingleMemory", obj.SingleMemory);
+			obj.DoubleMemory = sync.SyncMemory("DoubleMemory", obj.DoubleMemory);
+			obj.DecimalMemory = sync.SyncMemory("DecimalMemory", obj.DecimalMemory);
+			obj.BigIntegerMemory = sync.SyncMemory("BigIntegerMemory", obj.BigIntegerMemory);
+			obj.CharMemory = sync.SyncMemory("CharMemory", obj.CharMemory);
+			obj.StringMemory = sync.SyncMemory("StringMemory", obj.StringMemory);
 
 			return obj;
 		}

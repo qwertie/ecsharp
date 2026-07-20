@@ -182,7 +182,8 @@ namespace Loyc.SyncLib
 		/// </remarks>
 		bool? ReachedEndOfList { get; }
 
-		/// <summary>If a variable-length list is being scanned in Loading mode, this 
+		/// <summary>This is a low-level property; end-users normally should NOT call
+		/// it! If a variable-length list is being scanned in Loading mode, this 
 		/// property returns either the list length (if known) or the minimum list 
 		/// length (if the total length is not known before reading the list).
 		/// This property is null in Saving mode, or when a variable-length list is not 
@@ -388,7 +389,7 @@ namespace Loyc.SyncLib
 		///   to indicate that you expect to read a byte array. If the JSON data type is 
 		///   boolean, which cannot be interpreted as a byte array, GetFieldType() returns 
 		///   SyncType.Missing. But if the JSON data type is string, GetFieldType() returns 
-		///   SyncType.String. This indicates that the data tream contains a String that 
+		///   SyncType.String. This indicates that the data stream contains a String that 
 		///   is potentially convertible to SyncType.ByteList, although the conversion is 
 		///   not guaranteed to work. If you then read this field by calling
 		///   <c>Sync(name, (byte[]) null)</c> and it turns out that the string cannot be 
@@ -776,7 +777,7 @@ namespace Loyc.SyncLib
 			static if ($T `staticMatches` byte || $T `staticMatches` char || $T `staticMatches` bool) {
 
 				[@`%newline`, @`%SLComment`(concat(NameWithType(" SyncList methods for ", $T)))]
-				public static $T[]? SyncList<SyncManager>(this SyncManager sync,
+				public static $T[]? SyncArray<SyncManager>(this SyncManager sync,
 					FieldId name, $T[]? savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1)
 					where SyncManager : ISyncManager
 				{
@@ -795,7 +796,7 @@ namespace Loyc.SyncLib
 					(#type<ICollection<$T>? >, SyncColl),
 					(#type<IReadOnlyCollection<$T>? >, SyncColl)
 				)) {
-					public static $List SyncList<SyncManager>(this SyncManager sync,
+					public static $List $SyncList<SyncManager>(this SyncManager sync,
 						FieldId name, $List savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1)
 						where SyncManager : ISyncManager
 					{
@@ -808,7 +809,7 @@ namespace Loyc.SyncLib
 							name, scanner, savable, new ListBuilder<$T>(), listMode, tupleOrListLength);
 					}
 				}
-				public static Memory<$T> SyncList<SyncManager>(this SyncManager sync,
+				public static Memory<$T> SyncMemory<SyncManager>(this SyncManager sync,
 					FieldId name, Memory<$T> savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1)
 					where SyncManager : ISyncManager
 				{
@@ -820,7 +821,7 @@ namespace Loyc.SyncLib
 					return sync.$(out NameWithType(SyncList, $T, Impl))<InternalList.Scanner<$T>, Memory<$T>, MemoryBuilder<$T>>(
 						name, scanner, null, new MemoryBuilder<$T>(), listMode | ObjectMode.NotNull, tupleOrListLength);
 				}
-				public static ReadOnlyMemory<$T> SyncList<SyncManager>(this SyncManager sync,
+				public static ReadOnlyMemory<$T> SyncMemory<SyncManager>(this SyncManager sync,
 					FieldId name, ReadOnlyMemory<$T> savable, ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1)
 					where SyncManager : ISyncManager
 				{
@@ -848,14 +849,14 @@ namespace Loyc.SyncLib
 			} else {
 				[@`%newline`, @`%SLComment`(concat(NameWithType(" SyncList methods for ", $T)))] #rawText("");
 				##unroll(($List, $SyncList) in (
-				    (#type<$T[]? >, SyncList),
+				    (#type<$T[]? >, SyncArray),
 				    (#type<List<$T>? >, SyncList), (#type<IList<$T>? >, SyncList),
 				    (#type<IReadOnlyList<$T>? >, SyncList), (#type<IListSource<$T>? >, SyncList),
 				    (#type<ICollection<$T>? >, SyncColl), (#type<IReadOnlyCollection<$T>? >, SyncColl),
 				    (#type<HashSet<$T>? >, SyncColl), 
 				    (ReadOnlyMemory<$T>, SyncMemory), (Memory<$T>, SyncMemory)
 				)) {
-					public static $List SyncList<SM>(this SM sync,
+					public static $List $SyncList<SM>(this SM sync,
 						FieldId name, $List savable,
 						ObjectMode listMode = ObjectMode.List, int tupleOrListLength = -1)
 							where SM : ISyncManager
@@ -873,15 +874,15 @@ namespace Loyc.SyncLib
 		/// "Type 'SyncManagerExt' already defines a member called 'SyncList' with the same parameter types".</summary>
 		public static partial class $(out NameWithType(SyncManagerExt, $T)) {
 			static if ($T `staticMatches` byte || $T `staticMatches` char || $T `staticMatches` bool) {
-				public static List? SyncColl<SyncManager, List>(this SyncManager sync,
-					FieldId name, List? savable, Func<int, List> alloc, ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
+				public static Coll? SyncColl<SyncManager, Coll>(this SyncManager sync,
+					FieldId name, Coll? savable, Func<int, Coll> alloc, ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
 					where SyncManager : ISyncManager
-					where List : ICollection<$T>, IReadOnlyCollection<$T>
+					where Coll : ICollection<$T>, IReadOnlyCollection<$T>
 				{
 					InternalList.Scanner<$T> scanner = Empty<$T>.Scanner;
 					if (savable != null)
 						scanner = Loyc.Collections.MutableListExtensionMethods.LinqToLists.ToArray(savable).Slice(0).Scan();
-					return sync.$(out NameWithType(SyncList, $T, Impl))(name, scanner, savable, new CollectionBuilder<List, $T>(alloc), listMode, tupleLength);
+					return sync.$(out NameWithType(SyncList, $T, Impl))(name, scanner, savable, new CollectionBuilder<Coll, $T>(alloc), listMode, tupleLength);
 				}
 			} else {
 				public static Coll? SyncColl<SM, Coll, SyncField>(this SM sync,

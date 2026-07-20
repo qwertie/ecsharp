@@ -151,7 +151,7 @@ partial class SyncJson
 		}
 	}
 
-	/// <summary>The core logic of <see cref="SyncJson.Schema"/>: records the schema
+	/// <summary>The core logic of <see cref="SyncJson.SchemaWriter"/>: records the schema
 	///   of objects that a synchronizer function describes to it, and renders the
 	///   result as a JSON Schema (draft 2020-12) document in UTF-8 format.</summary>
 	internal class SchemaState

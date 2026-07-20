@@ -42,10 +42,10 @@ namespace Loyc.SyncLib.Tests
 			sm.Sync("int", 0);
 			sm.Sync("str", "hello", ObjectMode.Deduplicate);
 			sm.Sync("dup", "hello", ObjectMode.Deduplicate);
-			sm.SyncList("list", (int[]?)null);
+			sm.SyncArray("list", (int[]?)null);
 			sm.Sync("big", default(System.Numerics.BigInteger));
 			sm.Sync("dbl", 0.0);
-			sm.SyncList("bytes", (byte[]?)null);
+			sm.SyncArray("bytes", (byte[]?)null);
 			sm.Sync("nul", (int?)null);
 			return _ ?? new object();
 		}
@@ -59,7 +59,7 @@ namespace Loyc.SyncLib.Tests
 				new PersonSync<SyncBinary.Writer>().Sync, options).ToArray());
 			corpus.Add(SyncBinary.Write(new object(), SyncVarious, options).ToArray());
 			corpus.Add(SyncBinary.Write(new int[] { 1, -1, int.MaxValue, int.MinValue },
-				(sm, v) => sm.SyncList("l", v)!, options).ToArray());
+				(sm, v) => sm.SyncArray("l", v)!, options).ToArray());
 			return corpus;
 		}
 
@@ -70,7 +70,7 @@ namespace Loyc.SyncLib.Tests
 				new PersonSync<SyncProtobuf.Writer>().Sync, options).ToArray());
 			corpus.Add(SyncProtobuf.Write(new object(), SyncVarious, options).ToArray());
 			corpus.Add(SyncProtobuf.Write(new int[] { 1, -1, int.MaxValue, int.MinValue },
-				(sm, v) => sm.SyncList("l", v)!, options).ToArray());
+				(sm, v) => sm.SyncArray("l", v)!, options).ToArray());
 			return corpus;
 		}
 
@@ -81,7 +81,7 @@ namespace Loyc.SyncLib.Tests
 				new PersonSync<SyncJson.Writer>().Sync, options).ToArray());
 			corpus.Add(SyncJson.Write(new object(), SyncVarious, options).ToArray());
 			corpus.Add(SyncJson.Write(new byte[] { 0, 92, 34, 8, 255 },
-				(sm, v) => sm.SyncList("b", v)!, options).ToArray());
+				(sm, v) => sm.SyncArray("b", v)!, options).ToArray());
 			return corpus;
 		}
 
@@ -213,12 +213,12 @@ namespace Loyc.SyncLib.Tests
 					d => SyncProtobuf.Read<Person>(d, new PersonSync<SyncProtobuf.Reader>().Sync, options));
 
 			// A corrupt list length prefix must fail fast rather than allocate or loop.
-			var list = SyncProtobuf.Write(new int[] { 1, 2, 3 }, (SyncProtobuf.Writer sm, int[]? v) => sm.SyncList("l", v)!, options).ToArray();
+			var list = SyncProtobuf.Write(new int[] { 1, 2, 3 }, (SyncProtobuf.Writer sm, int[]? v) => sm.SyncArray("l", v)!, options).ToArray();
 			for (int i = 0; i < list.Length; i++) {
 				var corrupt = (byte[])list.Clone();
 				corrupt[i] = 0xFF; // oversized length varints, bad tags, etc.
 				CheckReadContract("SyncProtobuf(evil)", 100 + i, corrupt,
-					d => SyncProtobuf.Read<int[]>(d, (SyncProtobuf.Reader sm, int[]? v) => sm.SyncList("l", v)!, options));
+					d => SyncProtobuf.Read<int[]>(d, (SyncProtobuf.Reader sm, int[]? v) => sm.SyncArray("l", v)!, options));
 			}
 		}
 
@@ -253,13 +253,13 @@ namespace Loyc.SyncLib.Tests
 					d => SyncBinary.Read<Person>(d, new PersonSync<SyncBinary.Reader>().Sync, options));
 
 			// A corrupt list length must fail fast rather than allocate or loop
-			var truncatedBigList = SyncBinary.Write(new int[] { 1, 2, 3 }, (SyncBinary.Writer sm, int[]? v) => sm.SyncList("l", v)!, options)
+			var truncatedBigList = SyncBinary.Write(new int[] { 1, 2, 3 }, (SyncBinary.Writer sm, int[]? v) => sm.SyncArray("l", v)!, options)
 				.ToArray();
 			// Patch the length byte (value 3, following '{' '[') to 0x7F = 127
 			int lengthIndex = Array.IndexOf(truncatedBigList, (byte)3);
 			truncatedBigList[lengthIndex] = 0x7F;
 			CheckReadContract("SyncBinary(evil)", 1, truncatedBigList,
-				d => SyncBinary.Read<int[]>(d, (SyncBinary.Reader sm, int[]? v) => sm.SyncList("l", v)!, options));
+				d => SyncBinary.Read<int[]>(d, (SyncBinary.Reader sm, int[]? v) => sm.SyncArray("l", v)!, options));
 		}
 
 		[Test]

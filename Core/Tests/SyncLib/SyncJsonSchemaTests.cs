@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Loyc.SyncLib.Tests
 {
-	/// <summary>Tests for <see cref="SyncJson.Schema"/>, which generates JSON Schema
+	/// <summary>Tests for <see cref="SyncJson.SchemaWriter"/>, which generates JSON Schema
 	/// (draft 2020-12) documents describing the output of <see cref="SyncJson.Writer"/>.</summary>
 	[TestFixture]
 	public class SyncJsonSchemaTests : Assert
@@ -34,10 +34,10 @@ namespace Loyc.SyncLib.Tests
 			m.Name = sm.Sync("Name", m.Name);
 			m.Letter = sm.Sync("Letter", m.Letter);
 			m.Big = sm.Sync("Big", m.Big);
-			m.Blob = sm.SyncList("Blob", m.Blob);
+			m.Blob = sm.SyncArray("Blob", m.Blob);
 			m.ByteList = sm.SyncList("ByteList", m.ByteList);
-			m.Chars = sm.SyncList("Chars", m.Chars);
-			m.Bools = sm.SyncList("Bools", m.Bools);
+			m.Chars = sm.SyncArray("Chars", m.Chars);
+			m.Bools = sm.SyncArray("Bools", m.Bools);
 			m.Bits = sm.Sync("Bits", m.Bits, 5, signed: false);
 			return m;
 		}
@@ -55,7 +55,7 @@ namespace Loyc.SyncLib.Tests
 				sm.EndSubObject();
 			}
 			// A fixed-length list of a single type
-			h.Triple = sm.SyncList("Triple", h.Triple, ObjectMode.Tuple, 3);
+			h.Triple = sm.SyncArray("Triple", h.Triple, ObjectMode.Tuple, 3);
 			return h;
 		}
 
@@ -188,8 +188,8 @@ namespace Loyc.SyncLib.Tests
 			// (or null) anywhere a deduplicated object can appear.
 			CheckSchema(
 				@"{""$schema"":""https://json-schema.org/draft/2020-12/schema"",""$ref"":""#/$defs/Family"",""$defs"":{""Family"":{""type"":""object"",""properties"":{""Parents"":{""anyOf"":[{""type"":""object"",""properties"":{""$id"":{""type"":""string""},""$values"":{""type"":""array"",""items"":{""anyOf"":[{""$ref"":""#/$defs/Parent""},{""$ref"":""#/$defs/backReference""},{""type"":""null""}]}}},""required"":[""$id"",""$values""]},{""$ref"":""#/$defs/backReference""},{""type"":""null""}]},""Children"":{""anyOf"":[{""type"":""object"",""properties"":{""$id"":{""type"":""string""},""$values"":{""type"":""array"",""items"":{""anyOf"":[{""$ref"":""#/$defs/Child""},{""$ref"":""#/$defs/backReference""},{""type"":""null""}]}}},""required"":[""$id"",""$values""]},{""$ref"":""#/$defs/backReference""},{""type"":""null""}]}},""required"":[""Parents"",""Children""]},""backReference"":{""type"":""object"",""properties"":{""$ref"":{""type"":""string""}},""required"":[""$ref""]},""Parent"":{""type"":""object"",""properties"":{""$id"":{""type"":""string""},""Name"":{""type"":[""string"",""null""]},""Children"":{""anyOf"":[{""type"":""object"",""properties"":{""$id"":{""type"":""string""},""$values"":{""type"":""array"",""items"":{""anyOf"":[{""$ref"":""#/$defs/Child""},{""$ref"":""#/$defs/backReference""},{""type"":""null""}]}}},""required"":[""$id"",""$values""]},{""$ref"":""#/$defs/backReference""},{""type"":""null""}]}},""required"":[""Name"",""Children""]},""Child"":{""type"":""object"",""properties"":{""$id"":{""type"":""string""},""Name"":{""type"":[""string"",""null""]},""Father"":{""anyOf"":[{""$ref"":""#/$defs/Parent""},{""$ref"":""#/$defs/backReference""},{""type"":""null""}]},""Mother"":{""anyOf"":[{""$ref"":""#/$defs/Parent""},{""$ref"":""#/$defs/backReference""},{""type"":""null""}]}},""required"":[""Name"",""Father"",""Mother""]}}}",
-				SyncJson.WriteSchemaString<Family, FamilySync<SyncJson.Schema>>(
-					new FamilySync<SyncJson.Schema>(ObjectMode.Deduplicate), Minified()));
+				SyncJson.WriteSchemaString<Family, FamilySync<SyncJson.SchemaWriter>>(
+					new FamilySync<SyncJson.SchemaWriter>(ObjectMode.Deduplicate), Minified()));
 		}
 
 		[Test]
@@ -198,8 +198,8 @@ namespace Loyc.SyncLib.Tests
 			// In non-Newtonsoft mode the markers are "\f" (id), "\r" (backref) and "" (values)
 			CheckSchema(
 				@"{""$schema"":""https://json-schema.org/draft/2020-12/schema"",""$ref"":""#/$defs/Family"",""$defs"":{""Family"":{""type"":""object"",""properties"":{""Parents"":{""anyOf"":[{""type"":""object"",""properties"":{""\f"":{""type"":""integer""},"""":{""type"":""array"",""items"":{""anyOf"":[{""$ref"":""#/$defs/Parent""},{""$ref"":""#/$defs/backReference""},{""type"":""null""}]}}},""required"":[""\f"",""""]},{""$ref"":""#/$defs/backReference""},{""type"":""null""}]},""Children"":{""anyOf"":[{""type"":""object"",""properties"":{""\f"":{""type"":""integer""},"""":{""type"":""array"",""items"":{""anyOf"":[{""$ref"":""#/$defs/Child""},{""$ref"":""#/$defs/backReference""},{""type"":""null""}]}}},""required"":[""\f"",""""]},{""$ref"":""#/$defs/backReference""},{""type"":""null""}]}},""required"":[""Parents"",""Children""]},""backReference"":{""type"":""object"",""properties"":{""\r"":{""type"":""integer""}},""required"":[""\r""]},""Parent"":{""type"":""object"",""properties"":{""\f"":{""type"":""integer""},""Name"":{""type"":[""string"",""null""]},""Children"":{""anyOf"":[{""type"":""object"",""properties"":{""\f"":{""type"":""integer""},"""":{""type"":""array"",""items"":{""anyOf"":[{""$ref"":""#/$defs/Child""},{""$ref"":""#/$defs/backReference""},{""type"":""null""}]}}},""required"":[""\f"",""""]},{""$ref"":""#/$defs/backReference""},{""type"":""null""}]}},""required"":[""Name"",""Children""]},""Child"":{""type"":""object"",""properties"":{""\f"":{""type"":""integer""},""Name"":{""type"":[""string"",""null""]},""Father"":{""anyOf"":[{""$ref"":""#/$defs/Parent""},{""$ref"":""#/$defs/backReference""},{""type"":""null""}]},""Mother"":{""anyOf"":[{""$ref"":""#/$defs/Parent""},{""$ref"":""#/$defs/backReference""},{""type"":""null""}]}},""required"":[""Name"",""Father"",""Mother""]}}}",
-				SyncJson.WriteSchemaString<Family, FamilySync<SyncJson.Schema>>(
-					new FamilySync<SyncJson.Schema>(ObjectMode.Deduplicate), Minified(false)));
+				SyncJson.WriteSchemaString<Family, FamilySync<SyncJson.SchemaWriter>>(
+					new FamilySync<SyncJson.SchemaWriter>(ObjectMode.Deduplicate), Minified(false)));
 		}
 
 		[Test]

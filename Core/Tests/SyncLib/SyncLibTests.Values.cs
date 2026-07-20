@@ -119,20 +119,20 @@ namespace Loyc.SyncLib.Tests
 			RoundTripTest<decimal[], decimal>(new[] { decimal.MinValue, decimal.Zero, decimal.MaxValue }, LDecimal<Writer>, LDecimal<Reader>);
 		}
 
-		static sbyte[] LSbyte<SM>(SM sm, sbyte[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
-		static byte[] LByte<SM>(SM sm, byte[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
-		static short[] LShort<SM>(SM sm, short[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
-		static ushort[] LUshort<SM>(SM sm, ushort[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
-		static int[] LInt<SM>(SM sm, int[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
-		static uint[] LUint<SM>(SM sm, uint[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
-		static long[] LLong<SM>(SM sm, long[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
-		static ulong[] LUlong<SM>(SM sm, ulong[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
-		static bool[] LBool<SM>(SM sm, bool[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
-		static char[] LChar<SM>(SM sm, char[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
-		static float[] LFloat<SM>(SM sm, float[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
-		static double[] LDouble<SM>(SM sm, double[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
-		static decimal[] LDecimal<SM>(SM sm, decimal[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
-		static BigInteger[] LBigInt<SM>(SM sm, BigInteger[]? v) where SM : ISyncManager => sm.SyncList("list", v)!;
+		static sbyte[] LSbyte<SM>(SM sm, sbyte[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
+		static byte[] LByte<SM>(SM sm, byte[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
+		static short[] LShort<SM>(SM sm, short[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
+		static ushort[] LUshort<SM>(SM sm, ushort[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
+		static int[] LInt<SM>(SM sm, int[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
+		static uint[] LUint<SM>(SM sm, uint[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
+		static long[] LLong<SM>(SM sm, long[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
+		static ulong[] LUlong<SM>(SM sm, ulong[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
+		static bool[] LBool<SM>(SM sm, bool[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
+		static char[] LChar<SM>(SM sm, char[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
+		static float[] LFloat<SM>(SM sm, float[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
+		static double[] LDouble<SM>(SM sm, double[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
+		static decimal[] LDecimal<SM>(SM sm, decimal[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
+		static BigInteger[] LBigInt<SM>(SM sm, BigInteger[]? v) where SM : ISyncManager => sm.SyncArray("list", v)!;
 
 		[Test]
 		public void RoundTripEmptyAndNullLists()
@@ -141,7 +141,7 @@ namespace Loyc.SyncLib.Tests
 			RoundTripTest<int[]?>(null, SyncIntList<Writer>, SyncIntList<Reader>);
 
 			static int[]? SyncIntList<SM>(SM sm, int[]? value) where SM : ISyncManager
-				=> sm.SyncList("list", value);
+				=> sm.SyncArray("list", value);
 		}
 
 		[Test]

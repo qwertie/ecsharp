@@ -10,13 +10,13 @@ namespace Loyc.SyncLib;
 
 partial class SyncProtobuf
 {
-	/// <summary>Creates a <see cref="SyncProtobuf.Schema"/>, an object that produces a
+	/// <summary>Creates a <see cref="SyncProtobuf.SchemaWriter"/>, an object that produces a
 	///   Protocol Buffers <c>.proto</c> (proto3) definition describing the messages that
 	///   <see cref="SyncProtobuf.Writer"/> would produce. After using it to "synchronize"
-	///   one root object, call <see cref="Schema.Finish"/> (or ToString) to get the
+	///   one root object, call <see cref="SchemaWriter.Finish"/> (or ToString) to get the
 	///   schema document.</summary>
-	public static Schema NewSchema(Options? options = null)
-		=> new Schema(new SchemaState(options ?? _defaultOptions));
+	public static SchemaWriter NewSchema(Options? options = null)
+		=> new SchemaWriter(new SchemaState(options ?? _defaultOptions));
 
 	/// <summary>Generates a proto3 <c>.proto</c> schema (UTF-8) describing the Protobuf
 	///   output that <see cref="SyncProtobuf.Write{T}(T, SyncObjectFunc{Writer, T}, Options?)"/>
@@ -25,14 +25,14 @@ partial class SyncProtobuf
 	///   there is no data: it receives a default/null value of T, and the Sync methods
 	///   return default values. Field numbers in the schema are assigned exactly as the
 	///   writer assigns them (from <see cref="FieldId.Id"/>, else auto <c>N+1</c>).</remarks>
-	public static ReadOnlyMemory<byte> WriteSchema<T>(SyncObjectFunc<Schema, T> sync, Options? options = null)
+	public static ReadOnlyMemory<byte> WriteSchema<T>(SyncObjectFunc<SchemaWriter, T> sync, Options? options = null)
 	{
 		options ??= _defaultOptions;
 		var schema = NewSchema(options);
 		SyncManagerExt.Sync(schema, null, default(T), sync, options.RootMode);
 		return schema.Finish();
 	}
-	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{Schema, T}, Options?)"/>
+	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{SchemaWriter, T}, Options?)"/>
 	public static ReadOnlyMemory<byte> WriteSchemaI<T>(SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 	{
 		options ??= _defaultOptions;
@@ -40,25 +40,25 @@ partial class SyncProtobuf
 		SyncManagerExt.Sync<ISyncManager, T>(schema, null, default(T), sync, options.RootMode);
 		return schema.Finish();
 	}
-	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{Schema, T}, Options?)"/>
+	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{SchemaWriter, T}, Options?)"/>
 	public static ReadOnlyMemory<byte> WriteSchema<T, SyncObject>(SyncObject sync, Options? options = null)
-		where SyncObject : ISyncObject<Schema, T>
+		where SyncObject : ISyncObject<SchemaWriter, T>
 	{
 		options ??= _defaultOptions;
 		var schema = NewSchema(options);
-		SyncManagerExt.Sync<Schema, SyncObject, T>(schema, null, default(T), sync, options.RootMode);
+		SyncManagerExt.Sync<SchemaWriter, SyncObject, T>(schema, null, default(T), sync, options.RootMode);
 		return schema.Finish();
 	}
 
-	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{Schema, T}, Options?)"/>
-	public static string WriteSchemaString<T>(SyncObjectFunc<Schema, T> sync, Options? options = null)
+	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{SchemaWriter, T}, Options?)"/>
+	public static string WriteSchemaString<T>(SyncObjectFunc<SchemaWriter, T> sync, Options? options = null)
 		=> Utf8ToString(WriteSchema(sync, options));
-	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{Schema, T}, Options?)"/>
+	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{SchemaWriter, T}, Options?)"/>
 	public static string WriteSchemaStringI<T>(SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 		=> Utf8ToString(WriteSchemaI(sync, options));
-	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{Schema, T}, Options?)"/>
+	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{SchemaWriter, T}, Options?)"/>
 	public static string WriteSchemaString<T, SyncObject>(SyncObject sync, Options? options = null)
-		where SyncObject : ISyncObject<Schema, T>
+		where SyncObject : ISyncObject<SchemaWriter, T>
 		=> Utf8ToString(WriteSchema<T, SyncObject>(sync, options));
 
 	internal static string Utf8ToString(ReadOnlyMemory<byte> utf8)
@@ -91,10 +91,10 @@ partial class SyncProtobuf
 	///   <see cref="BigInteger"/> (which Protobuf lacks) map to <c>bytes</c>; and a
 	///   comment at the top names the root message.
 	/// </remarks>
-	public partial struct Schema : ISyncManager
+	public partial struct SchemaWriter : ISyncManager
 	{
 		internal SchemaState _s;
-		internal Schema(SchemaState s) => _s = s;
+		internal SchemaWriter(SchemaState s) => _s = s;
 
 		public SyncMode Mode => SyncMode.Schema;
 		public bool IsReading => true;

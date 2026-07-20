@@ -84,10 +84,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SyncProtobuf.cs" />
     <Compile Include="SyncProtobuf.Options.cs" />
-    <Compile Include="SyncProtobuf.Schema.cs" />
     <Compile Include="SyncProtobuf.SchemaState.cs" />
     <Compile Include="SyncProtobuf.Reader.cs" />
     <Compile Include="SyncProtobuf.ReaderState.cs" />
+    <Compile Include="SyncProtobuf.SchemaWriter.cs" />
     <Compile Include="SyncProtobuf.Writer.cs" />
     <Compile Include="SyncProtobuf.WriterState.cs" />
   </ItemGroup>

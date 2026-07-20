@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace Loyc.SyncLib.Tests
 {
-	/// <summary>Tests for <see cref="SyncProtobuf.Schema"/>, which generates proto3
+	/// <summary>Tests for <see cref="SyncProtobuf.SchemaWriter"/>, which generates proto3
 	/// <c>.proto</c> definitions describing the output of <see cref="SyncProtobuf.Writer"/>.</summary>
 	[TestFixture]
 	public class SyncProtobufSchemaTests : Assert
@@ -42,11 +42,11 @@ namespace Loyc.SyncLib.Tests
 			m.Ch = sm.Sync("Ch", m.Ch);
 			m.Name = sm.Sync("Name", m.Name);
 			m.MaybeInt = sm.Sync("MaybeInt", m.MaybeInt);
-			m.Blob = sm.SyncList("Blob", m.Blob);
-			m.Ints = sm.SyncList("Ints", m.Ints);
-			m.Bools = sm.SyncList("Bools", m.Bools);
-			m.Chars = sm.SyncList("Chars", m.Chars);
-			m.Strings = sm.SyncList("Strings", m.Strings);
+			m.Blob = sm.SyncArray("Blob", m.Blob);
+			m.Ints = sm.SyncArray("Ints", m.Ints);
+			m.Bools = sm.SyncArray("Bools", m.Bools);
+			m.Chars = sm.SyncArray("Chars", m.Chars);
+			m.Strings = sm.SyncArray("Strings", m.Strings);
 			return m;
 		}
 

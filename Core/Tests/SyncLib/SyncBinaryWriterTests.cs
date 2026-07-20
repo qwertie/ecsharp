@@ -242,8 +242,8 @@ public class SyncBinaryWriterTests : TestHelpers
 		// Signed array with start marker
 		var result1 = SyncBinary.Write(new object(), 
 			(sm, _) => {
-				sm.SyncList(null, new[] { 1, 10, 100, 1000 });
-				sm.SyncList(null, (int[]?) null);
+				sm.SyncArray(null, new[] { 1, 10, 100, 1000 });
+				sm.SyncArray(null, (int[]?) null);
 				return _;
 			},
 			new SyncBinary.Options { Markers = SyncBinary.Markers.ListStart });
@@ -251,8 +251,8 @@ public class SyncBinaryWriterTests : TestHelpers
 		// Unsigned array without start marker
 		var result2 = SyncBinary.Write(new object(), 
 			(sm, _) => {
-				sm.SyncList(null, new ulong[] { 1, 10, 100, 1000 });
-				sm.SyncList(null, (ulong[]?) null);
+				sm.SyncArray(null, new ulong[] { 1, 10, 100, 1000 });
+				sm.SyncArray(null, (ulong[]?) null);
 				return _;
 			},
 			new SyncBinary.Options { Markers = SyncBinary.Markers.None });

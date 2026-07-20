@@ -280,10 +280,10 @@ namespace Loyc.SyncLib.Tests
 				case FuzzKind.NBool: r.Value = sm.Sync(name, (bool?)t.Value); break;
 				case FuzzKind.String: r.Value = sm.Sync(name, (string?)t.Value); break;
 				case FuzzKind.DedupString: r.Value = sm.Sync(name, (string?)t.Value, ObjectMode.Deduplicate); break;
-				case FuzzKind.IntArray: r.Value = sm.SyncList(name, (int[]?)t.Value); break;
-				case FuzzKind.ByteArray: r.Value = sm.SyncList(name, (byte[]?)t.Value); break;
-				case FuzzKind.CharArray: r.Value = sm.SyncList(name, (char[]?)t.Value); break;
-				case FuzzKind.DoubleArray: r.Value = sm.SyncList(name, (double[]?)t.Value); break;
+				case FuzzKind.IntArray: r.Value = sm.SyncArray(name, (int[]?)t.Value); break;
+				case FuzzKind.ByteArray: r.Value = sm.SyncArray(name, (byte[]?)t.Value); break;
+				case FuzzKind.CharArray: r.Value = sm.SyncArray(name, (char[]?)t.Value); break;
+				case FuzzKind.DoubleArray: r.Value = sm.SyncArray(name, (double[]?)t.Value); break;
 				case FuzzKind.Tuple2: r.Value = DefaultSynchronizer.Sync(ref sm, name, ((int, string))t.Value!); break;
 				case FuzzKind.Object: {
 					FuzzNode? synced = sm.Sync(name, t.Children == null ? null : t,

@@ -13,12 +13,12 @@ namespace Loyc.SyncLib;
 
 partial class SyncJson
 {
-	/// <summary>Creates a <see cref="SyncJson.Schema"/>, an object for saving a
+	/// <summary>Creates a <see cref="SyncJson.SchemaWriter"/>, an object for saving a
 	///   JSON Schema that describes the JSON produced by <see cref="SyncJson.Writer"/>.
 	///   After using it to "synchronize" one root object, call
-	///   <see cref="Schema.Finish"/> (or ToString) to get the schema document.</summary>
-	public static Schema NewSchemaWriter(Options? options = null)
-		=> new Schema(new SchemaState(options ?? _defaultOptions));
+	///   <see cref="SchemaWriter.Finish"/> (or ToString) to get the schema document.</summary>
+	public static SchemaWriter NewSchemaWriter(Options? options = null)
+		=> new SchemaWriter(new SchemaState(options ?? _defaultOptions));
 
 	/// <summary>Generates a JSON Schema (draft 2020-12, UTF-8) describing the JSON
 	///   that <see cref="SyncJson.Write{T}(T, SyncObjectFunc{Writer, T}, Options?)"/>
@@ -28,14 +28,14 @@ partial class SyncJson
 	///   of T, and the Sync methods return default values. Fields that the function
 	///   only synchronizes conditionally are recorded only if the condition happens
 	///   to be true when given default values.</remarks>
-	public static ReadOnlyMemory<byte> WriteSchema<T>(SyncObjectFunc<Schema, T> sync, Options? options = null)
+	public static ReadOnlyMemory<byte> WriteSchema<T>(SyncObjectFunc<SchemaWriter, T> sync, Options? options = null)
 	{
 		options ??= _defaultOptions;
 		var schema = NewSchemaWriter(options);
 		SyncManagerExt.Sync(schema, null, default(T), sync, options.RootMode);
 		return schema.Finish();
 	}
-	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{Schema, T}, Options?)"/>
+	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{SchemaWriter, T}, Options?)"/>
 	public static ReadOnlyMemory<byte> WriteSchemaI<T>(SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 	{
 		options ??= _defaultOptions;
@@ -43,25 +43,25 @@ partial class SyncJson
 		SyncManagerExt.Sync<ISyncManager, T>(schema, null, default(T), sync, options.RootMode);
 		return schema.Finish();
 	}
-	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{Schema, T}, Options?)"/>
+	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{SchemaWriter, T}, Options?)"/>
 	public static ReadOnlyMemory<byte> WriteSchema<T, SyncObject>(SyncObject sync, Options? options = null)
-		where SyncObject : ISyncObject<Schema, T>
+		where SyncObject : ISyncObject<SchemaWriter, T>
 	{
 		options ??= _defaultOptions;
 		var schema = NewSchemaWriter(options);
-		SyncManagerExt.Sync<Schema, SyncObject, T>(schema, null, default(T), sync, options.RootMode);
+		SyncManagerExt.Sync<SchemaWriter, SyncObject, T>(schema, null, default(T), sync, options.RootMode);
 		return schema.Finish();
 	}
 
-	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{Schema, T}, Options?)"/>
-	public static string WriteSchemaString<T>(SyncObjectFunc<Schema, T> sync, Options? options = null)
+	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{SchemaWriter, T}, Options?)"/>
+	public static string WriteSchemaString<T>(SyncObjectFunc<SchemaWriter, T> sync, Options? options = null)
 		=> Utf8ToString(WriteSchema(sync, options));
-	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{Schema, T}, Options?)"/>
+	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{SchemaWriter, T}, Options?)"/>
 	public static string WriteSchemaStringI<T>(SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 		=> Utf8ToString(WriteSchemaI(sync, options));
-	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{Schema, T}, Options?)"/>
+	/// <inheritdoc cref="WriteSchema{T}(SyncObjectFunc{SchemaWriter, T}, Options?)"/>
 	public static string WriteSchemaString<T, SyncObject>(SyncObject sync, Options? options = null)
-		where SyncObject : ISyncObject<Schema, T>
+		where SyncObject : ISyncObject<SchemaWriter, T>
 		=> Utf8ToString(WriteSchema<T, SyncObject>(sync, options));
 
 	/// <summary>
@@ -95,10 +95,10 @@ partial class SyncJson
 	///   them, and (2) for polymorphic types, only the branch for the default type
 	///   tag is recorded.
 	/// </remarks>
-	public partial struct Schema : ISyncManager
+	public partial struct SchemaWriter : ISyncManager
 	{
 		internal SchemaState _s;
-		internal Schema(SchemaState s) => _s = s;
+		internal SchemaWriter(SchemaState s) => _s = s;
 
 		public SyncMode Mode => SyncMode.Schema;
 		public bool IsReading => true;

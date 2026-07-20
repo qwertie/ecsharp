@@ -208,10 +208,10 @@ namespace Loyc.SyncLib.Tests
 			obj ??= new BigStandardModelNoMem(0);
 
 			##unroll(($ListT, $Suffix, $Sync) in (
-				(#type<$T[]>, "Array", SyncList),
+				(#type<$T[]>, "Array", SyncArray),
 				(List<$T>, "List", SyncList),
 				//(IList< $T? >, "NList", SyncList),
-				(IReadOnlyCollection<$T>, "Coll", SyncList),
+				(IReadOnlyCollection<$T>, "Coll", SyncColl),
 			))
 			{
 				##unroll($T in standardTypes)
@@ -229,7 +229,7 @@ namespace Loyc.SyncLib.Tests
 			obj ??= new BigStandardModel(0);
 
 			##unroll(($ListT, $Suffix, $Sync) in (
-				(Memory<$T>, "Memory", SyncList),
+				(Memory<$T>, "Memory", SyncMemory),
 			))
 			{
 				##unroll($T in standardTypes)

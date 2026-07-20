@@ -105,15 +105,15 @@ public class SyncBinaryGoldenTests : TestHelpers
 
 		// ---- Lists ----
 		new Golden("int list without markers", B(4, 1, 10, 0x80, 100, 0b10000011, 0b11101000),
-			sm => sm.SyncList("f", new[] { 1, 10, 100, 1000 }), new[] { 1, 10, 100, 1000 }),
+			sm => sm.SyncArray("f", new[] { 1, 10, 100, 1000 }), new[] { 1, 10, 100, 1000 }),
 		new Golden("int list with start marker", B('[', 4, 1, 10, 0x80, 100, 0b10000011, 0b11101000),
-			sm => sm.SyncList("f", new[] { 1, 10, 100, 1000 }), new[] { 1, 10, 100, 1000 },
+			sm => sm.SyncArray("f", new[] { 1, 10, 100, 1000 }), new[] { 1, 10, 100, 1000 },
 			markers: SyncBinary.Markers.ListStart),
 		new Golden("null list is 0xFF", B(0xFF),
-			sm => sm.SyncList("f", (int[]?)null), null,
+			sm => sm.SyncArray("f", (int[]?)null), null,
 			markers: SyncBinary.Markers.ListStart),
 		new Golden("empty list", B('[', 0),
-			sm => sm.SyncList("f", new int[0]), new int[0],
+			sm => sm.SyncArray("f", new int[0]), new int[0],
 			markers: SyncBinary.Markers.ListStart),
 
 		// ---- BigInteger via the length-prefixed format ----

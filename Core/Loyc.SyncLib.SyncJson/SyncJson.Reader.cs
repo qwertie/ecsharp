@@ -28,11 +28,21 @@ public partial class SyncJson
 		Reader reader = NewReader(json, options);
 		return SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
 	}
+	public static T? Read<T, SyncObject>(ReadOnlyMemory<byte> input, SyncObject sync, Options? options = null)
+		where SyncObject : ISyncObject<Reader, T>
+	{
+		options ??= _defaultOptions;
+		Reader reader = NewReader(input, options);
+		return SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
+	}
 
 	public static T? Read<T>(string json, SyncObjectFunc<Reader, T> sync, Options? options = null)
 		=> Read(Encoding.UTF8.GetBytes(json), sync, options);
 	public static T? ReadI<T>(string json, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 		=> ReadI(Encoding.UTF8.GetBytes(json), sync, options);
+	public static T? Read<T, SyncObject>(string json, SyncObject sync, Options? options = null)
+		where SyncObject : ISyncObject<Reader, T>
+		=> Read<T, SyncObject>(Encoding.UTF8.GetBytes(json), sync, options);
 
 	/// <summary>
 	///   An implementation of <see cref="ISyncManager"/> for reading JSON objects. 

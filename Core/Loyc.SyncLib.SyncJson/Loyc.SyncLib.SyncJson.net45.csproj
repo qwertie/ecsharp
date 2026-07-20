@@ -89,10 +89,10 @@
       <DependentUpon>SyncJson.ecs</DependentUpon>
     </Compile>
     <Compile Include="SyncJson.Parser.cs" />
-    <Compile Include="SyncJson.Schema.cs" />
     <Compile Include="SyncJson.SchemaState.cs" />
     <Compile Include="SyncJson.Reader.cs" />
     <Compile Include="SyncJson.ReaderState.cs" />
+    <Compile Include="SyncJson.SchemaWriter.cs" />
     <Compile Include="SyncJson.Writer.cs" />
     <Compile Include="SyncJson.WriterState.cs" />
   </ItemGroup>

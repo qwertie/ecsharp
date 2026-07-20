@@ -11,13 +11,13 @@ namespace Loyc.SyncLib;
 ///   wire format. Call <see cref="Write{T}(T, SyncObjectFunc{Writer, T}, Options?)"/> or
 ///   <see cref="Read{T}(ReadOnlyMemory{byte}, SyncObjectFunc{Reader, T}, Options?)"/> to
 ///   (de)serialize an object, <see cref="NewWriter"/> / <see cref="NewReader(ReadOnlyMemory{byte}, Options?)"/>
-///   to obtain a low-level (de)serializer, or <see cref="WriteSchema{T}(SyncObjectFunc{Schema, T}, Options?)"/>
+///   to obtain a low-level (de)serializer, or <see cref="WriteSchema{T}(SyncObjectFunc{SchemaWriter, T}, Options?)"/>
 ///   to generate a <c>.proto</c> schema describing the output.
 /// </summary>
 /// <remarks>
 ///   The output is standard, valid Protocol Buffers: any Protobuf implementation (such
 ///   as protoc-generated code or protobuf-net) can parse it using the proto3 schema
-///   produced by <see cref="SyncProtobuf.Schema"/>, and <see cref="Reader"/> can parse
+///   produced by <see cref="SyncProtobuf.SchemaWriter"/>, and <see cref="Reader"/> can parse
 ///   messages produced by other Protobuf implementations from the same schema.
 ///   <para/>
 ///   Unlike <see cref="SyncBinary"/>, this format identifies every field by an integer

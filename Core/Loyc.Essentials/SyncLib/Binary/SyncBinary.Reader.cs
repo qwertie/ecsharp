@@ -29,11 +29,22 @@ partial class SyncBinary
 		Reader reader = NewReader(input, options);
 		return SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
 	}
+	public static T? Read<T, SyncObject>(ReadOnlyMemory<byte> input, SyncObject sync, Options? options = null)
+		where SyncObject : ISyncObject<Reader, T>
+	{
+		options ??= _defaultOptions;
+		Reader reader = NewReader(input, options);
+		return SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
+	}
+
 
 	public static T? Read<T>(byte[] input, SyncObjectFunc<Reader, T> sync, Options? options = null)
 		=> Read(input.AsMemory(), sync, options);
 	public static T? ReadI<T>(byte[] input, SyncObjectFunc<ISyncManager, T> sync, Options? options = null)
 		=> ReadI(input.AsMemory(), sync, options);
+	public static T? Read<T, SyncObject>(byte[] input, SyncObject sync, Options? options = null)
+		where SyncObject : ISyncObject<Reader, T>
+		=> Read<T, SyncObject>(input.AsMemory(), sync, options);
 
 	/// <summary>
 	///   An implementation of <see cref="ISyncManager"/> for reading SyncLib's compact, 

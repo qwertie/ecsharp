@@ -10,7 +10,7 @@ namespace Loyc.SyncLib.Tests
 	/// <summary>
 	///   Cross-implementation tests proving that <see cref="SyncProtobuf"/> speaks real
 	///   Protocol Buffers: its output is parsed by protobuf-net using contract types that
-	///   match the schema <see cref="SyncProtobuf.Schema"/> generates, and it parses
+	///   match the schema <see cref="SyncProtobuf.SchemaWriter"/> generates, and it parses
 	///   protobuf-net's output, including encodings SyncProtobuf itself doesn't produce
 	///   (such as unpacked repeated scalars).
 	/// </summary>
@@ -57,7 +57,7 @@ namespace Loyc.SyncLib.Tests
 			m.F = sm.Sync(("F", 6), m.F);
 			m.D = sm.Sync(("D", 7), m.D);
 			m.Name = sm.Sync(("Name", 8), m.Name);
-			m.Blob = sm.SyncList(("Blob", 9), m.Blob);
+			m.Blob = sm.SyncArray(("Blob", 9), m.Blob);
 			return m;
 		}
 
@@ -154,7 +154,7 @@ namespace Loyc.SyncLib.Tests
 			[ProtoMember(1)] public TList? List;
 		}
 
-		static int[]? SyncIntList(ISyncManager sm, int[]? v) => sm.SyncList(("List", 1), v);
+		static int[]? SyncIntList(ISyncManager sm, int[]? v) => sm.SyncArray(("List", 1), v);
 
 		[Test]
 		public void ProtobufNetReadsSyncLibIntList()
@@ -192,7 +192,7 @@ namespace Loyc.SyncLib.Tests
 			[ProtoMember(1)] public List<PbStringOpt>? Items;
 		}
 
-		static string?[]? SyncStringList(ISyncManager sm, string?[]? v) => sm.SyncList(("L", 1), v);
+		static string?[]? SyncStringList(ISyncManager sm, string?[]? v) => sm.SyncArray(("L", 1), v);
 
 		[Test]
 		public void ProtobufNetReadsSyncLibStringListWithNulls()

@@ -43,7 +43,7 @@ partial class SyncBinary
 		return output.WrittenMemory;
 	}
 
-	public static SyncBinary.Writer NewWriter(IBufferWriter<byte> output, Options? options = null)
+	public static SyncBinary.Writer NewWriter(IBufferWriter<byte>? output = null, Options? options = null)
 		=> new Writer(new WriterState(output ?? new ArrayBufferWriter<byte>(), options ?? _defaultOptions));
 
 	/// <summary>

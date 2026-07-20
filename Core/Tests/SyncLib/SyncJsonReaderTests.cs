@@ -353,7 +353,7 @@ namespace Loyc.SyncLib.Tests
 				@"{ ""\f"": 7, """": [104,105,33] }",
 			}) {
 				sm = SyncJson.NewReader(json)!;
-				ExpectList(sm.SyncList(null, (byte[]?)null), (byte)'h', (byte)'i', (byte)'!');
+				ExpectList(sm.SyncArray(null, (byte[]?)null), (byte)'h', (byte)'i', (byte)'!');
 			}
 			// Currently, big numbers overflow. DP: it would be nice if clamping were an 
 			// option, but that'd require extra checks on the hot path, so I'm disinclined.
@@ -429,7 +429,7 @@ namespace Loyc.SyncLib.Tests
 				// Try to read the wrong type first, to test that the error is recoverable
 				try {
 					// Name is never a list, so this always fails
-					sm.SyncList("Name", Array.Empty<string>());
+					sm.SyncArray("Name", Array.Empty<string>());
 				} catch (FormatException) { }
 				try {
 					// The object may have the format {"name":"string"}...
@@ -515,7 +515,7 @@ namespace Loyc.SyncLib.Tests
 			}
 
 			static byte[] SyncByteArray<SM>(SM sm, byte[]? value) where SM : ISyncManager
-				=> sm.SyncList("bytes", value)!;
+				=> sm.SyncArray("bytes", value)!;
 		}
 
 		// TODO: syntax error tests

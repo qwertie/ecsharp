@@ -55,7 +55,7 @@ partial class SyncProtobuf
 		public ProtoMessage(object key) { Key = key; }
 	}
 
-	/// <summary>The core of <see cref="SyncProtobuf.Schema"/>: records the messages that a
+	/// <summary>The core of <see cref="SyncProtobuf.SchemaWriter"/>: records the messages that a
 	///   synchronizer describes while running in <see cref="SyncMode.Schema"/> mode, then
 	///   renders them as a proto3 <c>.proto</c> document that exactly describes the wire
 	///   output of <see cref="SyncProtobuf.Writer"/>.</summary>
