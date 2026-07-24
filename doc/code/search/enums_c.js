@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['severity_3436',['Severity',['../namespaceLoyc.html#aeb4d5c77591b654c8d37485b1dd00f5e',1,'Loyc']]],
-  ['spaceopt_3437',['SpaceOpt',['../namespaceLoyc_1_1Ecs.html#af6777f19c2bd33b3656b36d293a61a40',1,'Loyc::Ecs']]]
+  ['replaceopt',['ReplaceOpt',['../classLoyc_1_1Syntax_1_1LNode.html#a65b96869ebac52b05a7acf09d0376dd5',1,'Loyc::Syntax::LNode']]]
 ];

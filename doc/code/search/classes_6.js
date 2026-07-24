@@ -1,13 +1,8 @@
 var searchData=
 [
-  ['g_1974',['G',['../classLoyc_1_1G.html',1,'Loyc']]],
-  ['gate_1975',['Gate',['../classLoyc_1_1LLParserGenerator_1_1Gate.html',1,'Loyc::LLParserGenerator']]],
-  ['generalcodegenhelper_1976',['GeneralCodeGenHelper',['../classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html',1,'Loyc::LLParserGenerator']]],
-  ['generatecodevisitor_1977',['GenerateCodeVisitor',['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GenerateCodeVisitor.html',1,'Loyc::LLParserGenerator::LLParserGenerator']]],
-  ['getcanonical_1978',['GetCanonical',['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GetCanonical.html',1,'Loyc::LLParserGenerator::LLParserGenerator']]],
-  ['goaliasattribute_1979',['GoAliasAttribute',['../classLoyc_1_1Utilities_1_1GoAliasAttribute.html',1,'Loyc::Utilities']]],
-  ['godecoratorfieldattribute_1980',['GoDecoratorFieldAttribute',['../classLoyc_1_1Utilities_1_1GoDecoratorFieldAttribute.html',1,'Loyc::Utilities']]],
-  ['gointerface_1981',['GoInterface',['../classLoyc_1_1Utilities_1_1GoInterface.html',1,'Loyc.Utilities.GoInterface'],['../classLoyc_1_1Utilities_1_1GoInterface.html',1,'Loyc.Utilities.GoInterface&lt; Interface &gt;'],['../classLoyc_1_1Utilities_1_1GoInterface.html',1,'Loyc.Utilities.GoInterface&lt; Interface, T &gt;']]],
-  ['grammarpos_1982',['GrammarPos',['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1GrammarPos.html',1,'Loyc::LLParserGenerator::LLParserGenerator']]],
-  ['gsymbol_1983',['GSymbol',['../classLoyc_1_1GSymbol.html',1,'Loyc']]]
+  ['fieldid',['FieldId',['../structLoyc_1_1SyncLib_1_1FieldId.html',1,'Loyc::SyncLib']]],
+  ['forreader',['ForReader',['../classSyncBinary_1_1Options_1_1ForReader.html',1,'SyncBinary::Options']]],
+  ['forwriter',['ForWriter',['../classSyncBinary_1_1Options_1_1ForWriter.html',1,'SyncBinary::Options']]],
+  ['fvlist_3c_20t_20_3e',['FVList&lt; T &gt;',['../structLoyc_1_1Collections_1_1FVList_3_01T_01_4.html',1,'Loyc::Collections']]],
+  ['fwlist_3c_20t_20_3e',['FWList&lt; T &gt;',['../classLoyc_1_1Collections_1_1FWList_3_01T_01_4.html',1,'Loyc::Collections']]]
 ];

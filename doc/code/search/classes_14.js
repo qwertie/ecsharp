@@ -1,21 +1,12 @@
 var searchData=
 [
-  ['weakkeycomparer_2523',['WeakKeyComparer',['../classLoyc_1_1Collections_1_1WeakKeyComparer.html',1,'Loyc::Collections']]],
-  ['weakkeycomparer_3c_20tkey_20_3e_2524',['WeakKeyComparer&lt; TKey &gt;',['../classLoyc_1_1Collections_1_1WeakKeyComparer.html',1,'Loyc::Collections']]],
-  ['weakkeydictionary_2525',['WeakKeyDictionary',['../classLoyc_1_1Collections_1_1WeakKeyDictionary.html',1,'Loyc::Collections']]],
-  ['weakkeyreference_2526',['WeakKeyReference',['../classLoyc_1_1Collections_1_1WeakKeyReference.html',1,'Loyc::Collections']]],
-  ['weakreferenceext_2527',['WeakReferenceExt',['../classLoyc_1_1WeakReferenceExt.html',1,'Loyc']]],
-  ['weakvaluedictionary_2528',['WeakValueDictionary',['../classLoyc_1_1Collections_1_1WeakValueDictionary.html',1,'Loyc::Collections']]],
-  ['weakvaluedictionary_3c_20loyc_3a_3austring_2c_20loyc_3a_3asymbol_20_3e_2529',['WeakValueDictionary&lt; Loyc::UString, Loyc::Symbol &gt;',['../classLoyc_1_1Collections_1_1WeakValueDictionary.html',1,'Loyc::Collections']]],
-  ['whitespacefilter_2530',['WhitespaceFilter',['../classLoyc_1_1Syntax_1_1Lexing_1_1WhitespaceFilter.html',1,'Loyc::Syntax::Lexing']]],
-  ['whitespacetag_2531',['WhitespaceTag',['../classLoyc_1_1Syntax_1_1Lexing_1_1WhitespaceTag.html',1,'Loyc::Syntax::Lexing']]],
-  ['wlist_2532',['WList',['../classLoyc_1_1Collections_1_1WList.html',1,'Loyc::Collections']]],
-  ['wlist_3c_20lnode_20_3e_2533',['WList&lt; LNode &gt;',['../classLoyc_1_1Collections_1_1WList.html',1,'Loyc::Collections']]],
-  ['wlist_3c_20loyc_3a_3asyntax_3a_3alnode_20_3e_2534',['WList&lt; Loyc::Syntax::LNode &gt;',['../classLoyc_1_1Collections_1_1WList.html',1,'Loyc::Collections']]],
-  ['wlistbase_2535',['WListBase',['../classLoyc_1_1Collections_1_1WListBase.html',1,'Loyc::Collections']]],
-  ['wlistprotected_2536',['WListProtected',['../classLoyc_1_1Collections_1_1WListProtected.html',1,'Loyc::Collections']]],
-  ['wrapperbase_2537',['WrapperBase',['../classLoyc_1_1WrapperBase.html',1,'Loyc']]],
-  ['wrapperbase_3c_20isourcefile_20_3e_2538',['WrapperBase&lt; ISourceFile &gt;',['../classLoyc_1_1WrapperBase.html',1,'Loyc']]],
-  ['wrapperbase_3c_20tcollection_20_3e_2539',['WrapperBase&lt; TCollection &gt;',['../classLoyc_1_1WrapperBase.html',1,'Loyc']]],
-  ['wrapperbase_3c_20tset_20_3e_2540',['WrapperBase&lt; TSet &gt;',['../classLoyc_1_1WrapperBase.html',1,'Loyc']]]
+  ['valuecollection_3c_20tkey_2c_20tvalue_20_3e',['ValueCollection&lt; TKey, TValue &gt;',['../classLoyc_1_1Collections_1_1ValueCollection_3_01TKey_00_01TValue_01_4.html',1,'Loyc::Collections']]],
+  ['valuecomparer_3c_20t_20_3e',['ValueComparer&lt; T &gt;',['../classLoyc_1_1ValueComparer_3_01T_01_4.html',1,'Loyc']]],
+  ['valuelist',['ValueList',['../structLoyc_1_1Collections_1_1MultiMap_3_01K_00_01V_01_4_1_1ValueList.html',1,'Loyc::Collections::MultiMap&lt; K, V &gt;']]],
+  ['valuelist',['ValueList',['../structLoyc_1_1Collections_1_1BMultiMap_3_01K_00_01V_01_4_1_1ValueList.html',1,'Loyc::Collections::BMultiMap&lt; K, V &gt;']]],
+  ['vlist_3c_20t_20_3e',['VList&lt; T &gt;',['../structLoyc_1_1Collections_1_1VList_3_01T_01_4.html',1,'Loyc::Collections']]],
+  ['vlistblock_3c_20t_20_3e',['VListBlock&lt; T &gt;',['../classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html',1,'Loyc::Collections']]],
+  ['vlistblockarray_3c_20t_20_3e',['VListBlockArray&lt; T &gt;',['../classLoyc_1_1Collections_1_1VListBlockArray_3_01T_01_4.html',1,'Loyc::Collections']]],
+  ['vlistblockoftwo_3c_20t_20_3e',['VListBlockOfTwo&lt; T &gt;',['../classLoyc_1_1Collections_1_1VListBlockOfTwo_3_01T_01_4.html',1,'Loyc::Collections']]],
+  ['void',['void',['../structLoyc_1_1void.html',1,'Loyc']]]
 ];

@@ -1,14 +1,20 @@
 var searchData=
 [
-  ['separator_3534',['Separator',['../namespaceLoyc_1_1Syntax_1_1Lexing.html#a67239b79e43c15aed84329612553103da04b2e4188d4ef8051e4699da8af01335',1,'Loyc::Syntax::Lexing']]],
-  ['singlequotes_3535',['SingleQuotes',['../namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afae522cdf475c9b1059020759a3a241908',1,'Loyc::Syntax']]],
-  ['skipsinglequotes_3536',['SkipSingleQuotes',['../namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91a4f549925fa96cfeb9c25970bf7c58934',1,'Loyc::Syntax']]],
-  ['skipspacesinfront_3537',['SkipSpacesInFront',['../namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91a043a760100cdfb3fea08aa42659395fa',1,'Loyc::Syntax']]],
-  ['skipspacesinsidenumber_3538',['SkipSpacesInsideNumber',['../namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91a1677c5167d3956aa0281d3682d5496a4',1,'Loyc::Syntax']]],
-  ['skipunderscores_3539',['SkipUnderscores',['../namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91a462bc2573b61295f9c4f2448bf0e287d',1,'Loyc::Syntax']]],
-  ['space_3540',['Space',['../namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bfad511f8439ecde36647437fbba67a4394',1,'Loyc']]],
-  ['spaces_3541',['Spaces',['../namespaceLoyc_1_1Syntax_1_1Lexing.html#a67239b79e43c15aed84329612553103da2e2aa75122e0f772381b5bc7a1a4fd03',1,'Loyc::Syntax::Lexing']]],
-  ['special_3542',['Special',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8ab4c2b550635fe54fd29f2b64dfaca55d',1,'Loyc::Syntax']]],
-  ['statementblock_3543',['StatementBlock',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8ac51d90b44a69d3155c50d5cb0aa01eda',1,'Loyc::Syntax']]],
-  ['stopbeforeoverflow_3544',['StopBeforeOverflow',['../namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91ada1c5c9727a3933ee8789e1cddabd51e',1,'Loyc::Syntax']]]
+  ['schema',['Schema',['../namespaceLoyc_1_1SyncLib.html#aaa1141d03979700afb25026605f5128ba7146a60667b422e69fd050fe1df6859a',1,'Loyc::SyncLib']]],
+  ['separator',['Separator',['../namespaceLoyc_1_1Syntax_1_1Lexing.html#a67239b79e43c15aed84329612553103da04b2e4188d4ef8051e4699da8af01335',1,'Loyc::Syntax::Lexing']]],
+  ['singlequotes',['SingleQuotes',['../namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afae522cdf475c9b1059020759a3a241908',1,'Loyc::Syntax']]],
+  ['skipsinglequotes',['SkipSingleQuotes',['../namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91a4f549925fa96cfeb9c25970bf7c58934',1,'Loyc::Syntax']]],
+  ['skipspacesinfront',['SkipSpacesInFront',['../namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91a043a760100cdfb3fea08aa42659395fa',1,'Loyc::Syntax']]],
+  ['skipspacesinsidenumber',['SkipSpacesInsideNumber',['../namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91a1677c5167d3956aa0281d3682d5496a4',1,'Loyc::Syntax']]],
+  ['skipunderscores',['SkipUnderscores',['../namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91a462bc2573b61295f9c4f2448bf0e287d',1,'Loyc::Syntax']]],
+  ['space',['Space',['../namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bfad511f8439ecde36647437fbba67a4394',1,'Loyc']]],
+  ['spaces',['Spaces',['../namespaceLoyc_1_1Syntax_1_1Lexing.html#a67239b79e43c15aed84329612553103da2e2aa75122e0f772381b5bc7a1a4fd03',1,'Loyc::Syntax::Lexing']]],
+  ['special',['Special',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8ab4c2b550635fe54fd29f2b64dfaca55d',1,'Loyc::Syntax']]],
+  ['statementblock',['StatementBlock',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8ac51d90b44a69d3155c50d5cb0aa01eda',1,'Loyc::Syntax']]],
+  ['stopbeforeoverflow',['StopBeforeOverflow',['../namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91ada1c5c9727a3933ee8789e1cddabd51e',1,'Loyc::Syntax']]],
+  ['string',['String',['../namespaceLoyc_1_1SyncLib.html#a133f8f4548136bac9cef01f1584fe770a27118326006d3829667a400ad23d5d98',1,'Loyc::SyncLib']]],
+  ['strings',['Strings',['../classSyncBinary.html#a23005642b591e1bb89adb55f9d0f4f7aa89be9433646f5939040a78971a5d103a',1,'SyncBinary']]],
+  ['styles',['Styles',['../classLoyc_1_1Syntax_1_1LNode.html#ab71ac39fafd45027f8c090b889265feba4c1c7d945fcd04d68bd3b3f1d99a55a1',1,'Loyc::Syntax::LNode']]],
+  ['synclib',['SyncLib',['../classSyncBinary.html#aa280f23fa4c121c10651bcaf2ac6eb5fad89f0ecd93f7bf69e42cf531740a196a',1,'SyncBinary']]],
+  ['synclibzigzag',['SyncLibZigZag',['../classSyncBinary.html#aa280f23fa4c121c10651bcaf2ac6eb5fa0f23af463de1a22ffb6ad4558b8ed427',1,'SyncBinary']]]
 ];

@@ -1,26 +1,7 @@
 var searchData=
 [
-  ['pair_2370',['Pair',['../structLoyc_1_1Pair.html',1,'Loyc.Pair&lt; T1, T2 &gt;'],['../classLoyc_1_1Pair.html',1,'Loyc.Pair']]],
-  ['pair_3c_20loyc_3a_3acollections_3a_3aimpl_3a_3aalistinnerbase_3c_20k_2c_20t_20_3e_2c_20int_20_3e_2371',['Pair&lt; Loyc::Collections::Impl::AListInnerBase&lt; K, T &gt;, int &gt;',['../classLoyc_1_1Pair.html',1,'Loyc']]],
-  ['pair_3c_20loyc_3a_3acollections_3a_3ammap_3c_20object_2c_20loyc_3a_3asyntax_3a_3aprecedence_20_3e_2c_20loyc_3a_3asyntax_3a_3aprecedence_20_3e_2372',['Pair&lt; Loyc::Collections::MMap&lt; object, Loyc::Syntax::Precedence &gt;, Loyc::Syntax::Precedence &gt;',['../classLoyc_1_1Pair.html',1,'Loyc']]],
-  ['parsehelpers_2373',['ParseHelpers',['../classLoyc_1_1Syntax_1_1ParseHelpers.html',1,'Loyc::Syntax']]],
-  ['parsersource_2374',['ParserSource',['../classLoyc_1_1Syntax_1_1ParserSource.html',1,'Loyc.Syntax.ParserSource&lt; Token &gt;'],['../classLoyc_1_1Syntax_1_1ParserSource.html',1,'Loyc.Syntax.ParserSource&lt; Token, MatchType, List &gt;'],['../classLoyc_1_1Syntax_1_1ParserSource.html',1,'Loyc.Syntax.ParserSource&lt; Token, MatchType &gt;']]],
-  ['parsersource_3c_20token_2c_20int_20_3e_2375',['ParserSource&lt; Token, int &gt;',['../classLoyc_1_1Syntax_1_1ParserSource.html',1,'Loyc::Syntax']]],
-  ['parsingmode_2376',['ParsingMode',['../classLoyc_1_1Syntax_1_1ParsingMode.html',1,'Loyc::Syntax']]],
-  ['parsingoptions_2377',['ParsingOptions',['../classLoyc_1_1Syntax_1_1ParsingOptions.html',1,'Loyc::Syntax']]],
-  ['parsingservice_2378',['ParsingService',['../classLoyc_1_1Syntax_1_1ParsingService.html',1,'Loyc::Syntax']]],
-  ['pgintset_2379',['PGIntSet',['../classLoyc_1_1LLParserGenerator_1_1PGIntSet.html',1,'Loyc::LLParserGenerator']]],
-  ['pgnodeset_2380',['PGNodeSet',['../classLoyc_1_1LLParserGenerator_1_1PGNodeSet.html',1,'Loyc::LLParserGenerator']]],
-  ['pgterminalset_2381',['PGTerminalSet',['../classLoyc_1_1LLParserGenerator_1_1PGTerminalSet.html',1,'Loyc::LLParserGenerator']]],
-  ['precedence_2382',['Precedence',['../structLoyc_1_1Syntax_1_1Precedence.html',1,'Loyc::Syntax']]],
-  ['pred_2383',['Pred',['../classLoyc_1_1LLParserGenerator_1_1Pred.html',1,'Loyc::LLParserGenerator']]],
-  ['predictionanalysisvisitor_2384',['PredictionAnalysisVisitor',['../classLoyc_1_1LLParserGenerator_1_1LLParserGenerator_1_1PredictionAnalysisVisitor.html',1,'Loyc::LLParserGenerator::LLParserGenerator']]],
-  ['predvisitor_2385',['PredVisitor',['../classLoyc_1_1LLParserGenerator_1_1PredVisitor.html',1,'Loyc::LLParserGenerator']]],
-  ['preludemacrotests_5fles2_2386',['PreludeMacroTests_Les2',['../classLeMP_1_1Tests_1_1PreludeMacroTests__Les2.html',1,'LeMP::Tests']]],
-  ['preludemacrotests_5fles3_2387',['PreludeMacroTests_Les3',['../classLeMP_1_1Tests_1_1PreludeMacroTests__Les3.html',1,'LeMP::Tests']]],
-  ['printerstate_2388',['PrinterState',['../structLoyc_1_1Syntax_1_1Impl_1_1PrinterState.html',1,'Loyc::Syntax::Impl']]],
-  ['printhelpers_2389',['PrintHelpers',['../classLoyc_1_1Syntax_1_1PrintHelpers.html',1,'Loyc::Syntax']]],
-  ['program_2390',['Program',['../classLoyc_1_1LLParserGenerator_1_1Program.html',1,'Loyc::LLParserGenerator']]],
-  ['pushedcurrent_2391',['PushedCurrent',['../structLoyc_1_1Syntax_1_1ParsingService_1_1PushedCurrent.html',1,'Loyc.Syntax.ParsingService.PushedCurrent'],['../structLoyc_1_1MessageSink_1_1PushedCurrent.html',1,'Loyc.MessageSink.PushedCurrent']]],
-  ['pushedprinter_2392',['PushedPrinter',['../structLoyc_1_1Syntax_1_1LNode_1_1PushedPrinter.html',1,'Loyc::Syntax::LNode']]]
+  ['objectsyncher',['ObjectSyncher',['../classLoyc_1_1SyncLib_1_1Impl_1_1ObjectSyncher.html',1,'Loyc::SyncLib::Impl']]],
+  ['objectsyncher_3c_20syncmanager_2c_20syncobj_2c_20t_20_3e',['ObjectSyncher&lt; SyncManager, SyncObj, T &gt;',['../structLoyc_1_1SyncLib_1_1Impl_1_1ObjectSyncher_3_01SyncManager_00_01SyncObj_00_01T_01_4.html',1,'Loyc::SyncLib::Impl']]],
+  ['observermgr',['ObserverMgr',['../classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4_1_1ObserverMgr.html',1,'Loyc::Collections::AListBase&lt; K, T &gt;']]],
+  ['options',['Options',['../classSyncBinary_1_1Options.html',1,'SyncBinary']]]
 ];
