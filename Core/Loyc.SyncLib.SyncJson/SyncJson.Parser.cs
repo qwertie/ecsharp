@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Loyc.Collections.Impl;
 using System.Diagnostics.CodeAnalysis;
@@ -762,6 +763,22 @@ partial class SyncJson
 			return ReadMoreBytes(ref cur, extraLookahead + 1);
 		}
 
+		// Returns true iff the span contains a byte >= 0x80 (i.e. non-ASCII characters).
+		// Checks 8 bytes at a time; this is called with spans of JSON string contents,
+		// which tend to be short, so full SIMD isn't obviously worthwhile.
+		private static bool ContainsNonAscii(ReadOnlySpan<byte> span)
+		{
+			// span may be misaligned, but I'm told this is performant enough on modern x64 & ARM
+			var words = MemoryMarshal.Cast<byte, ulong>(span);
+			for (int i = 0; i < words.Length; i++)
+				if ((words[i] & 0x8080_8080_8080_8080uL) != 0)
+					return true;
+			for (int i = words.Length << 3; i < span.Length; i++)
+				if (span[i] >= 0x80)
+					return true;
+			return false;
+		}
+
 		// Reads new data into _frame.Buf if possible
 		private bool ReadMoreBytes(ref JsonPointer cur, int lookaheadNeeded)
 		{
@@ -801,19 +818,31 @@ partial class SyncJson
 				var b = cur.Byte;
 				if (b == '"')
 				{
+					// Hunt for the closing quote with IndexOfAny, which is SIMD-accelerated
+					// on modern runtimes (the bytes skipped over are checked separately for
+					// non-ASCII characters, 8 bytes at a time, to classify the string).
 					var type = JsonType.SimpleString;
-					for (cur.Index++; AutoRead(ref cur); cur.Index++) {
-						if (cur.Byte == '\\') {
+					cur.Index++;
+					while (AutoRead(ref cur)) {
+						var remaining = cur.Buf.Slice(cur.Index);
+						int j = remaining.IndexOfAny((byte) '"', (byte) '\\', (byte) '\n');
+						if (type == JsonType.SimpleString && ContainsNonAscii(j < 0 ? remaining : remaining.Slice(0, j)))
 							type = JsonType.String;
-							cur.Index++; // we don't yet care which escape it is, but be sure to skip \"
-						} else if (cur.Byte == '"') {
-							return new JsonValue(type, _frame.Buf.Slice(startIndex, ++cur.Index - startIndex));
-						} else if (cur.Byte == '\n') {
-							_frame.LineNumber++;
-							if (_optRead.Strict)
-								throw NewError(cur.Index, "Newline in JSON string literal");
-						} else if (cur.Byte >= 0x80) { // non-ASCII character
-							type = JsonType.String;
+						if (j < 0) {
+							cur.Index += remaining.Length; // scan more bytes via AutoRead
+						} else {
+							cur.Index += j;
+							if (remaining[j] == '"')
+								return new JsonValue(type, _frame.Buf.Slice(startIndex, ++cur.Index - startIndex));
+							if (remaining[j] == '\\') {
+								type = JsonType.String;
+								cur.Index += 2; // we don't yet care which escape it is, but be sure to skip \"
+							} else { // '\n'
+								_frame.LineNumber++;
+								if (_optRead.Strict)
+									throw NewError(cur.Index, "Newline in JSON string literal");
+								cur.Index++;
+							}
 						}
 					}
 				}
@@ -1127,23 +1156,29 @@ partial class SyncJson
 
 		string DecodeUnquotedString(ReadOnlySpan<byte> span, JsonType type)
 		{
-			var sb = (_sb ??= new StringBuilder());
 			Debug.Assert(type is JsonType.SimpleString or JsonType.String);
-			if (type is JsonType.SimpleString) {
-				sb.Length = span.Length;
+			if (type is JsonType.SimpleString) { // pure ASCII, no escape sequences
+				#if NETSTANDARD2_0
+				// (.NET Standard 2.0 lacks the fast span overloads of Encoding methods)
+				var sb2 = _sb ??= new StringBuilder();
+				sb2.Length = span.Length;
 				for (int i = 0; i < span.Length; i++)
-					sb[i] = (char) span[i];
-			} else {
-				sb.Length = 0;
-				for (int i = 0; i < span.Length;) {
-					int c = DecodeStringChar(span, ref i);
-					if ((uint)c <= 0xFFFF)
-						sb.Append((char) c);
-					else {
-						c -= 0x10000;
-						sb.Append((char)((c >> 10) | 0xD800));
-						sb.Append((char)((c & 0x3FF) | 0xDC00));
-					}
+					sb2[i] = (char) span[i];
+				return sb2.ToString();
+				#else
+				return Encoding.ASCII.GetString(span); // vectorized on .NET Core 3+
+				#endif
+			}
+			var sb = (_sb ??= new StringBuilder());
+			sb.Length = 0;
+			for (int i = 0; i < span.Length;) {
+				int c = DecodeStringChar(span, ref i);
+				if ((uint)c <= 0xFFFF)
+					sb.Append((char) c);
+				else {
+					c -= 0x10000;
+					sb.Append((char)((c >> 10) | 0xD800));
+					sb.Append((char)((c & 0x3FF) | 0xDC00));
 				}
 			}
 			return sb.ToString();

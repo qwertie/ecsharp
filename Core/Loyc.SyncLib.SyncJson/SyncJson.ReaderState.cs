@@ -538,112 +538,38 @@ partial class SyncJson
 			return null; // missing property
 		}
 
-		public char? ReadChar(string? name, bool nullable)
+		/// <summary>Type-specific behavior of ReadNumber. Implementations are structs
+		///   so that the JIT specializes ReadNumber for each of them, making the
+		///   interface calls direct and inlinable (same trick as IListBuilder).</summary>
+		private interface INumberDecoder<T> where T : struct
+		{
+			/// <summary>Type name used in UnexpectedTypeError messages</summary>
+			string TypeName { get; }
+			/// <summary>Type passed to the user's ObjectToPrimitive handler</summary>
+			Type ObjType(bool nullable);
+			T True { get; }
+			T False { get; }
+			/// <summary>Converts a PlainInteger or Number to T</summary>
+			T Decode(ReaderState s, in JsonValue value, string? name);
+			/// <summary>Converts a JSON string (already decoded to UTF-16) to T</summary>
+			T Parse(ReaderState s, string str, string? name);
+			/// <summary>Converts the return value of ObjectToPrimitive to T</summary>
+			T FromObject(IConvertible obj);
+		}
+
+		private T? ReadNumber<T, Decoder>(string? name, bool nullable, Decoder decoder)
+			where T : struct where Decoder : INumberDecoder<T>
 		{
 			(JsonValue value, long position) v = ReadPrimitive(name);
 
 			switch (v.value.Type) {
 				case JsonType.SimpleString:
 				case JsonType.String:
-					return DecodeString(v.value).TryGet(0, '\0');
+					return decoder.Parse(this, DecodeString(v.value), name);
 
 				case JsonType.PlainInteger:
-					return checked((char) DecodeInt64(v.value.Text.Span, name));
-						
 				case JsonType.Number:
-					return checked((char) DecodeNumber(v.value.Text.Span));
-
-				case JsonType.Null:
-					if (!nullable && !_optRead.ReadNullPrimitivesAsDefault)
-						throw UnexpectedNullError(v.position, name);
-					return null;
-						
-				case JsonType.True:
-					return 't';
-
-				case JsonType.False:
-					return 'f';
-
-				case JsonType.Object:
-				case JsonType.List:
-					if (_optRead.ObjectToPrimitive == null)
-						throw UnexpectedTypeError(v.position, name, "char", v.value.Type);
-							
-					var result = _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, nullable ? typeof(char?) : typeof(char));
-					if (result == null) {
-						if (nullable)
-							return null;
-						throw UnexpectedNullError(v.position, name, true);
-					}
-					return result.ToChar(null);
-			}
-			return null; // missing property
-		}
-
-		public BigInteger? ReadBigInt(string? name, bool nullable)
-		{
-			(JsonValue value, long position) v = ReadPrimitive(name);
-
-			switch (v.value.Type) {
-				case JsonType.SimpleString:
-				case JsonType.String:
-					var str = DecodeString(v.value);
-					if (BigInteger.TryParse(str, out var parsed))
-						return parsed;
-					return (BigInteger) double.Parse(str, NumberStyles.Float);
-
-				case JsonType.PlainInteger:
-					return DecodeBigInt(v.value.Text.Span);
-						
-				case JsonType.Number:
-					return (BigInteger) DecodeNumber(v.value.Text.Span);
-
-				case JsonType.Null:
-					if (!nullable && !_optRead.ReadNullPrimitivesAsDefault)
-						throw UnexpectedNullError(v.position, name);
-					return null;
-						
-				case JsonType.True:
-					return 1;
-
-				case JsonType.False:
-					return 0;
-
-				case JsonType.Object:
-				case JsonType.List:
-					if (_optRead.ObjectToPrimitive == null)
-						throw UnexpectedTypeError(v.position, name, "integer", v.value.Type);
-
-					var result = _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, nullable ? typeof(double?) : typeof(double));
-					if (result == null) {
-						if (nullable)
-							return null;
-						throw UnexpectedNullError(v.position, name, true);
-					}
-					return (BigInteger) result.ToDouble(null);
-			}
-			return null; // missing property
-		}
-
-		public long? ReadInt64(string? name, bool nullable)
-		{
-			(JsonValue value, long position) v = ReadPrimitive(name);
-
-			switch (v.value.Type) {
-				case JsonType.SimpleString:
-				case JsonType.String:
-					var str = DecodeString(v.value);
-					if (long.TryParse(str, out long parsedInt64))
-						return parsedInt64;
-					if (BigInteger.TryParse(str, out var parsed))
-						return (long) _optRead.HandleOverflow(name, parsed, true);
-					return checked((long) double.Parse(str, NumberStyles.Float));
-
-				case JsonType.PlainInteger:
-					return DecodeInt64(v.value.Text.Span, name);
-
-				case JsonType.Number:
-					return checked((long) DecodeNumber(v.value.Text.Span));
+					return decoder.Decode(this, in v.value, name);
 
 				case JsonType.Null:
 					if (!nullable && !_optRead.ReadNullPrimitivesAsDefault)
@@ -651,212 +577,162 @@ partial class SyncJson
 					return null;
 
 				case JsonType.True:
-					return 1;
+					return decoder.True;
 
 				case JsonType.False:
-					return 0;
+					return decoder.False;
 
 				case JsonType.Object:
 				case JsonType.List:
 					if (_optRead.ObjectToPrimitive == null)
-						throw UnexpectedTypeError(v.position, name, "integer", v.value.Type);
+						throw UnexpectedTypeError(v.position, name, decoder.TypeName, v.value.Type);
 
-					var result = _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, nullable ? typeof(long?) : typeof(long));
+					var result = _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, decoder.ObjType(nullable));
 					if (result == null) {
 						if (nullable)
 							return null;
 						throw UnexpectedNullError(v.position, name, true);
 					}
-					return result.ToInt64(null);
+					return decoder.FromObject(result);
 			}
 			return null; // missing property
 		}
 
-		public ulong? ReadUInt64(string? name, bool nullable)
+		public char?       ReadChar(string? name, bool nullable)    => ReadNumber<char, CharDecoder>(name, nullable, default);
+		public BigInteger? ReadBigInt(string? name, bool nullable)  => ReadNumber<BigInteger, BigIntDecoder>(name, nullable, default);
+		public long?       ReadInt64(string? name, bool nullable)   => ReadNumber<long, Int64Decoder>(name, nullable, default);
+		public ulong?      ReadUInt64(string? name, bool nullable)  => ReadNumber<ulong, UInt64Decoder>(name, nullable, default);
+		public double?     ReadDouble(string? name, bool nullable)  => ReadNumber<double, DoubleDecoder>(name, nullable, default);
+		public decimal?    ReadDecimal(string? name, bool nullable) => ReadNumber<decimal, DecimalDecoder>(name, nullable, default);
+		public bool?       ReadBoolean(string? name, bool nullable) => ReadNumber<bool, BoolDecoder>(name, nullable, default);
+
+		private struct Int64Decoder : INumberDecoder<long>
 		{
-			(JsonValue value, long position) v = ReadPrimitive(name);
-
-			switch (v.value.Type) {
-				case JsonType.SimpleString:
-				case JsonType.String:
-					var str = DecodeString(v.value);
-					if (ulong.TryParse(str, out ulong parsedUInt64))
-						return parsedUInt64;
-					if (BigInteger.TryParse(str, out var parsed))
-						return _optRead.HandleOverflow(name, parsed, false);
-					return checked((ulong) double.Parse(str, NumberStyles.Float));
-
-				case JsonType.PlainInteger:
-					return DecodeUInt64(v.value.Text.Span, name);
-
-				case JsonType.Number:
-					return checked((ulong) DecodeNumber(v.value.Text.Span));
-
-				case JsonType.Null:
-					if (!nullable && !_optRead.ReadNullPrimitivesAsDefault)
-						throw UnexpectedNullError(v.position, name);
-					return null;
-
-				case JsonType.True:
-					return 1;
-
-				case JsonType.False:
-					return 0;
-
-				case JsonType.Object:
-				case JsonType.List:
-					if (_optRead.ObjectToPrimitive == null)
-						throw UnexpectedTypeError(v.position, name, "integer", v.value.Type);
-
-					var result = _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, nullable ? typeof(ulong?) : typeof(ulong));
-					if (result == null) {
-						if (nullable)
-							return null;
-						throw UnexpectedNullError(v.position, name, true);
-					}
-					return result.ToUInt64(null);
+			public string TypeName => "integer";
+			public Type ObjType(bool nullable) => nullable ? typeof(long?) : typeof(long);
+			public long True => 1;
+			public long False => 0;
+			public long Decode(ReaderState s, in JsonValue v, string? name)
+				=> v.Type == JsonType.PlainInteger
+					? s.DecodeInt64(v.Text.Span, name)
+					: checked((long) DecodeNumber(v.Text.Span));
+			public long Parse(ReaderState s, string str, string? name)
+			{
+				if (long.TryParse(str, out long num))
+					return num;
+				if (BigInteger.TryParse(str, out var big))
+					return (long) s._optRead.HandleOverflow(name, big, true);
+				return checked((long) double.Parse(str, NumberStyles.Float));
 			}
-			return null; // missing property
+			public long FromObject(IConvertible obj) => obj.ToInt64(null);
 		}
 
-		public double? ReadDouble(string? name, bool nullable)
+		private struct UInt64Decoder : INumberDecoder<ulong>
 		{
-			(JsonValue value, long position) v = ReadPrimitive(name);
-
-			switch (v.value.Type) {
-				case JsonType.SimpleString:
-				case JsonType.String:
-					var str = DecodeString(v.value);
-					return double.Parse(str, NumberStyles.Float, CultureInfo.InvariantCulture);
-
-				case JsonType.PlainInteger: {
-					// 18 digits or less always fits in a long
-					var span = v.value.Text.Span;
-					return span.Length <= 18 ? (double) DecodeInt64(span, name) : (double) DecodeBigInt(span);
-				}
-						
-				case JsonType.Number:
-					return (double) DecodeNumber(v.value.Text.Span);
-
-				case JsonType.Null:
-					if (!nullable && !_optRead.ReadNullPrimitivesAsDefault)
-						throw UnexpectedNullError(v.position, name);
-					return null;
-						
-				case JsonType.True:
-					return 1;
-
-				case JsonType.False:
-					return 0;
-
-				case JsonType.Object:
-				case JsonType.List:
-					if (_optRead.ObjectToPrimitive == null)
-						throw UnexpectedTypeError(v.position, name, "double", v.value.Type);
-							
-					var result = _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, nullable ? typeof(double?) : typeof(double));
-					if (result == null) {
-						if (nullable)
-							return null;
-						throw UnexpectedNullError(v.position, name, true);
-					}
-					return result.ToDouble(null);
+			public string TypeName => "integer";
+			public Type ObjType(bool nullable) => nullable ? typeof(ulong?) : typeof(ulong);
+			public ulong True => 1;
+			public ulong False => 0;
+			public ulong Decode(ReaderState s, in JsonValue v, string? name)
+				=> v.Type == JsonType.PlainInteger
+					? s.DecodeUInt64(v.Text.Span, name)
+					: checked((ulong) DecodeNumber(v.Text.Span));
+			public ulong Parse(ReaderState s, string str, string? name)
+			{
+				if (ulong.TryParse(str, out ulong num))
+					return num;
+				if (BigInteger.TryParse(str, out var big))
+					return s._optRead.HandleOverflow(name, big, false);
+				return checked((ulong) double.Parse(str, NumberStyles.Float));
 			}
-			return null; // missing property
+			public ulong FromObject(IConvertible obj) => obj.ToUInt64(null);
 		}
 
-		public decimal? ReadDecimal(string? name, bool nullable)
+		private struct BigIntDecoder : INumberDecoder<BigInteger>
 		{
-			(JsonValue value, long position) v = ReadPrimitive(name);
-
-			switch (v.value.Type) {
-				case JsonType.SimpleString:
-				case JsonType.String:
-					var str = DecodeString(v.value);
-					return decimal.Parse(str, NumberStyles.Float);
-
-				case JsonType.PlainInteger: {
-					// 18 digits or less (17 if negative) always fits in a long
-					var span = v.value.Text.Span;
-					return span.Length <= 18 ? (decimal) DecodeInt64(span, name) : (decimal) DecodeBigInt(span);
-				}
-						
-				case JsonType.Number:
-					return (decimal) DecodeDecimal(v.value.Text.Span);
-
-				case JsonType.Null:
-					if (!nullable && !_optRead.ReadNullPrimitivesAsDefault)
-						throw UnexpectedNullError(v.position, name);
-					return null;
-						
-				case JsonType.True:
-					return 1;
-
-				case JsonType.False:
-					return 0;
-
-				case JsonType.Object:
-				case JsonType.List:
-					if (_optRead.ObjectToPrimitive == null)
-						throw UnexpectedTypeError(v.position, name, "decimal", v.value.Type);
-							
-					var result = _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, nullable ? typeof(decimal?) : typeof(decimal));
-					if (result == null) {
-						if (nullable)
-							return null;
-						throw UnexpectedNullError(v.position, name, true);
-					}
-					return result.ToDecimal(null);
-			}
-			return null; // missing property
+			public string TypeName => "integer";
+			public Type ObjType(bool nullable) => nullable ? typeof(double?) : typeof(double);
+			public BigInteger True => 1;
+			public BigInteger False => 0;
+			public BigInteger Decode(ReaderState s, in JsonValue v, string? name)
+				=> v.Type == JsonType.PlainInteger
+					? DecodeBigInt(v.Text.Span)
+					: (BigInteger) DecodeNumber(v.Text.Span);
+			public BigInteger Parse(ReaderState s, string str, string? name)
+				=> BigInteger.TryParse(str, out var parsed) ? parsed
+					: (BigInteger) double.Parse(str, NumberStyles.Float);
+			public BigInteger FromObject(IConvertible obj) => (BigInteger) obj.ToDouble(null);
 		}
 
-		public bool? ReadBoolean(string? name, bool nullable)
+		private struct DoubleDecoder : INumberDecoder<double>
 		{
-			(JsonValue value, long position) v = ReadPrimitive(name);
-
-			switch (v.value.Type) {
-				case JsonType.SimpleString:
-				case JsonType.String:
-					var str = DecodeString(v.value);
-					if (bool.TryParse(str, out bool parsed))
-						return parsed;
-					return double.Parse(str) != 0;
-
-				case JsonType.PlainInteger: {
-					// 18 digits or less (17 if negative) always fits in a long
-					var span = v.value.Text.Span;
-					return span.Length <= 18 ? DecodeInt64(span, name) != 0 : DecodeBigInt(span) != 0;
-				}
-
-				case JsonType.Number:
-					return DecodeNumber(v.value.Text.Span) != 0;
-
-				case JsonType.Null:
-					if (!nullable && !_optRead.ReadNullPrimitivesAsDefault)
-						ThrowError(v.position, "\"{0}\" is not nullable, but was null".Localized(name));
-					return null;
-
-				case JsonType.True:
-					return true;
-
-				case JsonType.False:
-					return false;
-
-				case JsonType.Object:
-				case JsonType.List:
-					if (_optRead.ObjectToPrimitive == null)
-						throw UnexpectedTypeError(v.position, name, "boolean", v.value.Type);
-
-					var result = _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, typeof(bool))?.ToBoolean(null);
-					if (result == null) {
-						if (nullable)
-							return null;
-						throw UnexpectedNullError(v.position, name, true);
-					}
-					return result.Value;
+			public string TypeName => "double";
+			public Type ObjType(bool nullable) => nullable ? typeof(double?) : typeof(double);
+			public double True => 1;
+			public double False => 0;
+			public double Decode(ReaderState s, in JsonValue v, string? name)
+			{
+				var span = v.Text.Span;
+				if (v.Type != JsonType.PlainInteger)
+					return DecodeNumber(span);
+				// 18 digits or less (17 if negative) always fits in a long
+				return span.Length <= 18 ? (double) s.DecodeInt64(span, name) : (double) DecodeBigInt(span);
 			}
-			return null; // missing property
+			public double Parse(ReaderState s, string str, string? name)
+				=> double.Parse(str, NumberStyles.Float, CultureInfo.InvariantCulture);
+			public double FromObject(IConvertible obj) => obj.ToDouble(null);
+		}
+
+		private struct DecimalDecoder : INumberDecoder<decimal>
+		{
+			public string TypeName => "decimal";
+			public Type ObjType(bool nullable) => nullable ? typeof(decimal?) : typeof(decimal);
+			public decimal True => 1;
+			public decimal False => 0;
+			public decimal Decode(ReaderState s, in JsonValue v, string? name)
+			{
+				var span = v.Text.Span;
+				if (v.Type != JsonType.PlainInteger)
+					return DecodeDecimal(span);
+				// 18 digits or less (17 if negative) always fits in a long
+				return span.Length <= 18 ? (decimal) s.DecodeInt64(span, name) : (decimal) DecodeBigInt(span);
+			}
+			public decimal Parse(ReaderState s, string str, string? name)
+				=> decimal.Parse(str, NumberStyles.Float);
+			public decimal FromObject(IConvertible obj) => obj.ToDecimal(null);
+		}
+
+		private struct CharDecoder : INumberDecoder<char>
+		{
+			public string TypeName => "char";
+			public Type ObjType(bool nullable) => nullable ? typeof(char?) : typeof(char);
+			public char True => 't';
+			public char False => 'f';
+			public char Decode(ReaderState s, in JsonValue v, string? name)
+				=> v.Type == JsonType.PlainInteger
+					? checked((char) s.DecodeInt64(v.Text.Span, name))
+					: checked((char) DecodeNumber(v.Text.Span));
+			public char Parse(ReaderState s, string str, string? name) => str.TryGet(0, '\0');
+			public char FromObject(IConvertible obj) => obj.ToChar(null);
+		}
+
+		private struct BoolDecoder : INumberDecoder<bool>
+		{
+			public string TypeName => "boolean";
+			public Type ObjType(bool nullable) => nullable ? typeof(bool?) : typeof(bool);
+			public bool True => true;
+			public bool False => false;
+			public bool Decode(ReaderState s, in JsonValue v, string? name)
+			{
+				var span = v.Text.Span;
+				if (v.Type != JsonType.PlainInteger)
+					return DecodeNumber(span) != 0;
+				// 18 digits or less (17 if negative) always fits in a long
+				return span.Length <= 18 ? s.DecodeInt64(span, name) != 0 : DecodeBigInt(span) != 0;
+			}
+			public bool Parse(ReaderState s, string str, string? name)
+				=> bool.TryParse(str, out bool parsed) ? parsed : double.Parse(str) != 0;
+			public bool FromObject(IConvertible obj) => obj.ToBoolean(null);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
