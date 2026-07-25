@@ -110,7 +110,6 @@
     void RunSelected()
     {
         Queue.Enqueue(Registry.Leaves.Select(l => l.Path).Where(_selection.Contains));
-        _viewedPath ??= _selection.FirstOrDefault();
     }
 
     void RunAll() => Queue.Enqueue(Registry.Leaves.Select(l => l.Path));

@@ -67,14 +67,15 @@ namespace Loyc.SyncLib.Tests
 				},
 				new CalendarEntry(calendar) {
 					StartTime = T(11,30), Duration = M(30), Description = "Sales meeting",
-					AdvanceReminder = M(5), Id = 11
+					AdvanceReminder = M(5), Color = Color.Black, Id = 11
 				},
 				new CalendarEntry(calendar) {
 					StartTime = T(13,00), Description = "Doctor appointment",
 					AdvanceReminder = M(25), Color = Color.Red, Id = 12
 				},
 				new CalendarEntry(calendar) {
-					StartTime = T(22,00), Duration = M(15), Description = "Brush teeth", Id = 13
+					StartTime = T(22,00), Duration = M(15), Description = "Brush teeth",
+					Color = Color.Black, Id = 13
 				}
 			}) {
 				calendar.Entries[entry.StartTime].Add(entry);
@@ -96,6 +97,10 @@ namespace Loyc.SyncLib.Tests
 			Calendar calendarN = newtonSync.Deserialize(syncJson)!;
 			Calendar calendarS = synclibSync.Deserialize(newtonJson)!;
 
+			if (apiVersion >= 2) {
+				CheckEqual(calendar, calendarN);
+				CheckEqual(calendar, calendarS);
+			}
 			CheckEqual(calendarN, calendarS);
 			
 			static TimeSpan M(int minutes) 
@@ -108,7 +113,7 @@ namespace Loyc.SyncLib.Tests
 		{
 			Assert.AreEqual(a.Id, b.Id);
 			Assert.AreEqual(a.UserId, b.UserId);
-			Assert.AreEqual(a.DefaultColor, b.DefaultColor);
+			Assert.AreEqual(a.DefaultColor.ToArgb(), b.DefaultColor.ToArgb());
 			Assert.AreEqual(a.Entries.Count, b.Entries.Count);
 			
 			BList<KeyValuePair<DateTime, CalendarEntry>> aEntries = a.Entries;
@@ -128,7 +133,7 @@ namespace Loyc.SyncLib.Tests
 			Assert.AreEqual(a.Duration, b.Duration);
 			Assert.AreEqual(a.Location, b.Location);
 			Assert.AreEqual(a.AdvanceReminder, b.AdvanceReminder);
-			Assert.AreEqual(a.Color, b.Color);
+			Assert.AreEqual(a.Color.ToArgb(), b.Color.ToArgb());
 		}
 
 		/// <summary>Verifies that the Sync extension methods in <see cref="SyncTimeExt"/>

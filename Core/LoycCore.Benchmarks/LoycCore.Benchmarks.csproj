@@ -33,6 +33,7 @@
     <ProjectReference Include="..\Loyc.Math\Loyc.Math.csproj" />
     <ProjectReference Include="..\Loyc.Utilities\Loyc.Utilities.csproj" />
     <ProjectReference Include="..\Loyc.SyncLib.SyncJson\Loyc.SyncLib.SyncJson.csproj" />
+    <ProjectReference Include="..\Tests\LoycCore.Tests.csproj" />
     <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
   </ItemGroup>
   <ItemGroup>

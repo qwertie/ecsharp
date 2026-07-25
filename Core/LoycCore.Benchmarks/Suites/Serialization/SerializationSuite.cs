@@ -1,5 +1,11 @@
 using Loyc.SyncLib;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using System.Reflection;
 using static Benchmark.Serialization.SyncFunctions;
+using Calendar = Loyc.SyncLib.Tests.Calendar;
+using CalendarSync = Loyc.SyncLib.Tests.CalendarSync;
+using JsonCalendarSerialization = Loyc.SyncLib.Tests.JsonCalendarSerialization;
 
 namespace Benchmark.Serialization
 {
@@ -35,23 +41,26 @@ namespace Benchmark.Serialization
 			};
 
 			// SyncLib, fast path: the example's sync code specialized for each manager type
+			var sync = new CalendarSync();
 			scenario.Adapters.Add(new SyncJsonAdapter<Calendar>("SyncJson",
-				new CalendarSync<SyncJson.Writer>().Sync, new CalendarSync<SyncJson.Reader>().Sync, jsonOptions));
+				sync.Sync<SyncJson.Writer>, sync.Sync<SyncJson.Reader>, jsonOptions));
 			// SyncLib through ISyncManager: the exact code shown in the home-page example
 			scenario.Adapters.Add(new SyncJsonInterfaceAdapter<Calendar>("SyncJson (ISyncManager)",
-				new CalendarSync<ISyncManager>().Sync, jsonOptions));
+				sync.Sync<ISyncManager>, jsonOptions));
 			// Same sync code, binary format
 			scenario.Adapters.Add(new SyncBinaryAdapter<Calendar>("SyncBinary",
-				new CalendarSync<SyncBinary.Writer>().Sync, new CalendarSync<SyncBinary.Reader>().Sync));
+				sync.Sync<SyncBinary.Writer>, sync.Sync<SyncBinary.Reader>));
 			// SyncBinary with framing markers off (Markers.None): isolates the cost of
 			// the object start/end markers and type tags that Markers.Default writes per
 			// sub-object — most visible in object-heavy data like this calendar.
 			scenario.Adapters.Add(new SyncBinaryAdapter<Calendar>("SyncBinary (no markers)",
-				new CalendarSync<SyncBinary.Writer>().Sync, new CalendarSync<SyncBinary.Reader>().Sync,
+				sync.Sync<SyncBinary.Writer>, sync.Sync<SyncBinary.Reader>,
 				new SyncBinary.Options { Markers = SyncBinary.Markers.None }));
 
 			// The traditional approach: DTO types + conversion code
 			var newtonsoft = new JsonCalendarSerialization();
+			newtonsoft.Serializer.Formatting = Formatting.None;
+			newtonsoft.Serializer.ContractResolver = new DefaultContractResolver();
 			scenario.Adapters.Add(new DelegateAdapter<Calendar>("Newtonsoft.Json",
 				c => newtonsoft.Serialize(c), p => newtonsoft.Deserialize((string)p)));
 			var stj = new StjCalendarSerialization();
@@ -66,7 +75,7 @@ namespace Benchmark.Serialization
 			scenario.Adapters.Add(new MappedAdapter<Calendar, BinCalendarDto>("BinaryFormatter",
 				new BinaryFormatterAdapter<BinCalendarDto>(), mapper.ToDto, mapper.FromDto));
 
-			registry.AddScenarios("Loyc.SyncLib/Calendar (home-page example)",
+			registry.AddScenarios("Loyc.SyncLib/Calendar Home-Page Example",
 				"The Calendar example from SyncLib's documentation (HomePageCalendarExample.cs): " +
 				"entries live in a BMultiMap but are serialized as a flat list, colors become hex " +
 				"strings, and dates/durations become strings. SyncLib does the conversions inline in " +

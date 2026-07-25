@@ -1,188 +1,19 @@
-// The "traditional" serialization code that the SyncLib home-page example compares
-// itself against: dedicated DTO types plus code to convert business objects to and
-// from them. The Newtonsoft section is copied from
-// Core/Tests/SyncLib/HomePageCalendarExample.cs; the System.Text.Json and binary
-// (protobuf-net / MessagePack / BinaryFormatter) sections are the equivalent
-// idiomatic DTO code for those libraries.
+// Benchmark-only DTOs and mappers equivalent to the traditional Newtonsoft code
+// in Core/Tests/SyncLib/HomePageCalendarExample.cs.
 //
 // One deviation from the example, for a fair benchmark: optional CPU-eating
 // formatting features are disabled — no Formatting.Indented and no camelCase
 // naming strategy (SyncJson's NameConverter is likewise off; see
 // SerializationSuite.RegisterCalendar).
 using System.Drawing;
-using System.Text;
 using MessagePack;
-using Newtonsoft.Json;
 using ProtoBuf;
+using Calendar = Loyc.SyncLib.Tests.Calendar;
+using CalendarEntry = Loyc.SyncLib.Tests.CalendarEntry;
+using JsonCalendarSerialization = Loyc.SyncLib.Tests.JsonCalendarSerialization;
 
 namespace Benchmark.Serialization
 {
-	#region Newtonsoft.Json DTOs + serialization (copied from the home-page example)
-
-	public class JsonCalendar
-	{
-		public IEnumerable<JsonCalendarEntry?>? Entries { get; set; }
-		public int UserId { get; set; }
-	}
-
-	public class JsonCalendarV2 : JsonCalendar
-	{
-		public string? DefColor { get; set; }
-		public new IEnumerable<JsonCalendarEntryV2?>? Entries { get; set; }
-	}
-
-	public class JsonCalendarEntry
-	{
-		public int Id { get; set; }
-		public string? Description { get; set; }
-		public DateTime StartTime { get; set; }
-		public string? Location { get; set; }
-		public TimeSpan? AdvanceReminder { get; set; }
-		public virtual DateTime EndTime { get; set; }
-	}
-
-	public class JsonCalendarEntryV2 : JsonCalendarEntry
-	{
-		[JsonIgnore]
-		public override DateTime EndTime { get; set; }
-		public TimeSpan Duration { get; set; }
-		public string? Color { get; set; }
-	}
-
-	public class JsonCalendarSerialization
-	{
-		// Note: The serialized form does not include the Calendar.Id but it's included
-		//       in the Web API's URL. The web controller will save that Calendar Id here.
-		public int CalendarId { get; set; }
-		public int ApiVersion { get; set; } = 2;
-
-		private JsonSerializer _serializer = new JsonSerializer {
-			PreserveReferencesHandling = PreserveReferencesHandling.None,
-		};
-
-		public string Serialize(Calendar calendar)
-		{
-			var sb = new StringBuilder();
-			using (var writer = new StringWriter(sb))
-				_serializer.Serialize(writer, ToJsonCalendar(calendar));
-
-			return sb.ToString();
-		}
-
-		public Calendar? Deserialize(string json)
-		{
-			var expectedType = ApiVersion >= 2 ? typeof(JsonCalendarV2) : typeof(JsonCalendar);
-			var calendar = _serializer.Deserialize(new StringReader(json), expectedType);
-
-			return calendar == null ? null : FromJsonCalendar((JsonCalendar)calendar);
-		}
-
-		#region Code to convert Calendar to JsonCalendar for serialization
-
-		public JsonCalendar ToJsonCalendar(Calendar calendar)
-		{
-			var jsonEntries = calendar.Entries.Pairs().Select(pair => ToJsonCalendarEntry(pair.Value));
-
-			if (ApiVersion <= 1) {
-				return new JsonCalendar {
-					UserId = calendar.UserId,
-					Entries = jsonEntries,
-				};
-			} else {
-				return new JsonCalendarV2 {
-					UserId = calendar.UserId,
-					Entries = jsonEntries.Cast<JsonCalendarEntryV2>(),
-					DefColor = ToString(calendar.DefaultColor),
-				};
-			}
-		}
-
-		private JsonCalendarEntry ToJsonCalendarEntry(CalendarEntry entry)
-		{
-			JsonCalendarEntry jsonEntry;
-			if (ApiVersion <= 1) {
-				jsonEntry = new JsonCalendarEntry() {
-					EndTime = entry.StartTime.Add(entry.Duration)
-				};
-			} else {
-				jsonEntry = new JsonCalendarEntryV2 {
-					Duration = entry.Duration,
-					Color = ToString(entry.Color)
-				};
-			}
-
-			jsonEntry.Id = entry.Id;
-			jsonEntry.Description = entry.Description;
-			jsonEntry.StartTime = entry.StartTime;
-			jsonEntry.Location = entry.Location;
-			jsonEntry.AdvanceReminder = entry.AdvanceReminder;
-
-			return jsonEntry;
-		}
-
-		#endregion
-
-		#region Code to convert JsonCalendar to Calendar after deserialization
-
-		private Calendar FromJsonCalendar(JsonCalendar jsonCalendar)
-		{
-			_calendar = new Calendar() {
-				Id = this.CalendarId,
-				UserId = jsonCalendar.UserId,
-				Entries = new Loyc.Collections.BMultiMap<DateTime, CalendarEntry>()
-			};
-
-			var entries = jsonCalendar.Entries ?? (jsonCalendar as JsonCalendarV2)?.Entries;
-			if (entries == null)
-				throw new FormatException("Missing calendar entries");
-
-			foreach (var entry in entries)
-				_calendar.Entries[entry!.StartTime].Add(FromJsonCalendarEntry(entry!));
-
-			if (jsonCalendar is JsonCalendarV2 v2) {
-				_calendar.DefaultColor = ToColor(v2.DefColor);
-			}
-
-			return _calendar;
-		}
-
-		private Calendar? _calendar;
-
-		private CalendarEntry FromJsonCalendarEntry(JsonCalendarEntry jsonEntry)
-		{
-			var entry = new CalendarEntry();
-
-			entry.Calendar = _calendar;
-			entry.CalendarId = _calendar!.Id;
-			entry.Id = jsonEntry.Id;
-			entry.Description = jsonEntry.Description ?? "";
-			entry.StartTime = jsonEntry.StartTime;
-			entry.Location = jsonEntry.Location ?? "";
-			entry.AdvanceReminder = jsonEntry.AdvanceReminder;
-
-			if (jsonEntry is JsonCalendarEntryV2 v2) {
-				entry.Color = ToColor(v2.Color);
-				entry.Duration = v2.Duration;
-			} else {
-				entry.Duration = jsonEntry.EndTime.Subtract(jsonEntry.StartTime);
-			}
-
-			return entry;
-		}
-
-		#endregion
-
-		public static string ToString(Color c) => "#" + (c.ToArgb() & 0xFFFFF).ToString("X6");
-		public static Color ToColor(string? s)
-		{
-			if (s == null || !s.StartsWith("#"))
-				throw new FormatException("Expected a color (starting with '#')");
-			return Color.FromArgb(Convert.ToInt32(s.Substring(1), 16));
-		}
-	}
-
-	#endregion
-
 	#region System.Text.Json DTOs + serialization (equivalent code for STJ)
 
 	// Flat DTOs (v2 API only): System.Text.Json does not allow the property-hiding

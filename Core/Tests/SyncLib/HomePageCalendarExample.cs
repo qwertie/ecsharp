@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json.Serialization;
 
 //
 // The plan is to show this on the home page.
@@ -66,7 +66,7 @@ namespace Loyc.SyncLib.Tests
 		public Calendar? Calendar { get; set; }
 
 		public string Description { get; set; } = "";
-		
+
 		// Date and time when the appointment starts
 		public DateTime StartTime { get; set; }
 		// Note: the first version of the API has EndTime instead of Duration
@@ -85,23 +85,22 @@ namespace Loyc.SyncLib.Tests
 		//       in the Web API's URL. The web controller will save that Calendar Id here.
 		public int CalendarId { get; set; }
 		public int ApiVersion { get; set; } = 2;
-		
-		public SyncJson.Options Options = new SyncJson.Options { NameConverter = SyncJson.ToCamelCase };
+		public SyncJson.Options Options { get; set; } = new() { NameConverter = SyncJson.ToCamelCase };
 
-		public string Serialize(Calendar calendar) => SyncJson.WriteStringI(calendar, Sync, Options);
-		public Calendar? Deserialize(string json) => SyncJson.ReadI<Calendar>(json, Sync, Options);
+		public string Serialize(Calendar calendar) => SyncJson.WriteString(calendar, Sync, Options);
+		public Calendar? Deserialize(string json) => SyncJson.Read<Calendar>(json, Sync, Options);
 
-		public Calendar Sync(ISyncManager sm, Calendar? calendar)
+		public Calendar Sync<SM>(SM sm, Calendar? calendar) where SM : ISyncManager
 		{
 			_calendar = calendar ??= new Calendar { Id = CalendarId };
 
 			if (ApiVersion >= 2)
-				calendar.DefaultColor = sm.Sync("DefColor", calendar.DefaultColor, new SyncColor<ISyncManager>());
+				calendar.DefaultColor = sm.Sync("DefColor", calendar.DefaultColor, new SyncColor<SM>());
 
 			// Serialize (save) or deserialize (load). It's saved as a simple list of
 			// entries, while in memory we have a more complex dictionary data structure.
 			IReadOnlyCollection<CalendarEntry> entries = calendar.Entries.Select(p => p.Value);
-			var entriesOut = sm.SyncColl("Entries", entries, SyncEntry, ObjectMode.Normal)!;
+			var entriesOut = sm.SyncColl("Entries", entries, Sync, ObjectMode.Normal)!;
 			if (sm.IsReading) {
 				calendar.Entries.Clear();
 				foreach (var entry in entriesOut)
@@ -115,26 +114,26 @@ namespace Loyc.SyncLib.Tests
 
 		private Calendar? _calendar;
 
-		private CalendarEntry SyncEntry(ISyncManager sm, CalendarEntry? entry)
+		private CalendarEntry Sync<SM>(SM sm, CalendarEntry? entry) where SM : ISyncManager
 		{
 			entry ??= new CalendarEntry { Id = CalendarId };
 
 			if (ApiVersion >= 2) {
-				entry.Duration = sm.SyncAsString("Duration", entry.Duration);
-				entry.Color    = sm.Sync("Color", entry.Color, new SyncColor<ISyncManager>());
+				entry.Duration = sm.Sync("Duration", entry.Duration);
+				entry.Color    = sm.Sync("Color", entry.Color, new SyncColor<SM>());
 			}
 
 			entry.Calendar  ??= _calendar;
 			entry.CalendarId  = entry.Calendar!.Id;
 			entry.Id          = sm.Sync("Id", entry.Id);
 			entry.Description = sm.Sync("Description", entry.Description) ?? "";
-			entry.StartTime   = sm.SyncAsString("StartTime", entry.StartTime);
+			entry.StartTime   = sm.Sync("StartTime", entry.StartTime);
 			entry.Location    = sm.Sync("Location", entry.Location) ?? "";
-			entry.AdvanceReminder = sm.SyncAsString("AdvanceReminder", entry.AdvanceReminder);
+			entry.AdvanceReminder = sm.Sync("AdvanceReminder", entry.AdvanceReminder);
 
 			if (ApiVersion <= 1) {
 				// API version 1 has an EndTime field instead of a Duration field
-				var end = sm.SyncAsString("EndTime", entry.StartTime.Add(entry.Duration));
+				var end = sm.Sync("EndTime", entry.StartTime.Add(entry.Duration));
 				if (sm.IsReading)
 					entry.Duration = end.Subtract(entry.StartTime);
 			}
@@ -143,23 +142,25 @@ namespace Loyc.SyncLib.Tests
 		}
 	}
 
-	// A custom synchronizer for Color values (it saves them in hex, e.g. "#446688")
+	// A custom synchronizer for Color values that saves in hex like "#RRGGBB"
+	// when the format is plain text/JSON, or as `int` when the format is binary
 	public struct SyncColor<SM> : ISyncField<SM, Color> where SM : ISyncManager
 	{
 		public Color Sync(ref SM sm, FieldId name, Color color)
 		{
-			var str = sm.Sync(name, ToString(color));
-			if (str == null)
-				throw new FormatException("Got null when a color was expected");
-			return ToColor(str);
-		}
-
-		public static string ToString(Color c) => "#" + (c.ToArgb() & 0xFFFFF).ToString("X6");
-		public static Color ToColor(string? s)
-		{
-			if (s == null || !s.StartsWith("#"))
-				throw new FormatException("Expected a color (starting with '#')");
-			return Color.FromArgb(Convert.ToInt32(s.Substring(1), 16));
+			if (sm.IsPlainText) {
+				if (sm.IsReading) {
+					string? s = sm.Sync(name, (string?)null);
+					if (s is null || !s.StartsWith("#"))
+						throw new FormatException("Expected a color (starting with '#')");
+					return Color.FromArgb(unchecked((int)0xFF000000) | Convert.ToInt32(s.Substring(1), 16));
+				} else {
+					sm.Sync(name, "#" + (color.ToArgb() & 0xFFFFFF).ToString("X6"));
+					return color;
+				}
+			} else {
+				return Color.FromArgb(sm.Sync(name, color.ToArgb()));
+			}
 		}
 	}
 
@@ -204,7 +205,7 @@ namespace Loyc.SyncLib.Tests
 		public int CalendarId { get; set; }
 		public int ApiVersion { get; set; } = 2;
 
-		private JsonSerializer _serializer = new JsonSerializer {
+		public JsonSerializer Serializer = new JsonSerializer {
 			Formatting = Formatting.Indented,
 			PreserveReferencesHandling = PreserveReferencesHandling.None,
 			ContractResolver = new DefaultContractResolver()
@@ -217,7 +218,7 @@ namespace Loyc.SyncLib.Tests
 		{
 			var sb = new StringBuilder();
 			using (var writer = new StringWriter(sb))
-				_serializer.Serialize(writer, ToJsonCalendar(calendar));
+				Serializer.Serialize(writer, ToJsonCalendar(calendar));
 
 			return sb.ToString();
 		}
@@ -225,7 +226,7 @@ namespace Loyc.SyncLib.Tests
 		public Calendar? Deserialize(string json)
 		{
 			var expectedType = ApiVersion >= 2 ? typeof(JsonCalendarV2) : typeof(JsonCalendar);
-			var calendar = _serializer.Deserialize(new StringReader(json), expectedType);
+			var calendar = Serializer.Deserialize(new StringReader(json), expectedType);
 
 			return calendar == null ? null : FromJsonCalendar((JsonCalendar) calendar);
 		}
@@ -325,12 +326,12 @@ namespace Loyc.SyncLib.Tests
 
 		#endregion
 
-		public static string ToString(Color c) => "#" + (c.ToArgb() & 0xFFFFF).ToString("X6");
+		public static string ToString(Color c) => "#" + (c.ToArgb() & 0xFFFFFF).ToString("X6");
 		public static Color ToColor(string? s)
 		{
 			if (s == null || !s.StartsWith("#"))
 				throw new FormatException("Expected a color (starting with '#')");
-			return Color.FromArgb(Convert.ToInt32(s.Substring(1), 16));
+			return Color.FromArgb(unchecked((int)0xFF000000) | Convert.ToInt32(s.Substring(1), 16));
 		}
 	}
 
