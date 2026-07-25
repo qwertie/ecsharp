@@ -548,7 +548,7 @@ partial class SyncJson
 					return DecodeString(v.value).TryGet(0, '\0');
 
 				case JsonType.PlainInteger:
-					return checked((char) DecodeInteger(v.value.Text.Span));
+					return checked((char) DecodeInt64(v.value.Text.Span, name));
 						
 				case JsonType.Number:
 					return checked((char) DecodeNumber(v.value.Text.Span));
@@ -580,7 +580,7 @@ partial class SyncJson
 			return null; // missing property
 		}
 
-		public BigInteger? ReadInteger(string? name, bool nullable)
+		public BigInteger? ReadBigInt(string? name, bool nullable)
 		{
 			(JsonValue value, long position) v = ReadPrimitive(name);
 
@@ -593,7 +593,7 @@ partial class SyncJson
 					return (BigInteger) double.Parse(str, NumberStyles.Float);
 
 				case JsonType.PlainInteger:
-					return DecodeInteger(v.value.Text.Span);
+					return DecodeBigInt(v.value.Text.Span);
 						
 				case JsonType.Number:
 					return (BigInteger) DecodeNumber(v.value.Text.Span);
@@ -625,6 +625,100 @@ partial class SyncJson
 			return null; // missing property
 		}
 
+		public long? ReadInt64(string? name, bool nullable)
+		{
+			(JsonValue value, long position) v = ReadPrimitive(name);
+
+			switch (v.value.Type) {
+				case JsonType.SimpleString:
+				case JsonType.String:
+					var str = DecodeString(v.value);
+					if (long.TryParse(str, out long parsedInt64))
+						return parsedInt64;
+					if (BigInteger.TryParse(str, out var parsed))
+						return (long) _optRead.HandleOverflow(name, parsed, true);
+					return checked((long) double.Parse(str, NumberStyles.Float));
+
+				case JsonType.PlainInteger:
+					return DecodeInt64(v.value.Text.Span, name);
+
+				case JsonType.Number:
+					return checked((long) DecodeNumber(v.value.Text.Span));
+
+				case JsonType.Null:
+					if (!nullable && !_optRead.ReadNullPrimitivesAsDefault)
+						throw UnexpectedNullError(v.position, name);
+					return null;
+
+				case JsonType.True:
+					return 1;
+
+				case JsonType.False:
+					return 0;
+
+				case JsonType.Object:
+				case JsonType.List:
+					if (_optRead.ObjectToPrimitive == null)
+						throw UnexpectedTypeError(v.position, name, "integer", v.value.Type);
+
+					var result = _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, nullable ? typeof(long?) : typeof(long));
+					if (result == null) {
+						if (nullable)
+							return null;
+						throw UnexpectedNullError(v.position, name, true);
+					}
+					return result.ToInt64(null);
+			}
+			return null; // missing property
+		}
+
+		public ulong? ReadUInt64(string? name, bool nullable)
+		{
+			(JsonValue value, long position) v = ReadPrimitive(name);
+
+			switch (v.value.Type) {
+				case JsonType.SimpleString:
+				case JsonType.String:
+					var str = DecodeString(v.value);
+					if (ulong.TryParse(str, out ulong parsedUInt64))
+						return parsedUInt64;
+					if (BigInteger.TryParse(str, out var parsed))
+						return _optRead.HandleOverflow(name, parsed, false);
+					return checked((ulong) double.Parse(str, NumberStyles.Float));
+
+				case JsonType.PlainInteger:
+					return DecodeUInt64(v.value.Text.Span, name);
+
+				case JsonType.Number:
+					return checked((ulong) DecodeNumber(v.value.Text.Span));
+
+				case JsonType.Null:
+					if (!nullable && !_optRead.ReadNullPrimitivesAsDefault)
+						throw UnexpectedNullError(v.position, name);
+					return null;
+
+				case JsonType.True:
+					return 1;
+
+				case JsonType.False:
+					return 0;
+
+				case JsonType.Object:
+				case JsonType.List:
+					if (_optRead.ObjectToPrimitive == null)
+						throw UnexpectedTypeError(v.position, name, "integer", v.value.Type);
+
+					var result = _optRead.ObjectToPrimitive!(name, v.value.Text, v.position, nullable ? typeof(ulong?) : typeof(ulong));
+					if (result == null) {
+						if (nullable)
+							return null;
+						throw UnexpectedNullError(v.position, name, true);
+					}
+					return result.ToUInt64(null);
+			}
+			return null; // missing property
+		}
+
 		public double? ReadDouble(string? name, bool nullable)
 		{
 			(JsonValue value, long position) v = ReadPrimitive(name);
@@ -635,8 +729,11 @@ partial class SyncJson
 					var str = DecodeString(v.value);
 					return double.Parse(str, NumberStyles.Float, CultureInfo.InvariantCulture);
 
-				case JsonType.PlainInteger:
-					return (double) DecodeInteger(v.value.Text.Span);
+				case JsonType.PlainInteger: {
+					// 18 digits or less always fits in a long
+					var span = v.value.Text.Span;
+					return span.Length <= 18 ? (double) DecodeInt64(span, name) : (double) DecodeBigInt(span);
+				}
 						
 				case JsonType.Number:
 					return (double) DecodeNumber(v.value.Text.Span);
@@ -678,8 +775,11 @@ partial class SyncJson
 					var str = DecodeString(v.value);
 					return decimal.Parse(str, NumberStyles.Float);
 
-				case JsonType.PlainInteger:
-					return (decimal) DecodeInteger(v.value.Text.Span);
+				case JsonType.PlainInteger: {
+					// 18 digits or less (17 if negative) always fits in a long
+					var span = v.value.Text.Span;
+					return span.Length <= 18 ? (decimal) DecodeInt64(span, name) : (decimal) DecodeBigInt(span);
+				}
 						
 				case JsonType.Number:
 					return (decimal) DecodeDecimal(v.value.Text.Span);
@@ -723,8 +823,11 @@ partial class SyncJson
 						return parsed;
 					return double.Parse(str) != 0;
 
-				case JsonType.PlainInteger:
-					return DecodeInteger(v.value.Text.Span) != 0;
+				case JsonType.PlainInteger: {
+					// 18 digits or less (17 if negative) always fits in a long
+					var span = v.value.Text.Span;
+					return span.Length <= 18 ? DecodeInt64(span, name) != 0 : DecodeBigInt(span) != 0;
+				}
 
 				case JsonType.Number:
 					return DecodeNumber(v.value.Text.Span) != 0;

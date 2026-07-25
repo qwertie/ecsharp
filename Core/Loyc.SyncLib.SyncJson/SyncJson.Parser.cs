@@ -515,8 +515,8 @@ partial class SyncJson
 						// Find out if it's an integer
 						var lookahead = cur;
 						for (lookahead.Index++; AutoRead(ref lookahead); lookahead.Index++) {
-							if (cur.Byte < '0' || cur.Byte > '9') {
-								if (cur.Byte == '.' || cur.Byte == 'e')
+							if (lookahead.Byte < '0' || lookahead.Byte > '9') {
+								if (lookahead.Byte == '.' || lookahead.Byte == 'e')
 									return JsonType.Number;
 								break;
 							}
@@ -1006,29 +1006,85 @@ partial class SyncJson
 
 		#region Decoders of primitive values
 
-		protected static BigInteger DecodeInteger(ReadOnlySpan<byte> text)
+		// Given a span that is already known to be an integer, parses to a ulong and sign bit,
+		// or (0, true) for "overflow" (i.e. too high for `ulong` or too low for `long`).
+		// DP: I walked through the edge cases with GPT5.6. This is as solid as 5.6 itself.
+		protected static (ulong num, bool negative) ParseAsLong(ReadOnlySpan<byte> text)
+		{
+			// IMPORTANT: we assume that the syntax has already been verified by ScanValue()
+			if (text.Length == 1) {
+				Debug.Assert((char)text[0] is >= '0' and <= '9');
+				return ((ulong)text[0] - '0', false);
+			} else if (text[0] == '-') {
+				(ulong num, bool neg) = ParseAsLong(text.Slice(1));
+				if (num != 0) {
+					neg = true;
+					if (num > unchecked((ulong)long.MinValue))
+						num = 0; // return (0, true) meaning "overflow"
+				}
+				return (num, neg);
+			} else if (text.Length < 20) {
+				// This fits in a ulong. Parse manually for speed.
+				ulong num = (ulong)(text[0] - '0');
+				for (int i = 1; i < text.Length; i++)
+					num = num * 10 + (ulong)(text[i] - '0');
+				return (num, false);
+			} else {
+				// 20 is the minimum length needed to overflow `ulong`
+				return SusiciouslyBigInt(text);
+			}
+
+			static (ulong num, bool negative) SusiciouslyBigInt(ReadOnlySpan<byte> text)
+			{
+				if (text.Length > 20) {
+					while (text[0] == '0') {
+						if ((text = text.Slice(1)).Length <= 20)
+							return ParseAsLong(text);
+					}
+					return (0, true); // overflow
+				} else {
+					var (num, neg) = ParseAsLong(text.Slice(1));
+					var firstDigit = text[0];
+					if (firstDigit == '0')
+						return (num, neg);
+					else if (firstDigit > '1' || num > ulong.MaxValue - 10000_00000_00000_00000uL)
+						return (0, true); // overflow
+					else
+						return (num + 10000_00000_00000_00000uL, false);
+				}
+			}
+		}
+
+		protected ulong DecodeUInt64(ReadOnlySpan<byte> text, string? name)
+		{
+			var (num, neg) = ParseAsLong(text);
+			return neg ? HandleOverflow(text, name, false) : num;
+		}
+
+		protected long DecodeInt64(ReadOnlySpan<byte> text, string? name)
+		{
+			var (uint64, neg) = ParseAsLong(text);
+			var int64 = (long)uint64;
+			if (neg ? int64 is not 0 : int64 is >= 0 and <= long.MaxValue) // detect non-overflow
+				return neg ? -int64 : int64;
+			else
+				return (long)HandleOverflow(text, name, true);
+		}
+
+		protected ulong HandleOverflow(ReadOnlySpan<byte> text, string? name, bool isSignedField)
+		{
+			return _opt.Read.HandleOverflow(name, DecodeBigInt(text), isSignedField);
+		}
+
+		protected static BigInteger DecodeBigInt(ReadOnlySpan<byte> text)
 		{
 			// We can assume that the syntax has already been verified by ScanValue()
-			if (text.Length == 1)
-				return text[0] - '0';
-			else if (text.Length < 19) {
-				// This integer fits in a long.
-				if (text[0] == '-')
-					return -DecodeInteger(text.Slice(1));
+			var (magnitude, neg) = ParseAsLong(text);
+			if (magnitude != 0 || !neg)
+				return neg ? -(BigInteger)magnitude : magnitude;
 
-				// Because it's bytes, we must parse manually if we want speed
-				int i = text.Length - 1;
-				long multiplier = 10, num = text[i] - '0';
-				for (i--; i >= 0; i--) {
-					Debug.Assert((char)text[i] is >= '0' and <= '9');
-					num += (text[i] - '0') * multiplier;
-					multiplier *= 10;
-				}
-				return num;
-			} else {
-				string text2 = AsciiToString(text);
-				return BigInteger.Parse(text2);
-			}
+			// (0, true) means the number doesn't fit in 64 bits
+			return BigInteger.Parse(AsciiToString(text));
 		}
 		protected static double DecodeNumber(ReadOnlySpan<byte> text)
 		{

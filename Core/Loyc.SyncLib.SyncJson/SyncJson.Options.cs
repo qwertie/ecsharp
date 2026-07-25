@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 using System.Text;
 
 namespace Loyc.SyncLib;
@@ -243,7 +244,28 @@ partial class SyncJson
 			///   property is true.</summary>
 			/// <seealso cref="ObjectMode.ReadNullAsDefault"/>
 			public bool ReadNullPrimitivesAsDefault { get; set; } = false;
+
+			/// <summary>Called when a number overflows the requested data type.</summary>
+			public OverflowHandler HandleOverflow { get; set; } = ThrowOnOverflow;
 		}
+
+		public delegate ulong OverflowHandler(FieldId field, BigInteger num, bool signedField);
+
+		/// <summary>A value for ForReader.HandleOverflow that throws.</summary>
+		public static ulong ThrowOnOverflow(FieldId field, BigInteger num, bool signedField)
+			=> throw new OverflowException("Overflow: {0} does not fit in \"{1}\"".Localized(num, field));
+
+		/// <summary>A value for ForReader.HandleOverflow that truncates.</summary>
+		public static ulong TruncateOnOverflow(FieldId field, BigInteger num, bool signedField)
+			=> (ulong)(num & ulong.MaxValue); // avoid the usual OverflowException
+
+		/// <summary>A value for ForReader.HandleOverflow that returns long.MinValue/
+		///   long.MaxValue if the target field is signed, or 0/ulong.MaxValue otherwise.
+		///   SyncJson.Reader then truncates the return value to the target size.</summary>
+		public static ulong ClampOnOverflow(FieldId field, BigInteger num, bool signedField)
+			=> signedField
+				? (num < 0 ? unchecked((ulong)long.MinValue) : long.MaxValue)
+				: (num < 0 ? 0 : ulong.MaxValue);  
 
 		#endregion
 	}

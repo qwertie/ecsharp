@@ -83,7 +83,7 @@ deploy:
     - provider: NuGet
       api_key:
           # API key from NuGet.org, encrypted with https://ci.appveyor.com/tools/encrypt
-          secure: Hnfpht1SMBjt2xeSbCV0u0OzzskwdUA7DIYOCtBPmBfWGPrTp8DmFLyEJ1II9kRR
+          secure: gM4SjsPdN+1tZ3mk8Y6lz1zpaO14tQK2f7Fb1eAvEDT3HIItJeK0eMkVKJDM3yKz
       skip_symbols: false         # Whether to not publish symbol pkgs (src/pdb)
       artifact: /.*\.s?nupkg/
       on:

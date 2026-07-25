@@ -140,33 +140,68 @@ public partial class SyncJson
 
 		public bool Sync(FieldId name, bool savable) => _s.ReadBoolean(name.Name, false) ?? false;
 
-		// Note: these casts are inherently checked for overflow. Even if "unchecked" 
-		//       were used here, they would still be checked because BigInteger's 
-		//       conversion operators use checked conversion internally.
+		// Note: integers are parsed as long/ulong for speed; BigInteger is only used
+		//       when a value doesn't fit in 64 bits, in which case the behavior is
+		//       controlled by Options.Read.HandleOverflow (which throws by default).
+		//       If a value fits in 64 bits but not in the target field, these
+		//       helpers also invoke HandleOverflow, then truncate its return value
+		//       to the size of the target field.
+
+		private long ReadSigned(string? name, long min, long max)
+		{
+			long num = _s.ReadInt64(name, false) ?? default;
+			if (num < min || num > max)
+				num = unchecked((long) _s._optRead.HandleOverflow(name, num, true));
+			return num;
+		}
+
+		private long? ReadSignedOrNull(string? name, long min, long max)
+		{
+			long? num = _s.ReadInt64(name, true);
+			if (num.HasValue && (num.Value < min || num.Value > max))
+				return unchecked((long) _s._optRead.HandleOverflow(name, num.Value, true));
+			return num;
+		}
+
+		private ulong ReadUnsigned(string? name, ulong max)
+		{
+			ulong num = _s.ReadUInt64(name, false) ?? default;
+			if (num > max)
+				num = _s._optRead.HandleOverflow(name, num, false);
+			return num;
+		}
+
+		private ulong? ReadUnsignedOrNull(string? name, ulong max)
+		{
+			ulong? num = _s.ReadUInt64(name, true);
+			if (num.HasValue && num.Value > max)
+				return _s._optRead.HandleOverflow(name, num.Value, false);
+			return num;
+		}
 
 		public sbyte Sync(FieldId name, sbyte savable)
-			=> checked((sbyte) (_s.ReadInteger(name.Name, false) ?? default));
+			=> unchecked((sbyte) ReadSigned(name.Name, sbyte.MinValue, sbyte.MaxValue));
 
 		public byte Sync(FieldId name, byte savable)
-			=> checked((byte) (_s.ReadInteger(name.Name, false) ?? default));
+			=> unchecked((byte) ReadUnsigned(name.Name, byte.MaxValue));
 
 		public short Sync(FieldId name, short savable)
-			=> checked((short) (_s.ReadInteger(name.Name, false) ?? default));
+			=> unchecked((short) ReadSigned(name.Name, short.MinValue, short.MaxValue));
 
 		public ushort Sync(FieldId name, ushort savable)
-			=> checked((ushort) (_s.ReadInteger(name.Name, false) ?? default));
+			=> unchecked((ushort) ReadUnsigned(name.Name, ushort.MaxValue));
 
 		public int Sync(FieldId name, int savable)
-			=> checked((int) (_s.ReadInteger(name.Name, false) ?? default));
+			=> unchecked((int) ReadSigned(name.Name, int.MinValue, int.MaxValue));
 
 		public uint Sync(FieldId name, uint savable)
-			=> checked((uint) (_s.ReadInteger(name.Name, false) ?? default));
+			=> unchecked((uint) ReadUnsigned(name.Name, uint.MaxValue));
 
 		public long Sync(FieldId name, long savable)
-			=> checked((long) (_s.ReadInteger(name.Name, false) ?? default));
+			=> _s.ReadInt64(name.Name, false) ?? default;
 
 		public ulong Sync(FieldId name, ulong savable)
-			=> checked((ulong) (_s.ReadInteger(name.Name, false) ?? default));
+			=> _s.ReadUInt64(name.Name, false) ?? default;
 
 		public float Sync(FieldId name, float savable)
 			=> (float) (_s.ReadDouble(name.Name, false) ?? default);
@@ -178,24 +213,24 @@ public partial class SyncJson
 			=> _s.ReadDecimal(name.Name, false) ?? default;
 
 		public BigInteger Sync(FieldId name, BigInteger savable)
-			=> _s.ReadInteger(name.Name, false) ?? default;
+			=> _s.ReadBigInt(name.Name, false) ?? default;
 
 		public char Sync(FieldId name, char savable)
 			=> _s.ReadChar(name.Name, false) ?? '\0';
 
 		public int Sync(FieldId name, int savable, int bits, bool signed = true)
 		{
-			return (int) (_s.ReadInteger(name.Name, false) ?? default);
+			return unchecked((int) ReadSigned(name.Name, int.MinValue, int.MaxValue));
 		}
 
 		public long Sync(FieldId name, long savable, int bits, bool signed = true)
 		{
-			return (long) (_s.ReadInteger(name.Name, false) ?? default);
+			return _s.ReadInt64(name.Name, false) ?? default;
 		}
 
 		public BigInteger Sync(FieldId name, BigInteger savable, int bits, bool signed = true)
 		{
-			return _s.ReadInteger(name.Name, false) ?? default;
+			return _s.ReadBigInt(name.Name, false) ?? default;
 		}
 
 		public List? SyncListBoolImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
@@ -233,21 +268,21 @@ public partial class SyncJson
 
 		public bool? Sync(FieldId name, bool? savable) => _s.ReadBoolean(name, true);
 
-		public sbyte? Sync(FieldId name, sbyte? savable) => checked((sbyte?) _s.ReadInteger(name, true));
+		public sbyte? Sync(FieldId name, sbyte? savable) => unchecked((sbyte?) ReadSignedOrNull(name, sbyte.MinValue, sbyte.MaxValue));
 
-		public byte? Sync(FieldId name, byte? savable) => checked((byte?) _s.ReadInteger(name, true));
+		public byte? Sync(FieldId name, byte? savable) => unchecked((byte?) ReadUnsignedOrNull(name, byte.MaxValue));
 
-		public short? Sync(FieldId name, short? savable) => checked((short?) _s.ReadInteger(name, true));
+		public short? Sync(FieldId name, short? savable) => unchecked((short?) ReadSignedOrNull(name, short.MinValue, short.MaxValue));
 
-		public ushort? Sync(FieldId name, ushort? savable) => checked((ushort?) _s.ReadInteger(name, true));
+		public ushort? Sync(FieldId name, ushort? savable) => unchecked((ushort?) ReadUnsignedOrNull(name, ushort.MaxValue));
 
-		public int? Sync(FieldId name, int? savable) => checked((int?) _s.ReadInteger(name, true));
+		public int? Sync(FieldId name, int? savable) => unchecked((int?) ReadSignedOrNull(name, int.MinValue, int.MaxValue));
 
-		public uint? Sync(FieldId name, uint? savable) => checked((uint?) _s.ReadInteger(name, true));
+		public uint? Sync(FieldId name, uint? savable) => unchecked((uint?) ReadUnsignedOrNull(name, uint.MaxValue));
 
-		public long? Sync(FieldId name, long? savable) => checked((long?) _s.ReadInteger(name, true));
+		public long? Sync(FieldId name, long? savable) => _s.ReadInt64(name, true);
 
-		public ulong? Sync(FieldId name, ulong? savable) => checked((ulong?) _s.ReadInteger(name, true));
+		public ulong? Sync(FieldId name, ulong? savable) => _s.ReadUInt64(name, true);
 
 		public float? Sync(FieldId name, float? savable) => (float?) _s.ReadDouble(name, true);
 
@@ -255,7 +290,7 @@ public partial class SyncJson
 
 		public decimal? Sync(FieldId name, decimal? savable) => _s.ReadDecimal(name, true);
 
-		public BigInteger? Sync(FieldId name, BigInteger? savable) => _s.ReadInteger(name, true);
+		public BigInteger? Sync(FieldId name, BigInteger? savable) => _s.ReadBigInt(name, true);
 
 		public char? Sync(FieldId name, char? savable) => _s.ReadChar(name, true);
 
