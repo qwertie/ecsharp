@@ -7,7 +7,8 @@ using Loyc.MiniTest;
 namespace Loyc.Collections.Tests
 {
 	using System;
-	
+	using Range = Loyc.Range; // on .NET Core 3+, `using System` would hide it behind System.Range
+
 	/// <summary>Tests the IAddRange interface of a list class.</summary>
 	[TestFixture]
 	public class AddRangeTest<ListT> where ListT : IAddRange<int>, ICloneable<ListT>, IReadOnlyCollection<int> //, IGetIteratorSlice<int>

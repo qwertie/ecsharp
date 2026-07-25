@@ -480,8 +480,7 @@ namespace Loyc.SyncLib
 								len += 3; // valid surrogate pair (4 bytes)
 								i++;
 							} else {
-								//len += 5; // invalid lone surrogate is escaped
-								len += 2;
+								len += 5; // lone surrogate: WriteStringCore escapes it (\uXXXX)
 							}
 						} else
 							len += 2; // other BMP character (3 bytes)

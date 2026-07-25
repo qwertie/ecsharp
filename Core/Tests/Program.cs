@@ -131,6 +131,12 @@ namespace Loyc.Tests
 				new SyncJsonTests(newtonCompat: false, false, false),
 				new SyncJsonTests(newtonCompat: false, true, true),
 				new SyncJsonReaderTests(),
+				#if NETCOREAPP3_0_OR_GREATER // SyncJsonDOM needs JsonDocument
+				new SyncJsonDOMTests(newtonCompat: true, false, false),
+				new SyncJsonDOMTests(newtonCompat: true, true, false),
+				new SyncJsonDOMTests(newtonCompat: false, false, false),
+				new SyncJsonDOMTests(newtonCompat: false, true, true),
+				#endif
 				new SyncJsonSchemaTests(),
 				new SyncDynamicJsonTests(),
 				new SyncProtobufTests(false),

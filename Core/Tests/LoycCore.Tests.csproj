@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <!-- netcoreapp3.1 is included to test SyncJsonDOM, which needs JsonDocument -->
+    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
     <Nullable>enable</Nullable>
     <LangVersion>10.0</LangVersion>
     <OutputPath>..\Bin\$(Configuration)\</OutputPath>
