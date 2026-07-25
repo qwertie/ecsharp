@@ -173,7 +173,10 @@ namespace Loyc.Collections.Impl
 			while (iN != END)
 			{
 				T curValue = _values[iN];
-				if (value == null ? curValue == null : value.Equals(curValue))
+				// EqualityComparer<T>.Default avoids boxing curValue on every chain step
+				// (T is unconstrained, so value.Equals(curValue) bound to the
+				// object.Equals(object) overload) and handles null on both sides.
+				if (EqualityComparer<T>.Default.Equals(value, curValue))
 				{
 					// value found. Remove the entry.
 					if (iOldN == -1)

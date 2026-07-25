@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -131,7 +131,7 @@ namespace Loyc.Utilities
 			if (expandEnvVars)
 				args[i] = s = Environment.ExpandEnvironmentVariables(s);
 
-			if (s.StartsWith("-")) {
+			if (s.StartsWith("-", StringComparison.Ordinal)) {
 				Match m = CmdLineLongOptRegex.Match(s);
 				if (m.Success)
 				{
@@ -184,7 +184,7 @@ namespace Loyc.Utilities
 					}
 				}
 			}
-			else if (atFolder != null && s.StartsWith("@"))
+			else if (atFolder != null && s.StartsWith("@", StringComparison.Ordinal))
 			{
 				// e.g. "@list of options.txt"
 				string atFile = s.Substring(1);
@@ -213,7 +213,7 @@ namespace Loyc.Utilities
 
 		private static void MaybeRemoveArg(IList<string> args, int i, bool expandEnvVars, ref string value)
 		{
-			if (value == null && i < args.Count && !args[i].StartsWith("-"))
+			if (value == null && i < args.Count && !args[i].StartsWith("-", StringComparison.Ordinal))
 			{
 				value = args[i];
 				if (expandEnvVars)

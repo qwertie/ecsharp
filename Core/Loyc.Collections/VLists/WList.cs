@@ -1,4 +1,4 @@
-/*
+﻿/*
 	VList processing library: Copyright 2009 by David Piepgrass
 
 	This library is free software: you can redistribute it and/or modify it 
@@ -221,11 +221,10 @@ namespace Loyc.Collections
 		public T Last
 		{
 			get {
-				try {
-					return Block!.Front(LocalCount);
-				} catch (NullReferenceException) {
-					throw new EmptySequenceException();
-				}
+				// An explicit emptiness check replaces catch(NullReferenceException):
+				// the old form also swallowed any NRE thrown from inside Front().
+				if (Block == null) throw new EmptySequenceException();
+				return Block.Front(LocalCount);
 			}
 			set {
 				if (IsEmpty) throw new EmptySequenceException();

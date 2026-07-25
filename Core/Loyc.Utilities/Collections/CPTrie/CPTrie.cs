@@ -49,7 +49,19 @@ namespace Loyc.Collections
 
 		protected internal int Count { get { return _count; } }
 
+		/// <summary>Not used by CPTrie itself any longer; retained because it is a
+		/// protected member of a public, publicly-constructible class and so may be
+		/// used by derived classes outside this assembly.</summary>
 		protected static Comparer<T> DefaultComparer = Comparer<T>.Default;
+		/// <summary>Equality comparer used to compare values for the Contains and
+		/// Remove implementations.</summary>
+		/// <remarks>These call sites only ever test for equality, but previously used
+		/// <see cref="DefaultComparer"/>. Comparer&lt;T>.Default.Compare THROWS
+		/// InvalidOperationException for any T that does not implement IComparable, so
+		/// e.g. CPStringTrie&lt;SomeClass>.Contains(kvp) threw instead of returning false.
+		/// EqualityComparer&lt;T>.Default always works and honours IEquatable&lt;T>
+		/// without boxing.</remarks>
+		protected static readonly EqualityComparer<T> DefaultValueComparer = EqualityComparer<T>.Default;
 		private static ScratchBuffer<byte[]> _stringScratchBuffer;
 		private const int StringScratchBufferLen = 48;
 		

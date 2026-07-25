@@ -151,6 +151,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>FixedPoint.tt</DependentUpon>
     </Compile>
+    <Compile Include="Math\GenericMath.cs" />
     <Compile Include="Math\Math128.cs" />
     <Compile Include="Math\MathsT.cs" />
     <Compile Include="Math\Maths.cs">

@@ -95,7 +95,9 @@ namespace Loyc.Collections.Impl
 				if (k == 0x100)
 					return -1;
 				f = _flags[k >> 5];
-				if ((f & (-1 << (k & 0x1F))) != 0)
+				// 0xFFFFFFFFu rather than -1: mixing uint with the int literal -1 made
+				// C# widen both operands to long and do a 64-bit AND.
+				if ((f & (0xFFFFFFFFu << (k & 0x1F))) != 0)
 					break;
 				// Move to next section
 				k = (k & ~0x1F) + 0x20;
@@ -181,25 +183,27 @@ namespace Loyc.Collections.Impl
 				uint f = _flags[section];
 				if (f == 0)
 					continue;
-				for (int i = MathEx.PositionOfLeastSignificantOne(f); i < 32; i++) {
-					if ((f & (1 << i)) != 0) // IsPresent(k)
-					{
-						// Get the key and value
-						int k = (section << 5) + i;
-						kw.Buffer[0] = (byte)k;
+				// Visit only the bits that are actually set. "rest &= rest - 1" clears
+				// the lowest set bit, so this iterates popcount(f) times instead of
+				// always testing all 32 bit positions. MathEx.PositionOfLeastSignificantOne
+				// maps to BitOperations.TrailingZeroCount on .NET Core 3.0+.
+				for (uint rest = f; rest != 0; rest &= rest - 1) {
+					int i = MathEx.PositionOfLeastSignificantOne(rest);
+					// Get the key and value
+					int k = (section << 5) + i;
+					kw.Buffer[0] = (byte)k;
 
-						T value = default(T);
-						if (_values != null) {
-							int P = GetValueIndex(k);
-							if (P < _values.Length)
-								value = _values[P];
-						}
-
-						// Assign them to the new node
-						bool existed = self.Set(ref kw, ref value, ref self, CPMode.Create | CPMode.FixedStructure);
-						Debug.Assert(!existed);
-						kw.Reset();
+					T value = default(T);
+					if (_values != null) {
+						int P = GetValueIndex(k);
+						if (P < _values.Length)
+							value = _values[P];
 					}
+
+					// Assign them to the new node
+					bool existed = self.Set(ref kw, ref value, ref self, CPMode.Create | CPMode.FixedStructure);
+					Debug.Assert(!existed);
+					kw.Reset();
 				}
 			}
 		}

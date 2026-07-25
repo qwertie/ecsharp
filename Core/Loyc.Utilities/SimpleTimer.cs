@@ -23,8 +23,19 @@ namespace Loyc.Utilities
 	/// </remarks>
 	public class SimpleTimer
 	{
-		int _startTime = Environment.TickCount;
-		int _stopTime = 0;
+		// Environment.TickCount is a 32-bit millisecond counter that wraps around every
+		// ~24.9 days; TickCount64 does not wrap. The public surface (Millisec) is still
+		// int, so intervals longer than ~24.9 days remain out of range either way, but
+		// shorter intervals can no longer be corrupted by a wraparound landing between
+		// the start and stop reads.
+		#if NETCOREAPP3_0_OR_GREATER
+		static long Now => Environment.TickCount64;
+		#else
+		static long Now => Environment.TickCount;
+		#endif
+
+		long _startTime = Now;
+		long _stopTime = 0;
 
 		/// <summary>
 		/// The getter returns the number of milliseconds since the timer was 
@@ -34,10 +45,10 @@ namespace Loyc.Utilities
 		public int Millisec
 		{
 			get { 
-				return (_stopTime != 0 ? _stopTime : Environment.TickCount) - _startTime;
+				return (int)((_stopTime != 0 ? _stopTime : Now) - _startTime);
 			}
 			set {
-				_startTime = (_stopTime != 0 ? _stopTime : Environment.TickCount) - value;
+				_startTime = (_stopTime != 0 ? _stopTime : Now) - value;
 			}
 		}
 
@@ -47,7 +58,7 @@ namespace Loyc.Utilities
 		{
 			int millisec = Millisec;
 			if (Paused)
-				_startTime = Environment.TickCount;
+				_startTime = Now;
 			else
 				_startTime += millisec;
 			_stopTime = 0;
@@ -60,7 +71,7 @@ namespace Loyc.Utilities
 		{
 			if (_stopTime != 0)
 				return false; // already paused
-			_stopTime = Environment.TickCount;
+			_stopTime = Now;
 			if (_stopTime == 0) // virtually impossible, but check anyway
 				++_stopTime;
 			return true;
@@ -70,7 +81,7 @@ namespace Loyc.Utilities
 		{
 			if (_stopTime == 0)
 				return false; // already running
-			_startTime = Environment.TickCount - (_stopTime - _startTime);
+			_startTime = Now - (_stopTime - _startTime);
 			_stopTime = 0;
 			return true;
 		}

@@ -1,4 +1,4 @@
-namespace Loyc.Collections
+﻿namespace Loyc.Collections
 {
 	using System;
 	using System.Collections.Generic;
@@ -148,6 +148,10 @@ namespace Loyc.Collections
 		#region Data members
 
 		protected internal ListChangingHandler<T, IListSource<T>>? _listChanging; // Delegate for ListChanging
+		// Private lock object for the ListChanging event accessors. Locking on 'this'
+		// (as this class used to do) is a deadlock/DoS hazard, because any caller
+		// holding a reference to the list can take the same lock.
+		[NonSerialized] private readonly object _listChangingLock = new object();
 		protected internal AListNode<K, T>? _root; // null when list is empty
 		protected internal IAListTreeObserver<K, T>? _observer;
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -171,10 +175,10 @@ namespace Loyc.Collections
 		public virtual event ListChangingHandler<T, IListSource<T>> ListChanging
 		{
 			add {
-				lock (this) { _listChanging += value; }
+				lock (_listChangingLock) { _listChanging += value; }
 			}
 			remove {
-				lock (this) { _listChanging -= value; }
+				lock (_listChangingLock) { _listChanging -= value; }
 			}
 		}
 

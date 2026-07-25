@@ -90,7 +90,11 @@ namespace Loyc.Math
 			else if (t == typeof(ulong)) m = new MathUL();
 			else if (t == typeof(float)) m = new MathF();
 			else if (t == typeof(double)) m = new MathD();
-			else m = null; // TODO: search open assemblies for INumTraits<T> via reflection?
+			// On .NET 7+ this returns a generic-math-based provider for any type that
+			// implements INumber<T> (Int128, UInt128, Half, decimal, BigInteger, nint,
+			// and user-defined numeric types). On earlier targets it returns null,
+			// preserving the previous behaviour exactly.
+			else m = GenericMath.TryCreateFor(t);
 
 			return _math = m;
 		}

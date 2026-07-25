@@ -1522,12 +1522,10 @@ namespace Loyc.Collections.Impl
 
 		static void Copy(SCell[] sourceCells, int sIndex, SCell[] destCells, int dIndex, int length)
 		{
-			if (length <= 32) {
-				int destStop = dIndex + length;
-				while (dIndex < destStop)
-					destCells[dIndex++] = sourceCells[sIndex++];
-			} else
-				Array.Copy(sourceCells, sIndex, destCells, dIndex, length);
+			// Span.CopyTo is a bounds check plus Buffer.Memmove; it beats both branches
+			// of the old length<=32 heuristic, which dates from before Span existed.
+			// SCell is a 4-byte all-byte struct, so this is a plain memmove.
+			sourceCells.AsSpan(sIndex, length).CopyTo(destCells.AsSpan(dIndex, length));
 		}
 
 		#region CellInfo

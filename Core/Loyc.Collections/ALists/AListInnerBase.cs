@@ -79,12 +79,13 @@ namespace Loyc.Collections.Impl
 			// round up size to the nearest 4.
 			_children = new Entry[(localCount + 3) & ~3];
 
-			int i;
-			for (i = 0; i < localCount; i++)
-			{
-				_children[i] = original._children[localIndex + i];
-				_children[i].Index -= baseIndex;
-			}
+			// Bulk-copy first, then fix up the indexes in a separate loop. Splitting the
+			// two lets Array.Copy do a single memmove and leaves the fixup loop simple
+			// enough for the JIT to optimize, which the fused version prevented.
+			int i = localCount;
+			Array.Copy(original._children, localIndex, _children, 0, localCount);
+			for (int j = 0; j < localCount; j++)
+				_children[j].Index -= baseIndex;
 			_childCount = (byte)localCount;
 			Debug.Assert(maxNodeSize <= MaxMaxNodeSize);
 			MaxNodeSize = maxNodeSize;
@@ -315,8 +316,10 @@ namespace Loyc.Collections.Impl
 		protected virtual void LLInsert(int i, AListNode<K, T> child, uint indexAdjustment)
 		{
 			AutoEnlargeChildren(1);
-			for (int j = LocalCount; j > i; j--)
-				_children[j] = _children[j - 1]; // insert room
+			// Shift right to make room. Array.Copy handles overlap as if via a temp
+			// buffer, so it matches the descending loop it replaces. LocalCount can be
+			// up to MaxMaxNodeSize (255), where this is several times faster.
+			Array.Copy(_children, i, _children, i + 1, LocalCount - i);
 			_children[i].Node = child;
 			++_childCount; // increment LocalCount
 			if (indexAdjustment != 0)
@@ -518,8 +521,8 @@ namespace Loyc.Collections.Impl
 					uint indexAdjustment = _children[i + 1].Index - _children[i].Index;
 					AdjustIndexesAfter(i, -(int)indexAdjustment);
 				}
-				for (int j = i; j < newCCount; j++)
-					_children[j] = _children[j + 1];
+				// Shift left over the deleted entry (overlap-safe, see LLInsert).
+				Array.Copy(_children, i + 1, _children, i, newCCount - i);
 			}
 			_children[newCCount] = new Entry { Node = null!, Index = uint.MaxValue }; // empty slot
 			_childCount--;

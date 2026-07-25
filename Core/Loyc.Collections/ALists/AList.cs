@@ -456,8 +456,18 @@ namespace Loyc.Collections
 			}
 		}
 
-		static Random _r = new Random();
-		/// When sorting data that is smaller than this threshold, yet spans 
+		// Random is not thread-safe. A single shared instance means two threads sorting
+		// two *different* ALists concurrently can corrupt its internal state (on .NET
+		// Framework this can leave it returning 0 forever, degrading the quicksort pivot
+		// choice to worst-case O(n^2)). Random.Shared is thread-safe and lock-free;
+		// where it is unavailable, give each thread its own instance.
+		#if NET6_0_OR_GREATER
+		static Random _r => Random.Shared;
+		#else
+		[ThreadStatic] static Random _rOfThisThread;
+		static Random _r => _rOfThisThread ??= new Random();
+		#endif
+		/// When sorting data that is smaller than this threshold, yet spans
 		/// multiple leaf nodes, the data is copied to an array, sorted, then
 		/// copied back to the AList. This minimizes use of the indexer and
 		/// minimizes the number of copies of Enumerator that are made.

@@ -1,7 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>8.0</LangVersion>
+    <!-- Multitargeted to match the sibling Loyc.* libraries, so that code here can
+         use .NET 6-era APIs behind #if while still shipping netstandard2.0. -->
+    <TargetFrameworks>net6.0;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <LangVersion>10.0</LangVersion>
     <OutputPath>..\Bin\$(Configuration)\</OutputPath>
     <NoWarn>1591, 1573, 0419</NoWarn>
     <SignAssembly>true</SignAssembly>
@@ -27,8 +29,14 @@
     <ProjectReference Include="..\Loyc.Syntax\Loyc.Syntax.csproj" />
     <ProjectReference Include="..\Loyc.Math\Loyc.Math.csproj" />
     <Compile Include="..\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
+    <Compile Include="..\TrimAttributes.cs" Link="Properties\TrimAttributes.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+  <!-- System.Reflection.Emit is in-box on .NET Core/5+, but is not part of
+       netstandard2.0 or netstandard2.1, so the package is still needed there.
+       4.7.0 (unlike 4.3.0) has a real .NETStandard2.0 dependency group; 4.3.0
+       falls back to the .NETStandard1.1 group and drags the legacy split-package
+       implementation assemblies into deps.json. -->
+  <ItemGroup Condition="'$(TargetFramework)' != 'net6.0'">
+    <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
   </ItemGroup>
 </Project>

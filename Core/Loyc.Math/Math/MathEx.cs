@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace Loyc.Math
 {
@@ -180,7 +181,11 @@ namespace Loyc.Math
 		/// <summary>Rotates a bit pattern left by the specified number of bits.</summary>
 		public static uint RoL(uint value, int amt)
 		{
-			return (value << amt) | (value >> (32 - amt));
+			#if !NETCOREAPP3_0_OR_GREATER
+				return (value << amt) | (value >> (32 - amt));
+			#else
+				return BitOperations.RotateLeft(value, amt);
+			#endif
 		}
 		/// <summary>Rotates a bit pattern left by the specified number of bits.</summary>
 		public static int RoL(int value, int amt)
@@ -190,7 +195,11 @@ namespace Loyc.Math
 		/// <summary>Rotates a bit pattern left by the specified number of bits.</summary>
 		public static ulong RoL(ulong value, int amt)
 		{
-			return (value << amt) | (value >> (64 - amt));
+			#if !NETCOREAPP3_0_OR_GREATER
+				return (value << amt) | (value >> (64 - amt));
+			#else
+				return BitOperations.RotateLeft(value, amt);
+			#endif
 		}
 		/// <summary>Rotates a bit pattern left by the specified number of bits.</summary>
 		public static long RoL(long value, int amt)
@@ -211,7 +220,11 @@ namespace Loyc.Math
 		/// <summary>Rotates a bit pattern right by the specified number of bits.</summary>
 		public static uint RoR(uint value, int amt)
 		{
-			return (value >> amt) | (value << (32 - amt));
+			#if !NETCOREAPP3_0_OR_GREATER
+				return (value >> amt) | (value << (32 - amt));
+			#else
+				return BitOperations.RotateRight(value, amt);
+			#endif
 		}
 		/// <summary>Rotates a bit pattern right by the specified number of bits.</summary>
 		public static int RoR(int value, int amt)
@@ -221,7 +234,11 @@ namespace Loyc.Math
 		/// <summary>Rotates a bit pattern right by the specified number of bits.</summary>
 		public static ulong RoR(ulong value, int amt)
 		{
-			return (value >> amt) | (value << (64 - amt));
+			#if !NETCOREAPP3_0_OR_GREATER
+				return (value >> amt) | (value << (64 - amt));
+			#else
+				return BitOperations.RotateRight(value, amt);
+			#endif
 		}
 		/// <summary>Rotates a bit pattern right by the specified number of bits.</summary>
 		public static long RoR(long value, int amt)
@@ -304,7 +321,14 @@ namespace Loyc.Math
 		}
 		public static float Sqrt(float value)
 		{
-			return (float)System.Math.Sqrt(value);
+			// NOTE: "MathF" must be fully qualified here. Loyc.Math declares its own
+			// struct named MathF (see Maths.cs), which shadows System.MathF inside
+			// this namespace.
+			#if NETSTANDARD2_1 || NET5_0_OR_GREATER
+				return System.MathF.Sqrt(value);
+			#else
+				return (float)System.Math.Sqrt(value);
+			#endif
 		}
 		public static double Sqrt(double value) // for completeness
 		{
@@ -314,6 +338,7 @@ namespace Loyc.Math
 
 		#region CountOnes
 		
+		#if !NETCOREAPP3_0_OR_GREATER
 		// This is benchmarked to take 20% less time than the SWAR code on a Core 2 Duo
 		static byte[] _ones = get_ones();
 		private static byte[] get_ones()
@@ -323,24 +348,44 @@ namespace Loyc.Math
 				ones[i] = (byte)G.CountOnes((byte)i);
 			return ones;
 		}
-		
+		#endif
+
 		/// <summary>Returns the number of '1' bits in x</summary>
 		/// <remarks>
 		/// For example, CountOnes(0xF0) == 4.
 		/// <para/>
-		/// Some processors have a dedicated instruction for this operation, but
-		/// the .NET framework provides no access to it.
+		/// Most processors have a dedicated instruction for this operation. On
+		/// .NET Core 3.0 and above it is reached via System.Numerics.BitOperations.PopCount;
+		/// older targets fall back to a 256-entry lookup table.
 		/// </remarks>
 		public static int CountOnes(uint x)
 		{
-			return (_ones[(byte)x] + _ones[(byte)(x >> 8)]) 
-		         + (_ones[(byte)(x >> 16)] + _ones[x >> 24]);
+			#if !NETCOREAPP3_0_OR_GREATER
+				return (_ones[(byte)x] + _ones[(byte)(x >> 8)])
+			         + (_ones[(byte)(x >> 16)] + _ones[x >> 24]);
+			#else
+				return BitOperations.PopCount(x);
+			#endif
 		}
 
 		/// <inheritdoc cref="CountOnes(int)"/>
-		public static byte CountOnes(byte x) { return _ones[x]; }
+		public static byte CountOnes(byte x)
+		{
+			#if !NETCOREAPP3_0_OR_GREATER
+				return _ones[x];
+			#else
+				return (byte)BitOperations.PopCount(x);
+			#endif
+		}
 		/// <inheritdoc cref="CountOnes(int)"/>
-		public static int CountOnes(ushort x) { return _ones[(byte)x] + _ones[x >> 8]; }
+		public static int CountOnes(ushort x)
+		{
+			#if !NETCOREAPP3_0_OR_GREATER
+				return _ones[(byte)x] + _ones[x >> 8];
+			#else
+				return BitOperations.PopCount(x);
+			#endif
+		}
 		public static int CountOnes(int x) { return CountOnes((uint)x); }
 
 		/// <inheritdoc cref="CountOnes(int)"/>
@@ -366,20 +411,25 @@ namespace Loyc.Math
 		/// <inheritdoc cref="Log2Floor(int)"/>
 		public static int Log2Floor(uint x)
 		{
-			x |= (x >> 1);
-			x |= (x >> 2);
-			x |= (x >> 4);
-			x |= (x >> 8);
-			x |= (x >> 16);
-			return (CountOnes(x) - 1);
+			#if !NETCOREAPP3_0_OR_GREATER
+				x |= (x >> 1);
+				x |= (x >> 2);
+				x |= (x >> 4);
+				x |= (x >> 8);
+				x |= (x >> 16);
+				return (CountOnes(x) - 1);
+			#else
+				// LeadingZeroCount(0) == 32, so this yields -1 for x == 0, matching the contract.
+				return 31 - BitOperations.LeadingZeroCount(x);
+			#endif
 		}
 		/// <summary>
 		/// Returns the floor of the base-2 logarithm of x. e.g. 1024 -> 10, 1000 -> 9
 		/// </summary><remarks>
 		/// The return value is -1 for an input that is zero or negative.
 		/// <para/>
-		/// Some processors have a dedicated instruction for this operation, but
-		/// the .NET framework provides no access to it.
+		/// Most processors have a dedicated instruction for this operation. On
+		/// .NET Core 3.0 and above it is reached via System.Numerics.BitOperations.LeadingZeroCount.
 		/// </remarks>
 		public static int Log2Floor(int x)
 		{
@@ -390,10 +440,15 @@ namespace Loyc.Math
 		/// <inheritdoc cref="Log2Floor(int)"/>
 		public static int Log2Floor(ulong x)
 		{
-			uint xHi = (uint)(x >> 32);
-			if (xHi != 0)
-				return 32 + Log2Floor(xHi);
-			return Log2Floor((uint)x);
+			#if !NETCOREAPP3_0_OR_GREATER
+				uint xHi = (uint)(x >> 32);
+				if (xHi != 0)
+					return 32 + Log2Floor(xHi);
+				return Log2Floor((uint)x);
+			#else
+				// LeadingZeroCount(0) == 64, so this yields -1 for x == 0, matching the contract.
+				return 63 - BitOperations.LeadingZeroCount(x);
+			#endif
 		}
 		/// <inheritdoc cref="Log2Floor(int)"/>
 		public static int Log2Floor(long x)
@@ -510,28 +565,6 @@ namespace Loyc.Math
 		#endregion
 
 		#region Bitwise conversion: int<->float, long<->double
-		#if CompactFramework || Unsafe
-		
-		// Compact Framework lacks BitConverter.Int64BitsToDouble and 
-		// DoubleToInt64Bits, but they are easy to replicate.
-		public static unsafe double Int64BitsToDouble(long bits)
-		{
-			 return *(((double*) &bits));
-		}
-		public static unsafe long DoubleToInt64Bits(double value)
-		{
-			 return *(((long*) &value));
-		}
-		public static unsafe double Int32BitsToSingle(int bits)
-		{
-			 return *(((float*) &bits));
-		}
-		public static unsafe long SingleToInt32Bits(float value)
-		{
-			 return *(((int*) &value));
-		}
-		
-		#else
 
 		public static double Int64BitsToDouble(long bits)
 		{
@@ -541,21 +574,45 @@ namespace Loyc.Math
 		{
 			 return BitConverter.DoubleToInt64Bits(value);
 		}
+
+		#if NETSTANDARD2_1 || NET5_0_OR_GREATER
+
 		public static double Int32BitsToSingle(int bits)
 		{
-			byte[] buf = new byte[4];
-			buf[0] = (byte)bits;
-			buf[1] = (byte)(bits >> 8);
-			buf[2] = (byte)(bits >> 16);
-			buf[3] = (byte)(bits >> 24);
-			return BitConverter.ToSingle(buf, 0);
+			return BitConverter.Int32BitsToSingle(bits);
 		}
 		public static long SingleToInt32Bits(float value)
 		{
-			byte[] buf = BitConverter.GetBytes(value);
-			return BitConverter.ToInt32(buf, 0);
+			return BitConverter.SingleToInt32Bits(value);
 		}
-		
+
+		#else
+
+		// netstandard2.0 and .NET Framework lack BitConverter.Int32BitsToSingle and
+		// BitConverter.SingleToInt32Bits. An explicit-layout union reinterprets the
+		// bits with no allocation (the previous implementation allocated a byte[4] on
+		// every call), no /unsafe, and no System.Memory reference -- which matters
+		// because the net472 build of Loyc.Math does not reference System.Memory.
+		[StructLayout(LayoutKind.Explicit)]
+		private struct SingleInt32Union
+		{
+			[FieldOffset(0)] public int Int32;
+			[FieldOffset(0)] public float Single;
+		}
+
+		public static double Int32BitsToSingle(int bits)
+		{
+			var u = new SingleInt32Union();
+			u.Int32 = bits;
+			return u.Single;
+		}
+		public static long SingleToInt32Bits(float value)
+		{
+			var u = new SingleInt32Union();
+			u.Single = value;
+			return u.Int32;
+		}
+
 		#endif
 		#endregion
 
@@ -568,8 +625,7 @@ namespace Loyc.Math
 			// 0x00800000 to 0x7F7FFFFF: normalized
 			// 0x7F800000              : infinity
 			// 0x7F800001 to 0x7FFFFFFF: NaN
-			byte[] buf = BitConverter.GetBytes(a);
-			uint bits = BitConverter.ToUInt32(buf, 0);
+			uint bits = (uint)SingleToInt32Bits(a);
 			uint bitsU = bits & 0x7FFFFFFFu;
 			if (bitsU >= 0x7F800000)
 				return a; // Number is infinite or NaN; do not change
@@ -581,12 +637,11 @@ namespace Loyc.Math
 			else
 				bits++;
 
-			return Export(bits, buf);
+			return Export(bits);
 		}
 		public static float NextLower(float a)
 		{
-			byte[] buf = BitConverter.GetBytes(a);
-			uint bits = BitConverter.ToUInt32(buf, 0);
+			uint bits = (uint)SingleToInt32Bits(a);
 			uint bitsU = bits & 0x7FFFFFFFu;
 			if (bitsU >= 0x7F800000)
 				return a; // Number is infinite or NaN; do not change
@@ -598,15 +653,11 @@ namespace Loyc.Math
 			else
 				bits--;
 
-			return Export(bits, buf);
+			return Export(bits);
 		}
-		private static float Export(uint bits, byte[] buf)
+		private static float Export(uint bits)
 		{
-			buf[0] = (byte)bits;
-			buf[1] = (byte)(bits >> 8);
-			buf[2] = (byte)(bits >> 16);
-			buf[3] = (byte)(bits >> 24);
-			return BitConverter.ToSingle(buf, 0);
+			return (float)Int32BitsToSingle((int)bits);
 		}
 
 		public static double NextHigher(double num)
@@ -801,7 +852,9 @@ namespace Loyc.Math
 				return false;
 
 			int root = Sqrt(num);
-			for (int candidate = 4; candidate <= root; candidate++)
+			// num is known to be odd here (even numbers were rejected above), so only
+			// odd candidates can divide it -- stepping by 2 halves the work.
+			for (int candidate = 5; candidate <= root; candidate += 2)
 				if (num % candidate == 0)
 					return false;
 			return true;

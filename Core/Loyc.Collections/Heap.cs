@@ -1,4 +1,4 @@
-using Loyc.Collections.Impl;
+﻿using Loyc.Collections.Impl;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -200,11 +200,11 @@ namespace Loyc.Collections
 		/// <exception cref="EmptySequenceException">Thrown if the List is empty.</exception>
 		public T Peek()
 		{
-			try {
-				return _list[0];
-			} catch {
-				throw new EmptySequenceException();
-			}
+			// An explicit count check replaces a bare catch, which previously converted
+			// *any* exception (including one from a user comparer or a custom IList
+			// implementation) into EmptySequenceException, hiding real bugs.
+			if (_list.Count == 0) throw new EmptySequenceException();
+			return _list[0];
 		}
 
 		// Enumerator functions are required in C# to allow "new MaxHeap<T> { ... }"

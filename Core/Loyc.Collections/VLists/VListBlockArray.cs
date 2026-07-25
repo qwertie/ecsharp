@@ -1,4 +1,4 @@
-namespace Loyc.Collections
+﻿namespace Loyc.Collections
 {
 	using System;
 	using System.Diagnostics;
@@ -205,8 +205,7 @@ namespace Loyc.Collections
 			} else {
 				VListBlockArray<T> @new = new VListBlockArray<T>(_prior, 0, false);
 				@new._immCount = localIndex + 1;
-				for (int i = 0; i < localIndex; i++)
-					@new._array[i] = _array[i];
+				Array.Copy(_array, 0, @new._array, 0, localIndex);
 				@new._array[localIndex] = item;
 				return @new;
 			}
@@ -235,8 +234,7 @@ namespace Loyc.Collections
 			// so this object is about to become garbage, and there is no need 
 			// to clear the items.
 			if (ImmCount > 0) {
-				for (int i = ImmCount; i < localCountWithMutables; i++)
-					_array[i] = default(T)!;
+				Array.Clear(_array, ImmCount, localCountWithMutables - ImmCount);
 			}
 			bool priorIsOwned = PriorIsOwned;
 			_immCount &= ImmCountMask;
@@ -247,9 +245,11 @@ namespace Loyc.Collections
 		protected override void BlockToArray(T[] array, int arrayOffset, int localCount, bool isRList)
 		{
 			if (isRList) {
-				for (int i = 0; i < localCount; i++)
-					array[arrayOffset + i] = _array[i];
+				// Bulk copy: this is the inner loop of VList<T>.ToArray().
+				Array.Copy(_array, 0, array, arrayOffset, localCount);
 			} else {
+				// NOTE: deliberately left as a loop -- this reverses while copying,
+				// which Array.Copy cannot do without a second Array.Reverse pass.
 				for (int i = 0; i < localCount; i++)
 					array[arrayOffset + localCount - 1 - i] = _array[i];
 			}

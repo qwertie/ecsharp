@@ -1,4 +1,4 @@
-// http://www.codeproject.com/KB/recipes/cptrie.aspx
+﻿// http://www.codeproject.com/KB/recipes/cptrie.aspx
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -208,7 +208,7 @@ namespace Loyc.Collections.Impl
 			KeyWalker kw = new KeyWalker(item.Key, item.Key.Length);
 			TValue value = default(TValue);
 			if (base.Find(ref kw, ref value))
-				return DefaultComparer.Compare(value, item.Value) == 0;
+				return DefaultValueComparer.Equals(value, item.Value);
 			return false;
 		}
 
@@ -233,7 +233,7 @@ namespace Loyc.Collections.Impl
 			KeyWalker kw = new KeyWalker(item.Key, item.Key.Length);
 			KeyWalker kw2 = kw;
 			TValue value = default(TValue);
-			if (Find(ref kw, ref value) && DefaultComparer.Compare(value, item.Value) == 0)
+			if (Find(ref kw, ref value) && DefaultValueComparer.Equals(value, item.Value))
 				return Remove(ref kw2, ref value);
 			return false;
 		}

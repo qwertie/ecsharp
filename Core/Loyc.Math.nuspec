@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+﻿<?xml version="1.0"?>
 <package>
   <metadata>
     <id>Loyc.Math</id>
@@ -15,11 +15,23 @@
     <copyright>Copyright 2019</copyright>
     <tags>Loyc Core Math Geometry FixedPoint</tags>
     <dependencies>
+      <!-- NOTE: Loyc.Math itself does not reference System.Memory or
+           System.Runtime.CompilerServices.Unsafe in any target (its net472 project
+           has no reference to them at all), so they are not declared here; they
+           arrive transitively via Loyc.Essentials where they are needed. -->
       <group targetFramework=".NETFramework4.7.2">
         <dependency id="Loyc.Interfaces" version="$version$"/>
         <dependency id="Loyc.Essentials" version="$version$"/>
       </group>
       <group targetFramework=".NETStandard2.0">
+        <dependency id="Loyc.Interfaces" version="$version$"/>
+        <dependency id="Loyc.Essentials" version="$version$"/>
+      </group>
+      <group targetFramework=".NETStandard2.1">
+        <dependency id="Loyc.Interfaces" version="$version$"/>
+        <dependency id="Loyc.Essentials" version="$version$"/>
+      </group>
+      <group targetFramework="net6.0">
         <dependency id="Loyc.Interfaces" version="$version$"/>
         <dependency id="Loyc.Essentials" version="$version$"/>
       </group>
@@ -29,6 +41,8 @@
     <file src="Readme.md" />
 
     <file src="Bin\Release\netstandard2.0\Loyc.Math.*" target="lib\netstandard2.0\" />
+    <file src="Bin\Release\netstandard2.1\Loyc.Math.*" target="lib\netstandard2.1\" />
+    <file src="Bin\Release\net6.0\Loyc.Math.*" target="lib\net6.0\" />
     <file src="Bin\Release\Loyc.Math.*" target="lib\net472\" />
     <file src="Loyc.Math\**\*.cs" target="src" />
     <file src="Loyc.Math\**\*.ecs" target="src" />

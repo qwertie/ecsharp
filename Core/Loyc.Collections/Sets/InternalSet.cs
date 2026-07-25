@@ -466,11 +466,12 @@ namespace Loyc.Collections.Impl
 				Debug.Assert(!IsFrozen);
 				_used = 0;
 				_counter = 0;
-				for (int i = 0; i < _items.Length; i++)
-					_items[i] = default(T)!;
+				// Array.Clear writes default(T) over the whole array in one call.
+				// (Array.Fill would be equivalent, but it does not exist on
+				// netstandard2.0 or .NET Framework, whereas Array.Clear does.)
+				Array.Clear(_items, 0, _items.Length);
 				if (_children != null)
-					for (int i = 0; i < _children.Length; i++)
-						_children[i] = null;
+					Array.Clear(_children, 0, _children.Length);
 			}
 
 			static readonly int SizeofNode = IntPtr.Size * 4 + 8;
@@ -694,7 +695,10 @@ namespace Loyc.Collections.Impl
 			Debug.Assert(child._children == null);
 			uint slotsUsed = (slots._used << FanOut) | (slots._used & FlagMask);
 			slotsUsed = (slotsUsed >> iHome) & Mask;
-			if (InternalSet_LUT.Zeros[slotsUsed] >= child.Counter) {
+			// slotsUsed is masked to 4 bits, so (4 - popcount) is the number of zero
+			// bits. G.CountOnes uses BitOperations.PopCount on .NET Core 3.0+, which
+			// beats the old 16-entry lookup table (and its bounds check).
+			if (4 - G.CountOnes(slotsUsed) >= child.Counter) {
 				// There's room! Clear child reference, and put each item from 
 				// the child into the parent, or just stop if child is empty.
 				ReplaceChild(ref slots, iHome, null);
@@ -914,7 +918,11 @@ namespace Loyc.Collections.Impl
 
 		static int SelectBucketToSpill(Node slots, int i0, IEqualityComparer<T>? comparer)
 		{
-			int[] count = new int[FanOut];
+			// FanOut is 16, so this is a 64-byte buffer. Using stackalloc instead of
+			// a heap array removes an allocation from the AddOrRemove path (this is
+			// called roughly once per four insertions). The span does not escape.
+			Span<int> count = stackalloc int[FanOut];
+			count.Clear();
 			int max = count[i0] = 1, max_i = i0;
 
 			// The caller wants one of the items spilled to exist in the range
@@ -1708,15 +1716,9 @@ namespace Loyc.Collections.Impl
 	/// <summary>Lookup tables used by <see cref="InternalSet{T}"/>.</summary>
 	internal class InternalSet_LUT
 	{
-		// Stores the number of zero bits in all possible four-bit values
-		internal static readonly byte[] Zeros = ZerosTable();
-		static byte[] ZerosTable()
-		{
-			var table = new byte[16];
-			for (int i = 0; i < table.Length; i++)
-				table[i] = (byte)(4 - G.CountOnes(i));
-			return table;
-		}
+		// NOTE: the former "Zeros" table (number of zero bits in each four-bit value)
+		// was removed; its single caller now computes 4 - G.CountOnes(x) directly,
+		// which maps to a hardware popcount instruction on .NET Core 3.0 and above.
 
 		internal static readonly byte[] Value = TargetTable();
 		static byte[] TargetTable()

@@ -1,4 +1,4 @@
-namespace Loyc.Collections.Impl
+﻿namespace Loyc.Collections.Impl
 {
 	using System;
 	using System.Collections.Generic;
@@ -27,8 +27,8 @@ namespace Loyc.Collections.Impl
 			: base(original, localIndex, localCount, baseIndex, maxNodeSize)
 		{
 			_highestKey = new K[_children.Length - 1];
-			for (int i = 0; i < localCount - 1; i++)
-				_highestKey[i] = original._highestKey[localIndex + i];
+			if (localCount > 1)
+				Array.Copy(original._highestKey, localIndex, _highestKey, 0, localCount - 1);
 		}
 
 		protected BListInner(BListInner<K, T> original, uint index, uint count, AListBase<K,T> list) : base(original, index, count, list)
@@ -245,7 +245,7 @@ namespace Loyc.Collections.Impl
 			base.AssertValid();
 			Debug.Assert(_highestKey.Length + 1 >= _childCount);
 
-			if (typeof(T).TypeHandle.Value == typeof(K).TypeHandle.Value)
+			if (typeof(T) == typeof(K))
 			{
 				// Verify values of _highestKey
 				for (int i = 0; i < _childCount - 1; i++)

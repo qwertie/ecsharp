@@ -1,4 +1,4 @@
-//
+﻿//
 // GoInterface library v1.01: Copyright 2010, David Piepgrass
 // 
 // A library for "dynamic interfaces" in any .NET language:
@@ -38,55 +38,38 @@
 namespace Loyc.Utilities
 {
 	using System;
+	using System.Collections.Concurrent;
 	using System.Collections.Generic;
 	using System.Text;
 	using System.Reflection.Emit;
 	using System.Reflection;
 	using System.Diagnostics;
+	using System.Diagnostics.CodeAnalysis;
 	using System.Runtime.InteropServices;
 
 	/// <summary>Mainly for internal use by the other GoInterface classes.</summary>
+	[RequiresUnreferencedCode("GoInterface generates wrapper classes at run time with System.Reflection.Emit and discovers members by name via reflection, so the members it needs cannot be determined statically. Trimming may remove a method that GoInterface would otherwise have matched, which produces an InvalidCastException (\"N methods are unmatched\") at run time rather than a compile-time error.")]
+	[RequiresDynamicCode("GoInterface uses System.Reflection.Emit to generate wrapper classes at run time, which is not supported when compiling ahead of time (NativeAOT).")]
 	public static class GoInterface
 	{
 		internal static readonly AssemblyBuilder AssemblyBuilder;
 		internal static readonly ModuleBuilder ModuleBuilder;
-		internal static readonly ModuleHandle ModuleHandle;
 
-		#if DotNet4
-		// Ability to save is useful for debugging, but after saving, the assembly
-		// is frozen and you cannot define additional wrappers!
-		static readonly bool Savable = true;
-		#endif
+		// NOTE: the "#if DotNet4" branches that used to live here have been removed.
+		// DotNet4 was not defined by any current build configuration, so the save-to-disk
+		// path (AppDomain.CurrentDomain.DefineDynamicAssembly with RunAndSave, plus a
+		// commented-out AssemblyBuilder.Save) was dead code. It could not be revived as
+		// written anyway: assembly persistence does not exist on .NET Core / .NET 5+.
+		// A dead "internal static readonly ModuleHandle ModuleHandle" field was also
+		// removed; nothing ever read it.
 
 		static GoInterface()
 		{
 			// Create a single assembly and module to hold all generated classes.
 			var name = new AssemblyName { Name = "GoInterfaceGeneratedClasses" };
-			#if DotNet4
-				AssemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(name, 
-					Savable ? AssemblyBuilderAccess.RunAndSave : AssemblyBuilderAccess.Run);
-				if (Savable)
-					ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Module", "GoInterfaceGeneratedClasses.dll", true);
-				else
-					ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Module");
-			#else
-				AssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(name, AssemblyBuilderAccess.Run);
-				ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Module");
-			#endif
-			ModuleHandle = ModuleBuilder.ModuleHandle;
+			AssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(name, AssemblyBuilderAccess.Run);
+			ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Module");
 		}
-		/*
-		internal static void SaveAssembly()
-		{
-			// We must pass a filename to both DefineDynamicModule and 
-			// AssemblyBuilder.Save(). If you don't pass a filename to
-			// DefineDynamicModule() then the stuff in the module doesn't get
-			// saved; and if you pass a different filename to Save() than you
-			// passed to DefineDynamicModule(), you get two DLLs, one of which 
-			// (matching the filename you passed to Save()) has pretty much 
-			// nothing in it. WEIRD!
-			AssemblyBuilder.Save("GoInterfaceGeneratedClasses.dll");
-		}*/
 
 		/// <summary>Unwraps an object if it was wrapped by GoInterface. Unwrapping
 		/// is recursive, so that if a wrapper is inside another wrapper, the
@@ -297,6 +280,8 @@ namespace Loyc.Utilities
 	/// implementation is allowed to be public. In that case, GoInterface will only 
 	/// see the method's public name (not the name used in the interface).
 	/// </remarks>
+	[RequiresUnreferencedCode("GoInterface generates wrapper classes at run time with System.Reflection.Emit and discovers members by name via reflection, so the members it needs cannot be determined statically. Trimming may remove a method that GoInterface would otherwise have matched, which produces an InvalidCastException (\"N methods are unmatched\") at run time rather than a compile-time error.")]
+	[RequiresDynamicCode("GoInterface uses System.Reflection.Emit to generate wrapper classes at run time, which is not supported when compiling ahead of time (NativeAOT).")]
 	public static class GoInterface<Interface> where Interface : class
 	{
 		public static Interface From<T>(T anything)
@@ -341,24 +326,25 @@ namespace Loyc.Utilities
 
 		private static GoInterfaceFactory<Interface> GetFactory(RuntimeTypeHandle hType)
 		{
-			GoInterfaceFactory<Interface> factory;
-			if (!_factories.TryGetValue(hType.Value, out factory))
+			// This was a plain Dictionary read-then-write with no synchronization, but
+			// it is reachable from the public From()/ForceFrom() entry points, so
+			// concurrent callers could corrupt it. GetOrAdd is atomic; the factory
+			// objects are stateless, so the worst case (two threads racing) is that one
+			// redundant factory is constructed and discarded.
+			return _factories.GetOrAdd(hType.Value, _ =>
 			{
 				Type T = Type.GetTypeFromHandle(hType);
 
 				if (typeof(Interface).IsAssignableFrom(T))
-					factory = new GoDirectCaster<Interface>();
+					return new GoDirectCaster<Interface>();
 				else {
 					Type factoryType = typeof(GoInterface<,>.Factory).MakeGenericType(new Type[] { typeof(Interface), T });
-					factory = (GoInterfaceFactory<Interface>)Activator.CreateInstance(factoryType);
+					return (GoInterfaceFactory<Interface>)Activator.CreateInstance(factoryType);
 				}
-
-				_factories[hType.Value] = factory;
-			}
-			return factory;
+			});
 		}
 
-		static Dictionary<IntPtr, GoInterfaceFactory<Interface>> _factories = new Dictionary<IntPtr,GoInterfaceFactory<Interface>>();
+		static readonly ConcurrentDictionary<IntPtr, GoInterfaceFactory<Interface>> _factories = new ConcurrentDictionary<IntPtr, GoInterfaceFactory<Interface>>();
 	}
 	
 	/// <summary>Options you can pass to GoInterface.From()</summary>
@@ -411,6 +397,8 @@ namespace Loyc.Utilities
 	/// <remarks>
 	/// Please see <see cref="GoInterface{Interface}"/> for more information.
 	/// </remarks>
+	[RequiresUnreferencedCode("GoInterface generates wrapper classes at run time with System.Reflection.Emit and discovers members by name via reflection, so the members it needs cannot be determined statically. Trimming may remove a method that GoInterface would otherwise have matched, which produces an InvalidCastException (\"N methods are unmatched\") at run time rather than a compile-time error.")]
+	[RequiresDynamicCode("GoInterface uses System.Reflection.Emit to generate wrapper classes at run time, which is not supported when compiling ahead of time (NativeAOT).")]
 	public static class GoInterface<Interface, T> where Interface:class
 	{
 		#region Public methods & properties
@@ -585,28 +573,40 @@ namespace Loyc.Utilities
 		static int _numberOfAmbiguousMethods = 0;
 		static int _numberOfMethodsMissingParameters = 0;
 		static int _numberOfMethodsWithRefMismatch = 0;
-		static bool _isInitialized = false;
+		// volatile: this is read outside the lock in AutoInit's double-checked test.
+		static volatile bool _isInitialized = false;
 		static bool _objInBaseClass = false;
 		static bool _isValidInterface;
 		static Type _wrapperType;
 		
+		// Private lock object. This used to be lock(typeof(GoInterface<Interface, T>)):
+		// locking a Type is a deadlock/DoS hazard because the object is globally
+		// reachable, so unrelated code can take the same lock.
+		static readonly object _initLock = new object();
+
 		static void AutoInit()
 		{
 			if (!_isInitialized)
-				lock (typeof(GoInterface<Interface, T>))
+				lock (_initLock)
 				{
 					if (!_isInitialized)
 						GenerateWrapperClass();
 				}
 		}
+		// These two used to call GenerateWrapperClass() directly, with no lock at all,
+		// so two threads calling From()/ForceFrom() concurrently for the same
+		// <Interface, T> pair could both reach ModuleBuilder.DefineType with the same
+		// type name and one would fail with "Duplicate type name". Routing them through
+		// AutoInit() puts every generation path behind the same lock. Monitor is
+		// re-entrant, so generation code that calls back in still works.
 		static Interface GenerateWrapperClassWhenUserCallsFrom(T obj)
 		{
-			GenerateWrapperClass();
+			AutoInit();
 			return _from(obj);
 		}
 		static Interface GenerateWrapperClassWhenUserCallsForceFrom(T obj)
 		{
-			GenerateWrapperClass();
+			AutoInit();
 			return _forceFrom(obj);
 		}
 
@@ -615,10 +615,10 @@ namespace Loyc.Utilities
 		#region GenerateWrapperClass & related (higher-level code generation)
 
 		static Type CreateType(TypeBuilder tb) =>
-			#if DotNet4
-				tb.CreateType(); // .NET Framework 3/4
+			#if NETFRAMEWORK || NET5_0_OR_GREATER
+				tb.CreateType()!; // .NET Framework, and .NET 5+ where it returns Type
 			#else
-				tb.CreateTypeInfo().AsType(); // .NET Standard 1.1/2.0
+				tb.CreateTypeInfo()!.AsType(); // netstandard2.0/2.1
 			#endif
 
 		static void GenerateWrapperClass()
@@ -1045,9 +1045,9 @@ namespace Loyc.Utilities
 			// I don't see any way to definitively detect a MethodInfo is a 
 			// property getter or setter! So just assume if it fits the pattern of
 			// a property, it is one.
-			if (method.Name.StartsWith("get_") && method.GetParameters().Length == 0)
+			if (method.Name.StartsWith("get_", StringComparison.Ordinal) && method.GetParameters().Length == 0)
 				return true;
-			if (method.Name.StartsWith("set_") && method.ReturnType == typeof(void) && method.GetParameters().Length == 1)
+			if (method.Name.StartsWith("set_", StringComparison.Ordinal) && method.ReturnType == typeof(void) && method.GetParameters().Length == 1)
 				return true;
 			return false;
 		}

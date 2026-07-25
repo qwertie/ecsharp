@@ -1,4 +1,4 @@
-// http://www.codeproject.com/KB/recipes/cptrie.aspx
+﻿// http://www.codeproject.com/KB/recipes/cptrie.aspx
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -698,13 +698,13 @@ namespace Loyc.Collections.Impl
 		{
 			TValue value;
 			return TryGetValue(item.Key, out value)
-				&& DefaultComparer.Compare(value, item.Value) == 0;
+				&& DefaultValueComparer.Equals(value, item.Value);
 		}
 		public bool Contains(KeyValuePair<long, TValue> item)
 		{
 			TValue value;
 			return TryGetValue(item.Key, out value)
-				&& DefaultComparer.Compare(value, item.Value) == 0;
+				&& DefaultValueComparer.Equals(value, item.Value);
 		}
 
 		public void CopyTo(KeyValuePair<int, TValue>[] array, int arrayIndex)
@@ -733,7 +733,7 @@ namespace Loyc.Collections.Impl
 			KeyWalker kw = Encode(item.Key);
 			KeyWalker kw2 = kw;
 			TValue value = default(TValue);
-			if (Find(ref kw, ref value) && DefaultComparer.Compare(value, item.Value) == 0)
+			if (Find(ref kw, ref value) && DefaultValueComparer.Equals(value, item.Value))
 				return Remove(ref kw2, ref value);
 			return false;
 		}
@@ -742,7 +742,7 @@ namespace Loyc.Collections.Impl
 			KeyWalker kw = Encode(item.Key);
 			KeyWalker kw2 = kw;
 			TValue value = default(TValue);
-			if (Find(ref kw, ref value) && DefaultComparer.Compare(value, item.Value) == 0)
+			if (Find(ref kw, ref value) && DefaultValueComparer.Equals(value, item.Value))
 				return Remove(ref kw2, ref value);
 			return false;
 		}
