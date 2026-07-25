@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 // As in SyncManagerExt.cs: no "where K: notnull" constraint on dictionaries, since
 // some Loyc dictionaries have never had that requirement.
@@ -144,13 +145,55 @@ static class ExtraSynchronizers<SyncManager> where SyncManager : ISyncManager
 	///   remains available as an opt-in alternative.</summary>
 	public static E SyncEnum<E>(ref SyncManager sync, FieldId name, E value) where E : struct, Enum
 	{
-		long num = sync.Sync(name, ToInt64(value));
-		return sync.IsReading ? (E) Enum.ToObject(typeof(E), num) : value;
+		long num = EnumInfo<E>.ToInt64(value);
+		num = sync.Sync(name, num);
+		return sync.IsReading ? EnumInfo<E>.FromInt64(num) : value;
+	}
 
-		static long ToInt64(E value)
-			=> Type.GetTypeCode(typeof(E)) == TypeCode.UInt64
-				? unchecked((long) Convert.ToUInt64(value))
-				: Convert.ToInt64(value);
+	/// <summary>Caches the size and signedness of the enum type E once, so that
+	///   <see cref="SyncEnum{E}"/> can convert values with a reinterpret-cast instead of
+	///   going through <c>Convert.ToInt64</c> (which boxes E as <c>IConvertible</c>) and
+	///   <c>Enum.ToObject</c> (which boxes the result), plus a <c>Type.GetTypeCode</c>
+	///   lookup, on every single value.</summary>
+	static class EnumInfo<E> where E : struct, Enum
+	{
+		// The TypeCode of E's underlying type, resolved once per closed generic type.
+		internal static readonly TypeCode UnderlyingTypeCode = Type.GetTypeCode(Enum.GetUnderlyingType(typeof(E)));
+
+		internal static long ToInt64(E value)
+		{
+			// Unsafe.As reinterprets the enum's bits; we then sign- or zero-extend
+			// according to the underlying type, exactly as Convert.ToInt64/ToUInt64 did.
+			switch (UnderlyingTypeCode) {
+				case TypeCode.SByte:  return Unsafe.As<E, sbyte>(ref value);
+				case TypeCode.Byte:   return Unsafe.As<E, byte>(ref value);
+				case TypeCode.Int16:  return Unsafe.As<E, short>(ref value);
+				case TypeCode.UInt16: return Unsafe.As<E, ushort>(ref value);
+				case TypeCode.Int32:  return Unsafe.As<E, int>(ref value);
+				case TypeCode.UInt32: return Unsafe.As<E, uint>(ref value);
+				case TypeCode.UInt64: return unchecked((long) Unsafe.As<E, ulong>(ref value));
+				case TypeCode.Int64:  return Unsafe.As<E, long>(ref value);
+				// The CLR permits bool/char-backed enums even though C# does not; fall
+				// back to the old (boxing) conversion rather than over-reading the value.
+				default:              return Convert.ToInt64(value);
+			}
+		}
+
+		internal static E FromInt64(long num)
+		{
+			switch (UnderlyingTypeCode) {
+				case TypeCode.SByte:  { sbyte  v = unchecked((sbyte)  num); return Unsafe.As<sbyte,  E>(ref v); }
+				case TypeCode.Byte:   { byte   v = unchecked((byte)   num); return Unsafe.As<byte,   E>(ref v); }
+				case TypeCode.Int16:  { short  v = unchecked((short)  num); return Unsafe.As<short,  E>(ref v); }
+				case TypeCode.UInt16: { ushort v = unchecked((ushort) num); return Unsafe.As<ushort, E>(ref v); }
+				case TypeCode.Int32:  { int    v = unchecked((int)    num); return Unsafe.As<int,    E>(ref v); }
+				case TypeCode.UInt32: { uint   v = unchecked((uint)   num); return Unsafe.As<uint,   E>(ref v); }
+				case TypeCode.UInt64: { ulong  v = unchecked((ulong)  num); return Unsafe.As<ulong,  E>(ref v); }
+				case TypeCode.Int64:  { long   v = num;                     return Unsafe.As<long,   E>(ref v); }
+				// See note in ToInt64 about bool/char-backed enums.
+				default:              return (E) Enum.ToObject(typeof(E), num);
+			}
+		}
 	}
 
 	public static E[]? SyncArray<E>(ref SyncManager sync, FieldId name, E[]? value)

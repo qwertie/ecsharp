@@ -202,7 +202,24 @@ namespace Loyc
 			return list;
 		}
 
+		#if NET8_0_OR_GREATER
+		static System.Buffers.SearchValues<char>? _invalidsSearch;
+		#else
 		static char[]? _invalids;
+		#endif
+
+		/// <summary>Returns true if <c>c</c> is not allowed in a file name.</summary>
+		static bool IsInvalidFileNameChar(char c)
+		{
+			#if NET8_0_OR_GREATER
+				var search = _invalidsSearch ??= System.Buffers.SearchValues.Create(Path.GetInvalidFileNameChars());
+				return search.Contains(c);
+			#else
+				// AsSpan().IndexOf is vectorized, unlike Enumerable.Contains
+				var invalids = _invalids ??= Path.GetInvalidFileNameChars();
+				return invalids.AsSpan().IndexOf(c) >= 0;
+			#endif
+		}
 
 		/// <summary>Replaces characters in <c>text</c> that are not allowed in 
 		/// file names with the specified replacement character.</summary>
@@ -213,11 +230,10 @@ namespace Loyc
 		public static string MakeValidFileName(string text, char? replacement = '_', bool fancy = true)
 		{
 			StringBuilder sb = new StringBuilder(text.Length);
-			var invalids = _invalids ?? (_invalids = Path.GetInvalidFileNameChars());
 			bool changed = false;
 			for (int i = 0; i < text.Length; i++) {
 				char c = text[i];
-				if (invalids.Contains(c)) {
+				if (IsInvalidFileNameChar(c)) {
 					var repl = replacement ?? '\0';
 					if (fancy) {
 						if (c == '"')       repl = '”'; // U+201D right double quotation mark

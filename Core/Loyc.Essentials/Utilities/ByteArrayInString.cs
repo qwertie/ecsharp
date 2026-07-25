@@ -194,8 +194,18 @@ namespace Loyc
 		/// <returns>Decoded byte array, or null if decoding fails.</returns>
 		public static ArraySlice<byte>? TryConvertToBytes(UString s)
 		{
-			// Maybe when we go to .NET Core they'll offer a Span overload to make this efficient?
-			return TryConvertToBytes(s.ToString() ?? "");
+			#if NETSTANDARD2_0 || NETFRAMEWORK
+				return TryConvertToBytes(s.ToString() ?? "");
+			#else
+				// Encode straight from the UString's characters, with no intermediate string.
+				var chars = s.AsSpan();
+				if (chars.Length == 0)
+					return TryConvertToBytesInPlace(Array.Empty<byte>());
+				byte[] b = new byte[Encoding.UTF8.GetByteCount(chars)];
+				int written = Encoding.UTF8.GetBytes(chars, b);
+				System.Diagnostics.Debug.Assert(written == b.Length);
+				return TryConvertToBytesInPlace(b);
+			#endif
 		}
 
 		/// <summary>Decodes a BAIS string back to a byte array.</summary>

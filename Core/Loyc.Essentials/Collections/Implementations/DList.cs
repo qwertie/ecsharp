@@ -18,9 +18,7 @@ namespace Loyc.Collections
 	/// <seealso cref="InternalDList{T}"/>
 	/// <seealso cref="DList"/>
 	[Serializable()]
-	#if !CompactFramework
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
-	#endif
 	public class DList<T> : IListEx<T>, IDeque<T>, IListRangeMethods<T>, ICloneable<DList<T>>//, IScannable<T> //, IGetIteratorSlice<T>
 	{
 		protected InternalDList<T> _dlist = InternalDList<T>.Empty;
@@ -320,7 +318,9 @@ namespace Loyc.Collections
 			if (newSize < Count)
 				RemoveRange(newSize, Count - newSize);
 			else if (newSize > Count)
-				InsertRange(Count, (IReadOnlyCollection<T>)ListExt.Repeat(default(T), newSize - Count));
+				// Enlarges the array (if needed) and blanks the new region; no
+				// allocation and no per-element enumeration. See InternalDList.Resize.
+				_dlist.Resize(newSize);
 		}
 
 		public DList<T> Clone()

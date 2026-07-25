@@ -17,15 +17,29 @@
     <copyright>Copyright 2020</copyright>
     <tags>Loyc Core Interfaces Collections</tags>
     <dependencies>
-      <group targetFramework=".NETFramework4.7.2" />
-      <group targetFramework=".NETStandard2.0" />
-      <!--<dependency id="SampleDependency" version="1.0"/>-->
+      <!-- Span/Memory/BinaryPrimitives and Unsafe come from System.Memory on the
+           targets that don't have them in-box. netstandard2.1 has Span in-box but
+           still needs the package for System.Runtime.CompilerServices.Unsafe. -->
+      <group targetFramework=".NETFramework4.7.2">
+        <dependency id="System.Memory" version="4.5.4"/>
+        <dependency id="System.Runtime.CompilerServices.Unsafe" version="5.0.0"/>
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="System.Memory" version="4.5.4"/>
+      </group>
+      <group targetFramework=".NETStandard2.1">
+        <dependency id="System.Memory" version="4.5.4"/>
+      </group>
+      <!-- net6.0 has all of the above in-box -->
+      <group targetFramework="net6.0" />
     </dependencies>
   </metadata>
   <files>
     <file src="Readme.md" />
 
     <file src="Bin\Release\netstandard2.0\Loyc.Interfaces.*" target="lib\netstandard2.0\" />
+    <file src="Bin\Release\netstandard2.1\Loyc.Interfaces.*" target="lib\netstandard2.1\" />
+    <file src="Bin\Release\net6.0\Loyc.Interfaces.*" target="lib\net6.0\" />
     <file src="Bin\Release\Loyc.Interfaces.*" target="lib\net472\" />
     <file src="Loyc.Interfaces\**\*.cs" target="src" />
     <file src="Loyc.Interfaces\**\*.ecs" target="src" />

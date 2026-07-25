@@ -76,10 +76,22 @@ public class TypeTagRegistry
 	{
 		public static readonly State Empty =
 			new State(new Dictionary<Type, string>(), new Dictionary<string, Type>());
+		// Snapshots are never mutated after construction, which is exactly the contract
+		// FrozenDictionary is designed for: slower to build, faster to read.
+		#if NET8_0_OR_GREATER
+		public readonly System.Collections.Frozen.FrozenDictionary<Type, string> TagByType;
+		public readonly System.Collections.Frozen.FrozenDictionary<string, Type> TypeByTag;
+		public State(Dictionary<Type, string> tagByType, Dictionary<string, Type> typeByTag)
+		{
+			TagByType = System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary(tagByType);
+			TypeByTag = System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary(typeByTag);
+		}
+		#else
 		public readonly Dictionary<Type, string> TagByType;
 		public readonly Dictionary<string, Type> TypeByTag;
 		public State(Dictionary<Type, string> tagByType, Dictionary<string, Type> typeByTag)
 			{ TagByType = tagByType; TypeByTag = typeByTag; }
+		#endif
 	}
 
 	readonly object _mutex = new object();

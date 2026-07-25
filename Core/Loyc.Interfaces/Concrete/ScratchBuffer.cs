@@ -67,14 +67,14 @@ namespace Loyc.Threading
 		{
 			get {
 				T? buffer = _buffer;
-				if (_threadID == Thread.CurrentThread.ManagedThreadId)
+				if (_threadID == Environment.CurrentManagedThreadId)
 					return buffer!;
 				return CallFactory();
 			}
 			set {
 				_threadID = int.MinValue;
 				_buffer = value;
-				_threadID = Thread.CurrentThread.ManagedThreadId;
+				_threadID = Environment.CurrentManagedThreadId;
 			}
 		}
 		private T CallFactory()

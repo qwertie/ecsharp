@@ -364,11 +364,12 @@ namespace Loyc.Collections.Impl
 		public int IndexOf(T item) { return IndexOf(item, 0); }
 		public int IndexOf(T item, int index)
 		{
-			EqualityComparer<T> comparer = EqualityComparer<T>.Default;
-			for (; index < Count; index++)
-				if (comparer.Equals(this[index], item))
-					return index;
-			return -1;
+			// Array.IndexOf also uses EqualityComparer<T>.Default, but on .NET Core
+			// it dispatches to vectorized SpanHelpers for bitwise-equatable T.
+			Debug.Assert((uint)index <= (uint)_count);
+			if ((uint)index >= (uint)_count)
+				return -1;
+			return Array.IndexOf<T>(_array, item, index, _count - index);
 		}
 		public bool Contains(T item)
 		{
@@ -633,10 +634,20 @@ namespace Loyc.Collections.Impl
 		/// of its entries. The average size of a list is 8.3% lower. Originally
 		/// I used 50% size increases, but they required 71% more allocations, 
 		/// which seemed like too much.
+		/// <para/>
+		/// If the computed size would overflow <see cref="int"/>, the maximum
+		/// supported array length is returned instead.
 		/// </remarks>
 		public static int NextLargerSize(int than)
 		{
-			return ((than << 1) - (than >> 2) + 2) & ~1;
+			int larger = ((than << 1) - (than >> 2) + 2) & ~1;
+			if (larger > than)
+				return larger;
+			#if NET6_0_OR_GREATER
+			return Array.MaxLength;
+			#else
+			return 0x7FFFFFC7;
+			#endif
 		}
 		/// <summary>Same as <see cref="NextLargerSize(int)"/>, but allows you to 
 		/// specify a capacity limit, to avoid wasting memory when a collection has 
@@ -864,10 +875,7 @@ namespace Loyc.Collections.Impl
 		}
 		public static bool AllEqual<T>(T[] a, T[] b, int count) where T : IEquatable<T>
 		{
-			for (int i = 0; i < count; i++)
-				if (!a[i].Equals(b[i]))
-					return false;
-			return true;
+			return a.AsSpan(0, count).SequenceEqual(b.AsSpan(0, count));
 		}
 
 		public struct Enumerator<T> : IEnumerator<T>

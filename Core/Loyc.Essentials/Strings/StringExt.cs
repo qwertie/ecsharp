@@ -212,7 +212,11 @@ namespace Loyc
 					if (i == j)
 						containsNames = true;
 					else
+						#if NETSTANDARD2_0 || NETFRAMEWORK
 						highestIndex = int.Parse(format.Substring(j, i - j));
+						#else
+						highestIndex = int.Parse(format.AsSpan(j, i - j));
+						#endif
 				}
 
 			if (!containsNames)

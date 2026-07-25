@@ -36,8 +36,47 @@ namespace Loyc.Collections
 			dict.Add(key, value);
 			return value;
 		}
-		
-		/// <summary>Uses the specified functions either to add a key/value pair to the dictionary 
+
+		/// <inheritdoc cref="GetOrAdd{K,V}(IDictionary{K,V},K,V)"/>
+		/// <remarks>This overload is preferred over the <see cref="IDictionary{K,V}"/>
+		/// version because on .NET 6+ it needs only a single hash lookup.</remarks>
+		public static V GetOrAdd<K, V>(this Dictionary<K, V> dict, K key, V value)
+		{
+			#if NET6_0_OR_GREATER
+			ref V? slot = ref System.Runtime.InteropServices.CollectionsMarshal
+				.GetValueRefOrAddDefault(dict, key, out bool exists);
+			if (exists)
+				return slot!;
+			slot = value;
+			return value;
+			#else
+			return GetOrAdd((IDictionary<K, V>)dict, key, value);
+			#endif
+		}
+		/// <inheritdoc cref="GetOrAdd{K,V}(IDictionary{K,V},K,Func{K,V})"/>
+		/// <remarks>This overload is preferred over the <see cref="IDictionary{K,V}"/>
+		/// version because on .NET 6+ it needs only a single hash lookup.</remarks>
+		public static V GetOrAdd<K, V>(this Dictionary<K, V> dict, K key, Func<K, V> valueFactory)
+		{
+			#if NET6_0_OR_GREATER
+			ref V? slot = ref System.Runtime.InteropServices.CollectionsMarshal
+				.GetValueRefOrAddDefault(dict, key, out bool exists);
+			if (exists)
+				return slot!;
+			try {
+				V value = valueFactory(key);
+				slot = value;
+				return value;
+			} catch {
+				dict.Remove(key); // don't leave a default(V) behind if the factory throws
+				throw;
+			}
+			#else
+			return GetOrAdd((IDictionary<K, V>)dict, key, valueFactory);
+			#endif
+		}
+
+		/// <summary>Uses the specified functions either to add a key/value pair to the dictionary
 		/// if the key does not already exist, or to update a key/value pair in the dictionary if 
 		/// the key already exists.</summary>
 		/// <returns>The new value associated with the key, which is either the result of addValueFactory or 
@@ -63,6 +102,49 @@ namespace Loyc.Collections
 			else
 				dict.Add(key, value = addValue);
 			return value;
+		}
+
+		/// <inheritdoc cref="AddOrUpdate{K,V}(IDictionary{K,V},K,Func{K,V},Func{K,V,V})"/>
+		/// <remarks>This overload is preferred over the <see cref="IDictionary{K,V}"/>
+		/// version because on .NET 6+ it needs only a single hash lookup. The factory
+		/// functions must not modify the dictionary.</remarks>
+		public static V AddOrUpdate<K, V>(this Dictionary<K, V> dict, K key, Func<K, V> addValueFactory, Func<K, V, V> updateValueFactory)
+		{
+			#if NET6_0_OR_GREATER
+			ref V? slot = ref System.Runtime.InteropServices.CollectionsMarshal
+				.GetValueRefOrAddDefault(dict, key, out bool exists);
+			if (exists) {
+				V updated = updateValueFactory(key, slot!);
+				slot = updated;
+				return updated;
+			}
+			try {
+				V added = addValueFactory(key);
+				slot = added;
+				return added;
+			} catch {
+				dict.Remove(key); // don't leave a default(V) behind if the factory throws
+				throw;
+			}
+			#else
+			return AddOrUpdate((IDictionary<K, V>)dict, key, addValueFactory, updateValueFactory);
+			#endif
+		}
+		/// <inheritdoc cref="AddOrUpdate{K,V}(IDictionary{K,V},K,V,Func{K,V,V})"/>
+		/// <remarks>This overload is preferred over the <see cref="IDictionary{K,V}"/>
+		/// version because on .NET 6+ it needs only a single hash lookup. The update
+		/// function must not modify the dictionary.</remarks>
+		public static V AddOrUpdate<K, V>(this Dictionary<K, V> dict, K key, V addValue, Func<K, V, V> updateValueFactory)
+		{
+			#if NET6_0_OR_GREATER
+			ref V? slot = ref System.Runtime.InteropServices.CollectionsMarshal
+				.GetValueRefOrAddDefault(dict, key, out bool exists);
+			V value = exists ? updateValueFactory(key, slot!) : addValue;
+			slot = value;
+			return value;
+			#else
+			return AddOrUpdate((IDictionary<K, V>)dict, key, addValue, updateValueFactory);
+			#endif
 		}
 
 		/// <summary>An alternate version TryGetValue that returns a default value 
@@ -195,6 +277,21 @@ namespace Loyc.Collections
 				return value;
 			}
 			return default(Maybe<V>);
+		}
+
+		/// <inheritdoc cref="GetAndRemove{K,V}(IDictionary{K,V},K)"/>
+		/// <remarks>This overload is preferred over the <see cref="IDictionary{K,V}"/>
+		/// version because it needs only a single hash lookup on runtimes that offer
+		/// <c>Dictionary.Remove(key, out value)</c>.</remarks>
+		public static Maybe<V> GetAndRemove<K, V>(this Dictionary<K, V> dict, K key)
+		{
+			#if !(NETSTANDARD2_0 || NETFRAMEWORK)
+			if (dict.Remove(key, out V? value))
+				return value;
+			return default(Maybe<V>);
+			#else
+			return GetAndRemove((IDictionary<K, V>)dict, key);
+			#endif
 		}
 	}
 

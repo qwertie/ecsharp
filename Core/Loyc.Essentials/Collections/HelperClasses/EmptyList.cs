@@ -7,7 +7,6 @@ namespace Loyc.Collections
 {
 	/// <summary>Helper class: <see cref="EmptyList{T}.Value"/> is a read-only empty list.</summary>
 	/// <remarks>It is a boxed copy of <c>ListExt.Repeat(default(T), 0)</c>.</remarks>
-	[Serializable]
 	public static class EmptyList<T>
 	{
 		[Obsolete("Use Empty<T>.List instead")]

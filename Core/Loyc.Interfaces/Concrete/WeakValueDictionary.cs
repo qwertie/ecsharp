@@ -49,12 +49,14 @@ namespace Loyc.Collections
 		/// <summary>Removes entries with garbage-collected values from the dictionary.</summary>
 		public void Cleanup()
 		{
-			List<K> _removeQueue = new List<K>();
+			// The list is allocated lazily, since usually nothing is dead.
+			List<K>? _removeQueue = null;
 			foreach (var kvp in _dict)
 				if (!kvp.Value.TryGetTarget(out var _) && kvp.Value != WeakNull)
-					_removeQueue.Add(kvp.Key);
-			for (int i = 0; i < _removeQueue.Count; i++)
-				_dict.Remove(_removeQueue[i]);
+					(_removeQueue ??= new List<K>()).Add(kvp.Key);
+			if (_removeQueue != null)
+				for (int i = 0; i < _removeQueue.Count; i++)
+					_dict.Remove(_removeQueue[i]);
 			_accessCounter = -1;
 		}
 

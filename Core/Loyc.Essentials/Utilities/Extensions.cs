@@ -202,10 +202,19 @@ namespace Loyc
 			return sb;
 		}
 
-		/// <summary>Calls an internal method of <see cref="Exception"/> that records 
-		/// an exception's stack trace so that the stack trace does not change if 
+		/// <summary>Calls an internal method of <see cref="Exception"/> that records
+		/// an exception's stack trace so that the stack trace does not change if
 		/// the exception is rethrown (e.g. on another thread).</summary>
 		/// <remarks>
+		/// <b>This method does nothing except on .NET Framework.</b> It works by reflecting
+		/// for <c>Exception.InternalPreserveStackTrace</c>, a private method that does not
+		/// exist on .NET Core / .NET 5 and above, so on those runtimes it silently does
+		/// nothing. Use <see cref="System.Runtime.ExceptionServices.ExceptionDispatchInfo"/>
+		/// instead:
+		/// <code>
+		/// var edi = ExceptionDispatchInfo.Capture(ex); // where the exception was caught
+		/// edi.Throw();                                 // rethrow, preserving the stack trace
+		/// </code>
 		/// <example>
 		///		Exception ex = null;
 		/// 	var thread = new ThreadEx(() => {
@@ -227,6 +236,7 @@ namespace Loyc
 		/// Note: when rethrowing an exception that was just caught, you
 		/// should always use "catch;" instead of calling this method.
 		/// </remarks>
+		[Obsolete("This is a no-op except on .NET Framework. Use ExceptionDispatchInfo.Capture(ex).Throw() to rethrow an exception with its original stack trace.")]
 		public static void PreserveStackTrace(this Exception exception)
 		{
 			try {

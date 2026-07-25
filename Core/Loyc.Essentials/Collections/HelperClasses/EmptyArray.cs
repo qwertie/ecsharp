@@ -9,6 +9,6 @@ namespace Loyc.Collections
 	public class EmptyArray<T>
 	{
 		[Obsolete("Use Empty<T>.Array instead")]
-		public static readonly T[] Value = new T[0];
+		public static readonly T[] Value = System.Array.Empty<T>();
 	}
 }

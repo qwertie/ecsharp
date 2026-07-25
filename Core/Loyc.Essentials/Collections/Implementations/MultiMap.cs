@@ -61,10 +61,17 @@ namespace Loyc.Collections
 			}
 			List<V> GetOrMakeValues()
 			{
+				#if NET6_0_OR_GREATER
+				// Single hash lookup instead of TryGetValue followed by Add
+				ref List<V>? slot = ref System.Runtime.InteropServices.CollectionsMarshal
+					.GetValueRefOrAddDefault(_map._dict, _key, out _);
+				return slot ??= new List<V>();
+				#else
 				var values = GetValues();
 				if (values == null)
 					_map._dict.Add(_key, values = new List<V>());
 				return values;
+				#endif
 			}
 
 			public int Count => GetValues()?.Count ?? 0;

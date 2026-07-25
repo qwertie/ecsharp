@@ -8,14 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-#if !CompactFramework
 using System.Runtime.Serialization;
-#else
-namespace System.Threading
-{
-	public delegate void ParameterizedThreadStart(object obj);
-}
-#endif
 
 namespace Loyc.Threading
 {
@@ -232,21 +225,42 @@ namespace Loyc.Threading
 		/// Gets or sets a value indicating the scheduling priority of a thread.
 		/// </summary>
 		public ThreadPriority Priority { get { return _thread.Priority; } set { _thread.Priority = value; } }
-		#if !CompactFramework
 		/// <summary>
 		/// Gets a value containing the states of the current thread.
 		/// </summary>
 		public System.Threading.ThreadState ThreadState { get { return _thread.ThreadState; } }
-		#endif
 		/// <summary>
 		/// Raises a System.Threading.ThreadAbortException in the thread on which it
 		/// is invoked, to begin the process of terminating the thread while also providing
 		/// exception information about the thread termination. Calling this method usually
 		/// terminates the thread.
 		/// </summary>
-		public void Abort(object stateInfo) { _thread.Abort(stateInfo); }
-		/// <inheritdoc cref="Abort()"/>
-		public void Abort() { _thread.Abort(); }
+		/// <remarks>
+		/// Thread aborts are only supported on .NET Framework. On .NET Core / .NET 5 and
+		/// above the underlying <c>Thread.Abort</c> is unsupported and always throws
+		/// <see cref="PlatformNotSupportedException"/>, so this method throws it directly
+		/// rather than emitting an SYSLIB0006 obsoletion warning at build time. Use
+		/// cooperative cancellation (<see cref="System.Threading.CancellationToken"/>) instead.
+		/// </remarks>
+		[Obsolete("Thread.Abort is not supported outside .NET Framework and throws PlatformNotSupportedException there. Use cooperative cancellation (CancellationToken) instead.")]
+		public void Abort(object stateInfo)
+		{
+			#if NETFRAMEWORK
+				_thread.Abort(stateInfo);
+			#else
+				throw new PlatformNotSupportedException("Thread.Abort is not supported on this platform.");
+			#endif
+		}
+		/// <inheritdoc cref="Abort(object)"/>
+		[Obsolete("Thread.Abort is not supported outside .NET Framework and throws PlatformNotSupportedException there. Use cooperative cancellation (CancellationToken) instead.")]
+		public void Abort()
+		{
+			#if NETFRAMEWORK
+				_thread.Abort();
+			#else
+				throw new PlatformNotSupportedException("Thread.Abort is not supported on this platform.");
+			#endif
+		}
 		/// <summary>
 		/// Returns the current domain in which the current thread is running.
 		/// </summary>
@@ -265,9 +279,7 @@ namespace Loyc.Threading
 		/// elapses, while continuing to perform standard COM and SendMessage pumping. 
 		/// </summary>
 		public bool Join(int milliseconds) { return _thread.Join(milliseconds); }
-		#if !CompactFramework
 		public bool Join(TimeSpan timeout) { return _thread.Join(timeout); }
-		#endif
 		/// <summary>
 		/// Suspends the current thread for a specified time.
 		/// </summary>
@@ -276,16 +288,14 @@ namespace Loyc.Threading
 		public Thread Thread { get { return _thread; } }
 		public Thread? ParentThread { get { return _parent; } }
 
-		#if !CompactFramework
-		public bool IsAlive { 
-			get { 
+		public bool IsAlive {
+			get {
 				System.Threading.ThreadState t = ThreadState;
 				return t != System.Threading.ThreadState.Stopped &&
 				       t != System.Threading.ThreadState.Unstarted &&
 				       t != System.Threading.ThreadState.Aborted;
 			}
 		}
-		#endif
 
 		internal static void RegisterTLV(ThreadLocalVariableBase tlv)
 		{

@@ -382,28 +382,18 @@ partial class SyncBinary
 			}
 		}
 		
+		// Note: BinaryPrimitives is available on every target we build, including
+		// netstandard2.0 and net472, via the System.Memory package. No #if needed.
 		public void WriteLittleEndianUInt32(uint num, Span<byte> outBuf)
 		{
-			#if NETFRAMEWORK
-			outBuf[_i] = (byte)num;
-			outBuf[_i + 1] = (byte)(num >> 8);
-			outBuf[_i + 2] = (byte)(num >> 16);
-			outBuf[_i + 3] = (byte)(num >> 24);
-			#else
 			BinaryPrimitives.WriteUInt32LittleEndian(outBuf.Slice(_i), num);
-			#endif
 			_i += 4;
 		}
 
 		public void WriteLittleEndianUInt64(ulong num, Span<byte> outBuf)
 		{
-			#if NETFRAMEWORK
-			WriteLittleEndianUInt32((uint) num, outBuf);
-			WriteLittleEndianUInt32((uint)(num >> 32), outBuf);
-			#else
 			BinaryPrimitives.WriteUInt64LittleEndian(outBuf.Slice(_i), num);
 			_i += 8;
-			#endif
 		}
 
 		public ulong WriteLittleEndianBytes(ulong num, int numBytes, Span<byte> outBuf)
@@ -459,11 +449,11 @@ partial class SyncBinary
 
 		public void Write(float num)
 		{
-			#if NETSTANDARD2_0 || NETFRAMEWORK
-			// inefficient
-			uint bytes = BitConverter.ToUInt32(BitConverter.GetBytes(num), 0);
-			#else
-			uint bytes = (uint) BitConverter.SingleToInt32Bits(num);
+			// Unsafe.As is a pure reinterpret-cast with no allocation, and is available on
+			// every target via System.Runtime.CompilerServices.Unsafe. It replaces the old
+			// netstandard2.0/net472 path, which allocated a byte[] for every single float.
+			uint bytes = Unsafe.As<float, uint>(ref num);
+			#if !(NETSTANDARD2_0 || NETFRAMEWORK)
 			if (IsReversedEndian)
 				bytes = BinaryPrimitives.ReverseEndianness(bytes);
 			#endif
@@ -475,7 +465,14 @@ partial class SyncBinary
 			//
 			// TODO: what about endianness?
 			//
+			// decimal.GetBits(decimal, Span<int>) exists only on .NET 5+ (I verified it is
+			// absent from netstandard2.1), so older targets keep the int[] allocation.
+			#if NET5_0_OR_GREATER
+			Span<int> arrayOf4 = stackalloc int[4];
+			decimal.GetBits(num, arrayOf4);
+			#else
 			int[] arrayOf4 = decimal.GetBits(num); // little-endian on x64
+			#endif
 			Span<byte> outBuf = GetOutSpan(16);
 			WriteLittleEndianUInt32(unchecked((uint)arrayOf4[0]), outBuf);
 			WriteLittleEndianUInt32(unchecked((uint)arrayOf4[1]), outBuf);

@@ -97,8 +97,16 @@ public class TypeSyncRegistry
 	internal sealed class State
 	{
 		public static readonly State Empty = new State(new Dictionary<Type, Registration>());
+		// Snapshots are never mutated after construction, which is exactly the contract
+		// FrozenDictionary is designed for: slower to build, faster to read.
+		#if NET8_0_OR_GREATER
+		public readonly System.Collections.Frozen.FrozenDictionary<Type, Registration> ByType;
+		public State(Dictionary<Type, Registration> byType)
+			=> ByType = System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary(byType);
+		#else
 		public readonly Dictionary<Type, Registration> ByType;
 		public State(Dictionary<Type, Registration> byType) => ByType = byType;
+		#endif
 	}
 
 	readonly object _mutex = new object();
@@ -274,9 +282,17 @@ public class TypeSyncRegistry
 		sealed class Snapshot
 		{
 			public readonly State Source; // for staleness detection (reference identity)
+			// This is the hot dispatch table: read on every dynamically-typed field,
+			// rebuilt only when the registry changes. See note on State.ByType.
+			#if NET8_0_OR_GREATER
+			public readonly System.Collections.Frozen.FrozenDictionary<Type, Func<SM, object?, object?>> ByType;
+			public Snapshot(State source, Dictionary<Type, Func<SM, object?, object?>> byType)
+				{ Source = source; ByType = System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary(byType); }
+			#else
 			public readonly Dictionary<Type, Func<SM, object?, object?>> ByType;
 			public Snapshot(State source, Dictionary<Type, Func<SM, object?, object?>> byType)
 				{ Source = source; ByType = byType; }
+			#endif
 		}
 
 		readonly TypeSyncRegistry _owner;

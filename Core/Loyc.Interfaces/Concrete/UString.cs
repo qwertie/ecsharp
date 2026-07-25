@@ -146,6 +146,8 @@ namespace Loyc
 
 		// TODO: consider changing UString to be a wrapper around Memory<char>
 		public ReadOnlyMemory<char> AsMemory() => _str.AsMemory(_start, _count);
+		/// <summary>Returns the contents of this slice as a <see cref="ReadOnlySpan{T}"/>.</summary>
+		public ReadOnlySpan<char> AsSpan() => _str.AsSpan(_start, _count);
 
 		public uchar PopFirst(out bool fail)
 		{
@@ -502,14 +504,23 @@ namespace Loyc
 		/// <summary>Converts the string to uppercase using the 'invariant' culture.</summary>
 		public UString ToUpper()
 		{
-			var sb = new StringBuilder(Length);
-			bool change = false;
-			for (int i = _start; i < _start + _count; i++) {
-				char c = _str![i], uc = char.ToUpperInvariant(c);
-				if (c != uc) change = true;
-				sb.Append(uc);
+			// Fast path: scan for the first character that actually changes. If
+			// there is none, no StringBuilder (and usually no string) is allocated.
+			int stop = _start + _count, i = _start;
+			for (; i < stop; i++) {
+				char c = _str![i];
+				if (char.ToUpperInvariant(c) != c)
+					break;
 			}
-			return change || IsSmallSlice ? sb.ToString() : this;
+			if (i == stop)
+				// Nothing to change. Note: IsSmallSlice implies _str != null.
+				return IsSmallSlice ? (UString)_str!.Substring(_start, _count) : this;
+
+			var sb = new StringBuilder(Length);
+			sb.Append(_str, _start, i - _start);
+			for (; i < stop; i++)
+				sb.Append(char.ToUpperInvariant(_str![i]));
+			return sb.ToString();
 		}
 
 		/// <summary>Determines whether this string starts with the specified other 
@@ -534,16 +545,18 @@ namespace Loyc
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static bool SubstringEqualHelper(string _str, int _start, UString what, bool ignoreCase = false)
 		{
-			if (ignoreCase)
-				for (int i = 0; i < what.Length; i++) {
-					if (char.ToUpperInvariant(_str[_start + i]) != char.ToUpperInvariant(what[i]))
-						return false;
-				}
-			else
-				for (int i = 0; i < what.Length; i++) {
-					if (_str[_start + i] != what[i])
-						return false;
-				}
+			if (!ignoreCase)
+				// Note: an ordinal comparison is exactly what the old hand-written
+				// loop did, so this is a drop-in (vectorized) replacement.
+				return _str.AsSpan(_start, what.Length).SequenceEqual(what.AsSpan());
+
+			// Caution: this deliberately compares char.ToUpperInvariant of each
+			// UTF-16 code unit, which is NOT the same as OrdinalIgnoreCase. Do not
+			// "simplify" it to a StringComparison-based comparison.
+			for (int i = 0; i < what.Length; i++) {
+				if (char.ToUpperInvariant(_str[_start + i]) != char.ToUpperInvariant(what[i]))
+					return false;
+			}
 			return true;
 		}
 
@@ -605,10 +618,14 @@ namespace Loyc
 		}
 		public int? IndexOf(UString find, bool ignoreCase = false)
 		{
+			if (!ignoreCase) {
+				int i = AsSpan().IndexOf(find.AsSpan());
+				return i < 0 ? (int?)null : i;
+			}
 			int end = _start + _count - find.Length;
-			for (int i = _start; i <= end; i++) {
-				if (SubstringEqualHelper(_str!, i, find, ignoreCase))
-					return i - _start;
+			for (int j = _start; j <= end; j++) {
+				if (SubstringEqualHelper(_str!, j, find, ignoreCase))
+					return j - _start;
 			}
 			return null;
 		}
@@ -640,8 +657,12 @@ namespace Loyc
 				return a;
 			if (a.Length == 0)
 				return b;
+			#if NET5_0_OR_GREATER
+			return string.Concat(a.AsSpan(), b.AsSpan());
+			#else
 			var sb = new StringBuilder(a, a.Length + b.Length);
 			return b.AppendTo(sb).ToString();
+			#endif
 		}
 		public static UString operator+(UString a, string b)
 		{
@@ -649,8 +670,12 @@ namespace Loyc
 				return a;
 			if (a.Length == 0)
 				return b;
+			#if NET5_0_OR_GREATER
+			return string.Concat(a.AsSpan(), b.AsSpan());
+			#else
 			var sb = new StringBuilder(a._str, a._start, a._count, a.Length + b.Length);
 			return sb.Append(b).ToString();
+			#endif
 		}
 		public static UString operator+(UString a, UString b)
 		{
@@ -658,8 +683,12 @@ namespace Loyc
 				return a;
 			if (a.Length == 0)
 				return b;
+			#if NET5_0_OR_GREATER
+			return string.Concat(a.AsSpan(), b.AsSpan());
+			#else
 			var sb = new StringBuilder(a._str, a._start, a._count, a.Length + b.Length);
 			return b.AppendTo(sb).ToString();
+			#endif
 		}
 	}
 }

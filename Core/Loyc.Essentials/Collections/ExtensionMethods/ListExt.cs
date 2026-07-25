@@ -277,10 +277,18 @@ namespace Loyc.Collections
 			return n;
 		}
 
+		/// <summary>Caches the <see cref="Comparison{T}"/> delegate for
+		/// <c>Comparer{T}.Default.Compare</c>, so that a method-group conversion
+		/// does not allocate a fresh delegate on every call.</summary>
+		private static class DefaultComparison<T>
+		{
+			public static readonly Comparison<T> Value = Comparer<T>.Default.Compare;
+		}
+
 		/// <inheritdoc cref="Sort{T}(IList{T}, int, int, Comparison{T})"/>
 		public static void Sort<T>(this IList<T> list)
 		{
-			Sort(list, Comparer<T>.Default.Compare);
+			Sort(list, DefaultComparison<T>.Value);
 		}
 		/// <inheritdoc cref="Sort{T}(IList{T}, int, int, Comparison{T})"/>
 		public static void Sort<T>(this IList<T> list, Comparison<T> comp)
@@ -324,7 +332,7 @@ namespace Loyc.Collections
 		}
 		public static void StableSort<T>(this IList<T> list)
 		{
-			StableSort(list, Comparer<T>.Default.Compare);
+			StableSort(list, DefaultComparison<T>.Value);
 		}
 
 		/// <summary>Uses a partial quicksort, known as "quickselect", to find and
@@ -342,7 +350,7 @@ namespace Loyc.Collections
 		/// although the worst-case performance remains O(N^2).</remarks>
 		public static ListSlice<T> SortLowestK<T>(this IList<T> list, int k)
 		{
-			return SortLowestK(list, k, Comparer<T>.Default.Compare);
+			return SortLowestK(list, k, DefaultComparison<T>.Value);
 		}
 		public static ListSlice<T> SortLowestK<T>(this IList<T> list, int k, Comparison<T> comp)
 		{
@@ -366,7 +374,7 @@ namespace Loyc.Collections
 		/// achieved using a temporary array of <c>list.Count</c> integers.</returns>
 		public static ListSlice<T> SortLowestKStable<T>(this IList<T> list, int k)
 		{
-			return SortLowestKStable(list, k, Comparer<T>.Default.Compare);
+			return SortLowestKStable(list, k, DefaultComparison<T>.Value);
 		}
 		public static ListSlice<T> SortLowestKStable<T>(this IList<T> list, int k, Comparison<T> comp)
 		{
@@ -558,7 +566,12 @@ namespace Loyc.Collections
 			list[j] = tmp;
 		}
 
-		static Random _r = new Random();
+		#if NET6_0_OR_GREATER
+		static Random _r => Random.Shared;
+		#else
+		[ThreadStatic] static Random? _rTls;
+		static Random _r => _rTls ??= new Random();
+		#endif
 		public static void Randomize<T>(this IList<T> list)
 		{
 			int count = list.Count;

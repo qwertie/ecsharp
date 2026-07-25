@@ -3,7 +3,6 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
 
 namespace Loyc.SyncLib.Impl
 {
@@ -13,7 +12,10 @@ namespace Loyc.SyncLib.Impl
 		//protected Memory<byte> _buf; // a sub-buffer returned from _output
 		protected int _i = 0; // next index within _out to write
 
-		protected ObjectIDGenerator _idGen = new ObjectIDGenerator(); // IDs start at one
+		// Was System.Runtime.Serialization.ObjectIDGenerator, which Microsoft marked
+		// obsolete in .NET 8 (SYSLIB0050). ObjectIdTable is behaviour-compatible:
+		// reference identity, IDs starting at one, same GetId(obj, out firstTime) shape.
+		protected internal ObjectIdTable _idGen = new ObjectIdTable();
 
 		const int MinimumBufSize = 1024;
 

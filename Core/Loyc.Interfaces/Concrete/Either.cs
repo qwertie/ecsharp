@@ -12,7 +12,7 @@ namespace Loyc
 	/// <remarks>For efficiency, this is a struct, but this makes it possible
 	/// to default-construct it. In that case its value will be <c>default(R)</c>.</remarks>
 	[System.Diagnostics.DebuggerDisplay("{ToString()}")]
-	public struct Either<L, R> : IEither<L, R>, IValue<object?>, IEquatable<Either<L, R>>, IEquatable<ITuple>, ITuple
+	public readonly struct Either<L, R> : IEither<L, R>, IValue<object?>, IEquatable<Either<L, R>>, IEquatable<ITuple>, ITuple
 	{
 		/// <summary>Simply calls the constructor. This method exists to make
 		/// it possible to construct an Either when both types are the same.</summary>

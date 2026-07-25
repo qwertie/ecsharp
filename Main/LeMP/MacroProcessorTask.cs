@@ -142,7 +142,9 @@ namespace LeMP
 				var thread = new ThreadEx(() =>
 				{
 					try { ProcessFile(io, null); } 
+					#pragma warning disable CS0618 // PreserveStackTrace is a no-op outside .NET Framework
 					catch (Exception e) { ex = e; ex.PreserveStackTrace(); }
+					#pragma warning restore CS0618
 				});
 				thread.Start();
 				if (thread.Join(timeout)) {
@@ -150,7 +152,12 @@ namespace LeMP
 						onProcessed(io);
 				} else {
 					io.Output = new LNodeList(F.Id("processing_thread_timed_out"));
+					// Thread aborts only work on .NET Framework; elsewhere this throws
+					// PlatformNotSupportedException (which was also true before ThreadEx.Abort
+					// was marked obsolete, because Thread.Abort itself threw it).
+					#pragma warning disable CS0618 // ThreadEx.Abort is obsolete
 					thread.Abort();
+					#pragma warning restore CS0618
 					thread.Join(timeout);
 				}
 				if (ex != null)

@@ -10,14 +10,14 @@ namespace Loyc.Collections.Impl
 	/// <summary>A base class for user-defined dictionaries that want to implement 
 	/// both <c>IDictionary(K,V)</c> and <c>IReadOnlyDictionary(K, V)</c>.</summary>
 	/// <remarks>Modified version of source: datavault project. License: Apache License 2.0.</remarks>
+    // Note: there used to be a [DebuggerTypeProxy] here that named
+    // System.Collections.Generic.Mscorlib_DictionaryDebugView`2 in mscorlib
+    // 2.0.0.0. That type does not exist on .NET Core / .NET Standard, so the
+    // attribute was dead weight (or worse) on 3 of our 4 target frameworks.
     [DebuggerDisplay("Count = {Count}")]
-    [DebuggerTypeProxy(PREFIX + "DictionaryDebugView`2" + SUFFIX)]
     public abstract class DictionaryBase<TKey, TValue> : IDictionaryAndReadOnly<TKey, TValue>
 		where TKey: notnull
     {
-        private const string PREFIX = "System.Collections.Generic.Mscorlib_";
-        private const string SUFFIX = ",mscorlib,Version=2.0.0.0,Culture=neutral,PublicKeyToken=b77a5c561934e089";
-
         public abstract int Count { get; }
         public abstract void Clear();
         public abstract void Add(TKey key, TValue value);

@@ -315,11 +315,10 @@ partial class SyncBinary
 			if (num == FloatNullBitPattern)
 				return null;
 
-			#if NETSTANDARD2_0 || NETFRAMEWORK
-			return BitConverter.ToSingle(BitConverter.GetBytes(num), 0);
-			#else
-			return BitConverter.Int32BitsToSingle((int) num);
-			#endif
+			// Unsafe.As is a pure reinterpret-cast with no allocation, and is available on
+			// every target via System.Runtime.CompilerServices.Unsafe. It replaces the old
+			// netstandard2.0/net472 path, which allocated a byte[] for every single float.
+			return Unsafe.As<uint, float>(ref num);
 		}
 
 		internal double? ReadDoubleOrNull()
@@ -351,7 +350,13 @@ partial class SyncBinary
 
 			if (the13thByte == 0x00 && the14thByte == 0x00)
 			{
+				// new decimal(ReadOnlySpan<int>) exists only on .NET 5+ (I verified it is
+				// absent from netstandard2.1), so older targets keep the int[] allocation.
+				#if NET5_0_OR_GREATER
+				Span<int> bits = stackalloc int[4] {
+				#else
 				var bits = new int[4] {
+				#endif
 					unchecked((int) LittleEndianBytesToUInt32(cur.Span)),
 					unchecked((int) LittleEndianBytesToUInt32(cur.Buf.Slice(i + 4))),
 					unchecked((int) LittleEndianBytesToUInt32(cur.Buf.Slice(i + 8))),
@@ -378,20 +383,12 @@ partial class SyncBinary
 
 		static uint LittleEndianBytesToUInt32(ReadOnlySpan<byte> span)
 		{
-			#if NETFRAMEWORK
-			return (uint)(span[0] + (span[1] << 8) + (span[2] << 16) + (span[3] << 24));
-			#else
 			return BinaryPrimitives.ReadUInt32LittleEndian(span);
-			#endif
 		}
 
 		static ulong LittleEndianBytesToUInt64(ReadOnlySpan<byte> span)
 		{
-			#if NETFRAMEWORK
-			return LittleEndianBytesToUInt32(span) + unchecked((ulong)LittleEndianBytesToUInt32(span.Slice(4)) << 32);
-			#else
 			return BinaryPrimitives.ReadUInt64LittleEndian(span);
-			#endif
 		}
 
 		#endregion
@@ -692,22 +689,16 @@ partial class SyncBinary
 			return default;
 		}
 
+		// Note: BinaryPrimitives is available on every target we build, including
+		// netstandard2.0 and net472, via the System.Memory package. No #if needed.
 		static uint BigEndianBytesToUInt32(ReadOnlySpan<byte> span)
 		{
-			#if NETSTANDARD2_0 || NETFRAMEWORK
-			return (uint)(span[3] + (span[2] << 8) + (span[1] << 16) + (span[0] << 24));
-			#else
-			return (uint)BinaryPrimitives.ReadInt32BigEndian(span);
-			#endif
+			return BinaryPrimitives.ReadUInt32BigEndian(span);
 		}
 
 		static ulong BigEndianBytesToUInt64(ReadOnlySpan<byte> span)
 		{
-			#if NETSTANDARD2_0 || NETFRAMEWORK
-			return unchecked((ulong)BigEndianBytesToUInt32(span) << 32) + BigEndianBytesToUInt32(span.Slice(4));
-			#else
-			return (ulong)BinaryPrimitives.ReadInt64BigEndian(span);
-			#endif
+			return BinaryPrimitives.ReadUInt64BigEndian(span);
 		}
 
 		//[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -906,31 +897,31 @@ partial class SyncBinary
 		//	return default;
 		//}
 
+		#if !NETCOREAPP3_0_OR_GREATER
+		/// <summary>_leadingOnes[b] is the number of leading 1 bits in the byte b.</summary>
+		/// <remarks>This replaces a chain of four data-dependent, badly-predicted branches
+		///   with a single L1 load. It is only needed on targets without BitOperations
+		///   (netstandard2.0, netstandard2.1 and .NET Framework).</remarks>
+		static readonly byte[] _leadingOnes = MakeLeadingOnesTable();
+
+		static byte[] MakeLeadingOnesTable()
+		{
+			var table = new byte[256];
+			for (int b = 0; b < table.Length; b++) {
+				int n = 0;
+				while (n < 8 && (b & (0x80 >> n)) != 0)
+					n++;
+				table[b] = (byte)n;
+			}
+			return table;
+		}
+		#endif
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int LeadingOneCount(byte b)
 		{
 			#if !NETCOREAPP3_0_OR_GREATER
-				// Note: this must use unsigned arithmetic; with `int`, the right-shifts
-				// sign-extend and the comparisons fail for any byte >= 0b1100_0000
-				int result = 0;
-				uint i = (uint)b << 24;
-				if (i >> 28 == 0b1111)
-				{
-					i <<= 4;
-					result += 4;
-				}
-				if (i >> 30 == 0b11)
-				{
-					i <<= 2;
-					result += 2;
-				}
-				if (i >> 31 == 1)
-				{
-					i <<= 1;
-					result += 1;
-					if (i >> 31 == 1)
-						result += 1; // b was 0xFF (8 leading ones)
-				}
-				return result;
+				return _leadingOnes[b];
 			#else
 				return BitOperations.LeadingZeroCount(~((uint)b << 24));
 			#endif

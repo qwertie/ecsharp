@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace Loyc
 	/// computed name for fast repeated lookups.</summary>
 	public static class MemoizedTypeName
 	{
-		static Dictionary<Type, string> _shortNames = new Dictionary<Type, string>();
+		static readonly ConcurrentDictionary<Type, string> _shortNames = new ConcurrentDictionary<Type, string>();
 
 		/// <summary>Computes a short language-agnostic name for a type, including 
 		/// generic parameters, e.g. GenericName(typeof(int)) is "Int32"; 
@@ -27,18 +28,15 @@ namespace Loyc
 		{
 			if (type == null)
 				return null;
-			string? name;
-			lock (_shortNames)
-			{
-				if (!_shortNames.TryGetValue(type, out name))
-				{
-					if (type.IsGenericType)
-						_shortNames[type] = name = ComputeGenericName(type);
-					else
-						name = type.Name;
-				}
-			}
-			return name;
+			if (_shortNames.TryGetValue(type, out string? name))
+				return name;
+			// Note: as before, only generic types are memoized. ConcurrentDictionary
+			// does not hold a lock while running the value factory, so the recursive
+			// Get() calls inside ComputeGenericName cannot deadlock (they may
+			// duplicate work under contention, but the result is the same string).
+			if (type.IsGenericType)
+				return _shortNames.GetOrAdd(type, ComputeGenericName);
+			return type.Name;
 		}
 
 		/// <summary>Computes a type's name without memoization.</summary>

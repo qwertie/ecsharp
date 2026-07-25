@@ -64,9 +64,7 @@ namespace Loyc.Collections.Impl
 	/// <see cref="IList{T}"/> from it.
 	/// </remarks>
 	[Serializable()]
-	#if !CompactFramework
 	[DebuggerTypeProxy(typeof(ListSourceDebugView<>)), DebuggerDisplay("Count = {Count}")]
-	#endif
 	public struct InternalDList<T> : IListSource<T>, IHasFirst<T>, IHasLast<T>, ICloneable<InternalDList<T>>
 	{
 		public static readonly T[] EmptyArray = Empty<T>.Array;
@@ -215,13 +213,11 @@ namespace Loyc.Collections.Impl
 			Debug.Assert((uint)amount <= (uint)_count);
 			
 			_count -= amount;
-			int i = IncMod(_start, _count);
-			for (;;) {
-				_array[i] = default(T)!;
-				if (--amount == 0)
-					break;
-				i = IncMod(i);
-			}
+			// Clear the vacated elements (to be GC-friendly). ClearDeleted uses
+			// Span.Clear(), which is a vectorized memset on the (at most two)
+			// contiguous runs of the circular buffer.
+			int i = Internalize_NoCheck(_count);
+			ClearDeleted(ref i, amount);
 
 			AutoShrink();
 		}
@@ -229,14 +225,10 @@ namespace Loyc.Collections.Impl
 		public void PopFirst(int amount)
 		{
 			Debug.Assert(amount <= _count);
-			
+
 			_count -= amount;
-			int i = _start;
-			_start = IncMod(_start, amount);
-			while (i != _start) {
-				_array[i] = default(T)!;
-				i = IncMod(i);
-			}
+			// Clear the vacated elements and advance _start past them
+			ClearDeleted(ref _start, amount);
 
 			AutoShrink();
 		}
@@ -527,16 +519,16 @@ namespace Loyc.Collections.Impl
 			// length (wraps around). At the end of the method, 'start' points to 
 			// the end of the range (with array.Length subtracted if it was 
 			// out-of-range)
-			T[] array = _array;				
+			T[] array = _array;
 			int adjusted = start + amount;
 			if (adjusted >= array.Length) {
 				adjusted -= array.Length;
-				for (int i = start; (uint)i < array.Length; i++)
-					array[(uint)i] = default(T)!;
+				if (start < array.Length)
+					array.AsSpan(start).Clear();
 				start = 0;
 			}
-			for (int i = start; i < adjusted; i++)
-				array[i] = default(T)!;
+			if (adjusted > start)
+				array.AsSpan(start, adjusted - start).Clear();
 			start = adjusted;
 		}
 
@@ -689,8 +681,20 @@ namespace Loyc.Collections.Impl
 			int count = this.Count;
 			if (newSize < count)
 				this.RemoveRange(newSize, count - newSize);
-			else if (newSize > count)
-				this.InsertRange(count, (IListSource<T>)ListExt.Repeat(default(T), newSize - count));
+			else if (newSize > count) {
+				// Growing simply means enlarging the array (if necessary) and raising
+				// _count: the new elements must be default(T). Every removal path
+				// clears the slots it vacates, so the unused region of _array is
+				// normally already default(T); but Slice() and the (T[], int)
+				// constructor can produce a list whose unused region is not blank,
+				// so blank it here rather than relying on the invariant. This is a
+				// vectorized memset - no allocation and no per-element enumeration.
+				int amount = newSize - count;
+				AutoRaiseCapacity(amount);
+				int i = Internalize_NoCheck(count);
+				ClearDeleted(ref i, amount);
+				_count = newSize;
+			}
 		}
 
 		public bool Contains(T item)
@@ -702,11 +706,14 @@ namespace Loyc.Collections.Impl
 		{
 			Debug.Assert(destination != null && destination.Length >= _count);
 			Debug.Assert(arrayIndex >= 0 && destination.Length - arrayIndex >= _count);
-			int iindex = _start;
-			for (int i = 0; i < _count; i++) {
-				destination[i + arrayIndex] = _array[iindex];
-				iindex = IncMod(iindex);
-			}
+			// A circular buffer holds at most two contiguous runs, so at most
+			// two Array.Copy calls are needed.
+			int size1 = FirstHalfSize;
+			int size2 = _count - size1;
+			if (size1 > 0)
+				Array.Copy(_array, _start, destination, arrayIndex, size1);
+			if (size2 > 0)
+				Array.Copy(_array, 0, destination, arrayIndex + size1, size2);
 		}
 
 		public int Count
@@ -924,12 +931,16 @@ namespace Loyc.Collections.Impl
 		public void CopyTo(int sourceIndex, T[] destination, int destinationIndex, int subcount)
 		{
 			Debug.Assert((uint)sourceIndex <= (uint)_count && (uint)subcount <= (uint)(_count - sourceIndex));
-			
+
+			// A circular buffer holds at most two contiguous runs, so at most
+			// two Array.Copy calls are needed.
 			int iindex = Internalize(sourceIndex);
-			for (int i = 0; i < subcount; i++) {
-				destination[i] = _array[iindex];
-				iindex = IncMod(iindex);
-			}
+			int size1 = Min(_array.Length - iindex, subcount);
+			int size2 = subcount - size1;
+			if (size1 > 0)
+				Array.Copy(_array, iindex, destination, destinationIndex, size1);
+			if (size2 > 0)
+				Array.Copy(_array, 0, destination, destinationIndex + size1, size2);
 		}
 
 		public InternalDList<T> CopySection(int start, int subcount)

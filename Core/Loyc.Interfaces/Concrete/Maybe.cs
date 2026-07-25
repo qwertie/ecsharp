@@ -58,7 +58,7 @@ namespace Loyc
 	/// The <see cref="Or"/> method replicates the C# <c>??</c> operator.
 	/// </remarks>
 	[DebuggerDisplay("{HasValue ? (object)Value : Loyc.NoValue.Value}")]
-	public struct Maybe<T> : IMaybe<T>, IEquatable<Maybe<T>>, IEquatable<IMaybe<T>>
+	public readonly struct Maybe<T> : IMaybe<T>, IEquatable<Maybe<T>>, IEquatable<IMaybe<T>>
 	{
 		public static Maybe<T> NoValue { get { return new Maybe<T>(); } }
 		public Maybe(T value) { _value = value; _hasValue = true; }
