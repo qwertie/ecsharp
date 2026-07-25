@@ -1,4 +1,5 @@
 using Loyc.Collections;
+using Loyc.SyncLib.Impl;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,7 +17,7 @@ partial class SyncProtobuf
 	internal class ReaderState
 	{
 		internal readonly Options _opt;
-		readonly ReadOnlyMemory<byte> _mem;
+		readonly ReadOnlyMemory2<byte> _mem;
 		Dictionary<long, object>? _objects;
 
 		int _lastFieldId;

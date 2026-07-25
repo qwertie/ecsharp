@@ -184,7 +184,7 @@ partial class SyncJson
 		private struct JsonFrame
 		{
 			// The buffer being read from (replayed buffer, or something from _mainScanner)
-			public ReadOnlyMemory<byte> Buf;
+			public ReadOnlyMemory2<byte> Buf;
 			// True iff this frame is reading a memory region rather than _mainScanner.
 			// Note: if _mainScanner is null, this is true and, in the context of the 
 			// current JSON file, every frame's Buf points to the same memory region.
@@ -791,6 +791,9 @@ partial class SyncJson
 
 		int _skipObjectDepth;
 
+		// Reads the next token into a `JsonValue` and advances `cur` past it. This method
+		// expects that `cur` points to a value token (string, null, true, false, number) or
+		// '{' or '['. If the token is anything else, the result has type JsonType.Invalid.
 		protected JsonValue ScanValue(ref JsonPointer cur)
 		{
 			int startIndex = cur.Index;

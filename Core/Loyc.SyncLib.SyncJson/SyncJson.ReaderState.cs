@@ -328,6 +328,7 @@ partial class SyncJson
 					Commit(ref cur);
 					return (true, 1, null); // success: object opened
 				}
+				Debug.Fail("unreachable");
 			}
 
 			if (type == JsonType.NotParsed)
@@ -337,6 +338,17 @@ partial class SyncJson
 			{
 				if ((mode & ObjectMode.NotNull) != 0)
 					ThrowError(cur.Index, "\"{0}\" is not nullable, but was null".Localized(name));
+
+				if (IsInsideList) {
+					Debug.Assert(!isReplay);
+					// Unlike an object element (whose EndSubObject advances the reader)
+					// nothing will consume the null, so we must consume (skip) it here.
+					var nullValue = ScanValue(ref cur);
+					if (nullValue.Type == JsonType.Invalid)
+						ThrowSyntaxError(cur.Index, name, "list item");
+					BeginNext(ref cur);
+					Commit(ref cur);
+				}
 				return (false, 0, null);
 			}
 

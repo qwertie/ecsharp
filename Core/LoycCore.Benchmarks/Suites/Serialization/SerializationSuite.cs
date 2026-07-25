@@ -76,15 +76,12 @@ namespace Benchmark.Serialization
 				new BinaryFormatterAdapter<BinCalendarDto>(), mapper.ToDto, mapper.FromDto));
 
 			registry.AddScenarios("Loyc.SyncLib/Calendar Home-Page Example",
-				"The Calendar example from SyncLib's documentation (HomePageCalendarExample.cs): " +
-				"entries live in a BMultiMap but are serialized as a flat list, colors become hex " +
-				"strings, and dates/durations become strings. SyncLib does the conversions inline in " +
-				"its sync function; the other serializers use dedicated DTO types plus conversion " +
-				"code, which runs inside the timed operation because that is the real cost of the " +
-				"traditional approach. Unlike the example, optional formatting features are off in " +
-				"every JSON serializer (compact output, no camelCase renaming) so none of them pays " +
-				"for CPU-eating extras.",
-				scenario);
+				"The Calendar example from SyncLib's documentation (HomePageCalendarExample.cs). " +
+				"Non-SyncLib serializers use dedicated DTO types plus conversion operations, which are " +
+				"included in run-time measurements (except the extra GC time DTOs imply). Optional " +
+				"formatting features are turned off in all JSON serializers (compact output, no " +
+				"camelCase renaming). The example uses the default Sync functions for dates and " +
+				"times (which emit strings for text formats and integers otherwise).", scenario);
 		}
 
 		#endregion
@@ -125,6 +122,9 @@ namespace Benchmark.Serialization
 			// Binary has no JSON-object analog, so it stores a list of key/value pairs
 			stringDict.Adapters.Add(new SyncBinaryAdapter<Dictionary<string, string>>("SyncBinary",
 				SyncStringDictAsList, SyncStringDictAsList));
+			stringDict.Adapters.Add(new SyncBinaryAdapter<Dictionary<string, string>>("SyncBinary (no markers)",
+				SyncStringDictAsList, SyncStringDictAsList,
+				new SyncBinary.Options { Markers = SyncBinary.Markers.None }));
 			stringDict.Adapters.Add(new SystemTextJsonAdapter<Dictionary<string, string>>());
 			stringDict.Adapters.Add(new NewtonsoftAdapter<Dictionary<string, string>>());
 			stringDict.Adapters.Add(new BinaryFormatterAdapter<Dictionary<string, string>>());

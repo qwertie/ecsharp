@@ -1,6 +1,7 @@
 using static System.Math;
 using Loyc.Collections;
 using Loyc.Collections.Impl;
+using Loyc.SyncLib.Impl;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -57,8 +58,8 @@ partial class SyncBinary
 
 		private struct ReadingFrame
 		{
-			// The buffer being read from (something returned by _scanner if it isn't null)
-			public ReadOnlyMemory<byte> Buf;
+			// The buffer being read from (something returned by _scanner if it isn't null).
+			public ReadOnlyMemory2<byte> Buf;
 			// The current position as an index into Buf.
 			public int Index;
 			// Location within the JSON file of Buf.Span[0] (used for error reporting)

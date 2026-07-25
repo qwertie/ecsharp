@@ -32,7 +32,7 @@ namespace Loyc.SyncLib.Tests
 		};
 
 		static int Iterations
-			=> int.TryParse(Environment.GetEnvironmentVariable("SYNCLIB_FUZZ_ITERS"), out int n) ? n : 250;
+			=> int.TryParse(Environment.GetEnvironmentVariable("SYNCLIB_FUZZ_ITERS"), out int n) ? n : 1000;
 
 		static Person SyncPerson<SM>(SM sm, Person? p) where SM : ISyncManager
 			=> new PersonSync<SM>().Sync(sm, p)!;
@@ -285,6 +285,46 @@ namespace Loyc.SyncLib.Tests
 			// Invalid UTF-8 bytes inside a string
 			CheckReadContract("SyncJson(evil)", 1, new byte[] { (byte)'{', (byte)'"', 0xC3, (byte)'"', (byte)':', (byte)'1', (byte)'}' },
 				d => SyncJson.Read<Person>(d, new PersonSync<SyncJson.Reader>().Sync, options));
+		}
+
+		// Regression test for a denial-of-service bug found by FuzzJsonReaderWithMutations:
+		// a null list element, or one that DetectTypeOfUnparsedValue misdetected as null (any
+		// token starting with 'n') was returned by BeginSubObject WITHOUT advancing the reader.
+		// The list-reading loop in ListLoader.Sync then iterated int.MaxValue times -
+		// taking ~90 seconds and allocating gigabytes before finally terminating.
+		[Test]
+		public void Bug2026_07_NullLikeListElementFailsFast()
+		{
+			var options = new SyncJson.Options();
+			var evil = new List<string> {
+				"{\"Name\":\"x\",\"Age\":1,\"Siblings\":[n]}",              // bare 'n', minimal repro
+				"{\"Name\":\"x\",\"Age\":1,\"Siblings\":[n \"Name\":\"y\"]}", // 'n' with trailing junk
+				@"{""Name"":""x"",""Age"":1,""Siblings"":[null, ""y""]}",
+				// The exact shape the fuzzer found: a sibling object's '{' overwritten by 'n'.
+				"{\"Name\":\"Jack\",\"Age\":11,\"Siblings\":[n \"\\f\":1,\"Name\":\"Jill\",\"Age\":9,\"Siblings\":[]]}",
+			};
+			foreach (string json in evil) {
+				var data = Encoding.UTF8.GetBytes(json);
+				var timer = System.Diagnostics.Stopwatch.StartNew();
+				CheckReadContract("SyncJson(null-in-list)", 0, data,
+					d => SyncJson.Read<Person>(d, new PersonSync<SyncJson.Reader>().Sync, options));
+				timer.Stop();
+				// The bug took ~90 seconds; a healthy reader finishes in microseconds. The
+				// 5-second bound cleanly separates the two without false-positives on slow CI.
+				Less(timer.ElapsedMilliseconds, 5000,
+					"Reading malformed list took too long ({0} ms): {1}", timer.ElapsedMilliseconds, json);
+			}
+
+			// Also, a genuine null list element must still read successfully. (This shape would
+			// also have hung before the fix; it worked in practice only because no writer
+			// emits a null element into an array of objects.)
+			var jack = SyncJson.Read<Person>(
+				Encoding.UTF8.GetBytes("{\"Name\":\"x\",\"Age\":1,\"Siblings\":[null,{\"Name\":\"y\",\"Age\":2,\"Siblings\":null}]}"),
+				new PersonSync<SyncJson.Reader>().Sync, options);
+			IsNotNull(jack);
+			AreEqual(2, jack!.Siblings!.Length);
+			IsNull(jack.Siblings[0]);
+			AreEqual("y", jack.Siblings[1]!.Name);
 		}
 	}
 }
