@@ -5,7 +5,7 @@ var searchData=
   ['ifelse',['IfElse',['../classLoyc_1_1Ecs_1_1EcsPrecedence.html#a5ad63d5cb73baf02ed3e5aba05cb19cb',1,'Loyc::Ecs::EcsPrecedence']]],
   ['implicit',['Implicit',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#aef020d3e790ef70f151bd4ebe15d2e24',1,'Loyc::Syntax::CodeSymbols']]],
   ['import',['Import',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a1c60ab9de3d65a6176bcae09070d722e',1,'Loyc::Syntax::CodeSymbols']]],
-  ['index',['Index',['../structLoyc_1_1Collections_1_1ListChangeInfo_3_01T_01_4.html#a1a53c32b1bca0b64349fce3e46cd8c9b',1,'Loyc.Collections.ListChangeInfo&lt; T &gt;.Index()'],['../structSyncBinary_1_1ReaderState_1_1ReadingPointer.html#af01d8b1d96d1f9bb2b94a3f6d6774a54',1,'SyncBinary.ReaderState.ReadingPointer.Index()']]],
+  ['index',['Index',['../structLoyc_1_1Collections_1_1ListChangeInfo_3_01T_01_4.html#a1a53c32b1bca0b64349fce3e46cd8c9b',1,'Loyc.Collections.ListChangeInfo&lt; T &gt;.Index()'],['../structSyncBinary_1_1ReaderState_1_1ReadingPointer.html#af01d8b1d96d1f9bb2b94a3f6d6774a54',1,'SyncBinary.ReaderState.ReadingPointer.Index()'],['../structSyncJson_1_1Parser_1_1JsonPointer.html#ab1615f8177965ff59a2e5a2b23830103',1,'SyncJson.Parser.JsonPointer.Index()']]],
   ['indexbracks',['IndexBracks',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a78be31dfce1d8092cb12368259070939',1,'Loyc::Syntax::CodeSymbols']]],
   ['infixoperatorprecedencetable',['InfixOperatorPrecedenceTable',['../classLoyc_1_1Ecs_1_1EcsFacts.html#a4a51b0d811a3e7c800611a1948316025',1,'Loyc::Ecs::EcsFacts']]],
   ['initializerassignment',['InitializerAssignment',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#affd0628335f3f317ef8954f09ecd9dff',1,'Loyc::Syntax::CodeSymbols']]],

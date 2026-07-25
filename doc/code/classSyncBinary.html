@@ -26,7 +26,7 @@
   <td style="padding-left: 0.5em;">
    <div id="projectname">Enhanced C#
    </div>
-   <div id="projectbrief">Language of your choice: library documentation</div>
+   <div id="projectbrief">Loyc library documentation</div>
   </td>
  </tr>
  </tbody>
@@ -113,7 +113,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line">    <span class="keyword">public</span> <span class="keywordtype">int</span> Id { <span class="keyword">get</span>; set; }</div>
 <div class="line">    <span class="keyword">public</span> <span class="keywordtype">int</span> SerialNumber { <span class="keyword">get</span>; set; }</div>
 <div class="line">}</div>
-</div><!-- fragment --><p> So you write your synchronizer like this: </p><div class="fragment"><div class="line">&lt;![CDATA[</div>
+</div><!-- fragment --><p> So you write your synchronizer like this: </p><div class="fragment">
 <div class="line">    <span class="comment">// Note: implementing a generic class with &lt;SM&gt;, and implementing ISyncObject,</span></div>
 <div class="line">    <span class="comment">//       are both optional, but doing so can speed up (de)serialization.</span></div>
 <div class="line">    <span class="keyword">class </span>MySync&lt;SM&gt; : ISyncObject&lt;SM, MyItem&gt; where SM : ISyncManager</div>
@@ -127,7 +127,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line">        }</div>
 <div class="line">    }</div>
 <div class="line">]]&gt;</div>
-</div><!-- fragment --><p> And you can serialize an example item like this: </p><div class="fragment"><div class="line">&lt;![CDATA[</div>
+</div><!-- fragment --><p> And you can serialize an example item like this: </p><div class="fragment">
 <div class="line">    var result = SyncBinary.Write(</div>
 <div class="line">        <span class="keyword">new</span> MyItem { Id = 3, SerialNumber = 65539 },</div>
 <div class="line">        <span class="keyword">new</span> MySync&lt;<a class="code" href="structSyncBinary_1_1Writer.html">SyncBinary.Writer</a>&gt;());</div>
@@ -142,15 +142,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line">    <span class="keyword">public</span> <span class="keywordtype">string</span> SerialNumber { <span class="keyword">get</span>; set; }</div>
 <div class="line">}</div>
 </div><!-- fragment --><p> What happens if we naively read an old-format data stream after this type change? The outcome depends on the details of the old and new binary formats. If you use default settings, the string reader expects a list-start marker '[' followed by a length prefix. Since there is no '[' in the data stream, the reader throws an exception. </p>
-<p>To avoid such an outcome, you should use a manual versioning process to make your synchronizer compatible with <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a>. The nice thing about manual versioning is that it not only maintains compatibility with other data formats such as JSON, but also adds clarification to your JSON output. So your code can be compatible with <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a>, SyncJson and protocol buffers all at the same time, while also allowing your data format to evolve over time. </p>
-<p>One useful pattern is to write a format version number in a "top-level" object and then use that version number in child objects. For example, suppose that <code>MyItem</code> objects are <b>always</b> organized in groups: </p><div class="fragment"><div class="line">&lt;![CDATA[</div>
+<p>To avoid such an outcome, you should use a manual versioning process to make your synchronizer compatible with <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a>. The nice thing about manual versioning is that it not only maintains compatibility with other data formats such as JSON, but also adds clarification to your JSON output. So your code can be compatible with <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a>, <a class="el" href="classSyncJson.html">SyncJson</a> and protocol buffers all at the same time, while also allowing your data format to evolve over time. </p>
+<p>One useful pattern is to write a format version number in a "top-level" object and then use that version number in child objects. For example, suppose that <code>MyItem</code> objects are <b>always</b> organized in groups: </p><div class="fragment">
 <div class="line">    <span class="keyword">class </span>MyItemGroup</div>
 <div class="line">    {</div>
 <div class="line">        <span class="keyword">public</span> <span class="keywordtype">string</span> GroupName { <span class="keyword">get</span>; set; }</div>
 <div class="line">        <span class="keyword">public</span> List&lt;MyItem&gt; Items { <span class="keyword">get</span>; set; }</div>
 <div class="line">    }</div>
 <div class="line">]]&gt;</div>
-</div><!-- fragment --><p> Here's a properly versioned synchronizer for MyItemGroup and its child MyItems: </p><div class="fragment"><div class="line">&lt;![CDATA[</div>
+</div><!-- fragment --><p> Here's a properly versioned synchronizer for MyItemGroup and its child MyItems: </p><div class="fragment">
 <div class="line">    <span class="keyword">class </span>MySync&lt;SM&gt; : ISyncObject&lt;SM, MyItemGroup&gt;, ISyncObject&lt;SM, MyItem&gt; where SM : ISyncManager</div>
 <div class="line">    {</div>
 <div class="line">        <span class="keyword">public</span> <span class="keywordtype">int</span> Version { <span class="keyword">get</span>; set; } = 2;</div>
@@ -188,7 +188,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line">]]&gt;</div>
 </div><!-- fragment --><p>Here there is no version number in each individual MyItem object. Instead they inherit the version number from the Version property, which, in Reading mode, is normally read by the <code>MyItemGroup Sync</code> method. As usual, the <code>MyItemGroup Sync</code> method passes the <code>MyItem Sync</code> method as the third parameter when it calls <code>sm.SyncList("Items", group.Items, Sync)</code>, so the value of Version is shared between them. Of course, if you deserialize MyItem directly using the <code>MyItem Sync</code> method, you will need to also set the <code>Version</code> property manually (or accept the default Version number). </p>
 <p>The above code handles all versions of MyItem in a single function. If you prefer, you could have separate code paths for different versions:</p>
-<div class="fragment"><div class="line">&lt;![CDATA[</div>
+<div class="fragment">
 <div class="line">    <span class="keyword">class </span>MySync&lt;SM&gt; : ISyncObject&lt;SM, MyItemGroup&gt;, ISyncObject&lt;SM, MyItem&gt; where SM : ISyncManager</div>
 <div class="line">    {</div>
 <div class="line">        <span class="keyword">public</span> <span class="keywordtype">int</span> Version { <span class="keyword">get</span>; set; } = 2;</div>
@@ -381,19 +381,6 @@ Public Types</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:a23005642b591e1bb89adb55f9d0f4f7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">The possible values of Options.FieldIdMode. <a href="classSyncBinary.html#a23005642b591e1bb89adb55f9d0f4f7a">More...</a><br /></td></tr>
 <tr class="separator:a23005642b591e1bb89adb55f9d0f4f7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa280f23fa4c121c10651bcaf2ac6eb5f"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncBinary.html#aa280f23fa4c121c10651bcaf2ac6eb5f">IntFormat</a> { <br />
-&#160;&#160;<a class="el" href="classSyncBinary.html#aa280f23fa4c121c10651bcaf2ac6eb5fa3c0ba6b22b526d7fd50c3026435a8c02">IntFormat.LittleEndian</a> = 0, 
-<a class="el" href="classSyncBinary.html#aa280f23fa4c121c10651bcaf2ac6eb5fa2ce7a92ae43763828ac4acb4560c2a5b">IntFormat.BigEndian</a> = 1, 
-<a class="el" href="classSyncBinary.html#aa280f23fa4c121c10651bcaf2ac6eb5faeacf3a101066b77f05938928385bd8d9">IntFormat.ZigZag</a> = 2, 
-<br />
-&#160;&#160;<a class="el" href="classSyncBinary.html#aa280f23fa4c121c10651bcaf2ac6eb5faf5964d9abf3876afa4434ee4b03c1d59">IntFormat.LEB128</a> = 4, 
-<a class="el" href="classSyncBinary.html#aa280f23fa4c121c10651bcaf2ac6eb5fa3232645ebdf25961d7a1b9a26525d4b2">IntFormat.LEB128ZigZag</a> = LEB128 | ZigZag, 
-<a class="el" href="classSyncBinary.html#aa280f23fa4c121c10651bcaf2ac6eb5fad89f0ecd93f7bf69e42cf531740a196a">IntFormat.SyncLib</a> = 8, 
-<br />
-&#160;&#160;<a class="el" href="classSyncBinary.html#aa280f23fa4c121c10651bcaf2ac6eb5fa0f23af463de1a22ffb6ad4558b8ed427">IntFormat.SyncLibZigZag</a> = SyncLib | ZigZag
-<br />
- }</td></tr>
-<tr class="separator:aa280f23fa4c121c10651bcaf2ac6eb5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d836f03e0323833e159e02c62f4287c"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncBinary.html#a6d836f03e0323833e159e02c62f4287c">Markers</a> { <br />
 &#160;&#160;<b>None</b> = 0, 
 <b>ObjectStart</b> = 1 &lt;&lt; ObjectMode.Normal, 
@@ -500,80 +487,6 @@ static <a class="el" href="structSyncBinary_1_1Writer.html">SyncBinary.Writer</a
 
 </div>
 </div>
-<a class="anchor" id="aa280f23fa4c121c10651bcaf2ac6eb5f"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="classSyncBinary.html#aa280f23fa4c121c10651bcaf2ac6eb5f">SyncBinary.IntFormat</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="aa280f23fa4c121c10651bcaf2ac6eb5fa3c0ba6b22b526d7fd50c3026435a8c02"></a>LittleEndian&#160;</td><td class="fielddoc">
-<p>Specifies that integers be stored little-endian (meaning least significant byte first) with a fixed size (e.g. 4 bytes for Int32). This is the default.</p>
-</td></tr>
-<tr><td class="fieldname"><a class="anchor" id="aa280f23fa4c121c10651bcaf2ac6eb5fa2ce7a92ae43763828ac4acb4560c2a5b"></a>BigEndian&#160;</td><td class="fielddoc">
-<p>Specifies that integers be stored big-endian (meaning most significant byte first) with a fixed size (e.g. 4 bytes for Int32).</p>
-</td></tr>
-<tr><td class="fieldname"><a class="anchor" id="aa280f23fa4c121c10651bcaf2ac6eb5faeacf3a101066b77f05938928385bd8d9"></a>ZigZag&#160;</td><td class="fielddoc">
-<p>A flag that specifies signed integers should use zigzag encoding, in which the low bit serves as a sign bit rather than the high bit: 0 means 0, 1 means -1, 2 means 1, 3 means -2, 4 means 2, etc. When zigzag encoding is disabled, signed integers are stored in two's complement notation, even when using a variable-size encoding. </p>
-</td></tr>
-<tr><td class="fieldname"><a class="anchor" id="aa280f23fa4c121c10651bcaf2ac6eb5faf5964d9abf3876afa4434ee4b03c1d59"></a>LEB128&#160;</td><td class="fielddoc">
-<p>Specifies that integers be stored in LEB128 (little-endian base 128) format. This format is a sequence of bytes in which the final byte is less than 128, and all other bytes are at least 128. In other words, the high bit acts as a "continuator" signal indicating that there are more bytes. The 7 low bits of each byte are bits of the number itself, with the low bits stored first.</p>
-</td></tr>
-<tr><td class="fieldname"><a class="anchor" id="aa280f23fa4c121c10651bcaf2ac6eb5fa3232645ebdf25961d7a1b9a26525d4b2"></a>LEB128ZigZag&#160;</td><td class="fielddoc">
-<p>Combines LEB128 with ZigZag encoding.</p>
-</td></tr>
-<tr><td class="fieldname"><a class="anchor" id="aa280f23fa4c121c10651bcaf2ac6eb5fad89f0ecd93f7bf69e42cf531740a196a"></a>SyncLib&#160;</td><td class="fielddoc">
-<p>Specifies that integers be stored in a generic format designed for SyncLib. The format is a hybrid between PrefixVarInt designed for both small numbers and extremely large ones. All formats are little-endian.</p>
-<div class="fragment"><div class="line">             [64 bits]</div>
-<div class="line">(1) 0xxxxxxx                                 | 1 byte;   7 number bits</div>
-<div class="line">(2) 10xxxxxx xxxxxxxx                        | 2 bytes; 14 number bits</div>
-<div class="line">(3) 110xxxxx xxxxxxxx xxxxxxxx               | 3 bytes; 21 number bits</div>
-<div class="line">(4) 1110xxxx xxxxxxxx xxxxxxxx xxxxxxxx      | 4 bytes; 28 number bits</div>
-<div class="line">(5) 11110xxx xxxxxxxx xxxxxxxx xxxxxxxx x... | 5 bytes; 35 number bits</div>
-<div class="line">(6) 111110xx xxxxxxxx xxxxxxxx xxxxxxxx x... | 6 bytes; 42 number bits</div>
-<div class="line">(7) 1111110x xxxxxxxx xxxxxxxx xxxxxxxx x... | 7 bytes; 49 number bits</div>
-<div class="line">(8) 11111110 [length prefix <span class="stringliteral">&quot;n&quot;</span>] [bytes <span class="stringliteral">&quot;x&quot;</span>] | n+2 bytes; (n-1) * 8 number bits</div>
-<div class="line">(9) 11111111                                 | 1 byte <span class="keywordflow">for</span> <span class="stringliteral">&quot;null&quot;</span></div>
-</div><!-- fragment --> <div class="fragment"><div class="line">             [64 bits]</div>
-<div class="line">(1) xxxxxxx1                                 | 1 byte;   7 number bits</div>
-<div class="line">(2) xxxxxx10 xxxxxxxx                        | 2 bytes; 14 number bits</div>
-<div class="line">(3) xxxxx100 xxxxxxxx xxxxxxxx               | 3 bytes; 21 number bits</div>
-<div class="line">(4) xxxx1000 xxxxxxxx xxxxxxxx xxxxxxxx      | 4 bytes; 28 number bits</div>
-<div class="line">(5) xxx10000 xxxxxxxx xxxxxxxx xxxxxxxx x... | 5 bytes; 35 number bits</div>
-<div class="line">(6) xx100000 xxxxxxxx xxxxxxxx xxxxxxxx x... | 6 bytes; 42 number bits</div>
-<div class="line">(7) x1000000 xxxxxxxx xxxxxxxx xxxxxxxx x... | 7 bytes; 49 number bits</div>
-<div class="line">(8) 10000000 [length prefix &quot;n&quot;] [bytes &quot;x&quot;] | n+2 bytes; (n-1) * 8 number bits</div>
-<div class="line">(9) 00000000                                 | 1 byte for &quot;null&quot;</div>
-</div><!-- fragment --> <div class="fragment"><div class="line">        (1) 11111111 =&gt; null</div>
-<div class="line">        (2) 11111110 =&gt; length-prefixed</div>
-<div class="line">        (3) 1xxxxxxx xxxxxxxx =&gt; 14-bit number (little endian) = 224 + </div>
-<div class="line">        (4) xxxxxxxx =&gt; number below 224</div>
-<div class="line">        byte0 &lt; 192 =&gt; byte 0</div>
-<div class="line">        byte0 &lt; </div>
-<div class="line"></div>
-<div class="line">@verbatim</div>
-<div class="line">                 [64 bits]</div>
-<div class="line">    (1) 0xxxxxxx                                 | 1 byte;   7 number bits</div>
-<div class="line">    (2) 10xxxxxx                                 | 1 byte;   7 number bits</div>
-<div class="line">    (2) xxxxxx10 xxxxxxxx                        | 2 bytes; 14 number bits</div>
-<div class="line">    (3) xxxxx100 xxxxxxxx xxxxxxxx               | 3 bytes; 21 number bits</div>
-<div class="line">    (4) xxxx1000 xxxxxxxx xxxxxxxx xxxxxxxx      | 4 bytes; 28 number bits</div>
-<div class="line">    (5) xxx10000 xxxxxxxx xxxxxxxx xxxxxxxx x... | 5 bytes; 35 number bits</div>
-<div class="line">    (6) xx100000 xxxxxxxx xxxxxxxx xxxxxxxx x... | 6 bytes; 42 number bits</div>
-<div class="line">    (7) x1000000 xxxxxxxx xxxxxxxx xxxxxxxx x... | 7 bytes; 49 number bits</div>
-<div class="line">    (8) 10000000 [length prefix &quot;n&quot;] [bytes &quot;x&quot;] | n+2 bytes; (n-1) * 8 number bits</div>
-<div class="line">    (9) 00000000                                 | 1 byte for &quot;null&quot;</div>
-</div><!-- fragment --> </td></tr>
-<tr><td class="fieldname"><a class="anchor" id="aa280f23fa4c121c10651bcaf2ac6eb5fa0f23af463de1a22ffb6ad4558b8ed427"></a>SyncLibZigZag&#160;</td><td class="fielddoc">
-<p>Combines SyncLib encoding with ZigZag encoding.</p>
-</td></tr>
-</table>
-
-</div>
-</div>
 <a class="anchor" id="a6d836f03e0323833e159e02c62f4287c"></a>
 <div class="memitem">
 <div class="memproto">
@@ -592,7 +505,7 @@ static <a class="el" href="structSyncBinary_1_1Writer.html">SyncBinary.Writer</a
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 24 2026 16:56:16 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 24 2026 19:07:26 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -22,6 +22,7 @@ var searchData=
   ['totalcount',['TotalCount',['../classLoyc_1_1SymbolPool.html#aaa4005a65714b4a7b433f32aef12cc5e',1,'Loyc.SymbolPool.TotalCount()'],['../classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a6cc6cb074720b087c76e3ec3d9d2e0ed',1,'Loyc.Collections.Impl.AListNode&lt; K, T &gt;.TotalCount()'],['../classLoyc_1_1Collections_1_1VListBlock_3_01T_01_4.html#a67b1b97c42810868da1509858ba1b6f1',1,'Loyc.Collections.VListBlock&lt; T &gt;.TotalCount()']]],
   ['trivialist',['TriviaList',['../classLoyc_1_1Ecs_1_1Parser_1_1EcsPreprocessor.html#a63fa262bd9d56095e4c181f6f32b9c53',1,'Loyc::Ecs::Parser::EcsPreprocessor']]],
   ['triviavalue',['TriviaValue',['../classLoyc_1_1Syntax_1_1LNode.html#aa0b9160daf754be89525f86e7d683c42',1,'Loyc::Syntax::LNode']]],
+  ['trueasstring',['TrueAsString',['../classSyncJson_1_1Options_1_1ForReader.html#a4befb98c890dd171a3706adf69580ddd',1,'SyncJson::Options::ForReader']]],
   ['type',['Type',['../interfaceLoyc_1_1Syntax_1_1Lexing_1_1ISimpleToken_3_01TokenType_01_4.html#af3b46f9a2c3c1c8e5142356c3e7654f4',1,'Loyc::Syntax::Lexing::ISimpleToken&lt; TokenType &gt;']]],
   ['typemarker',['TypeMarker',['../interfaceLoyc_1_1Syntax_1_1IUninterpretedLiteral.html#a5e1bcfe585c816178bd61739bcc0eacc',1,'Loyc.Syntax.IUninterpretedLiteral.TypeMarker()'],['../structLoyc_1_1Syntax_1_1Les_1_1CustomLiteral.html#a8926a19c516c992c1cab1ffade7018dc',1,'Loyc.Syntax.Les.CustomLiteral.TypeMarker()'],['../structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a1021d4e46e651bcc41d1cc4931727d6a',1,'Loyc.Syntax.Lexing.Token.TypeMarker()']]]
 ];

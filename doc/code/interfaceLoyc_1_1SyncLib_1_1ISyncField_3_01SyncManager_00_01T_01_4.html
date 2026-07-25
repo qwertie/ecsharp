@@ -26,7 +26,7 @@
   <td style="padding-left: 0.5em;">
    <div id="projectname">Enhanced C#
    </div>
-   <div id="projectbrief">Language of your choice: library documentation</div>
+   <div id="projectbrief">Loyc library documentation</div>
   </td>
  </tr>
  </tbody>
@@ -191,8 +191,48 @@ Inheritance diagram for Loyc.SyncLib.ISyncField&lt; SyncManager, T &gt;:</div>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>Represents the low-level synchronization behavior for a single list item. SyncManagerHelper needs this.</p>
-<p>This interface is used instead of SyncFieldFunc_Ref so that the implementation can be a struct, in order to take advantage of the CLR's ability to specialize generic methods for structs, which provides better performance by avoiding indirect calls and enabling inlining.</p>
-</div><table class="memberdecls">
+<p>This interface is used instead of SyncFieldFunc_Ref so that the implementation can be a struct, in order to take advantage of the CLR's ability to specialize generic methods for structs, which provides better performance by avoiding indirect calls and enabling inlining. </p>
+<p>Example usage: </p><div class="fragment">
+<div class="line"><span class="keyword">public</span> <span class="keyword">struct </span>SyncFields&lt;SM&gt; : </div>
+<div class="line">    ISyncField&lt;SM, Color&gt;,</div>
+<div class="line">    ISyncField&lt;SM, BitArray&gt;,</div>
+<div class="line">    ISyncObject&lt;SM, TwoColorBitmap&gt;</div>
+<div class="line">    where SM : ISyncManager</div>
+<div class="line">{</div>
+<div class="line">    <span class="keyword">public</span> Color Sync(ref SM sm, FieldId name, Color color)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="keywordflow">return</span> Color.FromArgb(sm.Sync(name, color.ToArgb()));</div>
+<div class="line">    }</div>
+<div class="line">    <span class="keyword">public</span> BitArray? Sync(ref SM sm, FieldId name, BitArray? value)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="keywordflow">if</span> (sm.IsReading) {</div>
+<div class="line">            <span class="keywordflow">return</span> <span class="keyword">new</span> BitArray(sm.SyncArray(name, Array.Empty&lt;byte&gt;()));</div>
+<div class="line">        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (value is null) {</div>
+<div class="line">            sm.SyncArray(name, (byte[]?) null);</div>
+<div class="line">        } <span class="keywordflow">else</span> {</div>
+<div class="line">            byte[] bytes = <span class="keyword">new</span> byte[(value.Length + 7) &gt;&gt; 3];</div>
+<div class="line">            value.CopyTo(bytes, 0);</div>
+<div class="line">            sm.SyncArray(name, bytes);</div>
+<div class="line">        }</div>
+<div class="line">        <span class="keywordflow">return</span> value;</div>
+<div class="line">    }</div>
+<div class="line"></div>
+<div class="line">    <span class="comment">// This uses the Sync methods above</span></div>
+<div class="line">    <span class="keyword">public</span> TwoColorBitmap? Sync(SM sm, TwoColorBitmap? obj)</div>
+<div class="line">    {</div>
+<div class="line">        obj ??= <span class="keyword">new</span> TwoColorBitmap();</div>
+<div class="line"></div>
+<div class="line">        obj.Color0 = sm.Sync(<span class="stringliteral">&quot;Color0&quot;</span>, obj.Color0, <span class="keyword">this</span>);</div>
+<div class="line">        obj.Color1 = sm.Sync(<span class="stringliteral">&quot;Color1&quot;</span>, obj.Color1, <span class="keyword">this</span>);</div>
+<div class="line">        obj.Bits = sm.Sync(<span class="stringliteral">&quot;Bits&quot;</span>, obj.Bits, <span class="keyword">this</span>)!;</div>
+<div class="line">        <span class="comment">// You could also just call your methods directly:</span></div>
+<div class="line">        <span class="comment">// obj.Color0 = Sync(ref sm, &quot;Color0&quot;, obj.Color0);</span></div>
+<div class="line"></div>
+<div class="line">        <span class="keywordflow">return</span> obj;</div>
+<div class="line">    }</div>
+<div class="line">}</div>
+<div class="line">]]&gt;</div>
+</div><!-- fragment --> </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a8349b08a44b75eeecda16dad6f7f5b7f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8349b08a44b75eeecda16dad6f7f5b7f"></a>
@@ -203,7 +243,7 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>Sync</b> (ref SyncManage
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 24 2026 16:56:22 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 24 2026 19:07:33 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

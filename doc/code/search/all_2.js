@@ -28,7 +28,6 @@ var searchData=
   ['beginrule',['BeginRule',['../classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a6603a1e5bcda9216bc301b6ffd9eb8f0',1,'Loyc.LLParserGenerator.CodeGenHelperBase.BeginRule()'],['../interfaceLoyc_1_1LLParserGenerator_1_1IPGCodeGenHelper.html#a7e0c5afc09abe4df2d416ef42e95b633',1,'Loyc.LLParserGenerator.IPGCodeGenHelper.BeginRule()']]],
   ['begun',['Begun',['../interfaceLoyc_1_1SyncLib_1_1ISyncManager.html#aa9bece9eac6198fa57e1784494a021f2',1,'Loyc::SyncLib::ISyncManager']]],
   ['benchmarkattribute',['BenchmarkAttribute',['../classLoyc_1_1MiniTest_1_1BenchmarkAttribute.html',1,'Loyc::MiniTest']]],
-  ['bigendian',['BigEndian',['../classSyncBinary.html#aa280f23fa4c121c10651bcaf2ac6eb5fa2ce7a92ae43763828ac4acb4560c2a5b',1,'SyncBinary']]],
   ['bijection',['Bijection',['../classLoyc_1_1Collections_1_1Bijection_3_01K1_00_01K2_01_4.html#aca3909225d778d18f080bfc05a91a6eb',1,'Loyc.Collections.Bijection&lt; K1, K2 &gt;.Bijection()'],['../classLoyc_1_1Collections_1_1Bijection_3_01K1_00_01K2_01_4.html#ac933ef18fec3b43a8631340db320cd68',1,'Loyc.Collections.Bijection&lt; K1, K2 &gt;.Bijection(int capacity)'],['../classLoyc_1_1Collections_1_1Bijection_3_01K1_00_01K2_01_4.html#ad9c6b1c50648e7443433d691746b1eaa',1,'Loyc.Collections.Bijection&lt; K1, K2 &gt;.Bijection(IReadOnlyCollection&lt; KeyValuePair&lt; K1, K2 &gt;&gt; input)'],['../classLoyc_1_1Collections_1_1Bijection_3_01K1_00_01K2_01_4.html#a6b43f1128da792718647c4b96b0f9fc7',1,'Loyc.Collections.Bijection&lt; K1, K2 &gt;.Bijection(IEnumerable&lt; KeyValuePair&lt; K1, K2 &gt;&gt; input, int capacity=0)'],['../classLoyc_1_1Collections_1_1Bijection_3_01K1_00_01K2_01_4.html#a3b8928f8fb805ed5ae576e2c18f70806',1,'Loyc.Collections.Bijection&lt; K1, K2 &gt;.Bijection(IDictionary&lt; K1, K2 &gt; cur, IDictionary&lt; K2, K1 &gt; inv)']]],
   ['bijection_3c_20k1_2c_20k2_20_3e',['Bijection&lt; K1, K2 &gt;',['../classLoyc_1_1Collections_1_1Bijection_3_01K1_00_01K2_01_4.html',1,'Loyc::Collections']]],
   ['binaryliteral',['BinaryLiteral',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8aaf0a48273a5f8df8c56dac4432e98f0c',1,'Loyc::Syntax']]],
@@ -54,11 +53,12 @@ var searchData=
   ['break',['Break',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#ab84080680179aab3c395a65a216a4666',1,'Loyc::Syntax::CodeSymbols']]],
   ['breakafter',['BreakAfter',['../namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bfa335fd5df48353c6fa61824458bde2e0c',1,'Loyc']]],
   ['breakbefore',['BreakBefore',['../namespaceLoyc.html#ad144493ce28d7ee89d1145b107fa47bfab1bc0135c4ed4acaba7c49f7b6c700bf',1,'Loyc']]],
-  ['buf',['Buf',['../structSyncBinary_1_1ReaderState_1_1ReadingPointer.html#a42839ea60e46c31b90c4b56c07093d0b',1,'SyncBinary::ReaderState::ReadingPointer']]],
+  ['buf',['Buf',['../structSyncBinary_1_1ReaderState_1_1ReadingPointer.html#a42839ea60e46c31b90c4b56c07093d0b',1,'SyncBinary.ReaderState.ReadingPointer.Buf()'],['../structSyncJson_1_1Parser_1_1JsonPointer.html#aa3b58e7a1a80e6d7851c996c00239e6e',1,'SyncJson.Parser.JsonPointer.Buf()']]],
   ['bufferedcount',['BufferedCount',['../classLoyc_1_1Collections_1_1BufferedSequence_3_01T_01_4.html#a6358ff016212a3104cb254def10af0a6',1,'Loyc::Collections::BufferedSequence&lt; T &gt;']]],
   ['bufferedsequence_3c_20t_20_3e',['BufferedSequence&lt; T &gt;',['../classLoyc_1_1Collections_1_1BufferedSequence_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['builtinmacros',['BuiltinMacros',['../classLeMP_1_1Prelude_1_1BuiltinMacros.html',1,'LeMP::Prelude']]],
-  ['byte',['Byte',['../structSyncBinary_1_1ReaderState_1_1ReadingPointer.html#a188859195eff46282f3458465fc1f61a',1,'SyncBinary.ReaderState.ReadingPointer.Byte()'],['../namespaceLoyc_1_1SyncLib.html#a133f8f4548136bac9cef01f1584fe770aa245c3230debe5c956484ecc6fa93877',1,'Loyc.SyncLib.Byte()']]],
+  ['byte',['Byte',['../structSyncBinary_1_1ReaderState_1_1ReadingPointer.html#a188859195eff46282f3458465fc1f61a',1,'SyncBinary.ReaderState.ReadingPointer.Byte()'],['../structSyncJson_1_1Parser_1_1JsonPointer.html#a89d87dae0e43bb8028b50d189ce5b441',1,'SyncJson.Parser.JsonPointer.Byte()'],['../namespaceLoyc_1_1SyncLib.html#a133f8f4548136bac9cef01f1584fe770aa245c3230debe5c956484ecc6fa93877',1,'Loyc.SyncLib.Byte()']]],
   ['bytearrayinstring',['ByteArrayInString',['../classLoyc_1_1ByteArrayInString.html',1,'Loyc']]],
+  ['bytearraymode',['ByteArrayMode',['../classSyncJson_1_1Options.html#aa39c9286c8b50fec905466d06279f68b',1,'SyncJson::Options']]],
   ['bytecomparer',['ByteComparer',['../structLoyc_1_1Collections_1_1ByteComparer.html',1,'Loyc::Collections']]]
 ];

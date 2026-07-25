@@ -26,7 +26,7 @@
   <td style="padding-left: 0.5em;">
    <div id="projectname">Enhanced C#
    </div>
-   <div id="projectbrief">Language of your choice: library documentation</div>
+   <div id="projectbrief">Loyc library documentation</div>
   </td>
  </tr>
  </tbody>
@@ -112,8 +112,22 @@ Inheritance diagram for Loyc.SyncLib.ISyncObject&lt; SyncManager, T &gt;:</div>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
 <div class="textblock"><p>This interface is equivalent to SyncObjectFunc{SyncManager,T}, reformulated as an interface. It only exists because the CLR (C# runtime) supports optimizations on generic parameters that are structs, but similar optimizations don't exist for delegates. For this reason it is possible to achieve higher performance by providing a synchronizer in the form of a struct rather than a delegate (see Remarks) </p>
-<p>TODO: explain how to use this interface. </p>
-</div><table class="memberdecls">
+<p>Example usage: </p><div class="fragment">
+<div class="line"><span class="keyword">public</span> <span class="keyword">class </span>PersonSync&lt;SM&gt; : ISyncObject&lt;SM, Person&gt; where SM : ISyncManager</div>
+<div class="line">{</div>
+<div class="line">    <span class="keyword">public</span> Person Sync(SM sync, Person? obj)</div>
+<div class="line">    {</div>
+<div class="line">        sync.CurrentObject = obj ??= <span class="keyword">new</span> Person();</div>
+<div class="line">        obj.Name = sync.Sync(<span class="stringliteral">&quot;Name&quot;</span>, obj.Name);</div>
+<div class="line">        obj.Siblings = sync.SyncList(<span class="stringliteral">&quot;Siblings&quot;</span>, obj.Siblings, <span class="keyword">this</span>);</div>
+<div class="line">        <span class="keywordflow">return</span> obj;</div>
+<div class="line">    }</div>
+<div class="line">}</div>
+<div class="line"></div>
+<div class="line"><span class="comment">// Later...</span></div>
+<div class="line">var json = SyncJson.Write(<span class="keyword">new</span> Person { Name = <span class="stringliteral">&quot;Jon&quot;</span> }, <span class="keyword">new</span> PersonSync&lt;<a class="code" href="structSyncJson_1_1Writer.html">SyncJson.Writer</a>&gt;());</div>
+<div class="line">]]&gt;</div>
+</div><!-- fragment --> </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a9455b6dc52a6127331a8c6ea3c305930"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9455b6dc52a6127331a8c6ea3c305930"></a>
@@ -124,7 +138,7 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>Sync</b> (SyncManager sy
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 24 2026 16:56:22 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Jul 24 2026 19:07:33 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

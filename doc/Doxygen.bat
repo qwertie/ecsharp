@@ -15,8 +15,9 @@ if errorlevel 1 pause
 del doxygen*.tmp
 @REM 8a. Can you reach sed on the command line? If not, add it to your PATH 
 @REM     (e.g. Git typically comes with a copy)
-@REM 8b. Change the regex and http link to properly recognize your files and point to your repo
-sed --in-place -r "s_<li>.*(/(Main|Core|Src)/.*)</li>_<li><a href='https://github.com/qwertie/ecsharp/tree/master\1'>\1</a></li>_;s_The documentation for this [a-z]* was generated from the following file_<b>Source file</b>_" ./code/*.html
+@REM 8b. Change the regex and http link to properly recognize your files and point to your repo.
+@REM     also remove "<![CDATA[" lines that were wrongly included as "&lt;![CDATA["
+sed --in-place -r "s_<li>.*(/(Main|Core|Src)/.*)</li>_<li><a href='https://github.com/qwertie/ecsharp/tree/master\1'>\1</a></li>_;s_The documentation for this [a-z]* was generated from the following file_<b>Source file</b>_;s_<div class=\"line\">&lt;!\[CDATA\[</div>__;s_<div class="line">\]\]&gt;</div>__" ./code/*.html
 @REM     My copy of sed is making all files read-only. Fix that.
 attrib -r code\*.*
 @REM 8c. Getting "sed: preserving permissions for `./sed002836': Permission denied"?

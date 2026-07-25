@@ -44,7 +44,7 @@ PROJECT_NUMBER         =
 # for a project that appears at the top of each page and should give viewer a
 # quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = "Language of your choice: library documentation"
+PROJECT_BRIEF          = "Loyc library documentation"
 
 # With the PROJECT_LOGO tag one can specify a logo or an icon that is included
 # in the documentation. The maximum height of the logo should not exceed 55
@@ -821,6 +821,8 @@ WARN_LOGFILE           =
 
 INPUT                  = ../../ecsharp/Core/Loyc.Interfaces \
                          ../../ecsharp/Core/Loyc.Essentials \
+                         ../../ecsharp/Core/Loyc.SyncLib.SyncJson \
+                         ../../ecsharp/Core/Loyc.SyncLib.SyncProtobuf \
                          ../../ecsharp/Core/Loyc.Collections \
                          ../../ecsharp/Core/Loyc.Syntax \
                          ../../ecsharp/Core/Loyc.Utilities \

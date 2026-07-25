@@ -11,6 +11,8 @@ var searchData=
   ['newlineisrequiredhere',['NewlineIsRequiredHere',['../interfaceLoyc_1_1Syntax_1_1Impl_1_1IPrinterHelper_3_01out_01Self_01_4.html#a0efe0ef518a15b2c0e7035fcb6ed7aec',1,'Loyc.Syntax.Impl.IPrinterHelper&lt; out Self &gt;.NewlineIsRequiredHere()'],['../classLoyc_1_1Syntax_1_1Impl_1_1LNodePrinterHelper.html#ac7c6e48c225a3d9276acb33322572188',1,'Loyc.Syntax.Impl.LNodePrinterHelper.NewlineIsRequiredHere()']]],
   ['newlineorspace_3c_20helper_20_3e',['NewlineOrSpace&lt; Helper &gt;',['../classLoyc_1_1Syntax_1_1Impl_1_1LNodePrinterHelperExt.html#a15a67353878cf3eadda232714466a1f6',1,'Loyc::Syntax::Impl::LNodePrinterHelperExt']]],
   ['newright',['NewRight',['../structLoyc_1_1Either_3_01L_00_01R_01_4.html#ab35b17cb48e1e3b81af508284f053234',1,'Loyc::Either&lt; L, R &gt;']]],
+  ['newschema',['NewSchema',['../classSyncProtobuf.html#abf123caf8d01d55432c70ca38d716a07',1,'SyncProtobuf']]],
+  ['newschemawriter',['NewSchemaWriter',['../classSyncJson.html#a663c212b817b949f69f394a337ba8fea',1,'SyncJson']]],
   ['newsymbol',['NewSymbol',['../classLoyc_1_1SymbolPool.html#a80899f639cbdb2af7828af013427cf84',1,'Loyc.SymbolPool.NewSymbol()'],['../classLoyc_1_1SymbolPool_3_01SymbolE_01_4.html#a58dedfe48bfdbb7fedb11ca869cf30db',1,'Loyc.SymbolPool&lt; SymbolE &gt;.NewSymbol()']]],
   ['nexthigher',['NextHigher',['../interfaceLoyc_1_1Math_1_1IIncrementer_3_01T_01_4.html#aa88fe7369c166fba886a277f6a63f2c2',1,'Loyc::Math::IIncrementer&lt; T &gt;']]],
   ['nexthigherindex_3c_20t_20_3e',['NextHigherIndex&lt; T &gt;',['../classLoyc_1_1Collections_1_1LCInterfaces.html#aa6c1e2b8521e31cb5d127b75bbd7254f',1,'Loyc::Collections::LCInterfaces']]],

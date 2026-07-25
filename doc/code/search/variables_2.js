@@ -10,7 +10,7 @@ var searchData=
   ['braces',['Braces',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a1b43c4a6ddadf3ab8fe3333aee405969',1,'Loyc::Syntax::CodeSymbols']]],
   ['brackets',['Brackets',['../classLoyc_1_1Syntax_1_1Impl_1_1PrinterIndentHint.html#a81a583e85fed0560dc8d7bd81a89474c',1,'Loyc::Syntax::Impl::PrinterIndentHint']]],
   ['break',['Break',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#ab84080680179aab3c395a65a216a4666',1,'Loyc::Syntax::CodeSymbols']]],
-  ['buf',['Buf',['../structSyncBinary_1_1ReaderState_1_1ReadingPointer.html#a42839ea60e46c31b90c4b56c07093d0b',1,'SyncBinary::ReaderState::ReadingPointer']]],
+  ['buf',['Buf',['../structSyncBinary_1_1ReaderState_1_1ReadingPointer.html#a42839ea60e46c31b90c4b56c07093d0b',1,'SyncBinary.ReaderState.ReadingPointer.Buf()'],['../structSyncJson_1_1Parser_1_1JsonPointer.html#aa3b58e7a1a80e6d7851c996c00239e6e',1,'SyncJson.Parser.JsonPointer.Buf()']]],
   ['bufferedcount',['BufferedCount',['../classLoyc_1_1Collections_1_1BufferedSequence_3_01T_01_4.html#a6358ff016212a3104cb254def10af0a6',1,'Loyc::Collections::BufferedSequence&lt; T &gt;']]],
-  ['byte',['Byte',['../structSyncBinary_1_1ReaderState_1_1ReadingPointer.html#a188859195eff46282f3458465fc1f61a',1,'SyncBinary::ReaderState::ReadingPointer']]]
+  ['byte',['Byte',['../structSyncBinary_1_1ReaderState_1_1ReadingPointer.html#a188859195eff46282f3458465fc1f61a',1,'SyncBinary.ReaderState.ReadingPointer.Byte()'],['../structSyncJson_1_1Parser_1_1JsonPointer.html#a89d87dae0e43bb8028b50d189ce5b441',1,'SyncJson.Parser.JsonPointer.Byte()']]]
 ];

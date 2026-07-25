@@ -14,7 +14,5 @@ var searchData=
   ['stopbeforeoverflow',['StopBeforeOverflow',['../namespaceLoyc_1_1Syntax.html#a25067907b6e7b3dc1f4ee3f074de3a91ada1c5c9727a3933ee8789e1cddabd51e',1,'Loyc::Syntax']]],
   ['string',['String',['../namespaceLoyc_1_1SyncLib.html#a133f8f4548136bac9cef01f1584fe770a27118326006d3829667a400ad23d5d98',1,'Loyc::SyncLib']]],
   ['strings',['Strings',['../classSyncBinary.html#a23005642b591e1bb89adb55f9d0f4f7aa89be9433646f5939040a78971a5d103a',1,'SyncBinary']]],
-  ['styles',['Styles',['../classLoyc_1_1Syntax_1_1LNode.html#ab71ac39fafd45027f8c090b889265feba4c1c7d945fcd04d68bd3b3f1d99a55a1',1,'Loyc::Syntax::LNode']]],
-  ['synclib',['SyncLib',['../classSyncBinary.html#aa280f23fa4c121c10651bcaf2ac6eb5fad89f0ecd93f7bf69e42cf531740a196a',1,'SyncBinary']]],
-  ['synclibzigzag',['SyncLibZigZag',['../classSyncBinary.html#aa280f23fa4c121c10651bcaf2ac6eb5fa0f23af463de1a22ffb6ad4558b8ed427',1,'SyncBinary']]]
+  ['styles',['Styles',['../classLoyc_1_1Syntax_1_1LNode.html#ab71ac39fafd45027f8c090b889265feba4c1c7d945fcd04d68bd3b3f1d99a55a1',1,'Loyc::Syntax::LNode']]]
 ];

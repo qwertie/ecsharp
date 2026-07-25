@@ -11,6 +11,7 @@ var searchData=
   ['preopenednamespaces',['PreOpenedNamespaces',['../classLeMP_1_1MacroProcessor.html#ac7d649b15f5b12c664854825151a5fc1',1,'LeMP::MacroProcessor']]],
   ['preservecomments',['PreserveComments',['../interfaceLoyc_1_1Syntax_1_1IParsingOptions.html#a17a32739270fe79340f4e70c1bd8f3b5',1,'Loyc::Syntax::IParsingOptions']]],
   ['previoussiblings',['PreviousSiblings',['../interfaceLeMP_1_1IMacroContext.html#aa244e6b36e2423f0e64f8c6b3c8bc74a',1,'LeMP::IMacroContext']]],
+  ['primitivetoobject',['PrimitiveToObject',['../classSyncJson_1_1Options_1_1ForReader.html#ac2b2f5396af54d0d01f0b86bd3bd9bb1',1,'SyncJson::Options::ForReader']]],
   ['printer',['Printer',['../classLoyc_1_1Syntax_1_1LNode.html#a091721bc13bdbb204412aa414e7967e3',1,'Loyc::Syntax::LNode']]],
   ['printseverityat',['PrintSeverityAt',['../classLoyc_1_1ConsoleMessageSink.html#a49dee4bb03921423d485c6b782b0270c',1,'Loyc::ConsoleMessageSink']]],
   ['printtriviaexplicitly',['PrintTriviaExplicitly',['../interfaceLoyc_1_1Syntax_1_1ILNodePrinterOptions.html#a53d8f2f0e4c366330e450ed3501c1c66',1,'Loyc.Syntax.ILNodePrinterOptions.PrintTriviaExplicitly()'],['../classLoyc_1_1Syntax_1_1Les_1_1Les2PrinterOptions.html#a1144f90bc6df15281a5e6dbe399e46a8',1,'Loyc.Syntax.Les.Les2PrinterOptions.PrintTriviaExplicitly()']]],
