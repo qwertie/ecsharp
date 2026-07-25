@@ -85,12 +85,6 @@ namespace Loyc.SyncLib
 		///   option to get a similar effect.</remarks>
 		ReadNullAsDefault = 256,
 
-		// This approach is probably wrong: if caller is specifying the SyncObjectFunc, 
-		// it can just call it directly; if not, the desire to unwrap could be 
-		// indicated somehow when registering the SyncObjectFunc?
-		/// <summary>This flag requests that <see cref="ISyncManager.BeginSubObject"/>
-		/// not be called before invoking the synchronizer, so that field(s) of the 
-		/// child object are dumped directly into the parent object.</summary>
-		//NoObject = 256,
+
 	}
 }

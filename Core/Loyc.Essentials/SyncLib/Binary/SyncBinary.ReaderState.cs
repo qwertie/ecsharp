@@ -30,7 +30,7 @@ partial class SyncBinary
 			_opt = options;
 		}
 
-		private Options _opt;
+		internal Options _opt;
 		private IScanner<byte>? _scanner;
 		private Memory<byte> _scannerBuf; // not used by ReaderState; it's passed to _scanner.Read()
 		private ReadingFrame _frame;
@@ -97,7 +97,7 @@ partial class SyncBinary
 
 		protected struct StackEntry
 		{
-			public long Id;
+			public long Id; // Object ID used for deduplication (comes after a '#' marker)
 			public bool HasId;
 			public ObjType Type;
 		}

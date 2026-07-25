@@ -63,6 +63,8 @@ partial class SyncProtobuf
 		public bool SupportsDeduplication => true;
 		public bool NeedsIntegerIds => true;
 		public bool SupportsNextField => false;
+		public bool IsPlainText => false;
+		public ISyncOptions? Options => _s._opt;
 
 		public bool IsInsideList => _s.IsInsideList;
 		public bool? ReachedEndOfList => null;

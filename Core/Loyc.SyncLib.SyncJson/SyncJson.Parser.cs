@@ -262,8 +262,8 @@ partial class SyncJson
 
 		protected struct StackEntry
 		{
-			public JsonValue Id;
-			public JsonType Type;
+			public JsonValue Id; // ID of current object (value of "$id" or "\f" property)
+			public JsonType Type; // JsonType.List or JsonType.Object
 
 			// Not used by Parser. Used by ReaderState to track skipped values.
 			// For performance, the SkippedProps dictionary is not created unless

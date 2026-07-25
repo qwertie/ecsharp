@@ -1,26 +1,66 @@
+using Loyc.SyncLib;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.Text;
-using Loyc.SyncLib;
 
 namespace Loyc.SyncLib
 {
 	/// <summary>Represents the low-level synchronization behavior for a single list 
-	/// item. <see cref="SyncManagerHelper"/> needs this.</summary>
+	///   item. <see cref="SyncManagerHelper"/> needs this.</summary>
 	/// <remarks>This interface is used instead of <see cref="SyncFieldFunc_Ref"/> 
-	/// so that the implementation can be a struct, in order to take advantage of the
-	/// CLR's ability to specialize generic methods for structs, which provides better
-	/// performance by avoiding indirect calls and enabling inlining.</remarks>
+	///   so that the implementation can be a struct, in order to take advantage of the
+	///   CLR's ability to specialize generic methods for structs, which provides better
+	///   performance by avoiding indirect calls and enabling inlining.
+	/// <para/>
+	///   Example usage:
+	/// <code><![CDATA[
+	/// public struct SyncFields<SM> : 
+	///		ISyncField<SM, Color>,
+	///		ISyncField<SM, BitArray>,
+	///		ISyncObject<SM, TwoColorBitmap>
+	///		where SM : ISyncManager
+	/// {
+	/// 	public Color Sync(ref SM sm, FieldId name, Color color)
+	/// 	{
+	/// 		return Color.FromArgb(sm.Sync(name, color.ToArgb()));
+	/// 	}
+	/// 	public BitArray? Sync(ref SM sm, FieldId name, BitArray? value)
+	/// 	{
+	/// 		if (sm.IsReading) {
+	///				return new BitArray(sm.SyncArray(name, Array.Empty<byte>()));
+	/// 		} else if (value is null) {
+	/// 		    sm.SyncArray(name, (byte[]?) null);
+	/// 		} else {
+	/// 			byte[] bytes = new byte[(value.Length + 7) >> 3];
+	/// 			value.CopyTo(bytes, 0);
+	/// 			sm.SyncArray(name, bytes);
+	/// 		}
+	/// 		return value;
+	/// 	}
+	/// 	
+	///     // This uses the Sync methods above
+	///     public TwoColorBitmap? Sync(SM sm, TwoColorBitmap? obj)
+	///     {
+	///         obj ??= new TwoColorBitmap();
+	///         
+	///         obj.Color0 = sm.Sync("Color0", obj.Color0, this);
+	///         obj.Color1 = sm.Sync("Color1", obj.Color1, this);
+	///         obj.Bits = sm.Sync("Bits", obj.Bits, this)!;
+	///         // You could also just call your methods directly:
+	/// 		// obj.Color0 = Sync(ref sm, "Color0", obj.Color0);
+	/// 		
+	///         return obj;
+	///     }
+	/// }
+	/// ]]></code>
+	/// </remarks>
 	public interface ISyncField<SyncManager, T>
 	{
 		T? Sync(ref SyncManager sync, FieldId name, T? value);
 	}
-	//public interface ISyncWrite<SyncManager, T>
-	//{
-	//	void Write(ref SyncManager sync, Symbol? name, T? value);
-	//}
 }
 
 namespace Loyc.SyncLib.Impl

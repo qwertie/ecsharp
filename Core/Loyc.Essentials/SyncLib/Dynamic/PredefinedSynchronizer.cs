@@ -32,16 +32,31 @@ static class PredefinedSynchronizer<SyncManager> where SyncManager: ISyncManager
 
 			// Find a generic synchronizer such as TupleSynchronizer.Sync whose value
 			// parameter has the same generic type definition as T (e.g. the method
-			// Sync<I1,I2>(ref SM, FieldId, ValueTuple<I1,I2>) matches T = (int, string))
-			var typeDef = typeof(T).GetGenericTypeDefinition();
-			var typeArgs = typeof(T).GetGenericArguments();
+			// Sync<I1,I2>(ref SM, FieldId, ValueTuple<I1,I2>) matches T = (int, string)).
+			//
+			// A nullable value type such as (int, string)? is Nullable<ValueTuple<..>>,
+			// so its own type definition is Nullable<> and its single type argument is
+			// the whole tuple. To bind it to the nullable synchronizer
+			// Sync<I1,I2>(ref SM, FieldId, ValueTuple<I1,I2>?) we must match against the
+			// UNDERLYING tuple's definition/arguments, and select the synchronizer whose
+			// value parameter is itself Nullable<..> (so nullable T -> nullable method).
+			Type? underlying = Nullable.GetUnderlyingType(typeof(T));
+			bool wantNullable = underlying != null && underlying.IsGenericType;
+			var matchType = wantNullable ? underlying! : typeof(T);
+			var matchDef = matchType.GetGenericTypeDefinition();
+			var matchArgs = matchType.GetGenericArguments();
 			foreach (MethodInfo mi in _genericMethods) {
 				var valueParam = mi.GetParameters()[2].ParameterType;
-				if (valueParam.IsGenericType && valueParam.GetGenericTypeDefinition() == typeDef
-					&& mi.GetGenericArguments().Length == typeArgs.Length) {
+				var valueUnderlying = Nullable.GetUnderlyingType(valueParam);
+				// A nullable T binds only to a nullable synchronizer, and vice versa
+				if ((valueUnderlying != null) != wantNullable)
+					continue;
+				var candidate = valueUnderlying ?? valueParam;
+				if (candidate.IsGenericType && candidate.GetGenericTypeDefinition() == matchDef
+					&& mi.GetGenericArguments().Length == matchArgs.Length) {
 					MethodInfo closed;
 					try {
-						closed = mi.MakeGenericMethod(typeArgs);
+						closed = mi.MakeGenericMethod(matchArgs);
 					} catch (ArgumentException) {
 						continue; // a generic constraint was violated
 					}

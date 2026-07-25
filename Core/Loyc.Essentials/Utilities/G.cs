@@ -120,10 +120,12 @@ namespace Loyc
 
 		/// <summary>Returns <c>action(obj)</c>. This is similar to the other overload 
 		/// of this method, except that the action has a return value.</summary>
+		[Obsolete]
 		public static T With<T>(this T obj, Func<T, T> action) => Do(obj, action);
-		
+
 		/// <summary>Returns <c>action(obj)</c>. This method lets you embed statements 
 		/// in any expression.</summary>
+		[Obsolete]
 		public static R Do<T, R>(this T obj, Func<T, R> action) => action(obj);
 
 		/// <summary>Returns true. This method has no effect; it is used to do an action 

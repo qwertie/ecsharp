@@ -138,6 +138,33 @@ namespace Loyc.SyncLib.Tests
 		}
 
 		[Test]
+		public void RoundTripNullableValueTuples()
+		{
+			// Non-null values round-tripped through the nullable ValueTuple<...>? overloads
+			RoundTripTest<ValueTuple<int>?>(ValueTuple.Create(42), SyncTuple<Writer, ValueTuple<int>?>, SyncTuple<Reader, ValueTuple<int>?>);
+			RoundTripTest<(int, string)?>((42, "hi"), SyncTuple<Writer, (int, string)?>, SyncTuple<Reader, (int, string)?>);
+			RoundTripTest<(int, double, string)?>((1, 2.5, "three"), SyncTuple<Writer, (int, double, string)?>, SyncTuple<Reader, (int, double, string)?>);
+			RoundTripTest<(int, int, int, int)?>((1, 2, 3, 4), SyncTuple<Writer, (int, int, int, int)?>, SyncTuple<Reader, (int, int, int, int)?>);
+			RoundTripTest<(int, int, int, int, int)?>((1, 2, 3, 4, 5), SyncTuple<Writer, (int, int, int, int, int)?>, SyncTuple<Reader, (int, int, int, int, int)?>);
+			RoundTripTest<(int, int, int, int, int, int)?>((1, 2, 3, 4, 5, 6), SyncTuple<Writer, (int, int, int, int, int, int)?>, SyncTuple<Reader, (int, int, int, int, int, int)?>);
+			RoundTripTest<(int, int, int, int, int, int, int)?>((1, 2, 3, 4, 5, 6, 7), SyncTuple<Writer, (int, int, int, int, int, int, int)?>, SyncTuple<Reader, (int, int, int, int, int, int, int)?>);
+			// Arity 8+ uses a nested ValueTuple in `Rest`
+			RoundTripTest<(int, int, int, int, int, int, int, int, int)?>((1, 2, 3, 4, 5, 6, 7, 8, 9), SyncTuple<Writer, (int, int, int, int, int, int, int, int, int)?>, SyncTuple<Reader, (int, int, int, int, int, int, int, int, int)?>);
+			// Nested tuple as a tuple item
+			RoundTripTest<(int, (double, string))?>((1, (2.5, "deep")), SyncTuple<Writer, (int, (double, string))?>, SyncTuple<Reader, (int, (double, string))?>);
+
+			// A null ValueTuple? should round-trip as null, at every arity
+			RoundTripTest<ValueTuple<int>?>(null, SyncTuple<Writer, ValueTuple<int>?>, SyncTuple<Reader, ValueTuple<int>?>);
+			RoundTripTest<(int, string)?>(null, SyncTuple<Writer, (int, string)?>, SyncTuple<Reader, (int, string)?>);
+			RoundTripTest<(int, double, string)?>(null, SyncTuple<Writer, (int, double, string)?>, SyncTuple<Reader, (int, double, string)?>);
+			RoundTripTest<(int, int, int, int)?>(null, SyncTuple<Writer, (int, int, int, int)?>, SyncTuple<Reader, (int, int, int, int)?>);
+			RoundTripTest<(int, int, int, int, int)?>(null, SyncTuple<Writer, (int, int, int, int, int)?>, SyncTuple<Reader, (int, int, int, int, int)?>);
+			RoundTripTest<(int, int, int, int, int, int)?>(null, SyncTuple<Writer, (int, int, int, int, int, int)?>, SyncTuple<Reader, (int, int, int, int, int, int)?>);
+			RoundTripTest<(int, int, int, int, int, int, int)?>(null, SyncTuple<Writer, (int, int, int, int, int, int, int)?>, SyncTuple<Reader, (int, int, int, int, int, int, int)?>);
+			RoundTripTest<(int, int, int, int, int, int, int, int, int)?>(null, SyncTuple<Writer, (int, int, int, int, int, int, int, int, int)?>, SyncTuple<Reader, (int, int, int, int, int, int, int, int, int)?>);
+		}
+
+		[Test]
 		public void RoundTripReferenceTuples()
 		{
 			RoundTripTest(Tuple.Create(42, "hi"), SyncTuple<Writer, Tuple<int, string>>, SyncTuple<Reader, Tuple<int, string>>);

@@ -22,7 +22,7 @@ partial class SyncProtobuf
 	///   its low bits (as Protobuf parsers do), and the root message always occupies the
 	///   entire input.
 	/// </remarks>
-	public class Options
+	public sealed class Options : ISyncOptions
 	{
 		/// <summary>Maximum size, in bytes, of a length-delimited payload (string, byte
 		///   array, sub-message, list, etc.) that the reader will accept. This guards

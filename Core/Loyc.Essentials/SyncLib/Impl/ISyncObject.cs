@@ -13,7 +13,22 @@ namespace Loyc.SyncLib
 	/// struct rather than a delegate (see Remarks)
 	/// </summary>
 	/// <remarks>
-	/// TODO: explain how to use this interface.
+	///   Example usage:
+	/// <code><![CDATA[
+	/// public class PersonSync<SM> : ISyncObject<SM, Person> where SM : ISyncManager
+	/// {
+	/// 	public Person Sync(SM sync, Person? obj)
+	/// 	{
+	/// 		sync.CurrentObject = obj ??= new Person();
+	/// 		obj.Name = sync.Sync("Name", obj.Name);
+	/// 		obj.Siblings = sync.SyncList("Siblings", obj.Siblings, this);
+	/// 		return obj;
+	/// 	}
+	/// }
+	/// 
+	/// // Later...
+	/// var json = SyncJson.Write(new Person { Name = "Jon" }, new PersonSync<SyncJson.Writer>());
+	/// ]]></code>
 	/// </remarks>
 	public interface ISyncObject<SyncManager, T>
 	{

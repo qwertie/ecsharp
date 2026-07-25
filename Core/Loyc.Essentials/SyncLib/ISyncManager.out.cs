@@ -26,7 +26,7 @@ namespace Loyc.SyncLib
 	public delegate T SyncFieldFunc<T>(FieldId name, [AllowNull] T value);
 
 	/// <summary>This is the central interface of Loyc.SyncLib. To learn more, please 
-	/// visit the web site: http://loyc.net/serialization </summary>
+	/// visit the web site: http://synclib.loyc.net/ </summary>
 	/// <remarks>
 	/// Note: it is recommended (but not required) that Sync() methods in reader 
 	/// implementations support the following implicit type conversions:
@@ -191,6 +191,16 @@ namespace Loyc.SyncLib
 		///   </pre>
 		/// </remarks>
 		int Depth { get; }
+
+		/// <summary>true if the current format is a plain-text rather than binary format.
+		///   This property may be used, for example, to decide whether to output a human-
+		///   friendly encoding of certain data types such as DateTime.</summary>
+		bool IsPlainText { get; }
+
+		/// <summary>Gets the current Options object for this manager (its type is specific
+		///   to the manager). Note: this is meant for reading options. The manager might
+		///   not be designed for options to be changed after a sync has started.</summary>
+		ISyncOptions? Options { get; }
 
 		/// <summary>If <see cref="SupportsNextField"/> is true, the end of the current
 		///   object has not been reached, and <see cref="IsInsideList"/> is false, 
@@ -664,25 +674,24 @@ namespace Loyc.SyncLib
 		///   this method is <b>not</b> called.
 		///   <para/>
 		///   This method has six possible outcomes:
-		///   (1) The request to read/write is approved. In this case, this method
-		///       returns (true, childKey) and <see cref="Depth"/> increases by one.
+		///   (1) The request to read/write is approved. In this case, this method returns 
+		///       (true, lengthIfKnown, childKey) and <see cref="Depth"/> increases by one.
 		///       childKey is the same reference you passed to this method.
-		///   (2) You set childKey = null and <see cref="Mode"/> is not Loading.
-		///       (also, <c>(mode & (ObjectMode.NotNull | ObjectMode.Deduplicate)) 
-		///       != ObjectMode.NotNull</c>). This indicates that no child object 
-		///       exists, so this method returns (false, null).
+		///   (2) You set childKey = null and <see cref="Mode"/> is not Loading. (also, 
+		///       <c>(mode & (ObjectMode.NotNull | ObjectMode.Deduplicate)) != 
+		///       ObjectMode.NotNull</c>). This indicates that no child object exists, so 
+		///       this method returns (false, _, null).
 		///   (3) The <see cref="Mode"/> is Loading and the input stream contains a 
-		///       representation of null, so this method returns (false, null).
+		///       representation of null, so this method returns (false, _, null).
 		///   (4) The list/tuple being read/write has already been read/written 
 		///       earlier, and you enabled deduplication, so the request to 
 		///       read/write is declined. In this case, this method returns false 
 		///       with a reference to the object that was loaded or saved earlier.
 		///   (5) The <see cref="Mode"/> is Query, Schema or Merge and the current 
 		///       <see cref="ISyncManager"/> has decided not to traverse into the 
-		///       current field. In this case, this method returns (false, childKey).
-		///   (6) An exception is thrown if the input stream doesn't contain a 
-		///       list/object as expected, or if you're writing a list without 
-		///       providing <c>listLength</c>.
+		///       current field. In this case, this method returns (false, _, childKey).
+		///   (6) An exception is thrown if the input stream doesn't contain a list/object 
+		///       as expected, or if you're writing a list without giving <c>listLength</c>.
 		///   <para/>
 		///   In Saving mode, and in every case except 4, the returned Object is 
 		///   the same as childKey.
@@ -700,6 +709,16 @@ namespace Loyc.SyncLib
 		/// constraints to a query according to the scope of the query being 
 		/// processed.</summary>
 		//IQueryable<T>? QueryFilter(FieldId name, IQueryable<T> list);
+	}
+
+	/// <summary>An interface for the options objects of <see cref="ISyncManager"/>
+	///   implementations (e.g. SyncJson.Options), returned from
+	///   <see cref="ISyncManager.Options"/>. It exposes settings whose meaning is not
+	///   specific to a single data format.</summary>
+	public interface ISyncOptions
+	{
+		/// <summary>The <see cref="ObjectMode"/> used to read/write the root object.</summary>
+		ObjectMode RootMode { get; }
 	}
 
 	public static partial class SyncManagerExt

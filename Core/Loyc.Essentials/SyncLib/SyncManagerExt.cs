@@ -50,54 +50,15 @@ namespace Loyc.SyncLib
 			return syncField.Sync(ref sync, name, savable);
 		}
 
-		public static E SyncEnumAsString<SM, E>(this SM sync,
+		public static E SyncAsString<SM, E>(this SM sync,
 			FieldId name, E savable, 
 			ObjectMode mode = ObjectMode.Deduplicate)
 				where SM : ISyncManager
 				where E : struct, Enum
 			=> new SyncEnumAsString<SM, E>().Sync(ref sync, name, savable);
 
-		public static DateTime SyncDateAsString<SM>(this SM sync, FieldId name, DateTime value,
-			string? preferredFormat = null, DateTimeStyles parseMode = DateTimeStyles.AllowWhiteSpaces)
-			where SM : ISyncManager
-			=> new SyncDateAsString<SM>(preferredFormat, parseMode).Sync(ref sync, name, value);
-		public static DateTime SyncDateAsDayNumber<SM>(this SM sync, FieldId name, DateTime value, bool asInt32 = false)
-			where SM : ISyncManager
-			=> new SyncDateAsDayNumber<SM>(asInt32).Sync(ref sync, name, value);
-
-		public static DateTime? SyncDateAsString<SM>(this SM sync, FieldId name, DateTime? value,
-			string? preferredFormat = null, DateTimeStyles parseMode = DateTimeStyles.AllowWhiteSpaces)
-			where SM : ISyncManager
-			=> new SyncDateAsString<SM>(preferredFormat, parseMode).Sync(ref sync, name, value);
-		public static DateTime? SyncDateAsDayNumber<SM>(this SM sync, FieldId name, DateTime? value, bool asInt32 = false)
-			where SM : ISyncManager
-			=> new SyncDateAsDayNumber<SM>(asInt32).Sync(ref sync, name, value);
-
-		public static TimeSpan SyncTimeAsString<SM>(this SM sync, FieldId name, TimeSpan value)
-			where SM : ISyncManager
-			=> new SyncTimeSpanAsString<SM>().Sync(ref sync, name, value);
-		public static TimeSpan SyncTimeAsSeconds<SM>(this SM sync, FieldId name, TimeSpan value, bool asInt32 = false)
-			where SM : ISyncManager
-			=> new SyncTimeSpanAsSeconds<SM>(asInt32).Sync(ref sync, name, value);
-		public static TimeSpan SyncTimeAsMinutes<SM>(this SM sync, FieldId name, TimeSpan value, bool asInt32 = false)
-			where SM : ISyncManager
-			=> new SyncTimeSpanAsMinutes<SM>(asInt32).Sync(ref sync, name, value);
-		public static TimeSpan SyncTimeAsDays<SM>(this SM sync, FieldId name, TimeSpan value)
-			where SM : ISyncManager
-			=> new SyncTimeSpanAsDays<SM>().Sync(ref sync, name, value);
-
-		public static TimeSpan? SyncTimeAsString<SM>(this SM sync, FieldId name, TimeSpan? value)
-			where SM : ISyncManager
-			=> new SyncTimeSpanAsString<SM>().Sync(ref sync, name, value);
-		public static TimeSpan? SyncTimeAsSeconds<SM>(this SM sync, FieldId name, TimeSpan? value, bool asInt32 = false)
-			where SM : ISyncManager
-			=> new SyncTimeSpanAsSeconds<SM>(asInt32).Sync(ref sync, name, value);
-		public static TimeSpan? SyncTimeAsMinutes<SM>(this SM sync, FieldId name, TimeSpan? value, bool asInt32 = false)
-			where SM : ISyncManager
-			=> new SyncTimeSpanAsMinutes<SM>(asInt32).Sync(ref sync, name, value);
-		public static TimeSpan? SyncTimeAsDays<SM>(this SM sync, FieldId name, TimeSpan? value)
-			where SM : ISyncManager
-			=> new SyncTimeSpanAsDays<SM>().Sync(ref sync, name, value);
+		// Note: extension methods for DateTime, DateTimeOffset and TimeSpan are in
+		// the SyncDateTimeExt class (SyncDateTimeExt.cs).
 
 		#region SyncList/SyncColl/SyncDict/SyncMemory methods that accept SyncObjectFunc<SM, T>
 

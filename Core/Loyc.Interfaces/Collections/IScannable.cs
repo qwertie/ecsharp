@@ -14,8 +14,9 @@ namespace Loyc.Collections
 	public interface IScanner<T>
 	{
 		/// <summary>Jumps forward in the input by the specified amount, and reads a 
-		///   chunk of data at the new location (without skipping past it). The precise 
-		///   chunk size is chosen by the scanner.</summary>
+		///   chunk of data at the new location (without skipping past it, i.e. it's
+		///   possible to read the same data again by calling this method again with
+		///   `skip: 0`). The precise chunk size is chosen by the scanner.</summary>
 		/// <param name="skip">Amount of data to advance past in the input. If the 
 		///   caller wants to have access to each data item in the sequence exactly 
 		///   once, this parameter should be 0 the first time it calls this method, and 

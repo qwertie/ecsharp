@@ -79,11 +79,11 @@ namespace Loyc.Collections
 
 			public void Clear() => _map._dict.Remove(_key);
 
-			public bool Contains(V item) => G.Var(out var values, GetValues()) != null && values!.Contains(item);
+			public bool Contains(V item) => GetValues() is { } values && values!.Contains(item);
 
 			public void CopyTo(V[] array, int arrayIndex)
 			{
-				if (G.Var(out var values, GetValues()) != null)
+				if (GetValues() is { } values)
 					values!.CopyTo(array, arrayIndex);
 			}
 

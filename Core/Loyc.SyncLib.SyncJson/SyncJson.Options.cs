@@ -21,7 +21,7 @@ partial class SyncJson
 	///   <see cref="Options.ForWriter.Newline"/> during initialization, and 
 	///   therefore will not notice if these properties change later.
 	/// </remarks>
-	public class Options
+	public sealed class Options : ISyncOptions
 	{
 		public Options(bool compactMode = false) => Write.Minify = compactMode;
 

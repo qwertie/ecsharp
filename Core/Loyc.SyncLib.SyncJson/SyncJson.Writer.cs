@@ -87,6 +87,8 @@ partial class SyncJson
 		public bool SupportsReordering => true;
 		public bool SupportsDeduplication => true;
 		public bool NeedsIntegerIds => false;
+		public bool IsPlainText => true;
+		public ISyncOptions? Options => _s._opt;
 
 		public bool IsInsideList => _s._isInsideList;
 

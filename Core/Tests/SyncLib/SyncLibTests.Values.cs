@@ -247,8 +247,8 @@ namespace Loyc.SyncLib.Tests
 				var result = new DateTime[len];
 				for (int i = 0; i < len; i++) {
 					var d = value != null ? value[i] : default;
-					result[i] = sm.SyncDateAsString("str" + i, d);
-					var day = sm.SyncDateAsDayNumber("day" + i, d.Date);
+					result[i] = sm.SyncAsString("str" + i, d);
+					var day = sm.SyncAsDayNumber("day" + i, d.Date);
 					// When reading, result[i] holds the date that was just read
 					Assert.AreEqual(result[i].Date, day);
 				}
@@ -260,10 +260,115 @@ namespace Loyc.SyncLib.Tests
 				var result = new TimeSpan[len];
 				for (int i = 0; i < len; i++) {
 					var t = value != null ? value[i] : default;
-					result[i] = sm.SyncTimeAsString("str" + i, t);
-					var secs = sm.SyncTimeAsSeconds("sec" + i, t);
-					Assert.IsTrue(System.Math.Abs(result[i].TotalSeconds - secs.TotalSeconds) < 0.001);
+					result[i] = sm.SyncAsString("str" + i, t);
+					var ticks = sm.SyncAsTicks("sec" + i, t);
+					Assert.IsTrue(System.Math.Abs(result[i].TotalSeconds - ticks.TotalSeconds) < 0.001);
 				}
+				return result;
+			}
+		}
+
+		/// <summary>Tests the Sync extension methods in <see cref="SyncTimeExt"/>, which
+		///   pick a representation automatically: Newtonsoft-style strings in plain-text
+		///   formats, and otherwise integers (or a tuple of two integers, for
+		///   DateTimeOffset). This round-trips through whichever concrete format the
+		///   derived test class uses.</summary>
+		[Test]
+		public void RoundTripDatesViaAdaptiveSync()
+		{
+			var dates = new[] {
+				new DateTime(2026, 6, 12, 13, 45, 59, DateTimeKind.Utc),
+				new DateTime(2026, 6, 12, 13, 45, 59, DateTimeKind.Local),
+				new DateTime(1600, 2, 29, 0, 0, 0, DateTimeKind.Unspecified),
+				new DateTime(2001, 2, 3, 4, 5, 6, 789, DateTimeKind.Utc),
+				DateTime.MinValue,
+				new DateTime(9999, 12, 31, 23, 59, 59),
+			};
+			RoundTripTest(dates, SyncDates<Writer>, SyncDates<Reader>, 0, (a, b) => {
+				Assert.AreEqual(b.Length, a!.Length);
+				for (int i = 0; i < b.Length; i++) {
+					Assert.AreEqual(b[i], a[i]);
+					Assert.AreEqual(b[i].Kind, a[i].Kind); // DateTime.Equals ignores Kind
+				}
+			});
+
+			var maybeDates = new DateTime?[] {
+				null, new DateTime(2026, 7, 23, 8, 0, 0, DateTimeKind.Utc), null, DateTime.MinValue,
+			};
+			RoundTripTest<DateTime?[], DateTime?>(maybeDates, SyncNullableDates<Writer>, SyncNullableDates<Reader>);
+
+			var dtos = new[] {
+				new DateTimeOffset(2026, 6, 12, 13, 45, 59, TimeSpan.FromHours(-8)),
+				new DateTimeOffset(2001, 2, 3, 4, 5, 6, 789, new TimeSpan(5, 30, 0)),
+				new DateTimeOffset(1600, 2, 29, 0, 0, 0, TimeSpan.Zero),
+				DateTimeOffset.MinValue,
+				DateTimeOffset.MaxValue,
+			};
+			RoundTripTest<DateTimeOffset[], DateTimeOffset>(dtos, SyncDTOs<Writer>, SyncDTOs<Reader>);
+
+			var maybeDtos = new DateTimeOffset?[] {
+				null, new DateTimeOffset(2026, 7, 23, 8, 0, 0, TimeSpan.FromHours(2)), null,
+			};
+			RoundTripTest<DateTimeOffset?[], DateTimeOffset?>(maybeDtos, SyncNullableDTOs<Writer>, SyncNullableDTOs<Reader>);
+
+			var spans = new[] {
+				TimeSpan.Zero,
+				TimeSpan.FromSeconds(90.5),
+				TimeSpan.FromDays(-3650) + TimeSpan.FromSeconds(5),
+				TimeSpan.MinValue,
+				TimeSpan.MaxValue,
+			};
+			RoundTripTest<TimeSpan[], TimeSpan>(spans, SyncSpans<Writer>, SyncSpans<Reader>);
+
+			var maybeSpans = new TimeSpan?[] { null, TimeSpan.FromMilliseconds(1234.5), null };
+			RoundTripTest<TimeSpan?[], TimeSpan?>(maybeSpans, SyncNullableSpans<Writer>, SyncNullableSpans<Reader>);
+
+			static DateTime[] SyncDates<SM>(SM sm, DateTime[]? value) where SM : ISyncManager
+			{
+				int len = sm.Sync("len", value?.Length ?? 0);
+				var result = new DateTime[len];
+				for (int i = 0; i < len; i++)
+					result[i] = sm.Sync("d" + i, value != null ? value[i] : default(DateTime));
+				return result;
+			}
+			static DateTime?[] SyncNullableDates<SM>(SM sm, DateTime?[]? value) where SM : ISyncManager
+			{
+				int len = sm.Sync("len", value?.Length ?? 0);
+				var result = new DateTime?[len];
+				for (int i = 0; i < len; i++)
+					result[i] = sm.Sync("d" + i, value != null ? value[i] : null);
+				return result;
+			}
+			static DateTimeOffset[] SyncDTOs<SM>(SM sm, DateTimeOffset[]? value) where SM : ISyncManager
+			{
+				int len = sm.Sync("len", value?.Length ?? 0);
+				var result = new DateTimeOffset[len];
+				for (int i = 0; i < len; i++)
+					result[i] = sm.Sync("d" + i, value != null ? value[i] : default(DateTimeOffset));
+				return result;
+			}
+			static DateTimeOffset?[] SyncNullableDTOs<SM>(SM sm, DateTimeOffset?[]? value) where SM : ISyncManager
+			{
+				int len = sm.Sync("len", value?.Length ?? 0);
+				var result = new DateTimeOffset?[len];
+				for (int i = 0; i < len; i++)
+					result[i] = sm.Sync("d" + i, value != null ? value[i] : null);
+				return result;
+			}
+			static TimeSpan[] SyncSpans<SM>(SM sm, TimeSpan[]? value) where SM : ISyncManager
+			{
+				int len = sm.Sync("len", value?.Length ?? 0);
+				var result = new TimeSpan[len];
+				for (int i = 0; i < len; i++)
+					result[i] = sm.Sync("t" + i, value != null ? value[i] : default(TimeSpan));
+				return result;
+			}
+			static TimeSpan?[] SyncNullableSpans<SM>(SM sm, TimeSpan?[]? value) where SM : ISyncManager
+			{
+				int len = sm.Sync("len", value?.Length ?? 0);
+				var result = new TimeSpan?[len];
+				for (int i = 0; i < len; i++)
+					result[i] = sm.Sync("t" + i, value != null ? value[i] : null);
 				return result;
 			}
 		}

@@ -129,15 +129,15 @@ static class ExtraSynchronizers<SyncManager> where SyncManager : ISyncManager
 		=> sync.SyncArray(name, value);
 
 	public static DateTime Sync(ref SyncManager sync, FieldId name, DateTime value)
-		=> new SyncDateAsString<SyncManager>(null, System.Globalization.DateTimeStyles.AllowWhiteSpaces)
+		=> new SyncTimeAsString<SyncManager>(null, System.Globalization.DateTimeStyles.AllowWhiteSpaces)
 			.Sync(ref sync, name, value);
 	public static DateTime? Sync(ref SyncManager sync, FieldId name, DateTime? value)
-		=> new SyncDateAsString<SyncManager>(null, System.Globalization.DateTimeStyles.AllowWhiteSpaces)
+		=> new SyncTimeAsString<SyncManager>(null, System.Globalization.DateTimeStyles.AllowWhiteSpaces)
 			.Sync(ref sync, name, value);
 	public static TimeSpan Sync(ref SyncManager sync, FieldId name, TimeSpan value)
-		=> new SyncTimeSpanAsString<SyncManager>().Sync(ref sync, name, value);
+		=> new SyncTimeAsString<SyncManager>(null).Sync(ref sync, name, value);
 	public static TimeSpan? Sync(ref SyncManager sync, FieldId name, TimeSpan? value)
-		=> new SyncTimeSpanAsString<SyncManager>().Sync(ref sync, name, value);
+		=> new SyncTimeAsString<SyncManager>(null).Sync(ref sync, name, value);
 
 	/// <summary>Synchronizes an enum numerically (as its underlying value), which
 	///   suits binary formats and Protocol Buffers; <see cref="SyncEnumAsString{SM,E}"/>

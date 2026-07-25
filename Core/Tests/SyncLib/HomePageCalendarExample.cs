@@ -120,7 +120,7 @@ namespace Loyc.SyncLib.Tests
 			entry ??= new CalendarEntry { Id = CalendarId };
 
 			if (ApiVersion >= 2) {
-				entry.Duration = sm.SyncTimeAsString("Duration", entry.Duration);
+				entry.Duration = sm.SyncAsString("Duration", entry.Duration);
 				entry.Color    = sm.Sync("Color", entry.Color, new SyncColor<ISyncManager>());
 			}
 
@@ -128,13 +128,13 @@ namespace Loyc.SyncLib.Tests
 			entry.CalendarId  = entry.Calendar!.Id;
 			entry.Id          = sm.Sync("Id", entry.Id);
 			entry.Description = sm.Sync("Description", entry.Description) ?? "";
-			entry.StartTime   = sm.SyncDateAsString("StartTime", entry.StartTime);
+			entry.StartTime   = sm.SyncAsString("StartTime", entry.StartTime);
 			entry.Location    = sm.Sync("Location", entry.Location) ?? "";
-			entry.AdvanceReminder = sm.SyncTimeAsString("AdvanceReminder", entry.AdvanceReminder);
+			entry.AdvanceReminder = sm.SyncAsString("AdvanceReminder", entry.AdvanceReminder);
 
 			if (ApiVersion <= 1) {
 				// API version 1 has an EndTime field instead of a Duration field
-				var end = sm.SyncDateAsString("EndTime", entry.StartTime.Add(entry.Duration));
+				var end = sm.SyncAsString("EndTime", entry.StartTime.Add(entry.Duration));
 				if (sm.IsReading)
 					entry.Duration = end.Subtract(entry.StartTime);
 			}

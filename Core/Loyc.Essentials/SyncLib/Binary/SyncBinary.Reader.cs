@@ -75,6 +75,8 @@ partial class SyncBinary
 		public bool SupportsReordering => false;
 		public bool SupportsDeduplication => true;
 		public bool NeedsIntegerIds => false;
+		public bool IsPlainText => false;
+		public ISyncOptions? Options => _s._opt;
 
 		public bool IsInsideList => _s.IsInsideList;
 

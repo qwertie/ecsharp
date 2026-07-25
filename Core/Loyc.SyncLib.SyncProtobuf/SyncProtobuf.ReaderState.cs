@@ -15,7 +15,7 @@ partial class SyncProtobuf
 	///   is bounds-checked; malformed input causes <see cref="FormatException"/>.</summary>
 	internal class ReaderState
 	{
-		readonly Options _opt;
+		internal readonly Options _opt;
 		readonly ReadOnlyMemory<byte> _mem;
 		Dictionary<long, object>? _objects;
 
