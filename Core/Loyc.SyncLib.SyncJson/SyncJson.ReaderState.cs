@@ -1,6 +1,8 @@
 using Loyc.Collections;
 using Loyc.SyncLib.Impl;
 using System;
+using System.Buffers;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -458,13 +460,29 @@ partial class SyncJson
 					} else if (text.Span[1] != '!' && !(text.Span[1] == '\\' && text.Span[2] == 'b') &&
 						(_opt.NewtonsoftCompatibility || _opt.ByteArrayMode != JsonByteArrayMode.Bais))
 					{
-						// Interpret as Base64
-						// TODO: add ability to decode byte array directly from UTF-8 bytes
-						string str = DecodeString(v.value);
+						// Interpret as Base64.
 						// TODO: make errors here properly nonfatal by saving skipped value
 						// (also, catch+rethrow; technically it's not even marked fatal right now
 						// but it malfunctions: the same field cannot necessarily be read again)
-						byte[] bytes = Convert.FromBase64String(str);
+						byte[]? bytes = null;
+						if (v.value.Type == JsonType.SimpleString) {
+							// Fast path: pure ASCII with no escape sequences, so the UTF-8
+							// bytes ARE the base64 text and can be decoded in place, with
+							// no intermediate string. (This was the TODO that used to be here.)
+							var b64 = text.Span.Slice(1, text.Length - 2);
+							var buf = new byte[Base64.GetMaxDecodedFromUtf8Length(b64.Length)];
+							if (Base64.DecodeFromUtf8(b64, buf, out int consumed, out int written) == OperationStatus.Done
+								&& consumed == b64.Length)
+							{
+								if (written != buf.Length)
+									Array.Resize(ref buf, written);
+								bytes = buf;
+							}
+							// else: fall through. Convert.FromBase64String tolerates embedded
+							// whitespace (Base64.DecodeFromUtf8 does not), and throws the
+							// FormatException callers expect, so let it handle everything else.
+						}
+						bytes ??= Convert.FromBase64String(DecodeString(v.value));
 						if (bytes is List list)
 							return list;
 
@@ -588,9 +606,9 @@ partial class SyncJson
 				case JsonType.SimpleString:
 				case JsonType.String:
 					var str = DecodeString(v.value);
-					if (BigInteger.TryParse(str, out var parsed))
+					if (BigInteger.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
 						return parsed;
-					return (BigInteger) double.Parse(str, NumberStyles.Float);
+					return (BigInteger) double.Parse(str, NumberStyles.Float, CultureInfo.InvariantCulture);
 
 				case JsonType.PlainInteger:
 					return DecodeBigInt(v.value.Text.Span);
@@ -633,11 +651,11 @@ partial class SyncJson
 				case JsonType.SimpleString:
 				case JsonType.String:
 					var str = DecodeString(v.value);
-					if (long.TryParse(str, out long parsedInt64))
+					if (long.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out long parsedInt64))
 						return parsedInt64;
-					if (BigInteger.TryParse(str, out var parsed))
+					if (BigInteger.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
 						return (long) _optRead.HandleOverflow(name, parsed, true);
-					return checked((long) double.Parse(str, NumberStyles.Float));
+					return checked((long) double.Parse(str, NumberStyles.Float, CultureInfo.InvariantCulture));
 
 				case JsonType.PlainInteger:
 					return DecodeInt64(v.value.Text.Span, name);
@@ -680,11 +698,11 @@ partial class SyncJson
 				case JsonType.SimpleString:
 				case JsonType.String:
 					var str = DecodeString(v.value);
-					if (ulong.TryParse(str, out ulong parsedUInt64))
+					if (ulong.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out ulong parsedUInt64))
 						return parsedUInt64;
-					if (BigInteger.TryParse(str, out var parsed))
+					if (BigInteger.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
 						return _optRead.HandleOverflow(name, parsed, false);
-					return checked((ulong) double.Parse(str, NumberStyles.Float));
+					return checked((ulong) double.Parse(str, NumberStyles.Float, CultureInfo.InvariantCulture));
 
 				case JsonType.PlainInteger:
 					return DecodeUInt64(v.value.Text.Span, name);
@@ -773,7 +791,7 @@ partial class SyncJson
 				case JsonType.SimpleString:
 				case JsonType.String:
 					var str = DecodeString(v.value);
-					return decimal.Parse(str, NumberStyles.Float);
+					return decimal.Parse(str, NumberStyles.Float, CultureInfo.InvariantCulture);
 
 				case JsonType.PlainInteger: {
 					// 18 digits or less (17 if negative) always fits in a long
@@ -821,7 +839,7 @@ partial class SyncJson
 					var str = DecodeString(v.value);
 					if (bool.TryParse(str, out bool parsed))
 						return parsed;
-					return double.Parse(str) != 0;
+					return double.Parse(str, NumberStyles.Float, CultureInfo.InvariantCulture) != 0;
 
 				case JsonType.PlainInteger: {
 					// 18 digits or less (17 if negative) always fits in a long
@@ -898,15 +916,8 @@ partial class SyncJson
 
 
 
-		static bool AreEqual(ReadOnlySpan<byte> curProp, byte[] name)
-		{
-			if (name.Length != curProp.Length)
-				return false;
-			for (int i = 0; i < name.Length; i++)
-				if (name[i] != curProp[i])
-					return false;
-			return true;
-		}
+		static bool AreEqual(ReadOnlySpan<byte> curProp, ReadOnlySpan<byte> name)
+			=> curProp.SequenceEqual(name);
 		private bool AreEqual(in JsonValue value, string? name) => AreEqual(value.Text.Span, value.Type, name);
 		private bool AreEqual(ReadOnlySpan<byte> curProp, JsonType type, string? name)
 		{
@@ -957,12 +968,19 @@ partial class SyncJson
 				}
 
 				// Fast path: curProp has no escape sequences and no non-ASCII bytes
+				#if NET8_0_OR_GREATER
+				// Ascii.Equals(ReadOnlySpan<byte>, ReadOnlySpan<char>) is the vectorized
+				// form of exactly this loop, and this is the hottest path in property
+				// name matching. Inactive until a net8.0 target is added.
+				return System.Text.Ascii.Equals(curProp, name.AsSpan());
+				#else
 				if (name.Length != curProp.Length)
 					return false;
 				for (int i = 0; i < name.Length; i++)
 					if (name[i] != curProp[i])
 						return false;
 				return true;
+				#endif
 			}
 		}
 

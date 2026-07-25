@@ -34,6 +34,9 @@ namespace Loyc.Syntax.Les
 		}
 
 		private Les3PrinterOptions _o;
+		// Reused by PrintLiteralCore for the built-in literal printer, whose output is
+		// always copied out with ToString() before the next literal is printed.
+		private StringBuilder? _scratchSB;
 		public Les3PrinterOptions Options { get { return _o; } }
 		[MemberNotNull(nameof(_o))]
 		public void SetOptions(ILNodePrinterOptions? options)
@@ -428,8 +431,18 @@ namespace Loyc.Syntax.Les
 			}
 			else if (typeMarker == null || textValue.IsNull) // Convert to string for printing
 			{
-				var printer = _o.LiteralPrinter ?? StandardLiteralHandlers.Value;
-				var sb = new StringBuilder();
+				var printer = _o.LiteralPrinter;
+				// Only reuse the scratch buffer with the built-in printer: a
+				// user-supplied ILiteralPrinter could retain the StringBuilder it is
+				// handed, and reusing it would then corrupt whatever it kept.
+				StringBuilder sb;
+				if (printer == null) {
+					printer = StandardLiteralHandlers.Value;
+					sb = _scratchSB ??= new StringBuilder();
+					sb.Length = 0;
+				} else {
+					sb = new StringBuilder();
+				}
 				var result = printer.TryPrint(node, sb);
 				if (result.Right.HasValue)
 				{
@@ -766,13 +779,23 @@ namespace Loyc.Syntax.Les
 
 			_out.Write(new UString(opName.Name, skipApostrophe, opName.Name.Length - skipApostrophe));
 
-			bool newlineSafe = isBinaryOp && opName.Name.Any(c => Les3PrecedenceMap.IsOpChar(c));
+			// Note: `opName.Name.Any(...)` allocated a CharEnumerator (and a closure)
+			// for every binary operator printed; a plain loop does not.
+			bool newlineSafe = isBinaryOp && ContainsOpChar(opName.Name);
 			if (target != null) {
 				var nlContext = newlineSafe ? NewlineContext.NewlineSafeAfter : NewlineContext.NewlineUnsafe;
 				PrintTrailingTrivia(target, 0, null, nlContext);
 			}
 
 			return newlineSafe;
+		}
+
+		static bool ContainsOpChar(string s)
+		{
+			for (int i = 0; i < s.Length; i++)
+				if (Les3PrecedenceMap.IsOpChar(s[i]))
+					return true;
+			return false;
 		}
 
 		private bool AddParenIf(bool cond, bool forAttribute = false)

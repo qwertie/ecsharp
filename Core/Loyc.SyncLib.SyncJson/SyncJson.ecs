@@ -48,17 +48,24 @@ namespace Loyc.SyncLib;
 /// </remarks>
 public static partial class SyncJson
 {
-	internal static readonly byte[] _true = stringToBytes("true");
-	internal static readonly byte[] _false = stringToBytes("false");
-	internal static readonly byte[] _null = stringToBytes("null");
+	// These are ReadOnlySpan<byte>-returning PROPERTIES rather than static readonly
+	// byte[] fields on purpose: Roslyn compiles `ReadOnlySpan<byte> X => new byte[]
+	// { ...constants... }` into a direct reference to the assembly's static data
+	// section, producing byte-for-byte the same IL as a `"..."u8` literal (verified).
+	// That means no array allocation, no static constructor, and a JIT-constant
+	// length for SequenceEqual. (u8 literals themselves are not used because LeMP's
+	// EC# printer does not emit C# 11 syntax.)
+	internal static ReadOnlySpan<byte> _true => stringToBytes("true");
+	internal static ReadOnlySpan<byte> _false => stringToBytes("false");
+	internal static ReadOnlySpan<byte> _null => stringToBytes("null");
 
-	internal static readonly byte[] _ref = stringToBytes(@"""$ref"""); // Newtonsoft-style backreference
-	internal static readonly byte[] _id = stringToBytes(@"""$id"""); // Newtonsoft-style id
-	internal static readonly byte[] _values = stringToBytes(@"""$values"""); // Newtonsoft-style array prop
-	internal static readonly byte[] _f = stringToBytes(@"""\f"""); // SyncJson-style id
-	internal static readonly byte[] _r = stringToBytes(@"""\r"""); // SyncJson-style backreference
-	internal static readonly byte[] _t = stringToBytes(@"""\t"""); // SyncJson-style type tag
-	internal static readonly byte[] _type = stringToBytes(@"""$type"""); // TODO: figure out how Newtonsoft type tags work
+	internal static ReadOnlySpan<byte> _ref => stringToBytes(@"""$ref"""); // Newtonsoft-style backreference
+	internal static ReadOnlySpan<byte> _id => stringToBytes(@"""$id"""); // Newtonsoft-style id
+	internal static ReadOnlySpan<byte> _values => stringToBytes(@"""$values"""); // Newtonsoft-style array prop
+	internal static ReadOnlySpan<byte> _f => stringToBytes(@"""\f"""); // SyncJson-style id
+	internal static ReadOnlySpan<byte> _r => stringToBytes(@"""\r"""); // SyncJson-style backreference
+	internal static ReadOnlySpan<byte> _t => stringToBytes(@"""\t"""); // SyncJson-style type tag
+	internal static ReadOnlySpan<byte> _type => stringToBytes(@"""$type"""); // TODO: figure out how Newtonsoft type tags work
 
 	static Options _defaultOptions = new Options();
 

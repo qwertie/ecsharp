@@ -44,37 +44,44 @@ namespace Loyc.SyncLib
 	/// </remarks>
 	public static partial class SyncJson
 	{
-		internal static readonly byte[] _true = new byte[] { 
-			(byte) 't', (byte) 'r', (byte) 'u', (byte) 'e'
-		};
-		internal static readonly byte[] _false = new byte[] { 
-			(byte) 'f', (byte) 'a', (byte) 'l', (byte) 's', (byte) 'e'
-		};
-		internal static readonly byte[] _null = new byte[] { 
-			(byte) 'n', (byte) 'u', (byte) 'l', (byte) 'l'
-		};
+		// These are ReadOnlySpan<byte>-returning PROPERTIES rather than static readonly
+		// byte[] fields on purpose: Roslyn compiles `ReadOnlySpan<byte> X => new byte[]
+		// { ...constants... }` into a direct reference to the assembly's static data
+		// section, producing byte-for-byte the same IL as a `"..."u8` literal (verified).
+		// That means no array allocation, no static constructor, and a JIT-constant
+		// length for SequenceEqual. (u8 literals themselves are not used because LeMP's
+		// EC# printer does not emit C# 11 syntax.)
+		internal static ReadOnlySpan<byte> _true => new byte[] { 
+			  (byte) 't', (byte) 'r', (byte) 'u', (byte) 'e'
+		  };
+		internal static ReadOnlySpan<byte> _false => new byte[] { 
+			  (byte) 'f', (byte) 'a', (byte) 'l', (byte) 's', (byte) 'e'
+		  };
+		internal static ReadOnlySpan<byte> _null => new byte[] { 
+			  (byte) 'n', (byte) 'u', (byte) 'l', (byte) 'l'
+		  };
 
-		internal static readonly byte[] _ref = new byte[] { 
-			(byte) '"', (byte) '$', (byte) 'r', (byte) 'e', (byte) 'f', (byte) '"'
-		};	// Newtonsoft-style backreference
-		internal static readonly byte[] _id = new byte[] { 
-			(byte) '"', (byte) '$', (byte) 'i', (byte) 'd', (byte) '"'
-		};	// Newtonsoft-style id
-		internal static readonly byte[] _values = new byte[] { 
-			(byte) '"', (byte) '$', (byte) 'v', (byte) 'a', (byte) 'l', (byte) 'u', (byte) 'e', (byte) 's', (byte) '"'
-		};	// Newtonsoft-style array prop
-		internal static readonly byte[] _f = new byte[] { 
-			(byte) '"', (byte) '\\', (byte) 'f', (byte) '"'
-		};	// SyncJson-style id
-		internal static readonly byte[] _r = new byte[] { 
-			(byte) '"', (byte) '\\', (byte) 'r', (byte) '"'
-		};	// SyncJson-style backreference
-		internal static readonly byte[] _t = new byte[] { 
-			(byte) '"', (byte) '\\', (byte) 't', (byte) '"'
-		};	// SyncJson-style type tag
-		internal static readonly byte[] _type = new byte[] { 
-			(byte) '"', (byte) '$', (byte) 't', (byte) 'y', (byte) 'p', (byte) 'e', (byte) '"'
-		};	// TODO: figure out how Newtonsoft type tags work
+		internal static ReadOnlySpan<byte> _ref => new byte[] { 
+			  (byte) '"', (byte) '$', (byte) 'r', (byte) 'e', (byte) 'f', (byte) '"'
+		  };	// Newtonsoft-style backreference
+		internal static ReadOnlySpan<byte> _id => new byte[] { 
+			  (byte) '"', (byte) '$', (byte) 'i', (byte) 'd', (byte) '"'
+		  };	// Newtonsoft-style id
+		internal static ReadOnlySpan<byte> _values => new byte[] { 
+			  (byte) '"', (byte) '$', (byte) 'v', (byte) 'a', (byte) 'l', (byte) 'u', (byte) 'e', (byte) 's', (byte) '"'
+		  };	// Newtonsoft-style array prop
+		internal static ReadOnlySpan<byte> _f => new byte[] { 
+			  (byte) '"', (byte) '\\', (byte) 'f', (byte) '"'
+		  };	// SyncJson-style id
+		internal static ReadOnlySpan<byte> _r => new byte[] { 
+			  (byte) '"', (byte) '\\', (byte) 'r', (byte) '"'
+		  };	// SyncJson-style backreference
+		internal static ReadOnlySpan<byte> _t => new byte[] { 
+			  (byte) '"', (byte) '\\', (byte) 't', (byte) '"'
+		  };	// SyncJson-style type tag
+		internal static ReadOnlySpan<byte> _type => new byte[] { 
+			  (byte) '"', (byte) '$', (byte) 't', (byte) 'y', (byte) 'p', (byte) 'e', (byte) '"'
+		  };	// TODO: figure out how Newtonsoft type tags work
 		static Options _defaultOptions = new Options();
 
 		public partial struct Writer

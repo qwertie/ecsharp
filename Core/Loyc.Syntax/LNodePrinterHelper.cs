@@ -151,7 +151,10 @@ namespace Loyc.Syntax.Impl
 			{
 				if (_pendingAction != 0)
 					FlushPending(s[0]);
-				_s.Append(s);
+				// Note: `_s.Append(s)` would bind to StringBuilder.Append(object),
+				// because UString has only an *explicit* conversion to string. That
+				// boxes the struct and allocates a substring. AppendTo is direct.
+				s.AppendTo(_s);
 			}
 			return this;
 		}

@@ -37,6 +37,8 @@ namespace Loyc.Syntax
 		where CharSource : IListSource<char>
 	{
 		protected CharSource _source;
+		// _source as ICharSource, or null if it isn't one. See Reset().
+		ICharSource? _charSource;
 
 		/// <summary>Initializes CharIndexPositionMapper.</summary>
 		/// <param name="source">An immutable list of characters.</param>
@@ -67,6 +69,10 @@ namespace Loyc.Syntax
 		protected void Reset(CharSource source, ILineColumnFile? startingPos = null)
 		{
 			_source = source;
+			// Cached once (rather than per call) because CharSource is only constrained
+			// to IListSource<char>, so reaching ICharSource.Slice needs a conversion
+			// that would box a struct source on every use.
+			_charSource = source as ICharSource;
 			_lineOffsets = InternalList<int>.Empty;
 			_lineOffsets.Add(0);
 			_startingPos = startingPos;
@@ -151,6 +157,33 @@ namespace Loyc.Syntax
 		}
 		protected bool AdvanceAfterNextNewline(ref int index)
 		{
+			// Fast path: scan a block at a time with the vectorized IndexOfAny instead
+			// of one interface call (TryGet) per character. Slice() is allowed to
+			// return fewer characters than requested (e.g. StreamCharSource returns at
+			// most the rest of the current decoded block), and returns an empty slice
+			// at EOF, so the outer loop just keeps asking for the next block.
+			const int BlockSize = 512;
+			for (; _charSource != null;) {
+				UString block = _charSource.Slice(index, BlockSize);
+				if (block.Length == 0)
+					break; // at (or past) EOF, or Slice is unhelpful: use the slow path
+				int nl = block.AsSpan().IndexOfAny('\r', '\n');
+				if (nl < 0) {
+					index += block.Length;
+					continue;
+				}
+				char c = block[nl];
+				index += nl + 1;
+				if (c == '\r') {
+					// The '\n' of a CRLF may be just past the end of this block, so
+					// fall back to TryGet for that single lookahead.
+					bool fail;
+					if (_source.TryGet(index, out fail) == '\n' && !fail)
+						index++;
+				}
+				return true;
+			}
+
 			for(;;) {
 				bool fail;
 				char c = _source.TryGet(index, out fail);

@@ -283,7 +283,9 @@ namespace Loyc.Syntax
 					}
 					if (firstNewlineAt > 0 && canAssociateWithPrev) {
 						// case (1)
-						var triviaList2 = new InternalList<Trivia>(triviaList.Take(firstNewlineAt));
+						// Note: `triviaList.Take(n)` allocated a LINQ iterator plus a boxed
+					// enumerator on the very common end-of-line-comment path.
+					var triviaList2 = triviaList.CopySection(0, firstNewlineAt);
 						if (TryAttachTriviaTo(ref prev, ref triviaList2, TriviaLocation.Trailing, parent, prevIndexInParent))
 							triviaList.RemoveRange(0, firstNewlineAt);
 						yield return YieldPrev(ref prev, parent, prevIndexInParent);
@@ -423,7 +425,9 @@ namespace Loyc.Syntax
 					newChildren.StableSort((a, b) => a.Item2.CompareTo(b.Item2));
 
 				// Update node's attributes, if any
-				int numAttrs = newChildren.TakeWhile(p => p.B < -1).Count();
+				int numAttrs = 0;
+			while (numAttrs < newChildren.Count && newChildren[numAttrs].B < -1)
+				numAttrs++;
 				if (numAttrs > 0) {
 					var attrs = LNode.List(newChildren.Slice(0, numAttrs).SelectArray(p => p.A));
 					node = node.WithAttrs(attrs);

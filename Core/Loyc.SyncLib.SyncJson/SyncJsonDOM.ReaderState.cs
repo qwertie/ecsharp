@@ -395,9 +395,19 @@ partial class SyncJsonDOM
 		static bool HasIntegerText(in JsonElement number)
 		{
 			string raw = number.GetRawText();
+			#if NET8_0_OR_GREATER
+			return raw.AsSpan().IndexOfAny(_floatIndicators) < 0;
+			#else
 			return raw.IndexOfAny(_floatIndicators) < 0;
+			#endif
 		}
+		#if NET8_0_OR_GREATER
+		// Inactive until a net8.0 target is added.
+		static readonly System.Buffers.SearchValues<char> _floatIndicators
+			= System.Buffers.SearchValues.Create(".eE");
+		#else
 		static readonly char[] _floatIndicators = { '.', 'e', 'E' };
+		#endif
 
 		internal List? ReadByteArray<ListBuilder, List>(string? name, ListBuilder builder, ObjectMode mode)
 			where ListBuilder : IListBuilder<List, byte>
@@ -477,7 +487,8 @@ partial class SyncJsonDOM
 							case 'b': sb.Append('\b'); break;
 							case 'f': sb.Append('\f'); break;
 							case 'u':
-								sb.Append((char) int.Parse(raw.Substring(i + 1, 4), NumberStyles.HexNumber));
+								// AsSpan avoids allocating a 4-char string per \u escape.
+							sb.Append((char) int.Parse(raw.AsSpan(i + 1, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture));
 								i += 4;
 								break;
 							default: sb.Append(c); break; // '"', '\\' or '/'

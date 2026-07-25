@@ -368,17 +368,39 @@ namespace Loyc.Syntax.Lexing
 		[Obsolete("This is not being used in the codebase and will be deleted if there are no objections")]
 		public bool Is(int type, object value) => type == TypeInt && object.Equals(value, Value);
 
-		static readonly ThreadLocalVariable<Func<Token, ICharSource, string>> ToStringStrategyTLV = new ThreadLocalVariable<Func<Token,ICharSource,string>>(Loyc.Syntax.Les.TokenExt.ToString);
+		// The strategy is per-thread. This used to be a ThreadLocalVariable<T>, whose
+		// getter takes a lock, reads Thread.CurrentThread.ManagedThreadId and probes a
+		// dictionary; its own documentation cited the .NET Compact Framework as the
+		// reason for avoiding [ThreadStatic], noted it was about half the speed, and
+		// carried a "TODO: consider switching to [ThreadStatic]". The CF is long gone.
+		//
+		// BEHAVIOR NOTE: ThreadLocalVariable<T> propagates its value from a parent
+		// thread to child threads started via Loyc's ThreadEx. [ThreadStatic] does not,
+		// so a child thread now always starts from the default strategy. Nothing in
+		// this repository relied on that propagation.
+		[ThreadStatic] static Func<Token, ICharSource, string>? _toStringStrategy;
+
+		// Adapter so that SetToStringStrategy can keep returning SavedValue<T>,
+		// which needs an IMValue<T> to restore into on Dispose.
+		class ToStringStrategyHolder : IMValue<Func<Token, ICharSource, string>>
+		{
+			internal static readonly ToStringStrategyHolder Instance = new ToStringStrategyHolder();
+			public Func<Token, ICharSource, string> Value {
+				get => ToStringStrategy;
+				set => ToStringStrategy = value;
+			}
+		}
+
 		public static SavedValue<Func<Token, ICharSource, string>> SetToStringStrategy(Func<Token, ICharSource, string> newValue)
 		{
-			return new SavedValue<Func<Token, ICharSource, string>>(ToStringStrategyTLV, newValue);
+			return new SavedValue<Func<Token, ICharSource, string>>(ToStringStrategyHolder.Instance, newValue);
 		}
 
 		/// <summary>Gets or sets the strategy used by <see cref="ToString"/>.</summary>
 		public static Func<Token, ICharSource, string> ToStringStrategy
 		{
-			get { return ToStringStrategyTLV.Value; }
-			set { ToStringStrategyTLV.Value = value ?? Loyc.Syntax.Les.TokenExt.ToString; }
+			get { return _toStringStrategy ??= Loyc.Syntax.Les.TokenExt.ToString; }
+			set { _toStringStrategy = value ?? Loyc.Syntax.Les.TokenExt.ToString; }
 		}
 
 		/// <summary>Converts Token to SourceRange using <c>SourceRange.New(sourceFile, this)</c>.</summary>

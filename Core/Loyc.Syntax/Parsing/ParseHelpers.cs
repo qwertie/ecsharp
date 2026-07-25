@@ -338,17 +338,20 @@ namespace Loyc.Syntax
 						break;
 				}
 
-				ulong next;
-				try {
-					next = checked(result * (uint)radix + digit);
-				} catch (OverflowException) {
+				// Overflow test without try/catch. In exact arithmetic,
+				//     result*radix + digit <= ulong.MaxValue
+				//  <=> result <= (ulong.MaxValue - digit) / radix        (radix >= 1 here,
+				// because we only get past the `digit >= radix` check above when radix > digit >= 0).
+				// The old code wrapped this in checked()/catch(OverflowException), which
+				// forced an exception-handling region into the innermost digit loop and,
+				// on a long run of overflowing digits, threw once *per digit*.
+				if (result > (ulong.MaxValue - digit) / (uint)radix) {
 					overflow = true;
 					if ((flags & ParseNumberFlag.StopBeforeOverflow) != 0)
 						return false;
-					next = result * (uint)radix + digit;
 				}
 				numDigits++;
-				result = next;
+				result = unchecked(result * (uint)radix + digit);
 			}
 			return !overflow && numDigits > 0;
 		}

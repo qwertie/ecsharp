@@ -401,8 +401,7 @@ namespace Loyc.Syntax.Les
 			}
 
 			Debug.Assert(first != '\'');
-			Symbol name = (Symbol)("'" + op)!; // string->Symbol cast is nullable, but input is non-null
-			
+
 			if (length >= 2 && first == last && (last == '+' || last == '-' || last == '!'))
 				return TokenType.PreOrSufOp;
 			else if (first == '$')
@@ -533,6 +532,18 @@ namespace Loyc.Syntax.Les
 		internal static readonly Dictionary<object, Symbol> Continuators =
 			ContinuatorOps.ToDictionary(kw => (object)(Symbol)kw.Name.Substring(1), kw => kw);
 
+		// Memoizes `(Symbol)("'" + value)` for word operators, so that parsing a file
+		// with N word-operator usages doesn't do N string concats + symbol lookups.
+		// The key is the token's Value (normally a Symbol), compared by Equals.
+		Dictionary<object, Symbol>? _wordOpSymbols;
+		Symbol WordOpSymbol(object value)
+		{
+			_wordOpSymbols ??= new Dictionary<object, Symbol>();
+			if (!_wordOpSymbols.TryGetValue(value, out var sym))
+				_wordOpSymbols[value] = sym = (Symbol)("'" + value.ToString())!;
+			return sym;
+		}
+
 		bool CanParse(Precedence context, int li, out Precedence prec)
 		{
 			var opTok = LT(li);
@@ -543,8 +554,7 @@ namespace Loyc.Syntax.Les
 				else {
 					// Oops, LesPrecedenceMap doesn't yet support non-single-quote ops
 					// (because it's shared with LESv2 which doesn't have them)
-					// TODO: improve performance by avoiding this concat
-					prec = _precMap.Find(OperatorShape.Infix, (Symbol)("'" + opTok.Value!.ToString()));
+					prec = _precMap.Find(OperatorShape.Infix, WordOpSymbol(opTok.Value!));
 				}
 			} else
 				prec = _precMap.Find(OperatorShape.Infix, opTok.Value!); // operator tokens always have a Symbol value

@@ -476,9 +476,27 @@ namespace Loyc.Syntax
 					return true;
 			}
 
+			bool AnyIsParamsCapture(LNodeList patterns)
+			{
+				for (int i = 0; i < patterns.Count; i++)
+					if (IsParamsCapture(patterns[i]))
+						return true;
+				return false;
+			}
+
+			static bool AnyIsNonTrivia(LNodeList attrs)
+			{
+				for (int i = 0; i < attrs.Count; i++)
+					if (!attrs[i].IsTrivia)
+						return true;
+				return false;
+			}
+
 			internal bool ListMatches(LNodeList candidates, LNodeList patterns, ref LNodeList unmatchedAttrs)
 			{
-				if (patterns.Count != candidates.Count && !patterns.Any(IsParamsCapture))
+				// Note: LNodeList is a struct, so Enumerable.Any() boxed both it and
+				// its enumerator on every call. These loops allocate nothing.
+				if (patterns.Count != candidates.Count && !AnyIsParamsCapture(patterns))
 					return false;
 
 				// Scan from the end of the list to the beginning (RVLists is good at this),
@@ -525,7 +543,7 @@ namespace Loyc.Syntax
 				LNodeList unmatchedAttrs;
 				if (!MatchesPattern(candidate, pattern, out unmatchedAttrs))
 					return false;
-				if (unmatchedAttrs.Any(a => !a.IsTrivia))
+				if (AnyIsNonTrivia(unmatchedAttrs))
 					return false;
 				trivia.AddRange(unmatchedAttrs);
 				return true;

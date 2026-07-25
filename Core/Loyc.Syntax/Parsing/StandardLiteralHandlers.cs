@@ -507,12 +507,24 @@ namespace Loyc.Syntax
 			int oldLength = sb.Length;
 			// The "R" round-trip specifier makes sure that no precision is lost, and
 			// that parsing a printed version of double.MaxValue is possible.
+			#if NETSTANDARD2_0 || NETFRAMEWORK
 			string asStr = value.ToString("R", CultureInfo.InvariantCulture);
-			if (_digitSeparator != '\0' && asStr.Length > 3)
+			int asLen = asStr.Length;
+			#else
+			// TryFormat writes into the stack, so no intermediate string is allocated.
+			// 32 chars is comfortably enough for "R" on a double (longest is ~24).
+			Span<char> buf = stackalloc char[32];
+			if (!value.TryFormat(buf, out int asLen, "R", CultureInfo.InvariantCulture)) {
+				sb.Append(value.ToString("R", CultureInfo.InvariantCulture));
+				return;
+			}
+			ReadOnlySpan<char> asStr = buf.Slice(0, asLen);
+			#endif
+			if (_digitSeparator != '\0' && asLen > 3)
 			{
 				int iDot = asStr.IndexOf('.');
 				if (iDot <= -1) iDot = asStr.IndexOf('E');
-				if (iDot <= -1) iDot = asStr.Length;
+				if (iDot <= -1) iDot = asLen;
 				// Insert thousands separators in integer part (not implemented on fraction part)
 				if (iDot > 3)
 				{

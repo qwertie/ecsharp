@@ -23,12 +23,12 @@ namespace Loyc.Collections
 	{
 		protected InternalDList<T> _dlist = InternalDList<T>.Empty;
 
-		internal DList(InternalDList<T> internalList) { _dlist = internalList; }
-		public DList(int capacity)     { Capacity = capacity; }
-		public DList(IReadOnlyCollection<T> items) { PushLast(items); }
-		public DList(ICollection<T> items) { PushLast(items); }
-		public DList(ICollectionAndReadOnly<T> items) { PushLast(items); }
-		public DList(IEnumerable<T> items) { PushLast(items); }
+		internal DList(InternalDList<T> internalList) => _dlist = internalList;
+		public DList(int capacity) => Capacity = capacity;
+		public DList(IReadOnlyCollection<T> items) => PushLast(items);
+		public DList(ICollection<T> items) => PushLast(items);
+		public DList(ICollectionAndReadOnly<T> items) => PushLast(items);
+		public DList(IEnumerable<T> items) => PushLast(items);
 		public DList(T[] items) : this((ICollection<T>)items) { }
 		public DList() { }
 
@@ -40,37 +40,15 @@ namespace Loyc.Collections
 	 			throw new InvalidOperationException("Can't pop more elements than DList<{0}> contains ({1}>{2})".Localized(typeof(T).Name, amount, Count));
 		}
 
-		public int IndexOf(T item)
-		{
-			return _dlist.IndexOf(item);
-		}
+		public int IndexOf(T item) => _dlist.IndexOf(item);
 
-		public void PushLast(ICollection<T> items)
-		{
-			_dlist.PushLast(items);
-		}
-		public void PushLast(IEnumerable<T> items)
-		{
-			_dlist.PushLast(items);
-		}
-		public void PushLast(IReadOnlyCollection<T> items)
-		{
-			_dlist.PushLast(items);
-		}
-		public void PushLast(ICollectionAndReadOnly<T> items)
-		{
-			_dlist.PushLast(items);
-		}
+		public void PushLast(ICollection<T> items) => _dlist.PushLast(items);
+		public void PushLast(IEnumerable<T> items) => _dlist.PushLast(items);
+		public void PushLast(IReadOnlyCollection<T> items) => _dlist.PushLast(items);
+		public void PushLast(ICollectionAndReadOnly<T> items) => _dlist.PushLast(items);
 
-		public void PushLast(T item)
-		{
-			_dlist.PushLast(item);
-		}
-		
-		public void PushFirst(T item)
-		{
-			_dlist.PushFirst(item);
-		}
+		public void PushLast(T item) => _dlist.PushLast(item);
+		public void PushFirst(T item) => _dlist.PushFirst(item);
 
 		public void PopLast(int amount)
 		{
@@ -86,7 +64,7 @@ namespace Loyc.Collections
 
 		public int Capacity
 		{
-			get { return _dlist.Capacity; }
+			get => _dlist.Capacity;
 			set {
 				if (value < _dlist.Count)
 					throw new ArgumentOutOfRangeException("Capacity is too small ({0}<{1})".Localized(value, Count));
@@ -110,10 +88,9 @@ namespace Loyc.Collections
 			CheckInsertIndex(index);
 			_dlist.InsertRange(index, items);
 		}
-		public void InsertRange(int index, ICollectionAndReadOnly<T> items)
-		{
-			InsertRange(index, (IReadOnlyCollection<T>)items);
-		}
+		public void InsertRange(int index, ICollectionAndReadOnly<T> items) 
+			=> InsertRange(index, (IReadOnlyCollection<T>)items);
+
 		public void InsertRange(int index, IEnumerable<T> e)
 		{
 			var s = e as IReadOnlyCollection<T>;
@@ -126,18 +103,9 @@ namespace Loyc.Collections
 				InsertRange(index, (ICollection<T>)new List<T>(e));
 		}
 
-		public void AddRange(ICollectionAndReadOnly<T> c)
-		{
-			InsertRange(_dlist.Count, (IReadOnlyCollection<T>)c);
-		}
-		public void AddRange(ICollection<T> c)
-		{
-			InsertRange(_dlist.Count, c);
-		}
-		public void AddRange(IReadOnlyCollection<T> s)
-		{
-			InsertRange(_dlist.Count, s);
-		}
+		public void AddRange(ICollectionAndReadOnly<T> c) => InsertRange(_dlist.Count, (IReadOnlyCollection<T>)c);
+		public void AddRange(ICollection<T> c) => InsertRange(_dlist.Count, c);
+		public void AddRange(IReadOnlyCollection<T> s) => InsertRange(_dlist.Count, s);
 		public void AddRange(IEnumerable<T> e)
 		{
 			foreach (T item in e)
@@ -187,7 +155,7 @@ namespace Loyc.Collections
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			[DebuggerStepThrough]
-			get { return _dlist[index, defaultValue]; }
+			get => _dlist[index, defaultValue];
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void CheckIndex(int index)
@@ -200,31 +168,17 @@ namespace Loyc.Collections
 			throw new ArgumentOutOfRangeException(Localize.Localized("Invalid index in Deque<{0}> ({1}∉[0,{2}))", typeof(T).Name, index, Count));
 		}
 
-		public bool TrySet(int index, T value)
-		{
-			return _dlist.TrySet(index, value);
-		}
+		public bool TrySet(int index, T value) => _dlist.TrySet(index, value);
+
 		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
-		public T TryGet(int index, out bool fail)
-		{
-			return _dlist.TryGet(index, out fail);
-		}
+		public T TryGet(int index, out bool fail) => _dlist.TryGet(index, out fail);
 
 		/// <summary>An alias for PushLast().</summary>
-		public void Add(T item)
-		{
-			_dlist.PushLast(item);
-		}
+		public void Add(T item) => _dlist.PushLast(item);
 
-		public void Clear()
-		{
-			_dlist.Clear();
-		}
+		public void Clear() => _dlist.Clear();
 
-		public bool Contains(T item)
-		{
-			return _dlist.IndexOf(item) > -1;
-		}
+		public bool Contains(T item) => _dlist.IndexOf(item) > -1;
 
 		public void CopyTo(T[] array, int arrayIndex)
 		{
@@ -237,32 +191,18 @@ namespace Loyc.Collections
 
 		public int Count
 		{
-			[DebuggerStepThrough]
-			get { return _dlist.Count; }
+			[DebuggerStepThrough] get => _dlist.Count;
 		}
 
-		public bool IsReadOnly
-		{
-			get { return false; }
-		}
+		public bool IsReadOnly => false;
 
-		public bool Remove(T item)
-		{
-			return _dlist.Remove(item);
-		}
+		public bool Remove(T item) => _dlist.Remove(item);
 
-		IEnumerator<T> IEnumerable<T>.GetEnumerator()
-		{
-			return _dlist.GetEnumerator();
-		}
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return _dlist.GetEnumerator();
-		}
-		public InternalDList<T>.Enumerator GetEnumerator()
-		{
-			return _dlist.GetEnumerator(this);
-		}
+		IEnumerator<T> IEnumerable<T>.GetEnumerator() => _dlist.GetEnumerator();
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _dlist.GetEnumerator();
+
+		public InternalDList<T>.Enumerator GetEnumerator() => _dlist.GetEnumerator(this);
 
 		#region IDeque<T>
 
@@ -304,29 +244,13 @@ namespace Loyc.Collections
 
 		#endregion
 
-		public int BinarySearch(T k, Comparer<T> comp)
-		{
-			return _dlist.BinarySearch(k, comp);
-		}
-		public int BinarySearch<K>(K k, Func<T, K, int> comp)
-		{
-			return _dlist.BinarySearch(k, comp);
-		}
-		
-		public void Resize(int newSize)
-		{
-			if (newSize < Count)
-				RemoveRange(newSize, Count - newSize);
-			else if (newSize > Count)
-				// Enlarges the array (if needed) and blanks the new region; no
-				// allocation and no per-element enumeration. See InternalDList.Resize.
-				_dlist.Resize(newSize);
-		}
+		public int BinarySearch(T k, Comparer<T> comp) => _dlist.BinarySearch(k, comp);
 
-		public DList<T> Clone()
-		{
-			return new DList<T>(_dlist.Clone());
-		}
+		public int BinarySearch<K>(K k, Func<T, K, int> comp) => _dlist.BinarySearch(k, comp);
+		
+		public void Resize(int newSize) => _dlist.Resize(newSize);
+
+		public DList<T> Clone() => new DList<T>(_dlist.Clone());
 
 		public void CopyTo(int sourceIndex, T[] destination, int destinationIndex, int subcount)
 		{
@@ -350,23 +274,11 @@ namespace Loyc.Collections
 			return new DList<T>(_dlist.CopySection(start, subcount));
 		}
 
-		public void Sort(Comparison<T> comp)
-		{
-			_dlist.Sort(comp);
-		}
-		public void Sort(int index, int count, Comparison<T> comp)
-		{
-			_dlist.Sort(index, count, comp);
-		}
+		public void Sort(Comparison<T> comp) => _dlist.Sort(comp);
+		public void Sort(int index, int count, Comparison<T> comp) => _dlist.Sort(index, count, comp);
 
-		IListSource<T> IListSource<T>.Slice(int start, int count)
-		{
-			return new Slice_<T>(this, start, count);
-		}
-		public ListSlice<T> Slice(int start, int count)
-		{
-			return new ListSlice<T>(this, start, count);
-		}
+		IListSource<T> IListSource<T>.Slice(int start, int count) => new Slice_<T>(this, start, count);
+		public ListSlice<T> Slice(int start, int count) => new ListSlice<T>(this, start, count);
 
 		/// <summary>Rearranges the collection if necessary so that all elements
 		/// are in a single contiguous block of memory, then returns that block.</summary>
@@ -383,10 +295,8 @@ namespace Loyc.Collections
 	[Serializable()]
 	public class DList : DList<object?>, System.Collections.IList
 	{
-		public bool IsFixedSize
-		{
-			get { return false; }
-		}
+		public bool IsFixedSize => false;
+
 		public void CopyTo(Array array, int arrayIndex)
 		{
 			if (array == null || array.Length < Count)
@@ -397,18 +307,12 @@ namespace Loyc.Collections
 			foreach(object? obj in this)
 				array.SetValue(obj, arrayIndex++);
 		}
-		public bool IsSynchronized
-		{
-			get { return false; }
-		}
-		public object SyncRoot
-		{
-			get { return this; }
-		}
-		public new void Remove(object? obj)
-		{
-			base.Remove(obj);
-		}
+		public bool IsSynchronized => false;
+
+		public object SyncRoot => this;
+
+		public new void Remove(object? obj) => base.Remove(obj);
+
 		public new int Add(object? obj)
 		{
 			base.Add(obj);

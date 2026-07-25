@@ -3,10 +3,10 @@ using Loyc.Collections.Impl;
 using Loyc.SyncLib.Impl;
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
 using System.Text;
 
 namespace Loyc.SyncLib;
@@ -23,7 +23,9 @@ partial class SyncProtobuf
 	{
 		internal Options _opt;
 		internal IBufferWriter<byte> _output;
-		readonly ObjectIDGenerator _idGen = new ObjectIDGenerator(); // IDs start at one
+		// Was ObjectIDGenerator, which lives in the BinaryFormatter corner of the BCL.
+		// ObjectIdTable is the same reference-equality id table (IDs also start at one).
+		readonly ObjectIdTable _idGen = new ObjectIdTable();
 
 		byte[] _data;
 		int _pos;
@@ -93,17 +95,16 @@ partial class SyncProtobuf
 		internal void WriteRawLE32(uint bits)
 		{
 			EnsureRoom(4);
-			_data[_pos] = (byte)bits;
-			_data[_pos + 1] = (byte)(bits >> 8);
-			_data[_pos + 2] = (byte)(bits >> 16);
-			_data[_pos + 3] = (byte)(bits >> 24);
+			// BinaryPrimitives compiles to a single unaligned store (with a bswap on
+			// big-endian hosts), replacing 4 (resp. 8) separate shift+store pairs.
+			// Available on every target via System.Memory.
+			BinaryPrimitives.WriteUInt32LittleEndian(_data.AsSpan(_pos), bits);
 			_pos += 4;
 		}
 		internal void WriteRawLE64(ulong bits)
 		{
 			EnsureRoom(8);
-			for (int i = 0; i < 8; i++)
-				_data[_pos + i] = (byte)(bits >> (i * 8));
+			BinaryPrimitives.WriteUInt64LittleEndian(_data.AsSpan(_pos), bits);
 			_pos += 8;
 		}
 
@@ -351,13 +352,21 @@ partial class SyncProtobuf
 		{
 			if (value == null) { WriteLenValueN(name, default, isNull: true); return; }
 			int byteCount = Utf8ByteCount(value);
-			byte[] tmp = byteCount <= _scratch.Length ? _scratch : new byte[byteCount];
-			int written = Utf8GetBytes(value, tmp);
-			Debug.Assert(written == byteCount);
-			if ((mode & ObjectMode.Deduplicate) != 0)
-				WriteDedupLenValue(name, value, tmp.AsSpan(0, byteCount));
-			else
-				WriteLenValueN(name, tmp.AsSpan(0, byteCount), isNull: false);
+			// Rent rather than allocate when the string exceeds the inline scratch
+			// buffer. Nothing escapes: the bytes are copied into the output below.
+			bool rented = byteCount > _scratch.Length;
+			byte[] tmp = rented ? ArrayPool<byte>.Shared.Rent(byteCount) : _scratch;
+			try {
+				int written = Utf8GetBytes(value, tmp);
+				Debug.Assert(written == byteCount);
+				if ((mode & ObjectMode.Deduplicate) != 0)
+					WriteDedupLenValue(name, value, tmp.AsSpan(0, byteCount));
+				else
+					WriteLenValueN(name, tmp.AsSpan(0, byteCount), isNull: false);
+			} finally {
+				if (rented)
+					ArrayPool<byte>.Shared.Return(tmp);
+			}
 		}
 		readonly byte[] _scratch = new byte[256];
 
@@ -434,11 +443,17 @@ partial class SyncProtobuf
 			if (InListFrame)
 				throw new InvalidOperationException("SyncTypeTag cannot be used inside a list.");
 			int byteCount = Utf8ByteCount(tag);
-			byte[] tmp = byteCount <= _scratch.Length ? _scratch : new byte[byteCount];
-			Utf8GetBytes(tag, tmp);
-			WriteTag(TypeTagFieldNumber, WireType.Len);
-			WriteVarint((ulong)byteCount);
-			WriteRawBytes(tmp.AsSpan(0, byteCount));
+			bool rented = byteCount > _scratch.Length;
+			byte[] tmp = rented ? ArrayPool<byte>.Shared.Rent(byteCount) : _scratch;
+			try {
+				Utf8GetBytes(tag, tmp);
+				WriteTag(TypeTagFieldNumber, WireType.Len);
+				WriteVarint((ulong)byteCount);
+				WriteRawBytes(tmp.AsSpan(0, byteCount));
+			} finally {
+				if (rented)
+					ArrayPool<byte>.Shared.Return(tmp);
+			}
 		}
 
 		#endregion
@@ -568,7 +583,10 @@ partial class SyncProtobuf
 		internal static uint FloatToBits(float value)
 		{
 			#if NETSTANDARD2_0 || NETFRAMEWORK
-			return BitConverter.ToUInt32(BitConverter.GetBytes(value), 0);
+			// BitConverter.Int32BitsToSingle/SingleToInt32Bits don't exist here, and the
+			// old GetBytes()+ToUInt32 round-trip allocated a byte[4] for EVERY float
+			// written. Unsafe.As is the same reinterpretation with no allocation.
+			return Unsafe.As<float, uint>(ref value);
 			#else
 			return unchecked((uint)BitConverter.SingleToInt32Bits(value));
 			#endif
@@ -578,15 +596,18 @@ partial class SyncProtobuf
 
 		static byte[] DecimalToBytes(decimal value)
 		{
+			#if NET5_0_OR_GREATER
+			// decimal.GetBits(decimal, Span<int>) is .NET 5+. NOTE: netstandard2.1 does
+			// NOT have it, so the house `NETSTANDARD2_0 || NETFRAMEWORK` guard would be
+			// wrong here.
+			Span<int> bits = stackalloc int[4];
+			decimal.GetBits(value, bits);
+			#else
 			int[] bits = decimal.GetBits(value);
+			#endif
 			var bytes = new byte[16];
-			for (int i = 0; i < 4; i++) {
-				uint b = unchecked((uint)bits[i]);
-				bytes[i * 4] = (byte)b;
-				bytes[i * 4 + 1] = (byte)(b >> 8);
-				bytes[i * 4 + 2] = (byte)(b >> 16);
-				bytes[i * 4 + 3] = (byte)(b >> 24);
-			}
+			for (int i = 0; i < 4; i++)
+				BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(i * 4), unchecked((uint)bits[i]));
 			return bytes;
 		}
 

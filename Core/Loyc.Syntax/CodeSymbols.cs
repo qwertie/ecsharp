@@ -419,7 +419,21 @@ namespace Loyc.Syntax
 			return GSymbol.Get("'[" + new string(',', dims-1) + "]");
 		}
 		public static bool IsTriviaSymbol(Symbol name) {
-			return name != null && (name.Name.StartsWith("%") || name.Name.StartsWith("#trivia_"));
+			// Note: this used to call string.StartsWith(string), which is CULTURE-
+			// SENSITIVE. Besides being ~5x slower than an ordinal comparison, that
+			// made ICU's collation rules apply: e.g. "‍%foo" (zero-width joiner
+			// followed by '%') was misclassified as trivia, because ICU treats the
+			// joiner as ignorable. These are ASCII sigils, so ordinal is correct.
+			if (name == null)
+				return false;
+			string s = name.Name;
+			if (s.Length == 0)
+				return false;
+			if (s[0] == '%')
+				return true;
+			return s.Length >= 8 && s[0] == '#'
+				&& s[1] == 't' && s[2] == 'r' && s[3] == 'i' && s[4] == 'v'
+				&& s[5] == 'i' && s[6] == 'a' && s[7] == '_';
 		}
 	}
 }

@@ -99,6 +99,17 @@ namespace Loyc.Syntax
 			if (length <= 0)
 				return new UString("", 0, length);
 
+			// Fast path: the whole requested range lies inside the block that is
+			// already decoded. This is the overwhelmingly common case, because
+			// lexers slice tokens out of the block they just scanned. Building a
+			// StringBuilder and appending char-by-char (below) cost 3 allocations
+			// and `length` virtual calls per token.
+			if (Access(startIndex)) {
+				int offs = startIndex - _blkStart;
+				if ((uint)offs < (uint)_blkLen && length <= _blkLen - offs)
+					return new UString(new string(_blk, offs, length));
+			}
+
 			StringBuilder sb = new StringBuilder(Math.Min(length, 1024));
 			for (int i = startIndex; i < startIndex + length; i++) {
 				if ((uint)(i - _blkStart) >= (uint)_blkLen) {
@@ -170,12 +181,24 @@ namespace Loyc.Syntax
 
 		private int GetBlockIndex(int charIndex)
 		{
-			int i = IListExt.BinarySearch((IList<Pair<int,uint>>) _blkOffsets,
-				new Pair<int, uint>(charIndex, 0),
-				delegate(Pair<int, uint> a, Pair<int, uint> b) { return a.A.CompareTo(b.A); });
-			if (i < 0)
-				i = ~i - 1;
-			return i;
+			// Direct binary search on the List<>. The previous version went through
+			// IListExt.BinarySearch with an IList<> cast and a Comparison<> delegate,
+			// so every probe cost two interface calls plus a delegate invocation.
+			var offsets = _blkOffsets;
+			int lo = 0, hi = offsets.Count - 1;
+			while (lo <= hi) {
+				int mid = (int)(((uint)lo + (uint)hi) >> 1);
+				int c = offsets[mid].A;
+				if (c == charIndex)
+					return mid;
+				else if (c < charIndex)
+					lo = mid + 1;
+				else
+					hi = mid - 1;
+			}
+			// Not found: `lo` is the insertion point, i.e. ~i in the old code, so the
+			// block containing charIndex is the one before it.
+			return lo - 1;
 		}
 
 		protected void ScanPast(int index)
@@ -244,8 +267,16 @@ namespace Loyc.Syntax
 			if (outChars.Length < neededOutSize)
 				Array.Resize(ref outChars, neededOutSize);
 
-			MemoryMarshal.TryGetArray(buf.AsMemory(), out ArraySegment<byte> seg);
+			#if NETSTANDARD2_0 || NETFRAMEWORK
+			// Note: the old code discarded TryGetArray's bool result, so a failure
+			// would have surfaced as a NullReferenceException on seg.Array!.
+			if (!MemoryMarshal.TryGetArray(buf.AsMemory(), out ArraySegment<byte> seg))
+				throw new InvalidOperationException("StreamCharSource: buffer is not array-backed");
 			return _decoder.GetChars(seg.Array!, seg.Offset, seg.Count, outChars, outIndex, flush);
+			#else
+			// Span overload: no ArraySegment round-trip, works for any Memory backing.
+			return _decoder.GetChars(buf.AsMemory().Span, outChars.AsSpan(outIndex), flush);
+			#endif
 		}
 
 		public override int Count

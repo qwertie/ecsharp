@@ -62,7 +62,11 @@ partial class SyncProtobuf
 		=> Utf8ToString(WriteSchema<T, SyncObject>(sync, options));
 
 	internal static string Utf8ToString(ReadOnlyMemory<byte> utf8)
+		#if NETSTANDARD2_0 || NETFRAMEWORK
 		=> Encoding.UTF8.GetString(utf8.ToArray());
+		#else
+		=> Encoding.UTF8.GetString(utf8.Span);
+		#endif
 
 	/// <summary>
 	///   An implementation of <see cref="ISyncManager"/> that produces a Protocol Buffers

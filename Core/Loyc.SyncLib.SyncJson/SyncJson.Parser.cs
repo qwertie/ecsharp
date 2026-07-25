@@ -2,6 +2,8 @@ using static System.Math;
 using Loyc.Collections;
 using Loyc.SyncLib.Impl;
 using System;
+using System.Buffers;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -768,6 +770,11 @@ partial class SyncJson
 		// which tend to be short, so full SIMD isn't obviously worthwhile.
 		private static bool ContainsNonAscii(ReadOnlySpan<byte> span)
 		{
+			#if NET8_0_OR_GREATER
+			// Ascii.IsValid is fully vectorized (Vector128/256), versus the 8-bytes-at-
+			// a-time scalar loop below. Inactive until a net8.0 target is added.
+			return !System.Text.Ascii.IsValid(span);
+			#else
 			// span may be misaligned, but I'm told this is performant enough on modern x64 & ARM
 			var words = MemoryMarshal.Cast<byte, ulong>(span);
 			for (int i = 0; i < words.Length; i++)
@@ -777,6 +784,7 @@ partial class SyncJson
 				if (span[i] >= 0x80)
 					return true;
 			return false;
+			#endif
 		}
 
 		// Reads new data into _frame.Buf if possible
@@ -1113,28 +1121,53 @@ partial class SyncJson
 				return neg ? -(BigInteger)magnitude : magnitude;
 
 			// (0, true) means the number doesn't fit in 64 bits
-			return BigInteger.Parse(AsciiToString(text));
+			return BigInteger.Parse(AsciiToString(text), CultureInfo.InvariantCulture);
 		}
 		protected static double DecodeNumber(ReadOnlySpan<byte> text)
 		{
-			return double.Parse(AsciiToString(text), NumberStyles.Float);
+			#if NETCOREAPP3_0_OR_GREATER
+			// Utf8Parser reads the UTF-8 bytes directly: no intermediate string, and
+			// it is always invariant (JSON numbers are defined to be invariant).
+			// Guarded to .NET Core 3+ because that is where the shortest-round-trip
+			// parser landed; the System.Memory implementation used on .NET Framework
+			// predates it, so there we keep double.Parse.
+			if (Utf8Parser.TryParse(text, out double result, out int consumed) && consumed == text.Length)
+				return result;
+			#endif
+			// NOTE: InvariantCulture is REQUIRED. Without it this used the current
+			// culture, so on e.g. de-DE/fr-FR (decimal comma) reading any fractional
+			// JSON number threw FormatException.
+			return double.Parse(AsciiToString(text), NumberStyles.Float, CultureInfo.InvariantCulture);
 		}
 		protected static decimal DecodeDecimal(ReadOnlySpan<byte> text)
 		{
-			return decimal.Parse(AsciiToString(text), NumberStyles.Float);
+			#if NETCOREAPP3_0_OR_GREATER
+			if (Utf8Parser.TryParse(text, out decimal result, out int consumed) && consumed == text.Length)
+				return result;
+			#endif
+			return decimal.Parse(AsciiToString(text), NumberStyles.Float, CultureInfo.InvariantCulture);
 		}
 
 		protected static string AsciiToString(ReadOnlySpan<byte> text)
 		{
-			// I can't find a fast way to widen to bytes to a string.
 			// Encoding.* objects aren't terrible, but
 			// (1) they waste time looking for non-ASCII characters to bitch about
 			// (2) they are optimized for large strings (but text is usually small)
-			// Maybe I should just write an ordinary loop?
 			#if NET5_0_OR_GREATER
 			return Encoding.Latin1.GetString(text);
 			#elif NETSTANDARD2_0 || NETFRAMEWORK
-			return Encoding.ASCII.GetString(text.ToArray());
+			// Widen through a pooled char[] rather than allocating a byte[] copy
+			// (text.ToArray()) just to hand it to Encoding.
+			if (text.Length == 0)
+				return "";
+			char[] buf = ArrayPool<char>.Shared.Rent(text.Length);
+			try {
+				for (int i = 0; i < text.Length; i++)
+					buf[i] = (char)text[i];
+				return new string(buf, 0, text.Length);
+			} finally {
+				ArrayPool<char>.Shared.Return(buf);
+			}
 			#else
 			return Encoding.ASCII.GetString(text);
 			#endif
@@ -1159,12 +1192,20 @@ partial class SyncJson
 			Debug.Assert(type is JsonType.SimpleString or JsonType.String);
 			if (type is JsonType.SimpleString) { // pure ASCII, no escape sequences
 				#if NETSTANDARD2_0 || NETFRAMEWORK
-				// (.NET Standard 2.0 lacks the fast span overloads of Encoding methods)
-				var sb2 = _sb ??= new StringBuilder();
-				sb2.Length = span.Length;
-				for (int i = 0; i < span.Length; i++)
-					sb2[i] = (char) span[i];
-				return sb2.ToString();
+				// (.NET Standard 2.0 lacks the fast span overloads of Encoding methods.)
+				// Widen through a pooled char[]: the previous version assigned through
+				// StringBuilder's indexer, whose setter walks the chunk list on every
+				// single character.
+				if (span.Length == 0)
+					return "";
+				char[] buf = ArrayPool<char>.Shared.Rent(span.Length);
+				try {
+					for (int i = 0; i < span.Length; i++)
+						buf[i] = (char) span[i];
+					return new string(buf, 0, span.Length);
+				} finally {
+					ArrayPool<char>.Shared.Return(buf);
+				}
 				#else
 				return Encoding.ASCII.GetString(span); // vectorized on .NET Core 3+
 				#endif

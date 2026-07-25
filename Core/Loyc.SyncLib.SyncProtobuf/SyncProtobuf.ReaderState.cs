@@ -1,9 +1,12 @@
 using Loyc.Collections;
 using Loyc.SyncLib.Impl;
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Loyc.SyncLib;
@@ -54,7 +57,17 @@ partial class SyncProtobuf
 		{
 			_mem = input;
 			_opt = options;
+			#if NETSTANDARD2_0 || NETFRAMEWORK
+			// Cached once so Utf8Decode can call the (byte[], int, int) overload of
+			// Encoding.UTF8.GetString instead of copying the payload with ToArray().
+			if (!MemoryMarshal.TryGetArray(input, out _inputSeg))
+				_inputSeg = default;
+			#endif
 		}
+
+		#if NETSTANDARD2_0 || NETFRAMEWORK
+		ArraySegment<byte> _inputSeg;
+		#endif
 
 		public ReaderState(IScanner<byte> scanner, Options options)
 			: this(DrainScanner(scanner), options) { }
@@ -122,15 +135,18 @@ partial class SyncProtobuf
 		uint ReadLE32(ReadOnlySpan<byte> span, ref int pos)
 		{
 			CheckAvailable(span, pos, 4);
-			uint v = (uint)(span[pos] | (span[pos + 1] << 8) | (span[pos + 2] << 16) | (span[pos + 3] << 24));
+			// Single unaligned load (plus a bswap on big-endian hosts) instead of four
+			// byte loads and three shift/ORs. Available on every target via System.Memory.
+			uint v = BinaryPrimitives.ReadUInt32LittleEndian(span.Slice(pos));
 			pos += 4;
 			return v;
 		}
 		ulong ReadLE64(ReadOnlySpan<byte> span, ref int pos)
 		{
-			ulong lo = ReadLE32(span, ref pos);
-			ulong hi = ReadLE32(span, ref pos);
-			return lo | (hi << 32);
+			CheckAvailable(span, pos, 8);
+			ulong v = BinaryPrimitives.ReadUInt64LittleEndian(span.Slice(pos));
+			pos += 8;
+			return v;
 		}
 
 		// Reads a length prefix and returns the [start, end) range of the payload,
@@ -165,7 +181,17 @@ partial class SyncProtobuf
 			}
 		}
 
-		List<FieldEntry> IndexFields(int start, int end)
+		List<FieldEntry> IndexFields(int start, int end) => IndexFieldsCore(start, end, onlyFieldNumber: 0);
+
+		// Collects the entries of field 1 in a list container message [start, end).
+		// Other field numbers are permitted and ignored (like unknown fields).
+		// Note: this used to build the full field list and then copy the field-1 subset
+		// into a second List, so every list read allocated two Lists plus the growth
+		// reallocations of both. One filtered pass does the same job.
+		List<FieldEntry> IndexListEntries(int start, int end) => IndexFieldsCore(start, end, onlyFieldNumber: 1);
+
+		// onlyFieldNumber: 0 means "keep every field", otherwise keep only that number.
+		List<FieldEntry> IndexFieldsCore(int start, int end, int onlyFieldNumber)
 		{
 			var span = _mem.Span;
 			if (end > span.Length)
@@ -182,21 +208,12 @@ partial class SyncProtobuf
 				pos = SkipValue(span, pos, wire);
 				if (pos > end)
 					throw Error(valueStart, "field value extends past end of message");
-				list.Add(new FieldEntry { Num = num, Wire = wire, ValueStart = valueStart });
+				// The validation above must run for EVERY field, including filtered-out
+				// ones, so that malformed input is still rejected identically.
+				if (onlyFieldNumber == 0 || num == onlyFieldNumber)
+					list.Add(new FieldEntry { Num = num, Wire = wire, ValueStart = valueStart });
 			}
 			return list;
-		}
-
-		// Collects the entries of field 1 in a list container message [start, end).
-		// Other field numbers are permitted and ignored (like unknown fields).
-		List<FieldEntry> IndexListEntries(int start, int end)
-		{
-			var all = IndexFields(start, end);
-			var entries = new List<FieldEntry>(all.Count);
-			foreach (var fe in all)
-				if (fe.Num == 1)
-					entries.Add(fe);
-			return entries;
 		}
 
 		#endregion
@@ -258,17 +275,35 @@ partial class SyncProtobuf
 			return false;
 		}
 
+		// Above this many fields, the O(n^2) scan stops being the cheaper option.
+		const int SmallFieldCountLimit = 24;
+
 		static bool HasDuplicateFieldNumbers(RFrame frame)
 		{
 			if (frame.DupState == 0) {
 				frame.DupState = 1;
 				var fields = frame.Fields!;
 				if (fields.Count > 1) {
-					var seen = new HashSet<int>();
-					foreach (var fe in fields)
-						if (!seen.Add(fe.Num)) { frame.DupState = 2; break; }
+					// Messages almost always have few fields, and this runs on the
+					// FindField fast path, so avoid allocating a HashSet (plus its
+					// bucket/entry arrays) per sub-message: up to 24 fields, the
+					// pairwise scan is at most 276 L1-resident integer compares.
+					if (fields.Count <= SmallFieldCountLimit) {
+						for (int i = 1; i < fields.Count; i++)
+							for (int j = 0; j < i; j++)
+								if (fields[i].Num == fields[j].Num) {
+									frame.DupState = 2;
+									goto done;
+								}
+					} else {
+						// (HashSet<T>(int capacity) does not exist on netstandard2.0.)
+						var seen = new HashSet<int>();
+						foreach (var fe in fields)
+							if (!seen.Add(fe.Num)) { frame.DupState = 2; break; }
+					}
 				}
 			}
+		done:
 			return frame.DupState == 2;
 		}
 
@@ -815,9 +850,20 @@ partial class SyncProtobuf
 			return false;
 		}
 
-		static string Utf8Decode(ReadOnlySpan<byte> bytes)
+		string Utf8Decode(ReadOnlySpan<byte> bytes)
 		{
 			#if NETSTANDARD2_0 || NETFRAMEWORK
+			// Every span handed to this method is a slice of _mem.Span, so recover its
+			// offset in the backing array and decode in place. `bytes.ToArray()`
+			// allocated and copied the whole payload just to hand it to Encoding.
+			// NOTE the receiver/argument order: `a.Overlaps(b, out offset)` reports the
+			// offset of B relative to A, so the base span must be the receiver.
+			if (bytes.Length != 0 && _inputSeg.Array != null
+				&& _mem.Span.Overlaps(bytes, out int offset) && offset >= 0
+				&& offset + bytes.Length <= _inputSeg.Count)
+				return Encoding.UTF8.GetString(_inputSeg.Array, _inputSeg.Offset + offset, bytes.Length);
+			if (bytes.Length == 0)
+				return "";
 			return Encoding.UTF8.GetString(bytes.ToArray());
 			#else
 			return Encoding.UTF8.GetString(bytes);
@@ -827,7 +873,9 @@ partial class SyncProtobuf
 		static float BitsToFloat(uint bits)
 		{
 			#if NETSTANDARD2_0 || NETFRAMEWORK
-			return BitConverter.ToSingle(BitConverter.GetBytes(bits), 0);
+			// The old GetBytes()+ToSingle round-trip allocated a byte[4] for EVERY
+			// float read. Unsafe.As is the same reinterpretation with no allocation.
+			return Unsafe.As<uint, float>(ref bits);
 			#else
 			return BitConverter.Int32BitsToSingle(unchecked((int)bits));
 			#endif

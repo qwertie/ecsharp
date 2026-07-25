@@ -289,7 +289,7 @@ namespace Loyc.Syntax.Les
 				if (c == '`') {
 					Les3Lexer.UnescapeString(ref source, (char)c, false, onError, parsed, default, false, true);
 				} else {
-					while (SpecialIdSet.Contains(c) || c >= 128 && char.IsLetter((char)c)) {
+					while (IsSpecialIdCodePoint(c) || c >= 128 && char.IsLetter((char)c)) {
 						parsed.Append((char)c);
 						c = source.PopFirst(out fail);
 					}
@@ -384,16 +384,40 @@ namespace Loyc.Syntax.Les
 			return sb;
 		}
 
-		static readonly HashSet<int> SpecialIdSet = NewSetOfRanges('0', '9', 'a', 'z', 'A', 'Z', '_', '_', '\'', '\'', '#', '#', 
-			'~', '~', '!', '!', '%','%', '^','^', '&','&', '*','*', '-','-', '+','+', '=','=', '|','|', '<','<', '>','>', '/','/', '?','?', ':',':', '.','.', '@','@', '$','$', '\\', '\\');
-		static readonly HashSet<int> IdContSet = NewSetOfRanges('0', '9', 'a', 'z', 'A', 'Z', '_', '_', '\'', '\'');
-		static readonly HashSet<int> OpContSet = NewSetOfRanges(
-			'~', '~', '!', '!', '%','%', '^','^', '&','&', '*','*', '-','-', '+','+', '=','=', '|','|', '<','<', '>','>', '/','/', '?','?', ':',':', '.','.', '@','@', '$','$');
+		// These character classes are pure ASCII, so a pair of const bitmasks covers
+		// each: no static HashSet, no type-init, no hash probe. IsOpContChar and
+		// IsSpecialIdChar are called per character by Les2Printer.
+		// Low = codes 0..63, High = codes 64..127.
+		//   OpCont:    ~ ! % ^ & * - + = | < > / ? : . @ $
+		//   SpecialId: OpCont plus 0-9 A-Z a-z _ ' # \
+		const ulong OpContLo = (1uL << '!') | (1uL << '$') | (1uL << '%') | (1uL << '&')
+		                     | (1uL << '*') | (1uL << '+') | (1uL << '-') | (1uL << '.')
+		                     | (1uL << '/') | (1uL << ':') | (1uL << '<') | (1uL << '=')
+		                     | (1uL << '>') | (1uL << '?');
+		const ulong OpContHi = (1uL << ('@' - 64)) | (1uL << ('^' - 64)) | (1uL << ('|' - 64))
+		                     | (1uL << ('~' - 64));
+		const ulong SpecialIdLo = OpContLo | (1uL << '\'') | (1uL << '#')
+		                        | 0x03FF000000000000uL;          // '0'(48)..'9'(57)
+		const ulong SpecialIdHi = OpContHi | 0x07FFFFFEuL        // 'A'(65)..'Z'(90)
+		                        | (0x07FFFFFEuL << 32)           // 'a'(97)..'z'(122)
+		                        | (1uL << ('_' - 64)) | (1uL << ('\\' - 64));
 
 		public static bool IsIdStartChar(uchar c) { return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_' || c == '#' || c >= 0x80 && char.IsLetter((char)c); }
 		public static bool IsIdContChar(uchar c) { return IsIdStartChar(c) || c >= '0' && c <= '9' || c == '\''; }
-		public static bool IsOpContChar(char c) { return OpContSet.Contains(c); }
-		public static bool IsSpecialIdChar(char c) { return SpecialIdSet.Contains(c); }
+		public static bool IsOpContChar(char c)
+		{
+			return c < 64 ? (OpContLo >> c & 1) != 0
+			     : c < 128 ? (OpContHi >> (c - 64) & 1) != 0 : false;
+		}
+		public static bool IsSpecialIdChar(char c) => IsSpecialIdCodePoint(c);
+
+		// Code-point overload: tolerates EOF (-1) and astral values, like the
+		// HashSet<int> membership test this replaced.
+		static bool IsSpecialIdCodePoint(int c)
+		{
+			return (uint)c < 64u ? (SpecialIdLo >> c & 1) != 0
+			     : (uint)c < 128u ? (SpecialIdHi >> (c - 64) & 1) != 0 : false;
+		}
 
 		#endregion // Value parsers
 	}

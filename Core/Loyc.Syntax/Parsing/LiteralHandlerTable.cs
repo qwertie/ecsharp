@@ -83,13 +83,13 @@ namespace Loyc.Syntax
 		/// <summary>Returns true if there is a parser function for the given type marker. Never throws.</summary>
 		public bool CanParse(Symbol typeMarker)
 		{
-			return typeMarker != null && Parsers.ContainsKey(typeMarker);
+			return typeMarker != null && _parsers.ContainsKey(typeMarker);
 		}
 
 		/// <summary>Returns true if there is a printer function for the given type marker. Never throws.</summary>
 		public bool CanPrint(Symbol typeMarker)
 		{
-			return typeMarker != null && Printers.ContainsKey(typeMarker);
+			return typeMarker != null && _printers.ContainsKey(typeMarker);
 		}
 
 		bool ILiteralPrinter.CanPrint(Type type) => CanPrint(type);
@@ -100,7 +100,7 @@ namespace Loyc.Syntax
 		{
 			if (type != null)
 			{
-				if (Printers.ContainsKey(type))
+				if (_printers.ContainsKey(type))
 					return true;
 				if (searchBases) {
 					for (var type2 = type; type2.BaseType != null; type2 = type2.BaseType)
@@ -118,7 +118,7 @@ namespace Loyc.Syntax
 		public Either<object, ILogMessage> TryParse(UString textValue, Symbol typeMarker)
 		{
 			typeMarker = typeMarker ?? GSymbol.Empty;
-			if (Parsers.TryGetValue(typeMarker, out var parser))
+			if (_parsers.TryGetValue(typeMarker, out var parser))
 				try {
 					return parser(textValue, typeMarker).MapRight(m => (ILogMessage)m);
 				} catch (Exception e) {

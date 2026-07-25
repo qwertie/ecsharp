@@ -26,6 +26,9 @@ namespace Loyc.Syntax.Les
 		public IMessageSink ErrorSink { get { return _errors; } set { _errors = value ?? MessageSink.Null; } }
 
 		Les2PrinterOptions _o;
+		// Reused by PrintLiteralCore for the built-in literal printer, whose output is
+		// always copied out with ToString() before the next literal is printed.
+		StringBuilder? _scratchSB;
 		public Les2PrinterOptions Options { get { return _o; } }
 		[MemberNotNull(nameof(_o))]
 		public void SetOptions(ILNodePrinterOptions? options)
@@ -592,8 +595,17 @@ namespace Loyc.Syntax.Les
 			}
 			else if (typeMarker == null || textValue.IsNull) // Convert to string for printing
 			{
-				var printer = _o.LiteralPrinter ?? StandardLiteralHandlers.Value;
-				var sb = new StringBuilder();
+				var printer = _o.LiteralPrinter;
+				// Only reuse the scratch buffer with the built-in printer: a
+				// user-supplied ILiteralPrinter could retain the StringBuilder.
+				StringBuilder sb;
+				if (printer == null) {
+					printer = StandardLiteralHandlers.Value;
+					sb = _scratchSB ??= new StringBuilder();
+					sb.Length = 0;
+				} else {
+					sb = new StringBuilder();
+				}
 				var result = printer.TryPrint(node, sb);
 				if (result.Right.HasValue)
 				{

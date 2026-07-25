@@ -205,38 +205,35 @@ namespace Loyc.Syntax.Les
 			return @default;
 		}
 
-		static readonly BitArray OpChars = GetOpChars();
-		static readonly BitArray OpCharsEx = GetOpCharsEx();
-		private static BitArray GetOpChars()
-		{
-			var map = new BitArray(128);
-			map['~']  = map['!'] = map['%'] = map['^'] = map['&'] = map['*'] = true;
-			map['-'] = map['+'] = map['='] = map['|'] = map['<'] = map['>'] = true;
-			map['/'] = map['?'] = map[':'] = map['.'] = true;
-			return map;
-		}
-		private static BitArray GetOpCharsEx()
-		{
-			var map = GetOpChars();
-			map['$'] = true;
-			for (char c = 'a'; c <= 'z'; c++)
-				map[c] = true;
-			for (char c = 'A'; c <= 'Z'; c++)
-				map[c] = true;
-			for (char c = '0'; c <= '9'; c++)
-				map[c] = true;
-			return map;
-		}
+		// These character classes are pure ASCII, so a pair of const bitmasks covers
+		// them: no static array, no type-init, no bounds check, no cache miss. Both
+		// IsOpChar and IsOpCharEx are called per character by the printers.
+		// Low = codes 0..63, High = codes 64..127.
+		//   OpChars:   ~ ! % ^ & * - + = | < > / ? : .
+		//   OpCharsEx: OpChars plus $ 0-9 A-Z a-z
+		const ulong OpCharsLo   = (1uL << '!') | (1uL << '%') | (1uL << '&') | (1uL << '*')
+		                        | (1uL << '+') | (1uL << '-') | (1uL << '.') | (1uL << '/')
+		                        | (1uL << ':') | (1uL << '<') | (1uL << '=') | (1uL << '>')
+		                        | (1uL << '?');
+		const ulong OpCharsHi   = (1uL << ('^' - 64)) | (1uL << ('|' - 64)) | (1uL << ('~' - 64));
+		const ulong Digits       = 0x03FF000000000000uL; // '0'(48)..'9'(57)
+		const ulong UpperLetters = 0x07FFFFFEuL;         // 'A'(65)..'Z'(90) => bits 1..26
+		const ulong LowerLetters = 0x07FFFFFEuL << 32;   // 'a'(97)..'z'(122) => bits 33..58
+		const ulong OpCharsExLo = OpCharsLo | Digits | (1uL << '$');
+		const ulong OpCharsExHi = OpCharsHi | UpperLetters | LowerLetters;
+
 		/// <summary>Returns true if this character is one of those that operators are normally made out of in LES.</summary>
 		public static bool IsOpChar(char c)
 		{
-			return (uint)c < (uint)OpChars.Count ? OpChars[c] : false;
+			return c < 64 ? (OpCharsLo >> c & 1) != 0
+			     : c < 128 ? (OpCharsHi >> (c - 64) & 1) != 0 : false;
 		}
-		/// <summary>Returns true if this character is one of those that can appear 
+		/// <summary>Returns true if this character is one of those that can appear
 		/// in "extended" LESv3 operators that start with an apostrophe.</summary>
 		public static bool IsOpCharEx(char c)
 		{
-			return (uint)c < (uint)OpCharsEx.Count ? OpCharsEx[c] : false;
+			return c < 64 ? (OpCharsExLo >> c & 1) != 0
+			     : c < 128 ? (OpCharsExHi >> (c - 64) & 1) != 0 : false;
 		}
 		
 		/// <summary>Returns true if the given Symbol can be printed as an operator 
@@ -253,7 +250,7 @@ namespace Loyc.Syntax.Les
 		/// <summary>Like <see cref="IsNaturalOperator"/>, but doesn't expect name[0] is apostrophe.</summary>
 		public static bool IsNaturalOperatorToken(UString name)
 		{
-			return name.Length > 0 && IsOperator(name[0] == '$' ? name.Slice(1) : name, OpChars, true);
+			return name.Length > 0 && IsOperator(name[0] == '$' ? name.Slice(1) : name, extended: false, rejectComment: true);
 		}
 
 		/// <summary>Returns true if the given Symbol can ever be used as an "extended" 
@@ -264,16 +261,19 @@ namespace Loyc.Syntax.Les
 		/// {'#', '_', 'a'..'z', 'A'..'Z', '0'..'9', '$'}.</remarks>
 		public static bool IsExtendedOperatorToken(UString name)
 		{
-			return IsOperator(name, OpCharsEx, false);
+			return IsOperator(name, extended: true, rejectComment: false);
 		}
 
-		static bool IsOperator(UString name, BitArray opChars, bool rejectComment)
+		static bool IsOperator(UString name, bool extended, bool rejectComment)
 		{
 			if (name.Length == 0 || name.Length > 254)
 				return false;
 			for (int i = 0;;) {
 				char c = name[i];
-				if ((uint)c > (uint)opChars.Count || !opChars[c])
+				// Note: the old BitArray form of this test read `(uint)c > opChars.Count`,
+				// which let c == 128 through and then threw from the indexer. The
+				// bitmask predicates are total over char, so that edge case is gone.
+				if (!(extended ? IsOpCharEx(c) : IsOpChar(c)))
 					return false;
 				if (++i == name.Length)
 					break;
@@ -310,7 +310,8 @@ namespace Loyc.Syntax.Les
 		/// operator, just that it has the form of one.</remarks>
 		public static bool ResemblesSuffixOperator(Symbol name, out Symbol bareName)
 		{
-			if (name.Name.StartsWith("'suf")) {
+			// Ordinal: "'suf" is an ASCII sigil, and StartsWith(string) is culture-sensitive.
+			if (name.Name.StartsWith("'suf", StringComparison.Ordinal)) {
 				bareName = GSymbol.Get("'" + name.Name.Substring(4));
 				return true;
 			} else {
