@@ -1158,7 +1158,7 @@ partial class SyncJson
 		{
 			Debug.Assert(type is JsonType.SimpleString or JsonType.String);
 			if (type is JsonType.SimpleString) { // pure ASCII, no escape sequences
-				#if NETSTANDARD2_0
+				#if NETSTANDARD2_0 || NET45 || NET46 || NET47
 				// (.NET Standard 2.0 lacks the fast span overloads of Encoding methods)
 				var sb2 = _sb ??= new StringBuilder();
 				sb2.Length = span.Length;

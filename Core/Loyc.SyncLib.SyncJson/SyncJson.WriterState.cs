@@ -397,7 +397,7 @@ namespace Loyc.SyncLib
 				buf[_i++] = (byte) '"';
 				if (s_len == s.Length) {
 					// Same length in bytes as in chars implies pure ASCII with nothing to escape
-					#if NETSTANDARD2_0
+					#if NETSTANDARD2_0 || NET45 || NET46 || NET47
 					// (.NET Standard 2.0 lacks the fast span overloads of Encoding methods)
 					for (int i = 0; i < s.Length; i++)
 						buf[_i++] = (byte)s[i];

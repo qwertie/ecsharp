@@ -250,6 +250,7 @@
     <Compile Include="SyncLib\Impl\ISyncObject.cs" />
     <Compile Include="SyncLib\Impl\ListLoader.cs" />
     <Compile Include="SyncLib\Impl\ListSaver.cs" />
+    <Compile Include="SyncLib\Impl\Memory2.cs" />
     <Compile Include="SyncLib\Impl\ObjectSyncher.cs" />
     <Compile Include="SyncLib\Impl\ObjectTable.cs" />
     <Compile Include="SyncLib\Impl\SyncTime.cs" />
