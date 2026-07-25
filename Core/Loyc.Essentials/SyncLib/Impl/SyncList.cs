@@ -206,7 +206,7 @@ namespace Loyc.SyncLib.Impl
 		public static readonly Func<int, List<T>> List = min => new List<T>(min <= 1 ? 4 : min);
 		public static readonly Func<int, DList<T>> DList = min => new DList<T>(min <= 1 ? 4 : min);
 		
-		#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+		#if NETSTANDARD2_0 || NETFRAMEWORK
 		public static readonly Func<int, HashSet<T>> HashSet = min => new HashSet<T>();
 		#else
 		public static readonly Func<int, HashSet<T>> HashSet = min => new HashSet<T>(min <= 1 ? 4 : min);

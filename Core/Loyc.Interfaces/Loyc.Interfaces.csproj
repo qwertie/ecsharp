@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- Nullability is broken in .NET Standard 2.0/2.1; use Core 3.1 for correct IntelliSense.
-         In Visual Studio, use the dropdown at the top-left of any .cs file to choose netcoreapp3.1 -->
-    <TargetFrameworks>netcoreapp3.1;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <!-- Nullability is broken in .NET Standard 2.0/2.1; use .NET 6 for correct IntelliSense.
+         In Visual Studio, use the dropdown at the top-left of any .cs file to choose net6.0 -->
+    <TargetFrameworks>net6.0;netstandard2.0;netstandard2.1</TargetFrameworks>
     <Nullable>enable</Nullable>
     <LangVersion>10.0</LangVersion>
     <OutputPath>..\Bin\$(Configuration)\</OutputPath>

@@ -58,7 +58,7 @@ partial class SyncJson
 		=> Utf8ToString(Write(value, sync, options));
 
 	static string Utf8ToString(ReadOnlyMemory<byte> text)
-		#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+		#if NETSTANDARD2_0 || NETFRAMEWORK
 		=> Encoding.UTF8.GetString(text.ToArray());
 		#else
 		=> Encoding.UTF8.GetString(text.Span);

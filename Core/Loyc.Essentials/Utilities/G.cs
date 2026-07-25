@@ -278,7 +278,7 @@ namespace Loyc
 		/// <summary>Returns the number of bits that are set in the specified integer.</summary>
 		public static int CountOnes(byte x)
 		{
-#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47 || NET48
+#if !NETCOREAPP3_0_OR_GREATER
 				int X = x;
 				X -= ((X >> 1) & 0x55);
 				X = (((X >> 2) & 0x33) + (X & 0x33));
@@ -297,7 +297,7 @@ namespace Loyc
 		/// <inheritdoc cref="CountOnes(int)"/>
 		public static int CountOnes(uint x)
 		{
-			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47 || NET48
+			#if !NETCOREAPP3_0_OR_GREATER
 				// 32-bit recursive reduction using SWAR... but first step 
 				// is mapping 2-bit values into sum of 2 1-bit values in 
 				// sneaky way
@@ -325,7 +325,7 @@ namespace Loyc
 		/// <inheritdoc cref="Log2Floor(int)"/>
 		public static int Log2Floor(uint x)
 		{
-			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47 || NET48
+			#if !NETCOREAPP3_0_OR_GREATER
 				x |= (x >> 1);
 				x |= (x >> 2);
 				x |= (x >> 4);
@@ -353,7 +353,7 @@ namespace Loyc
 
 		public static int LeadingZeroCount(uint i)
 		{
-			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47 || NET48
+			#if !NETCOREAPP3_0_OR_GREATER
 				return 31 - PositionOfMostSignificantOne(i);
 			#else
 				return BitOperations.LeadingZeroCount(i);
@@ -364,7 +364,7 @@ namespace Loyc
 		/// the input is zero.</summary>
 		public static int PositionOfMostSignificantOne(uint i)
 		{
-			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47 || NET48
+			#if !NETCOREAPP3_0_OR_GREATER
 				int result = 31;
 				if (i >> 16 == 0)
 				{
@@ -405,7 +405,7 @@ namespace Loyc
 		/// the input is zero.</summary>
 		public static int PositionOfMostSignificantOne(ulong i)
 		{
-			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47 || NET48
+			#if !NETCOREAPP3_0_OR_GREATER
 				if ((uint) i == i)
 					return PositionOfMostSignificantOne((uint) i);
 				else

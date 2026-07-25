@@ -3,7 +3,7 @@ using System.Buffers;
 
 namespace Loyc.Compatibility
 {
-	#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+	#if NETSTANDARD2_0 || NETFRAMEWORK
 
 	/// <summary>Makes System.Buffers.ArrayBufferWriter<T> available in .NET Standard 2.0 and .NET 4.x.</summary>
 	public sealed class ArrayBufferWriter<T> : IBufferWriter<T>

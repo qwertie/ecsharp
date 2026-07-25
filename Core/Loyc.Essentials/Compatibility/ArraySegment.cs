@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Loyc.Compatibility;
 
-#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+#if NETSTANDARD2_0 || NETFRAMEWORK
 public static class ArraySegmentExt
 {
 	public static ArraySegment<T> Slice<T>(this ArraySegment<T> segment, int start)

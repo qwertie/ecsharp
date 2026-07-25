@@ -153,7 +153,7 @@ public class StreamScanner : IScanner<byte>, IDisposable
 				} else {
 					// Skip by reading into `buffer`
 					for (int gotBytes; skip > 0; skip -= gotBytes, _position += gotBytes) {
-						#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+						#if NETSTANDARD2_0 || NETFRAMEWORK
 						G.Verify(MemoryMarshal.TryGetArray<byte>(buffer, out var span));
 						span = span.Slice(0, Min(skip, buffer.Span.Length));
 						gotBytes = _stream.Read(span.Array, span.Offset, span.Count);
@@ -182,7 +182,7 @@ public class StreamScanner : IScanner<byte>, IDisposable
 	// Reads a new block of data from the _stream
 	Memory<byte> ReadNewBlock(Memory<byte> targetBuffer)
 	{
-		#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+		#if NETSTANDARD2_0 || NETFRAMEWORK
 			G.Verify(MemoryMarshal.TryGetArray<byte>(targetBuffer, out var span));
 			
 			for (int gotBytes; span.Count > 0; _position += gotBytes, span = span.Slice(gotBytes)) {

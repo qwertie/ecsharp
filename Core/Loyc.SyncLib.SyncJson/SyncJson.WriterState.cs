@@ -243,7 +243,7 @@ namespace Loyc.SyncLib
 				else {
 					Debug.Assert(_opt.ByteArrayMode != JsonByteArrayMode.Array);
 					if (_opt.NewtonsoftCompatibility || _opt.ByteArrayMode == JsonByteArrayMode.Base64) {
-						#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+						#if NETSTANDARD2_0 || NETFRAMEWORK
 						WriteProp(propName, System.Convert.ToBase64String(value.ToArray()));
 						#else
 						WriteProp(propName, System.Convert.ToBase64String(value));
@@ -270,7 +270,7 @@ namespace Loyc.SyncLib
 			public float WriteProp(string? propName, float num)
 			{
 				var str = num.ToString("R", CultureInfo.InvariantCulture);
-				#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+				#if NETSTANDARD2_0 || NETFRAMEWORK
 				if (float.IsNaN(num) || float.IsInfinity(num))
 					WriteProp(propName, str);
 				#else
@@ -284,7 +284,7 @@ namespace Loyc.SyncLib
 			public double WriteProp(string? propName, double num)
 			{
 				var str = num.ToString("R", CultureInfo.InvariantCulture);
-				#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+				#if NETSTANDARD2_0 || NETFRAMEWORK
 				if (double.IsNaN(num) || double.IsInfinity(num))
 					WriteProp(propName, str);
 				#else
@@ -397,7 +397,7 @@ namespace Loyc.SyncLib
 				buf[_i++] = (byte) '"';
 				if (s_len == s.Length) {
 					// Same length in bytes as in chars implies pure ASCII with nothing to escape
-					#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+					#if NETSTANDARD2_0 || NETFRAMEWORK
 					// (.NET Standard 2.0 lacks the fast span overloads of Encoding methods)
 					for (int i = 0; i < s.Length; i++)
 						buf[_i++] = (byte)s[i];

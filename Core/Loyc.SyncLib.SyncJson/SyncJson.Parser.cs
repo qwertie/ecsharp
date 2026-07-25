@@ -1131,9 +1131,9 @@ partial class SyncJson
 			// (1) they waste time looking for non-ASCII characters to bitch about
 			// (2) they are optimized for large strings (but text is usually small)
 			// Maybe I should just write an ordinary loop?
-			#if NET50 // is this the right name for .NET 5?
+			#if NET5_0_OR_GREATER
 			return Encoding.Latin1.GetString(text);
-			#elif NETSTANDARD2_0 || NET45 || NET46 || NET47
+			#elif NETSTANDARD2_0 || NETFRAMEWORK
 			return Encoding.ASCII.GetString(text.ToArray());
 			#else
 			return Encoding.ASCII.GetString(text);
@@ -1158,7 +1158,7 @@ partial class SyncJson
 		{
 			Debug.Assert(type is JsonType.SimpleString or JsonType.String);
 			if (type is JsonType.SimpleString) { // pure ASCII, no escape sequences
-				#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+				#if NETSTANDARD2_0 || NETFRAMEWORK
 				// (.NET Standard 2.0 lacks the fast span overloads of Encoding methods)
 				var sb2 = _sb ??= new StringBuilder();
 				sb2.Length = span.Length;

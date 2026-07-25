@@ -350,7 +350,7 @@ partial class SyncBinary
 			if (num <= long.MaxValue && num >= long.MinValue) {
 				Write((long)num);
 			} else {
-				#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+				#if NETSTANDARD2_0 || NETFRAMEWORK
 				var numberBytes = num.ToByteArray();
 				int numNumberBytes = numberBytes.Length;
 				#else
@@ -372,7 +372,7 @@ partial class SyncBinary
 				span = span.Slice(_i);
 				Debug.Assert(span.Length >= numNumberBytes);
 
-				#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+				#if NETSTANDARD2_0 || NETFRAMEWORK
 				Array.Reverse(numberBytes);
 				numberBytes.CopyTo(span);
 				#else
@@ -384,7 +384,7 @@ partial class SyncBinary
 		
 		public void WriteLittleEndianUInt32(uint num, Span<byte> outBuf)
 		{
-			#if NETSTANDARD1_6 || NET45 || NET46 || NET47 || NET48
+			#if NETFRAMEWORK
 			outBuf[_i] = (byte)num;
 			outBuf[_i + 1] = (byte)(num >> 8);
 			outBuf[_i + 2] = (byte)(num >> 16);
@@ -397,7 +397,7 @@ partial class SyncBinary
 
 		public void WriteLittleEndianUInt64(ulong num, Span<byte> outBuf)
 		{
-			#if NETSTANDARD1_6 || NET45 || NET46 || NET47 || NET48
+			#if NETFRAMEWORK
 			WriteLittleEndianUInt32((uint) num, outBuf);
 			WriteLittleEndianUInt32((uint)(num >> 32), outBuf);
 			#else
@@ -450,7 +450,7 @@ partial class SyncBinary
 			// code will detect that case and correct for it, just in case. I have no way
 			// to test that code path, though.
 			ulong bytes = (ulong) BitConverter.DoubleToInt64Bits(num);
-			#if !(NETSTANDARD2_0 || NET45 || NET462 || NET472)
+			#if !(NETSTANDARD2_0 || NETFRAMEWORK)
 			if (IsReversedEndian)
 				bytes = BinaryPrimitives.ReverseEndianness(bytes);
 			#endif
@@ -459,7 +459,7 @@ partial class SyncBinary
 
 		public void Write(float num)
 		{
-			#if NETSTANDARD2_0 || NET45 || NET462 || NET472
+			#if NETSTANDARD2_0 || NETFRAMEWORK
 			// inefficient
 			uint bytes = BitConverter.ToUInt32(BitConverter.GetBytes(num), 0);
 			#else
@@ -507,7 +507,7 @@ partial class SyncBinary
 		public void Write(ReadOnlySpan<char> str)
 		{
 			// Encoding.UTF8 allows unpaired surrogates. Technically this is called "WTF-8"
-			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+			#if NETSTANDARD2_0 || NETFRAMEWORK
 			var array = str.ToArray();
 			int wtf8size = Encoding.UTF8.GetByteCount(array);
 			#else
@@ -523,7 +523,7 @@ partial class SyncBinary
 
 			Write((uint) wtf8size); // length prefix
 
-			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+			#if NETSTANDARD2_0 || NETFRAMEWORK
 			var outBytes = Encoding.UTF8.GetBytes(array, 0, array.Length);
 			outBytes.CopyTo(outSpan.Slice(_i));
 			int wtf8size2 = outBytes.Length;

@@ -70,7 +70,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;NET47,NET472</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;NETFRAMEWORK;NET47;NET472</DefineConstants>
     <DebugType>Full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -78,7 +78,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Bin\Release\</OutputPath>
-    <DefineConstants>TRACE;NET47,NET472</DefineConstants>
+    <DefineConstants>TRACE;NETFRAMEWORK;NET47;NET472</DefineConstants>
     <DocumentationFile>..\Bin\Release\Loyc.Essentials.xml</DocumentationFile>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>

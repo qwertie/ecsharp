@@ -286,7 +286,7 @@ partial class SyncBinary
 			ExpectBytes(ref cur, strLength);
 
 			var span = cur.Buf.Slice(cur.Index, strLength);
-			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+			#if NETSTANDARD2_0 || NETFRAMEWORK
 			var str = Encoding.UTF8.GetString(span.ToArray());
 			#else
 			var str = Encoding.UTF8.GetString(span);
@@ -315,7 +315,7 @@ partial class SyncBinary
 			if (num == FloatNullBitPattern)
 				return null;
 
-			#if NETSTANDARD2_0 || NET45 || NET46 || NET47 || NET48
+			#if NETSTANDARD2_0 || NETFRAMEWORK
 			return BitConverter.ToSingle(BitConverter.GetBytes(num), 0);
 			#else
 			return BitConverter.Int32BitsToSingle((int) num);
@@ -378,7 +378,7 @@ partial class SyncBinary
 
 		static uint LittleEndianBytesToUInt32(ReadOnlySpan<byte> span)
 		{
-			#if NETSTANDARD1_6 || NET45 || NET46 || NET47 || NET48
+			#if NETFRAMEWORK
 			return (uint)(span[0] + (span[1] << 8) + (span[2] << 16) + (span[3] << 24));
 			#else
 			return BinaryPrimitives.ReadUInt32LittleEndian(span);
@@ -387,7 +387,7 @@ partial class SyncBinary
 
 		static ulong LittleEndianBytesToUInt64(ReadOnlySpan<byte> span)
 		{
-			#if NETSTANDARD1_6 || NET45 || NET46 || NET47 || NET48
+			#if NETFRAMEWORK
 			return LittleEndianBytesToUInt32(span) + unchecked((ulong)LittleEndianBytesToUInt32(span.Slice(4)) << 32);
 			#else
 			return BinaryPrimitives.ReadUInt64LittleEndian(span);
@@ -609,7 +609,7 @@ partial class SyncBinary
 			var span = cur.Buf.Slice(cur.Index, integerSize);
 			cur.Index += integerSize;
 
-			#if NETSTANDARD2_0 || NET45 || NET46 || NET47
+			#if NETSTANDARD2_0 || NETFRAMEWORK
 			var bytesArray = span.ToArray();
 			Array.Reverse(bytesArray);
 			return new BigInteger(bytesArray);
@@ -694,7 +694,7 @@ partial class SyncBinary
 
 		static uint BigEndianBytesToUInt32(ReadOnlySpan<byte> span)
 		{
-			#if NETSTANDARD2_0 || NET45 || NET46 || NET47 || NET48
+			#if NETSTANDARD2_0 || NETFRAMEWORK
 			return (uint)(span[3] + (span[2] << 8) + (span[1] << 16) + (span[0] << 24));
 			#else
 			return (uint)BinaryPrimitives.ReadInt32BigEndian(span);
@@ -703,7 +703,7 @@ partial class SyncBinary
 
 		static ulong BigEndianBytesToUInt64(ReadOnlySpan<byte> span)
 		{
-			#if NETSTANDARD2_0 || NET45 || NET46 || NET47 || NET48
+			#if NETSTANDARD2_0 || NETFRAMEWORK
 			return unchecked((ulong)BigEndianBytesToUInt32(span) << 32) + BigEndianBytesToUInt32(span.Slice(4));
 			#else
 			return (ulong)BinaryPrimitives.ReadInt64BigEndian(span);
@@ -908,7 +908,7 @@ partial class SyncBinary
 
 		public static int LeadingOneCount(byte b)
 		{
-			#if NETSTANDARD2_0 || NETSTANDARD2_1 || NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NET45 || NET46 || NET47 || NET48
+			#if !NETCOREAPP3_0_OR_GREATER
 				// Note: this must use unsigned arithmetic; with `int`, the right-shifts
 				// sign-extend and the comparisons fail for any byte >= 0b1100_0000
 				int result = 0;
