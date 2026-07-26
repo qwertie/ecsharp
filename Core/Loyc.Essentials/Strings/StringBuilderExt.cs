@@ -75,7 +75,7 @@ namespace Loyc
 			for (int i = startIndex; i < sb.Length; i++)
 				if (sb[i] == value)
 					return i;
-			return -1;
+			return null;
 		}
 		/// <summary>Gets the index of a character in a StringBuilder</summary>
 		/// <returns>Index of the first instance of the specified character in the string, or -1 if not found</returns>

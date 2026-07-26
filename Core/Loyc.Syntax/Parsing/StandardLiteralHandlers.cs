@@ -145,12 +145,6 @@ namespace Loyc.Syntax
 	/// </remarks>
 	/// <seealso cref="ParseHelpers"/>
 	/// <seealso cref="PrintHelpers"/>
-	/// <remarks>
-	/// KNOWN ISSUE: <see cref="DigitSeparator"/> is off by default because the
-	/// insertion logic misplaces the separator on negative numbers, printing
-	/// <c>-_132</c> for -132. That code was unreachable until the constructor started
-	/// honouring its digitSeparatorChar parameter, and has not been fixed here.
-	/// </remarks>
 	public class StandardLiteralHandlers : LiteralHandlerTable
 	{
 		private static StandardLiteralHandlers? _value = null;
@@ -196,12 +190,7 @@ namespace Loyc.Syntax
 			}
 		}
 
-		// The parameter used to be ignored entirely, so all digit-separator code was
-		// dead. It is honoured now, but the default is null rather than the former '_'
-		// so that existing callers (including Value) keep their current output; passing
-		// '_' explicitly is currently known to misplace the separator (see -_132 in the
-		// class remarks).
-		public StandardLiteralHandlers(char? digitSeparatorChar = null)
+		public StandardLiteralHandlers(char? digitSeparatorChar = '_')
 		{
 			DigitSeparator = digitSeparatorChar;
 			AddStandardParsers();
@@ -508,7 +497,7 @@ namespace Loyc.Syntax
 				if (typeMarker == null || typeMarker == _number)
 				{
 					// ensure the string doesn't look like an integer
-					if (sb.FirstIndexOf('.', oldLength) <= -1 && sb.FirstIndexOf(exponentMarker, oldLength) <= -1)
+					if (sb.FirstIndexOf('.', oldLength) == null && sb.FirstIndexOf(exponentMarker, oldLength) == null)
 						sb.Append(".0");
 				}
 			}
@@ -537,12 +526,14 @@ namespace Loyc.Syntax
 				int iDot = asStr.IndexOf('.');
 				if (iDot <= -1) iDot = asStr.IndexOf('E');
 				if (iDot <= -1) iDot = asLen;
+				// Group digits only: the '-' sign is not a digit (else -132 printed as -_132)
+				int iFirstDigit = asStr[0] == '-' || asStr[0] == '+' ? 1 : 0;
 				// Insert thousands separators in integer part (not implemented on fraction part)
-				if (iDot > 3)
+				if (iDot - iFirstDigit > 3)
 				{
 					sb.Append(asStr);
-					for (int i = iDot - 3; i > 0; i -= 3)
-						sb.Insert(i + oldLength, '_');
+					for (int i = iDot - 3; i > iFirstDigit; i -= 3)
+						sb.Insert(i + oldLength, _digitSeparator);
 					return;
 				}
 			}

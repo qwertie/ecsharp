@@ -210,5 +210,29 @@ namespace Loyc.Essentials.Tests
 		}
 
 		#endregion
+
+		#region StringBuilderExt.FirstIndexOf
+
+		[Test]
+		public void FirstIndexOfReturnsNullWhenNotFound()
+		{
+			// Regression: the char overload returned -1 instead of null, so callers
+			// written as `x <= -1` were silently wrong once it started returning null.
+			var sb = new StringBuilder("hello.world");
+			Assert.AreEqual(5, sb.FirstIndexOf('.'));
+			Assert.AreEqual(null, sb.FirstIndexOf('!'));
+			Assert.AreEqual(null, sb.FirstIndexOf('h', 1));   // out of range of startIndex
+			Assert.AreEqual(null, new StringBuilder().FirstIndexOf('x'));
+			// The UString overload already behaved this way
+			Assert.AreEqual(6, sb.FirstIndexOf((UString)"world"));
+			Assert.AreEqual(null, sb.FirstIndexOf((UString)"nope"));
+			// The obsolete IndexOf wrappers still return -1
+			#pragma warning disable CS0618
+			Assert.AreEqual(-1, sb.IndexOf('!'));
+			Assert.AreEqual(-1, sb.IndexOf((UString)"nope"));
+			#pragma warning restore CS0618
+		}
+
+		#endregion
 	}
 }

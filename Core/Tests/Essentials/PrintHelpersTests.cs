@@ -26,6 +26,34 @@ namespace Loyc.Essentials.Tests
 		}
 
 		[Test]
+		public void SeparatorsAreCountedFromTheLeastSignificantDigit()
+		{
+			// The '-' sign and the prefix must not be counted as digits.
+			AreEqual("132",       PrintHelpers.IntegerToString(132, "", 10, 3, '_'));
+			AreEqual("-132",      PrintHelpers.IntegerToString(-132, "", 10, 3, '_'));
+			AreEqual("1_234",     PrintHelpers.IntegerToString(1234, "", 10, 3, '_'));
+			AreEqual("-1_234",    PrintHelpers.IntegerToString(-1234, "", 10, 3, '_'));
+			AreEqual("-1_000",    PrintHelpers.IntegerToString(-1000, "", 10, 3, '_'));
+			AreEqual("1_234_567", PrintHelpers.IntegerToString(1234567, "", 10, 3, '_'));
+			AreEqual("-1_234_567", PrintHelpers.IntegerToString(-1234567, "", 10, 3, '_'));
+			AreEqual("-12_345_678", PrintHelpers.IntegerToString(-12345678, "", 10, 3, '_'));
+			// Hex, grouped every 4 digits (boundaries: 4 and 8 digits)
+			AreEqual("0xABCD",      PrintHelpers.IntegerToString(0xABCD, "0x", 16, 4, '_'));
+			AreEqual("-0xABCD",     PrintHelpers.IntegerToString(-0xABCD, "0x", 16, 4, '_'));
+			AreEqual("0x1_2345",    PrintHelpers.IntegerToString(0x12345, "0x", 16, 4, '_'));
+			AreEqual("-0x1_2345",   PrintHelpers.IntegerToString(-0x12345, "0x", 16, 4, '_'));
+			AreEqual("0x1234_5678", PrintHelpers.IntegerToString(0x12345678, "0x", 16, 4, '_'));
+			AreEqual("-0x1234_5678", PrintHelpers.IntegerToString(-0x12345678, "0x", 16, 4, '_'));
+			// Binary, grouped every 8 digits (boundaries: 8 and 16 digits)
+			AreEqual("0b11111111",   PrintHelpers.IntegerToString(255, "0b", 2, 8, '_'));
+			AreEqual("-0b11111111",  PrintHelpers.IntegerToString(-255, "0b", 2, 8, '_'));
+			AreEqual("-0b1_00000000", PrintHelpers.IntegerToString(-256, "0b", 2, 8, '_'));
+			AreEqual("-0b11111111_11111111", PrintHelpers.IntegerToString(-0xFFFF, "0b", 2, 8, '_'));
+			// long.MinValue must not overflow into a wrong string
+			AreEqual("-9_223_372_036_854_775_808", PrintHelpers.IntegerToString(long.MinValue, "", 10, 3, '_'));
+		}
+
+		[Test]
 		public void UnescapedControlCharIsEmittedAsACharacter()
 		{
 			// Regression: `@out.Append(c)` where c is an int bound to

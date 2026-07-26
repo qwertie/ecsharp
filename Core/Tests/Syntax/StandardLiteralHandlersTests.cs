@@ -143,10 +143,46 @@ namespace Loyc.Syntax.Tests
 			Assert.AreEqual('_', new StandardLiteralHandlers('_').DigitSeparator);
 			Assert.AreEqual('\'', new StandardLiteralHandlers('\'').DigitSeparator);
 			Assert.AreEqual(null, new StandardLiteralHandlers(null).DigitSeparator);
-			// Default is null so that the shared Value singleton's output is unchanged.
-			Assert.AreEqual(null, new StandardLiteralHandlers().DigitSeparator);
-			Assert.AreEqual(null, StandardLiteralHandlers.Value.DigitSeparator);
+			Assert.AreEqual('_', new StandardLiteralHandlers().DigitSeparator);
+			Assert.AreEqual('_', StandardLiteralHandlers.Value.DigitSeparator);
 			Assert.ThrowsAny<ArgumentException>(() => new StandardLiteralHandlers('x'));
+		}
+
+		static string Print(StandardLiteralHandlers h, object value, NodeStyle style = NodeStyle.Default)
+		{
+			var sb = new StringBuilder();
+			var result = h.TryPrint(LNode.Literal(SourceRange.Synthetic, new LiteralValue(value, null), style), sb);
+			Assert.IsTrue(result.Left.HasValue, "Print failed for {0}", value);
+			return sb.ToString();
+		}
+
+		// Regression: the digit grouping of base-10 floats was counted from the start of
+		// the string, which includes the '-' sign, so -132.0 was printed as -_132.0.
+		[Test]
+		public void DigitSeparatorIsPlacedByDigitCount()
+		{
+			var h = StandardLiteralHandlers.Value;
+			Assert.AreEqual("1_234_567", Print(h, 1234567));
+			Assert.AreEqual("-1_234", Print(h, -1234));
+			Assert.AreEqual("-132", Print(h, -132));
+			Assert.AreEqual("132.0", Print(h, 132.0));
+			Assert.AreEqual("-132.0", Print(h, -132.0));
+			Assert.AreEqual("-132_456.0", Print(h, -132456.0));
+			Assert.AreEqual("-1_234.5", Print(h, -1234.5));
+			Assert.AreEqual("1_234_567.0", Print(h, 1234567.0));
+			// Hex groups by 4 digits, binary by 8
+			Assert.AreEqual("0x1_2345", Print(h, 0x12345, NodeStyle.HexLiteral));
+			Assert.AreEqual("-0x1_2345", Print(h, -0x12345, NodeStyle.HexLiteral));
+			Assert.AreEqual("0xFF", Print(h, 0xFF, NodeStyle.HexLiteral));
+			Assert.AreEqual("0b11_11111111", Print(h, 1023, NodeStyle.BinaryLiteral));
+			// A ' separator must be used where requested (the code once hard-coded '_')
+			var apos = new StandardLiteralHandlers('\'');
+			Assert.AreEqual("-1'234", Print(apos, -1234));
+			Assert.AreEqual("-132'456.0", Print(apos, -132456.0));
+			// ...and nothing at all when separators are disabled
+			var none = new StandardLiteralHandlers(null);
+			Assert.AreEqual("-1234", Print(none, -1234));
+			Assert.AreEqual("-132456.0", Print(none, -132456.0));
 		}
 	}
 }

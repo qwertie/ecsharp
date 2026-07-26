@@ -25,7 +25,7 @@ namespace Loyc.Syntax.Lexing
 			var file = EmptySourceFile.Unknown;
 			TestToLNode(EmptySourceFile.Unknown, new List<Pair<Token, string>>() {
 				P(new Token((int)TokenKind.Literal, 3, 7, 0, "hello!"), @"Literal(""hello!"")"),
-				P(new Token((int)TokenKind.Literal, 3, 7, 0, 12345),    @"Literal(12345)"),
+				P(new Token((int)TokenKind.Literal, 3, 7, 0, 12345),    @"Literal(12_345)"),
 				P(new Token((int)TokenKind.Literal, 3, 7, 0, GSymbol.Get("foo")),  @"Literal(@@foo)"),
 			});
 		}
