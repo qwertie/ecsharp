@@ -243,7 +243,11 @@ namespace Loyc.Math
 		/// <summary>Rotates a bit pattern right by the specified number of bits.</summary>
 		public static long RoR(long value, int amt)
 		{
-			return (long)(((ulong)value >> amt) | ((ulong)value << (32 - amt)));
+			#if !NETCOREAPP3_0_OR_GREATER
+				return (long)(((ulong)value >> amt) | ((ulong)value << (64 - amt)));
+			#else
+				return (long)BitOperations.RotateRight((ulong)value, amt);
+			#endif
 		}
 		/// <summary>Rotates a bit pattern right by the specified number of bits.</summary>
 		public static ushort RoR(ushort value, int amt)
@@ -281,7 +285,8 @@ namespace Loyc.Math
 			uint b = 1u << bshft;
 			do
 			{
-				ulong temp = ((ulong)(g + g + b) << bshft);
+				// widen before adding: g+g+b overflows uint once value >= 2^62
+				ulong temp = (((ulong)g + g + b) << bshft);
 
 				if (value >= temp)
 				{
@@ -692,9 +697,9 @@ namespace Loyc.Math
 			if (bitsU == 0)
 				bits = 0x8000000000000001;
 			else if (bits != bitsU)
-				bits--;
+				bits++; // negative: increase magnitude
 			else
-				bits++;
+				bits--; // positive: decrease magnitude
 
 			return Int64BitsToDouble((long)bits);
 		}

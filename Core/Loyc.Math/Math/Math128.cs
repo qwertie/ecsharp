@@ -55,7 +55,7 @@ namespace Loyc.Math
 			ulong lo = lo1 + (mid << 32);
 			
 			if (mid < mid1)
-				resultHi += (1 << 32); // mid (aL * bH + aH * bL) overflowed
+				resultHi += (1UL << 32); // mid (aL * bH + aH * bL) overflowed
 			if (lo < lo1)
 				resultHi++; // (aL * bL) + (lower half of mid << 32) overflowed
 			return lo;
@@ -253,9 +253,9 @@ namespace Loyc.Math
 				result1 = (uint)(a1 / bL);
 				r = (uint)(a1 % bL);
 
-				resultHi = (ulong)(result4 << 32) + result3;
+				resultHi = ((ulong)result4 << 32) + result3;
 				remainder = r;
-				return (ulong)(result2 << 32) + result1;
+				return ((ulong)result2 << 32) + result1;
 			}
 			else
 			{
@@ -267,19 +267,19 @@ namespace Loyc.Math
 					aH = ShiftLeftFast(aH, ref aL, 32);
 					iterations -= 32;
 				}
-				if (aH < (1 << (64-16))) {
+				if (aH < (1UL << (64-16))) {
 					aH = ShiftLeftFast(aH, ref aL, 16);
 					iterations -= 16;
 				}
-				if (aH < (1 << (64-8))) {
+				if (aH < (1UL << (64-8))) {
 					aH = ShiftLeftFast(aH, ref aL, 8);
 					iterations -= 8;
 				}
-				if (aH < (1 << (64-4))) {
+				if (aH < (1UL << (64-4))) {
 					aH = ShiftLeftFast(aH, ref aL, 4);
 					iterations -= 4;
 				}
-				if (aH < (1 << (64-2))) {
+				if (aH < (1UL << (64-2))) {
 					aH = ShiftLeftFast(aH, ref aL, 2);
 					iterations -= 2;
 				}
@@ -364,6 +364,7 @@ namespace Loyc.Math
 		public static ulong ShiftLeftFast(ulong aH, ref ulong aL, int amount)
 		{
 			Debug.Assert((uint)amount < 64u);
+			if (amount == 0) return aH; // (aL >> 64) would be masked to (aL >> 0)
 			aH = (aH << amount) + (aL >> (64-amount));
 			aL <<= amount;
 			return aH;
@@ -437,6 +438,7 @@ namespace Loyc.Math
 		private static ulong ShiftRightFast(ulong aH, ref ulong aL, int amount)
 		{
 			Debug.Assert((uint)amount < 64u);
+			if (amount == 0) return aH; // (aH << 64) would be masked to (aH << 0)
 			aL = (aL >> amount) + (aH << (64-amount));
 			return aH >> amount;
 		}
@@ -460,6 +462,7 @@ namespace Loyc.Math
 		private static long ShiftRightFast(long aH, ref ulong aL, int amount)
 		{
 			Debug.Assert((uint)amount < 64u);
+			if (amount == 0) return aH; // (aH << 64) would be masked to (aH << 0)
 			aL = (aL >> amount) + ((ulong)aH << (64-amount));
 			return aH >> amount;
 		}

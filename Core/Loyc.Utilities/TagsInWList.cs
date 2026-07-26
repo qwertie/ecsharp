@@ -67,7 +67,7 @@ namespace Loyc.Utilities
 
 			// Try the other entries
 			for (int i = 0; i < count; i++)
-				if (i != hint && (kvp = GetAtDff(hint)).Key == key) {
+				if (i != hint && (kvp = GetAtDff(i)).Key == key) {
 					UserByte = (byte)i;
 					SetAt(i, new KeyValuePair<Symbol, ValueT>(key, val));
 					return;

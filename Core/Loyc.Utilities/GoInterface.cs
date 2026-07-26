@@ -1711,7 +1711,7 @@ namespace Loyc.Utilities
 
 				bool leftUnsigned, rightUnsigned;
 				int leftSize = PrimSize(leftT, out leftUnsigned);
-				int rightSize = PrimSize(leftT, out rightUnsigned);
+				int rightSize = PrimSize(rightT, out rightUnsigned);
 				Debug.Assert(leftUnsigned != rightUnsigned);
 				Debug.Assert(leftUnsigned ? rightSize <= leftSize : leftSize <= rightSize);
 

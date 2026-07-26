@@ -198,6 +198,8 @@ namespace Loyc.Tests
 		{
 			return MiniTest.RunTests.RunMany(
 				new MathExTests(),
+				new Math128Tests(),
+				new FixedPointTests(),
 				new LineMathTests(),
 				new PointMathTests()
 			);
@@ -238,7 +240,8 @@ namespace Loyc.Tests
 				new UGTests(),
 				new GoInterfaceTests(),
 				new CPTrieTests(),
-				new KeylessHashtableTests()
+				new KeylessHashtableTests(),
+				new UtilitiesRegressionTests()
 			);
 		}
 	}

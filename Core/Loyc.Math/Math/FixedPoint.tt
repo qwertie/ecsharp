@@ -21,7 +21,7 @@ namespace Loyc.Math
 	public partial struct <#=T#> : IComparable<<#=T#>>, IEquatable<<#=T#>>, IConvertible
 	{
 		public const int Frac = <#=T.Frac#>;
-		public const <#=T.Int#> Unit = 1 << Frac;
+		public const <#=T.Int#> Unit = (<#=T.Int#>)1 << Frac;
 		public static <#=T#> Prescaled(<#=T.Int#> n) { <#=T#> r = new <#=T#>(); r.N = n; return r; }
 		public static readonly <#=T#> Zero = new <#=T#>();
 		public static readonly <#=T#> One = new <#=T#>(1);
@@ -30,9 +30,9 @@ namespace Loyc.Math
 		public static readonly <#=T#> MinValue = Prescaled(<#=T.Int#>.MinValue);
 		public const <#=T.Int#> MaxInt = <#=T.Int#>.MaxValue >> Frac;
 		public const <#=T.Int#> MinInt = <#=T.Int#>.MinValue >> Frac;
-		public const double MaxDouble = <#=T.Int#>.MaxValue / (double)(1 << Frac);
-		public const double MinDouble = <#=T.Int#>.MinValue / (double)(1 << Frac);
-		public const <#=T.Int#> Mask = (1 << Frac) - 1;
+		public const double MaxDouble = <#=T.Int#>.MaxValue / (double)((<#=T.Int#>)1 << Frac);
+		public const double MinDouble = <#=T.Int#>.MinValue / (double)((<#=T.Int#>)1 << Frac);
+		public const <#=T.Int#> Mask = ((<#=T.Int#>)1 << Frac) - 1;
 
 <#		if (T.WholeBits < 31) { #>
 		public static explicit operator <#=T#>(int value) { return new <#=T#>(value); }
@@ -65,8 +65,8 @@ namespace Loyc.Math
 		public static explicit operator long(<#=T#> value) { return (long)(value.N >> Frac); }
 		public static explicit operator uint(<#=T#> value) { return (uint)(value.N >> Frac); }
 		public static explicit operator ulong(<#=T#> value) { return (ulong)(value.N >> Frac); }
-		public static explicit operator float(<#=T#> value) { return (float)value.N * (1.0f / (1 << Frac)); }
-		public static explicit operator double(<#=T#> value) { return (double)value.N * (1.0 / (1 << Frac)); }
+		public static explicit operator float(<#=T#> value) { return (float)value.N * (1.0f / ((<#=T.Int#>)1 << Frac)); }
+		public static explicit operator double(<#=T#> value) { return (double)value.N * (1.0 / ((<#=T.Int#>)1 << Frac)); }
 		
 <#		foreach (FPTraits T2 in _types) { if (T2 == T) continue; #>
 		public static explicit operator <#=T2#>(<#=T#> value)
@@ -209,14 +209,14 @@ namespace Loyc.Math
 			long whole = a.N / b.N;
 			long remainder = a.N % b.N;
 			remainder = (remainder << Frac) / b.N;
-			Debug.Assert(remainder < (1 << Frac));
+			Debug.Assert(remainder < (1L << Frac));
 			a.N = (whole << Frac) + remainder;
 			return a;
 			// TODO: test negative numbers: 7 / -2.5, -7 / 2.5, -7 / -2.5
 		}
 <#		} else { #>
 		public static <#=T#> operator *(<#=T#> a, <#=T#> b) { return Prescaled((int)((long)a.N * (long)b.N >> Frac)); }
-		public static <#=T#> operator /(<#=T#> a, <#=T#> b) { return Prescaled((int)((long)(a.N << Frac) / b.N)); }
+		public static <#=T#> operator /(<#=T#> a, <#=T#> b) { return Prescaled((int)(((long)a.N << Frac) / b.N)); }
 <#		} #>
 		public static <#=T#> operator %(<#=T#> a, <#=T#> b) { a.N %= b.N; return a; }
 		public static <#=T#> operator <<(<#=T#> a, int b) { a.N <<= b; return a; }

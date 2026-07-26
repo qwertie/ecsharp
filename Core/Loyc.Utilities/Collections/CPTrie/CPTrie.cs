@@ -141,7 +141,7 @@ namespace Loyc.Collections
 					byte k3 = key[++B];
 					Debug.Assert(k2 >= 0x80 && k2 <= 0xBF);
 					Debug.Assert(k3 >= 0x80 && k3 <= 0xBF);
-					sb.Append((char)(((k & 0xF) << 12) + ((k2 & 0x3F) << 6) + (k2 & 0x3F)));
+					sb.Append((char)(((k & 0xF) << 12) + ((k2 & 0x3F) << 6) + (k3 & 0x3F)));
 				}
 			}
 			return sb;

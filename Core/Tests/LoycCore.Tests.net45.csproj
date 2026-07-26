@@ -160,6 +160,9 @@
     <Compile Include="Essentials\PrintHelpersTests.cs" />
     <Compile Include="Essentials\SymbolTests.cs" />
     <Compile Include="Essentials\Tier0RegressionTests.cs" />
+    <Compile Include="Math\Math128Tests.cs" />
+    <Compile Include="Math\FixedPointTests.cs" />
+    <Compile Include="Utilities\UtilitiesRegressionTests.cs" />
     <Compile Include="Essentials\ThreadExTests.cs" />
     <Compile Include="Essentials\UStringTests.cs" />
     <Compile Include="Program.cs" />

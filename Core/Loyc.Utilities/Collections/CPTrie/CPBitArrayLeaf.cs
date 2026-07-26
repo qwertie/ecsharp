@@ -34,7 +34,7 @@ namespace Loyc.Collections.Impl
 					_indices[i] = InternalList.CopyToNewArray(_indices[i]);
 			}
 			// TODO: shrink _values array
-			_values = InternalList.CopyToNewArray(_values);
+			_values = InternalList.CopyToNewArray(clone._values);
 			_localCount = clone._localCount;
 			_valueCount = clone._valueCount;
 		}
@@ -385,7 +385,7 @@ namespace Loyc.Collections.Impl
 				Debug.Assert(section >= 0);
 				uint f = _flags[section];
 				if (f != 0)
-					return MathEx.PositionOfLeastSignificantOne(f) + (section << 5);
+					return MathEx.PositionOfMostSignificantOne(f) + (section << 5);
 			}
 		}
 

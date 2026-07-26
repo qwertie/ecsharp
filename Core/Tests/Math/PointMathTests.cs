@@ -100,5 +100,35 @@ namespace Loyc.Geometry
 			ExpectList(PointMath.ComputeConvexHull(new List<Point>() { p, p }), p, p);
 			ExpectList(PointMath.ComputeConvexHull(new List<Point>() { p, p, p }), p, p);
 		}
+
+		[Test]
+		public void TestProjectOntoBoundingBox()
+		{
+			// Regression: ProjectOnto clamped X against the box twice and never looked
+			// at Y at all, so the result's Y was a copy of the clamped X.
+			var bbox = new BoundingBox<double>(0, 0, 10, 20);
+
+			var p = new Point(-5, 50).ProjectOnto(bbox);
+			Assert.AreEqual(0.0, p.X);
+			Assert.AreEqual(20.0, p.Y);
+
+			p = new Point(3, -4).ProjectOnto(bbox);
+			Assert.AreEqual(3.0, p.X);
+			Assert.AreEqual(0.0, p.Y);
+
+			p = new Point(100, 7).ProjectOnto(bbox);
+			Assert.AreEqual(10.0, p.X);
+			Assert.AreEqual(7.0, p.Y);
+
+			// A point already inside the box is unchanged
+			p = new Point(4, 5).ProjectOnto(bbox);
+			Assert.AreEqual(4.0, p.X);
+			Assert.AreEqual(5.0, p.Y);
+
+			// The generic overload must agree with the type-specific one
+			var g = BoundingBoxMath.ProjectOnto<double>(new Point(-5, 50), bbox);
+			Assert.AreEqual(0.0, g.X);
+			Assert.AreEqual(20.0, g.Y);
+		}
 	}
 }

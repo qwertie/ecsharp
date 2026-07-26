@@ -72,7 +72,7 @@ namespace Loyc.Utilities
 			Statistic total = data[0].Clone();
 			for (int i = 1; i < data.Length; i++) {
 				total.Min = System.Math.Min(total.Min, data[i].Min);
-				total.Max = System.Math.Max(total.Min, data[i].Min);
+				total.Max = System.Math.Max(total.Max, data[i].Max);
 				total.SumTotal += data[i].SumTotal;
 				total.SumOfSquares += data[i].SumOfSquares;
 				checked { total.Count += data[i].Count; }

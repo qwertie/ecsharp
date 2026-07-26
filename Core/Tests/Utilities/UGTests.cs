@@ -54,5 +54,25 @@ namespace Loyc.Utilities.Tests
 			ExpectList(msgs.List.AsListSource().Select(msg => msg.ToString()),
 				"@test ProcessCmdLine 2.txt: Warning: Limit of 5 commands exceeded");
 		}
+
+		[Test]
+		public void TestCaseSensitiveLongOpts()
+		{
+			// Regression: AddPair unconditionally lowercased the option name, so
+			// caseSensitiveLongOpts:true had no effect (and the lowercasing was
+			// culture-sensitive ToLower rather than ToLowerInvariant).
+			var args = G.SplitCommandLineArguments("--MixedCase=1 --lower=2");
+			var options = new DList<KeyValuePair<string, string?>>();
+			UG.ProcessCommandLineArguments(args, options, null, null, null,
+				expandEnvVars: false, caseSensitiveLongOpts: true);
+			ExpectList(options, P("MixedCase", "1"), P("lower", "2"));
+
+			// The default (case-insensitive) behaviour is unchanged
+			args = G.SplitCommandLineArguments("--MixedCase=1 --lower=2");
+			options = new DList<KeyValuePair<string, string?>>();
+			UG.ProcessCommandLineArguments(args, options, null, null, null,
+				expandEnvVars: false, caseSensitiveLongOpts: false);
+			ExpectList(options, P("mixedcase", "1"), P("lower", "2"));
+		}
 	}
 }

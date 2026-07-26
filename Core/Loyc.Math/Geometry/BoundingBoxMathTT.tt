@@ -60,7 +60,7 @@ namespace Loyc.Geometry
 
 		public static Point<T> ProjectOnto(this Point<T> p, BoundingBox bbox)
 		{
-			return new Point<T>(p.X.PutInRange(bbox.X1, bbox.X2), p.X.PutInRange(bbox.X1, bbox.X2));
+			return new Point<T>(p.X.PutInRange(bbox.X1, bbox.X2), p.Y.PutInRange(bbox.Y1, bbox.Y2));
 		}
 
 		public static Point<T> Center(this BoundingBox<T> self)
@@ -81,7 +81,7 @@ namespace Loyc.Geometry
 	{
 		public static Point<T> ProjectOnto<T>(this Point<T> p, BoundingBox<T> bbox) where T : IConvertible, IComparable<T>, IEquatable<T>
 		{
-			return new Point<T>(p.X.PutInRange(bbox.X1, bbox.X2), p.X.PutInRange(bbox.X1, bbox.X2));
+			return new Point<T>(p.X.PutInRange(bbox.X1, bbox.X2), p.Y.PutInRange(bbox.Y1, bbox.Y2));
 		}
 		public static T Area<T>(this BoundingBox<T> bbox) where T : IConvertible, IComparable<T>, IEquatable<T>
 		{

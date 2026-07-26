@@ -192,7 +192,7 @@ namespace Loyc.Utilities
 				try {
 					string fullpath = Path.Combine(atFolder, atFile);
 					if (File.Exists(fullpath))
-						fileContents = File.OpenText(fullpath).ReadToEnd();
+						fileContents = File.ReadAllText(fullpath); // OpenText leaked the handle
 				} catch (Exception e) {
 					MessageSink.Default.Error(s, "Unable to use option file \"{0}\": {1}", atFile, e.Message);
 				}
@@ -225,8 +225,8 @@ namespace Loyc.Utilities
 		private static void AddPair(ICollection<KeyValuePair<string, string>> options, string option, string name, string value)
 		{
 			try {
-				options.Add(new KeyValuePair<string, string>(name.ToLower(), value));
-			} catch {
+				options.Add(new KeyValuePair<string, string>(name, value)); // ToLower() defeated caseSensitiveLongOpts
+			} catch (ArgumentException) {
 				MessageSink.Default.Warning(option,
 					"Option --{0} was specified more than once. Only the first instance is used.", name);
 			}

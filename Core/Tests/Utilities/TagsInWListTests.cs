@@ -120,5 +120,29 @@ namespace Loyc.Utilities.Tests
 			a.SetTag("SomethingElseFirst", "hello");
 			a.SetTag((string?) null, "hi");
 		}
+
+		[Test]
+		public void TestSetTagReplacesNonHintEntry()
+		{
+			// Regression: the scan loop re-read the hint slot (GetAtDff(hint)) instead
+			// of slot i, so SetTag could never find an existing non-hint key and
+			// appended a duplicate. GetTag returned the newest, hiding it, but
+			// RemoveTag then removed only one of the two.
+			var a = new TagsInWList<string>();
+			a.SetTag("one", "1");
+			a.SetTag("two", "2");
+			a.SetTag("three", "3");
+			Assert.AreEqual(3, a.TagCount);
+
+			a.SetTag("one", "changed");   // "one" is not the most recently accessed
+			Assert.AreEqual(3, a.TagCount, "SetTag appended instead of replacing");
+			Assert.AreEqual("changed", a.GetTag("one"));
+
+			Assert.IsTrue(a.RemoveTag("one"));
+			Assert.AreEqual(2, a.TagCount);
+			Assert.IsNull(a.GetTag("one"), "a stale duplicate survived RemoveTag");
+			Assert.AreEqual("2", a.GetTag("two"));
+			Assert.AreEqual("3", a.GetTag("three"));
+		}
 	};
 }
