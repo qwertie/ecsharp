@@ -156,13 +156,9 @@ static class ExtraSynchronizers<SyncManager> where SyncManager : ISyncManager
 	///   <c>Enum.ToObject</c> (which boxes the result), plus a <c>Type.GetTypeCode</c>
 	///   lookup, on every single value.</summary>
 	/// <remarks>
-	///   Note on <c>Unsafe.As</c>: elsewhere (e.g. SyncBinary's float bitcasts) we prefer
-	///   <c>BitConverter</c> with an explicit-layout union struct as the fallback. That is
-	///   not possible here, because <c>[StructLayout(LayoutKind.Explicit)]</c> cannot
-	///   overlap a generic type parameter -- a union of <c>E</c> and <c>long</c> is
-	///   rejected by the runtime for any open generic. The only alternatives are
-	///   <c>Unsafe.As</c> or going back to <c>Convert.ToInt64</c>/<c>Enum.ToObject</c>,
-	///   which box twice per value on a hot path. Hence Unsafe.As is used here only.
+	///   <c>Unsafe.As</c> is used because there is no <c>BitConverter</c>-style bitcast
+	///   API for an open generic enum type; the alternative (<c>Convert.ToInt64</c>/
+	///   <c>Enum.ToObject</c>) boxes twice per value on a hot path.
 	/// </remarks>
 	static class EnumInfo<E> where E : struct, Enum
 	{

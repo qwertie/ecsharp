@@ -575,13 +575,14 @@ namespace Loyc.Collections
 		public static void Randomize<T>(this IList<T> list)
 		{
 			int count = list.Count;
-			for (int i = 0; i < count; i++)
-				list.Swap(i, _r.Next(count));
+			// Fisher-Yates; the old swap-with-anyone loop produced a biased shuffle
+			for (int i = 0; i < count - 1; i++)
+				list.Swap(i, _r.Next(i, count));
 		}
 		public static void Randomize<T>(this T[] list)
 		{
-			for (int i = 0; i < list.Length; i++)
-				G.Swap(ref list[i], ref list[_r.Next(list.Length)]);
+			for (int i = 0; i < list.Length - 1; i++)
+				G.Swap(ref list[i], ref list[_r.Next(i, list.Length)]);
 		}
 		/// <summary>Quickly makes a copy of a list, as an array, in random order.</summary>
 		public static T[] Randomized<T>(this IReadOnlyList<T> list)

@@ -19,6 +19,22 @@ namespace Loyc.Syntax
 		protected LNode comment = F.Trivia(S.TriviaSLComment, " Comment!");
 
 		[Test]
+		public void Test_TypeMarkerComparisons()
+		{
+			// Regression: Equals once compared a.TypeMarker with itself, so string
+			// literals with different type markers wrongly compared equal by default
+			var range = new SourceRange(EmptySourceFile.Synthetic);
+			var re   = LNode.Literal(range, new LiteralValue((UString)"x", (Symbol)"re"));
+			var str  = LNode.Literal(range, new LiteralValue((UString)"x", (Symbol)"str"));
+			var none = LNode.Literal(range, new LiteralValue((UString)"x", GSymbol.Empty));
+			IsFalse(LNode.Equals(re, str));
+			IsFalse(LNode.Equals(str, re));
+			IsTrue(LNode.Equals(re, LNode.Literal(range, new LiteralValue((UString)"x", (Symbol)"re"))));
+			// But an empty type marker matches a marker-less string literal
+			IsTrue(LNode.Equals(none, F.Literal((UString)"x")));
+		}
+
+		[Test]
 		public void Test_Comparisons()
 		{
 			IsTrue(F.Attr(Foo, zero).Equals(F.Attr(Foo, zero)));

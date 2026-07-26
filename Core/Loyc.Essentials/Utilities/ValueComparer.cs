@@ -53,9 +53,9 @@ namespace Loyc
 		}
 		public override int GetHashCode(T? obj)
 		{
-			if (obj == null)
-				return 0;
-			return obj.GetHashCode();
+			// Identity hash: a virtual GetHashCode() override would break the
+			// reference-equality contract (and lose mutated keys in hash tables).
+			return System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj);
 		}
 	}
 }

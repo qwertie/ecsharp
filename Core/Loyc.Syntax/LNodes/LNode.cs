@@ -656,7 +656,7 @@ namespace Loyc.Syntax
 					if ((mode & CompareMode.TypeMarkers) != 0)
 						return false;
 					if ((a.Value is UString || a.Value is string) && 
-						(a.TypeMarker ?? GSymbol.Empty) != (a.TypeMarker ?? GSymbol.Empty))
+						(a.TypeMarker ?? GSymbol.Empty) != (b.TypeMarker ?? GSymbol.Empty))
 						return false;
 				}
 				if ((mode & CompareMode.Styles) != 0 && !a.TextValue.Equals(b.TextValue))
