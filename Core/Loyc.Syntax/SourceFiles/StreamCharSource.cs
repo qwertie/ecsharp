@@ -167,8 +167,8 @@ namespace Loyc.Syntax
 			_blkLen = _blkOffsets[i+1].A - _blkStart;
 			_stream.Position = _blkOffsets[i].B;
 			int bytesToRead = (int)(_blkOffsets[i+1].B - _blkOffsets[i].B);
-			if (_stream.Read(_buf, 0, bytesToRead) != bytesToRead)
-				throw new Exception(Localize.Localized("Result of {0} changed unexpectedly", "stream.Read"));
+			if (ReadFully(_buf, 0, bytesToRead) != bytesToRead)
+				throw new IOException(Localize.Localized("Result of {0} changed unexpectedly", "stream.Read"));
 			_decoder.Reset();
 			// We already read this region before so we should't have to increase 
 			// the buffer size... UNLESS we were using the other buffer last time!
@@ -176,7 +176,21 @@ namespace Loyc.Syntax
 				_blk = new char[_blk2.Length];
 			int cc = _decoder.GetChars(_buf, 0, bytesToRead, _blk, 0, true);
 			if (cc != _blkLen)
-				throw new Exception(Localize.Localized("Result of {0} changed unexpectedly", "decoder.GetChars"));
+				throw new InvalidOperationException(Localize.Localized("Result of {0} changed unexpectedly", "decoder.GetChars"));
+		}
+
+		// Stream.Read may legally return fewer bytes than requested without being at
+		// EOF; only a return of 0 means EOF. Returns the number of bytes actually read.
+		int ReadFully(byte[] buffer, int offset, int count)
+		{
+			int total = 0;
+			while (total < count) {
+				int n = _stream.Read(buffer, offset + total, count - total);
+				if (n <= 0)
+					break;
+				total += n;
+			}
+			return total;
 		}
 
 		private int GetBlockIndex(int charIndex)
@@ -213,9 +227,9 @@ namespace Loyc.Syntax
 		{
 			_decoder.Reset();
 
-			// Read the next block
+			// Read the next block. ReadFully loops, so a short result really is EOF.
 			int amtRequested = _buf.Length;
-			int amtRead = _stream.Read(_buf, 0, amtRequested);
+			int amtRead = ReadFully(_buf, 0, amtRequested);
 			if (amtRead < amtRequested) { // EOF!
 				_reachedEnd = true;
 				if (amtRead > 0) {

@@ -72,12 +72,51 @@ namespace Loyc.Syntax.Tests
 			Assert.AreEqual(0, msgs.List.Count);
 			ExpectList(tokens, originalTokens);
 
-			// Now reset the lexer and read the same StreamCharSource again 
+			// Now reset the lexer and read the same StreamCharSource again
 			// (different code paths are used the second time)
 			lexer.Reset();
 			tokens = lexer.ToList().Where(tok => !tok.IsWhitespace).ToList();
 			Assert.AreEqual(0, msgs.List.Count);
 			ExpectList(tokens, originalTokens);
+		}
+
+		/// <summary>A seekable stream that returns at most `maxChunk` bytes per Read,
+		/// which Stream permits but StreamCharSource used to treat as EOF.</summary>
+		class DribbleStream : MemoryStream
+		{
+			readonly int _maxChunk;
+			public DribbleStream(byte[] data, int maxChunk) : base(data, writable: false) { _maxChunk = maxChunk; }
+			public override int Read(byte[] buffer, int offset, int count)
+				=> base.Read(buffer, offset, System.Math.Min(count, _maxChunk));
+		}
+
+		// Regression: a short (but non-zero) Stream.Read was treated as EOF in
+		// ReadNextBlock, and as an error in ReloadBlockOf, truncating the source.
+		[Test]
+		public void ShortReadsAreNotEndOfFile()
+		{
+			var text = new StringBuilder();
+			for (int i = 0; i < 400; i++)
+				text.Append("line").Append(i).Append(" of text\n");
+			string expected = text.ToString();
+			byte[] utf8 = Encoding.UTF8.GetBytes(expected);
+
+			foreach (int chunk in new[] { 1, 3, 7, 64 }) {
+				var src = new StreamCharSource(new DribbleStream(utf8, chunk), Encoding.UTF8.GetDecoder(), _bufSize);
+
+				// Forward read of every character.
+				var sb = new StringBuilder();
+				for (int i = 0; ; i++) {
+					char c = src.TryGet(i, out bool fail);
+					if (fail) break;
+					sb.Append(c);
+				}
+				Assert.AreEqual(expected.Length, sb.Length, "chunk size {0}: truncated", chunk);
+				Assert.AreEqual(expected, sb.ToString(), "chunk size {0}", chunk);
+
+				// Re-read an early block, which goes through ReloadBlockOf.
+				Assert.AreEqual(expected.Substring(0, 20), src.Slice(0, 20).ToString(), "chunk size {0}: reload", chunk);
+			}
 		}
 	}
 }

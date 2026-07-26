@@ -145,6 +145,12 @@ namespace Loyc.Syntax
 	/// </remarks>
 	/// <seealso cref="ParseHelpers"/>
 	/// <seealso cref="PrintHelpers"/>
+	/// <remarks>
+	/// KNOWN ISSUE: <see cref="DigitSeparator"/> is off by default because the
+	/// insertion logic misplaces the separator on negative numbers, printing
+	/// <c>-_132</c> for -132. That code was unreachable until the constructor started
+	/// honouring its digitSeparatorChar parameter, and has not been fixed here.
+	/// </remarks>
 	public class StandardLiteralHandlers : LiteralHandlerTable
 	{
 		private static StandardLiteralHandlers? _value = null;
@@ -190,8 +196,14 @@ namespace Loyc.Syntax
 			}
 		}
 
-		public StandardLiteralHandlers(char? digitSeparatorChar = '_')
+		// The parameter used to be ignored entirely, so all digit-separator code was
+		// dead. It is honoured now, but the default is null rather than the former '_'
+		// so that existing callers (including Value) keep their current output; passing
+		// '_' explicitly is currently known to misplace the separator (see -_132 in the
+		// class remarks).
+		public StandardLiteralHandlers(char? digitSeparatorChar = null)
 		{
+			DigitSeparator = digitSeparatorChar;
 			AddStandardParsers();
 			AddStandardPrinters();
 		}

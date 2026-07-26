@@ -163,5 +163,57 @@ namespace Loyc.Syntax.Les
 			Assert.AreEqual(input, reparsed[0],
 				"Printed node «{0}» is different from original node.\n  Original: «{1}»\n  Reparsed: «{2}»", printed, input, reparsed[0]);
 		}
+
+		// Regression: the [ThreadStatic] StringBuilder had a field initializer, which
+		// runs only on the thread that triggers the static constructor, and
+		// MaybeInitThread built the printer from it before creating it. Every static
+		// print method therefore returned "" on any other thread.
+		[Test]
+		public void StaticPrintersWorkOnAnyThread()
+		{
+			// Touch the statics on this thread first, so the static ctor has run here.
+			Assert.AreEqual("hello", Les2Printer.PrintId((Symbol)"hello"));
+
+			string id = null, literal = null, str = null;
+			var task = System.Threading.Tasks.Task.Run(() => {
+				id = Les2Printer.PrintId((Symbol)"hello");
+				literal = Les2Printer.PrintLiteral(LNode.Literal(123));
+				str = Les2Printer.PrintString("hi", '"', false);
+			});
+			Assert.IsTrue(task.Wait(TimeSpan.FromSeconds(30)));
+			Assert.AreEqual("hello", id);
+			Assert.AreEqual("123", literal);
+			Assert.AreEqual("\"hi\"", str);
+		}
+
+		// Regression: `foreach (char c in text)` over a UString runs UString's
+		// code-POINT enumerator and truncates each value to 16 bits, so astral
+		// characters were silently mangled (U+1F600 became U+F600).
+		[Test]
+		public void AstralCharactersSurviveStringPrinting()
+		{
+			const string emoji = "\U0001F600";       // U+1F600, surrogate pair D83D DE00
+			string input = "a" + emoji + "b";
+
+			string triple = Les2Printer.PrintString(input, '"', tripleQuoted: true);
+			Assert.IsTrue(triple.Contains(emoji), "triple-quoted output lost the astral char: " + Describe(triple));
+			Assert.AreEqual("\"\"\"" + input + "\"\"\"", triple);
+
+			string normal = Les2Printer.PrintString(input, '"', tripleQuoted: false);
+			Assert.IsTrue(normal.Contains(emoji), "normal output lost the astral char: " + Describe(normal));
+
+			// An astral identifier is not a normal identifier, and must round-trip.
+			Assert.IsFalse(Les2Printer.IsNormalIdentifier((Symbol)input));
+			string printedId = Les2Printer.PrintId((Symbol)input);
+			Assert.IsTrue(printedId.Contains(emoji), "identifier output lost the astral char: " + Describe(printedId));
+		}
+
+		static string Describe(string s)
+		{
+			var sb = new StringBuilder();
+			foreach (char c in s) // s is a string, so this is code units (correct here)
+				sb.Append(((int)c).ToString("X4")).Append(' ');
+			return sb.ToString();
+		}
 	}
 }

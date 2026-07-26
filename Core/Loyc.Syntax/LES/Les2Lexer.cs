@@ -296,7 +296,9 @@ namespace Loyc.Syntax.Les
 					checkForNamedLiteral = true;
 				}
 			} else if (IsIdStartChar(c)) {
-				parsed.Append(c);
+				// c is uchar (int); without the cast this binds to Append(int) and
+				// appends the decimal code point ("foo" became "102oo").
+				parsed.Append((char)c);
 				for (;;) {
 					c = source.PopFirst(out fail);
 					if (!IsIdContChar(c))

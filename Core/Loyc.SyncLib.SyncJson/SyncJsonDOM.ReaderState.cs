@@ -575,7 +575,7 @@ partial class SyncJsonDOM
 			switch (v.ValueKind) {
 				case JsonValueKind.String:
 					var str = v.GetString()!;
-					if (BigInteger.TryParse(str, out var parsed))
+					if (BigInteger.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
 						result = parsed;
 					else
 						result = (BigInteger) double.Parse(str, NumberStyles.Float, CultureInfo.InvariantCulture);
@@ -614,9 +614,9 @@ partial class SyncJsonDOM
 			switch (v.ValueKind) {
 				case JsonValueKind.String:
 					var str = v.GetString()!;
-					if (long.TryParse(str, out long parsedInt64))
+					if (long.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out long parsedInt64))
 						result = parsedInt64;
-					else if (BigInteger.TryParse(str, out var parsed))
+					else if (BigInteger.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
 						result = (long) _optRead.HandleOverflow(name, parsed, true);
 					else
 						result = checked((long) double.Parse(str, NumberStyles.Float, CultureInfo.InvariantCulture));
@@ -659,9 +659,9 @@ partial class SyncJsonDOM
 			switch (v.ValueKind) {
 				case JsonValueKind.String:
 					var str = v.GetString()!;
-					if (ulong.TryParse(str, out ulong parsedUInt64))
+					if (ulong.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out ulong parsedUInt64))
 						result = parsedUInt64;
-					else if (BigInteger.TryParse(str, out var parsed))
+					else if (BigInteger.TryParse(str, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
 						result = _optRead.HandleOverflow(name, parsed, false);
 					else
 						result = checked((ulong) double.Parse(str, NumberStyles.Float, CultureInfo.InvariantCulture));

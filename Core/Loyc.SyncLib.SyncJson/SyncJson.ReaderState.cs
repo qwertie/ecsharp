@@ -74,8 +74,11 @@ partial class SyncJson
 		Memory<byte> ToNameBuf(ReadOnlySpan<char> name)
 		{
 			int len = WriterState.GetLengthAsBytes(name, false);
-			if (_nameBuf.Length < len)
-				_nameBuf = new byte[Max((len | 7) + 1, 16)];
+			// WriteStringCore writes len+2 bytes (the name plus both quotes), so the
+			// buffer must hold len+2, not len. Sizing on len threw IndexOutOfRange
+			// whenever len % 8 == 7 (len 15, 23, ...).
+			if (_nameBuf.Length < len + 2)
+				_nameBuf = new byte[Max(((len + 2) | 7) + 1, 16)];
 			int i = 0;
 			// TODO: don't use EscapeUnicode here
 			WriterState.WriteStringCore(_nameBuf.AsSpan(), name, len, ref i, _opt.Write.EscapeUnicode);

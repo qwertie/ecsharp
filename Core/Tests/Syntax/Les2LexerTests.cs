@@ -328,5 +328,19 @@ namespace Loyc.Syntax.Les
 			var nothing = lexer.NextToken();
 			Assert.That(!nothing.HasValue);
 		}
+
+		// Regression: the first character went through StringBuilder.Append(int)
+		// because `c` is uchar, so ParseIdentifier("foo") returned "102oo".
+		[Test]
+		public void ParseIdentifierKeepsFirstChar()
+		{
+			foreach (var name in new[] { "foo", "x", "_bar", "#hash", "Zed9" }) {
+				UString source = name;
+				Assert.AreEqual(name, Les2Lexer.ParseIdentifier(ref source, (i, msg) => { }, out bool _));
+			}
+			// @-prefixed and backquoted forms went down other branches; check they still work.
+			UString special = "@foo";
+			Assert.AreEqual("foo", Les2Lexer.ParseIdentifier(ref special, (i, msg) => { }, out bool _));
+		}
 	}
 }

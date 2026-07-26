@@ -134,5 +134,19 @@ namespace Loyc.Syntax.Tests
 				Assert.AreEqual(expectMarker, result.Left.Value.Name, "Type marker mismatch for {0}", item.Item2);
 			}
 		}
+
+		// Regression: the constructor ignored digitSeparatorChar, so DigitSeparator was
+		// always null and every separator code path was unreachable.
+		[Test]
+		public void ConstructorHonoursDigitSeparator()
+		{
+			Assert.AreEqual('_', new StandardLiteralHandlers('_').DigitSeparator);
+			Assert.AreEqual('\'', new StandardLiteralHandlers('\'').DigitSeparator);
+			Assert.AreEqual(null, new StandardLiteralHandlers(null).DigitSeparator);
+			// Default is null so that the shared Value singleton's output is unchanged.
+			Assert.AreEqual(null, new StandardLiteralHandlers().DigitSeparator);
+			Assert.AreEqual(null, StandardLiteralHandlers.Value.DigitSeparator);
+			Assert.ThrowsAny<ArgumentException>(() => new StandardLiteralHandlers('x'));
+		}
 	}
 }

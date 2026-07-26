@@ -218,8 +218,9 @@ namespace Loyc.Syntax
 	/// </remarks>
 	public struct Precedence : IEquatable<Precedence>
 	{
-		public static Precedence MinValue = new Precedence(sbyte.MinValue);
-		public static Precedence MaxValue = new Precedence(sbyte.MaxValue);
+		// readonly: without it these process-wide constants are assignable by anyone.
+		public static readonly Precedence MinValue = new Precedence(sbyte.MinValue);
+		public static readonly Precedence MaxValue = new Precedence(sbyte.MaxValue);
 
 		/// <summary>Initializes a left-associative operator with the specified precedence.</summary>
 		public Precedence(int actual) : this(actual, actual, actual, actual) { }

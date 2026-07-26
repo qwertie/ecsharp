@@ -433,16 +433,19 @@ namespace Loyc.Syntax.Les
 
 		#region Static methods for printing literals, identifiers and strings
 
-		[ThreadStatic] static StringBuilder? _staticStringBuilder = new StringBuilder();
+		// No field initializer: a [ThreadStatic] initializer runs only on the thread
+		// that triggers the static constructor, leaving every other thread null.
+		[ThreadStatic] static StringBuilder? _staticStringBuilder;
 		[ThreadStatic] static Les2PrinterWriter? _staticWriter;
 		[ThreadStatic] static Les2Printer? _staticPrinter;
 
 		[MemberNotNull(nameof(_staticStringBuilder), nameof(_staticWriter), nameof(_staticPrinter))]
 		static void MaybeInitThread()
 		{
-			_staticPrinter = _staticPrinter ?? new Les2Printer(_staticStringBuilder!);
-			_staticWriter = _staticWriter ?? new Les2PrinterWriter(_staticStringBuilder!);
+			// The StringBuilder must exist first; the printer and writer capture it.
 			_staticStringBuilder = _staticStringBuilder ?? new StringBuilder();
+			_staticPrinter = _staticPrinter ?? new Les2Printer(_staticStringBuilder);
+			_staticWriter = _staticWriter ?? new Les2PrinterWriter(_staticStringBuilder);
 		}
 		public static string PrintId(Symbol name)
 		{
@@ -489,8 +492,10 @@ namespace Loyc.Syntax.Les
 		{
 			backquote = name.Length == 0;
 			bool special = false, first = true;
-			foreach (char c in name)
+			// Index by UTF-16 code unit: `foreach (char c in name)` truncates code points.
+			for (int i = 0; i < name.Length; i++)
 			{
+				char c = name[i];
 				if (!Les2Lexer.IsIdContChar(c)) {
 					if (Les2Lexer.IsSpecialIdChar(c))
 						special = true;
@@ -537,8 +542,11 @@ namespace Loyc.Syntax.Les
 				_out.Write(quoteType);
 				_out.Write(quoteType);
 
+				// Index by UTF-16 code unit: `foreach (char c in text)` runs UString's
+				// code-point enumerator and truncates, destroying astral characters.
 				char a = '\0', b = '\0';
-				foreach (char c in text) {
+				for (int i = 0; i < text.Length; i++) {
+					char c = text[i];
 					if (c == quoteType && b == quoteType && a == quoteType)
 						_out.Write(@"\\");
 					// prevent false escape sequences

@@ -11,6 +11,29 @@ namespace Loyc.SyncLib.Tests
 {
 	public class SyncJsonReaderTests : TestHelpers
 	{
+		// Regression: ToNameBuf sized _nameBuf to `len` but WriteStringCore writes
+		// len+2 bytes (the name plus both quotes), so an out-of-order lookup of a name
+		// whose escaped UTF-8 length was 7 mod 8 threw IndexOutOfRangeException.
+		[Test]
+		public void OutOfOrderPropertyNameOfAnyLength()
+		{
+			// Lengths 15 and 23 are the first two failing cases; scan a range around them.
+			for (int nameLen = 1; nameLen <= 40; nameLen++) {
+				string longName = new string('n', nameLen);
+				string json = "{\"" + longName + "\":1,\"b\":2}";
+
+				// Read "b" first so that longName is skipped and stored in SkippedProps,
+				// then look longName up out of order (that is the path through ToNameBuf).
+				var result = SyncJson.ReadI<(int A, int B)>(json, (m, t) => {
+					t.B = m.Sync("b", t.B);
+					t.A = m.Sync(longName, t.A);
+					return t;
+				});
+				Assert.AreEqual(1, result.A, "name length {0}", nameLen);
+				Assert.AreEqual(2, result.B, "name length {0}", nameLen);
+			}
+		}
+
 		[Test]
 		public void TrickyBackRefsEtc()
 		{
