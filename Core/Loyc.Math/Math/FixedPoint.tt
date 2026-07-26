@@ -206,13 +206,11 @@ namespace Loyc.Math
 		}
 		public static <#=T#> operator /(<#=T#> a, <#=T#> b)
 		{
-			long whole = a.N / b.N;
-			long remainder = a.N % b.N;
-			remainder = (remainder << Frac) / b.N;
-			Debug.Assert(remainder < (1L << Frac));
-			a.N = (whole << Frac) + remainder;
+			// (a.N << Frac) / b.N computed in 128 bits: truncates toward zero, wraps on overflow
+			long numHi, quoHi, remainder;
+			ulong numLo = Math128.Multiply(a.N, Unit, out numHi);
+			a.N = unchecked((long)Math128.Divide(numHi, numLo, b.N, out quoHi, out remainder, false));
 			return a;
-			// TODO: test negative numbers: 7 / -2.5, -7 / 2.5, -7 / -2.5
 		}
 <#		} else { #>
 		public static <#=T#> operator *(<#=T#> a, <#=T#> b) { return Prescaled((int)((long)a.N * (long)b.N >> Frac)); }
@@ -383,8 +381,9 @@ namespace Loyc.Math
 			WholeBits = Marshal.SizeOf(intType) * 8 - 1 - Frac;//(IsSigned ? 1 : 0);
 			IsLong = intType == typeof(long) || intType == typeof(ulong);
 			UInt = IsLong ? "ulong" : "uint";
-			MaxInt = (long)(Convert.ToUInt64(intType.GetField("MaxValue").GetRawConstantValue()) / (1u << Frac));
-			MinInt = (long)(Convert.ToInt64(intType.GetField("MinValue").GetRawConstantValue()) / (1 << Frac));
+			// NB: the divisors must be 64-bit; C# masks shift counts, so `1u << 32` would be 1.
+			MaxInt = (long)(Convert.ToUInt64(intType.GetField("MaxValue").GetRawConstantValue()) / (1UL << Frac));
+			MinInt = Convert.ToInt64(intType.GetField("MinValue").GetRawConstantValue()) / (1L << Frac);
 		}
 		public long MaxInt, MinInt;
 		public string Name;

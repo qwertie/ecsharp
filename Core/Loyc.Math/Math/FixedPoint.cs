@@ -1236,13 +1236,11 @@ namespace Loyc.Math
 		}
 		public static FPL16 operator /(FPL16 a, FPL16 b)
 		{
-			long whole = a.N / b.N;
-			long remainder = a.N % b.N;
-			remainder = (remainder << Frac) / b.N;
-			Debug.Assert(remainder < (1L << Frac));
-			a.N = (whole << Frac) + remainder;
+			// (a.N << Frac) / b.N computed in 128 bits: truncates toward zero, wraps on overflow
+			long numHi, quoHi, remainder;
+			ulong numLo = Math128.Multiply(a.N, Unit, out numHi);
+			a.N = unchecked((long)Math128.Divide(numHi, numLo, b.N, out quoHi, out remainder, false));
 			return a;
-			// TODO: test negative numbers: 7 / -2.5, -7 / 2.5, -7 / -2.5
 		}
 
 		public static FPL16 operator %(FPL16 a, FPL16 b) { a.N %= b.N; return a; }
@@ -1493,6 +1491,13 @@ namespace Loyc.Math
 		}
 
 
+		public static FPL32 CheckedCast(uint num)
+		{
+			if (num > MaxInt)
+				Overflow();
+			return Prescaled((Int64)num << Frac);
+		}
+
 		public static FPL32 CheckedCast(long num)
 		{
 			if (num < MinInt || num > MaxInt)
@@ -1586,13 +1591,11 @@ namespace Loyc.Math
 		}
 		public static FPL32 operator /(FPL32 a, FPL32 b)
 		{
-			long whole = a.N / b.N;
-			long remainder = a.N % b.N;
-			remainder = (remainder << Frac) / b.N;
-			Debug.Assert(remainder < (1L << Frac));
-			a.N = (whole << Frac) + remainder;
+			// (a.N << Frac) / b.N computed in 128 bits: truncates toward zero, wraps on overflow
+			long numHi, quoHi, remainder;
+			ulong numLo = Math128.Multiply(a.N, Unit, out numHi);
+			a.N = unchecked((long)Math128.Divide(numHi, numLo, b.N, out quoHi, out remainder, false));
 			return a;
-			// TODO: test negative numbers: 7 / -2.5, -7 / 2.5, -7 / -2.5
 		}
 
 		public static FPL32 operator %(FPL32 a, FPL32 b) { a.N %= b.N; return a; }
