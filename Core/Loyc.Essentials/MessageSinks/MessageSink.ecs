@@ -15,34 +15,36 @@ namespace Loyc
 	{
 		#region Get/set default global message sink
 
-		static ThreadLocalVariable<IMessageSink? > _default = new ThreadLocalVariable<IMessageSink? >(null, autoFallback: true);
+		static readonly AmbientService<IMessageSink> _default = new AmbientService<IMessageSink>(NullMessageSink.Value);
 
 		public static IMessageSink Default
 		{
-			get { return _default.Value ?? Null; }
+			get { return _default.Value; }
 		}
 
 		[Obsolete("This property is now called Default")]
 		public static IMessageSink Current
 		{
 			get { return Default; }
-			set { _default.Value = value ?? Null; }
+			// Not scoped: the override is never popped (but see SetDefault)
+			set { _default.Set(value ?? Null, alsoSetGlobalDefault: true); }
 		}
-		
+
 		/// <summary>Used to change the <see cref="MessageSink.Default"/> property temporarily.</summary>
 		/// <example><code>
 		/// using (MessageSink.SetDefault(ConsoleMessageSink.Value))
 		///     MessageSink.Default.Write(Severity.Warning, null, "This prints on the console.")
 		/// </code></example>
-		/// <remarks>This method sets a thread-local value, but it also sets the
-		/// global default used by threads on which this method was never called.
+		/// <remarks>This method sets an async-local value (which flows across
+		/// <c>await</c> points and into threads started afterward), but it also sets
+		/// the global default used by execution contexts that never saw this call.
 		/// <para/>
 		/// This property follows the Ambient Service Pattern:
 		/// http://core.loyc.net/essentials/ambient-service-pattern.html
 		/// </remarks>
-		public static SavedValue<IMessageSink? > SetDefault(IMessageSink sink)
+		public static AmbientService<IMessageSink>.Saved SetDefault(IMessageSink sink)
 		{
-			return new SavedValue<IMessageSink? >(_default, sink);
+			return _default.Set(sink ?? Null, alsoSetGlobalDefault: true);
 		}
 
 		[Obsolete("This method is now called SetDefault()")]
@@ -52,8 +54,9 @@ namespace Loyc
 		public struct PushedCurrent : IDisposable
 		{
 			public readonly IMessageSink OldValue;
-			public PushedCurrent(IMessageSink @new) { OldValue = Default; _default.Value = @new ?? NullMessageSink.Value; }
-			public void Dispose() { _default.Value = OldValue; }
+			AmbientService<IMessageSink>.Saved _saved;
+			public PushedCurrent(IMessageSink @new) { OldValue = Default; _saved = _default.Set(@new ?? NullMessageSink.Value, alsoSetGlobalDefault: true); }
+			public void Dispose() { _saved.Dispose(); }
 		}
 
 		#endregion
@@ -93,8 +96,8 @@ namespace Loyc
 		}
 
 		static readonly Func<object?, string? > _getLocationString = GetLocationString;
-		static ThreadLocalVariable<Func<object?, string? >> _contextToString = 
-		   new ThreadLocalVariable<Func<object?, string? >>(_getLocationString, autoFallback: true);
+		static readonly AmbientService<Func<object?, string? >> _contextToString =
+		   new AmbientService<Func<object?, string? >>(_getLocationString);
 		
 		/// <summary>Gets the strategy that message sinks should use to convert 
 		/// a context object to a string.</summary>
@@ -123,17 +126,17 @@ namespace Loyc
 		
 		/// <summary>Sets the strategy that message sinks should use to convert 
 		/// a context object to a string.</summary>
-		/// <remarks><see cref="ContextToString"/> is a thread-local value, but since
-		/// .NET does not support inheritance of thread-local values, this method
-		/// also sets the global default used by threads on which this method was 
-		/// never called.
+		/// <remarks><see cref="ContextToString"/> is an async-local value (it flows
+		/// across <c>await</c> points and into threads started afterward), but this
+		/// method also sets the global default used by execution contexts that never
+		/// saw this call.
 		/// <para/>
 		/// This property follows the Ambient Service Pattern:
 		/// http://core.loyc.net/essentials/ambient-service-pattern.html
 		/// </remarks>
-		public static SavedValue<Func<object?, string? >> SetContextToString(Func<object?, string? > contextToString)
+		public static AmbientService<Func<object?, string? >>.Saved SetContextToString(Func<object?, string? > contextToString)
         {
-            return new SavedValue<Func<object?, string? >>(_contextToString, contextToString ?? _getLocationString);
+            return _contextToString.Set(contextToString ?? _getLocationString, alsoSetGlobalDefault: true);
         }
 
 		#endregion
