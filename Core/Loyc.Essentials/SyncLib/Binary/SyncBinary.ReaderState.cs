@@ -287,11 +287,8 @@ partial class SyncBinary
 			ExpectBytes(ref cur, strLength);
 
 			var span = cur.Buf.Slice(cur.Index, strLength);
-			#if NETSTANDARD2_0 || NETFRAMEWORK
-			var str = Encoding.UTF8.GetString(span.ToArray());
-			#else
-			var str = Encoding.UTF8.GetString(span);
-			#endif
+			// WTF-8: like UTF-8, but unpaired surrogates written by WriterState survive
+			var str = WTF8Encoding.Instance.GetString(span);
 
 			cur.Index += strLength;
 			Commit(cur);
@@ -323,23 +320,12 @@ partial class SyncBinary
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static float Int32BitsToSingle(int bits) => BitConverter.Int32BitsToSingle(bits);
 		#else
-		// netstandard2.0 and .NET Framework lack BitConverter.Int32BitsToSingle. An
-		// explicit-layout union reinterprets the bits with no allocation (the previous
-		// implementation allocated a byte[4] on every call) and no /unsafe. Same pattern
-		// as MathEx.Int32BitsToSingle.
-		[StructLayout(LayoutKind.Explicit)]
-		private struct SingleInt32Union
-		{
-			[FieldOffset(0)] public int Int32;
-			[FieldOffset(0)] public float Single;
-		}
-
+		// netstandard2.0 and .NET Framework lack BitConverter.Int32BitsToSingle
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static float Int32BitsToSingle(int bits)
 		{
-			var u = new SingleInt32Union();
-			u.Int32 = bits;
-			return u.Single;
+			Span<int> i = stackalloc int[1] { bits };
+			return MemoryMarshal.Cast<int, float>(i)[0];
 		}
 		#endif
 

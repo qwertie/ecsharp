@@ -308,6 +308,7 @@
     <Compile Include="Utilities\SavedValue.cs" />
     <Compile Include="Utilities\RunTests.cs" />
     <Compile Include="Strings\StringExt.cs" />
+    <Compile Include="Strings\WTF8Encoding.cs" />
     <Compile Include="Utilities\StreamScanner.cs" />
     <Compile Include="Utilities\ThreadEx.cs" />
     <Compile Include="Utilities\Traits.cs" />

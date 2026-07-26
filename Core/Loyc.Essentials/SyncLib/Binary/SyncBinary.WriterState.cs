@@ -423,62 +423,29 @@ partial class SyncBinary
 			WriteLittleEndianBytes((ulong)(num & ulong.MaxValue), numBytes, outBuf);
 		}
 
-		internal readonly static bool IsReversedEndian = (int)BitConverter.DoubleToInt64Bits(1) != 0;
-
 		public void Write(double num)
 		{
-			// The documentation says "The order of bits in the integer returned by the
-			// DoubleToInt64Bits method depends on whether the computer architecture is
-			// little-endian or big-endian." I doubt this is meaningful:
-			//
-			// - The SingleToInt32Bits method doesn't say the same thing.
-			// - The implementation uses `Unsafe.BitCast<double, long>` so as long as
-			//   the endianness of `double` is the same as `long`, `DoubleToInt64Bits(1.5)`
-			//   should be 0x3FF8_0000_0000_0000 regardless of platform endianness.
-			//
-			// However, I understand there are some ARM chips in which the endianness of
-			// floating-point numbers is opposite to the endianness of integers. So this
-			// code will detect that case and correct for it, just in case. I have no way
-			// to test that code path, though.
-			ulong bytes = (ulong) BitConverter.DoubleToInt64Bits(num);
-			#if !(NETSTANDARD2_0 || NETFRAMEWORK)
-			if (IsReversedEndian)
-				bytes = BinaryPrimitives.ReverseEndianness(bytes);
-			#endif
-			WriteLittleEndianUInt64(bytes, GetOutSpan(8));
+			// DoubleToInt64Bits returns the IEEE 754 bit pattern as an integer, so the
+			// integer serialization path below makes the byte order little-endian on
+			// every platform. (The reader does the mirror-image conversion.)
+			WriteLittleEndianUInt64(unchecked((ulong) BitConverter.DoubleToInt64Bits(num)), GetOutSpan(8));
 		}
 
 		public void Write(float num)
 		{
-			uint bytes = unchecked((uint) SingleToInt32Bits(num));
-			#if !(NETSTANDARD2_0 || NETFRAMEWORK)
-			if (IsReversedEndian)
-				bytes = BinaryPrimitives.ReverseEndianness(bytes);
-			#endif
-			WriteLittleEndianUInt32(bytes, GetOutSpan(4));
+			WriteLittleEndianUInt32(unchecked((uint) SingleToInt32Bits(num)), GetOutSpan(4));
 		}
 
 		#if !(NETSTANDARD2_0 || NETFRAMEWORK)
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static int SingleToInt32Bits(float value) => BitConverter.SingleToInt32Bits(value);
 		#else
-		// netstandard2.0 and .NET Framework lack BitConverter.SingleToInt32Bits. An
-		// explicit-layout union reinterprets the bits with no allocation (the previous
-		// implementation allocated a byte[4] on every call) and no /unsafe. Same pattern
-		// as MathEx.SingleToInt32Bits.
-		[StructLayout(LayoutKind.Explicit)]
-		private struct SingleInt32Union
-		{
-			[FieldOffset(0)] public int Int32;
-			[FieldOffset(0)] public float Single;
-		}
-
+		// netstandard2.0 and .NET Framework lack BitConverter.SingleToInt32Bits
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static int SingleToInt32Bits(float value)
 		{
-			var u = new SingleInt32Union();
-			u.Single = value;
-			return u.Int32;
+			Span<float> f = stackalloc float[1] { value };
+			return MemoryMarshal.Cast<float, int>(f)[0];
 		}
 		#endif
 
@@ -525,13 +492,8 @@ partial class SyncBinary
 		}
 		public void Write(ReadOnlySpan<char> str)
 		{
-			// Encoding.UTF8 allows unpaired surrogates. Technically this is called "WTF-8"
-			#if NETSTANDARD2_0 || NETFRAMEWORK
-			var array = str.ToArray();
-			int wtf8size = Encoding.UTF8.GetByteCount(array);
-			#else
-			int wtf8size = Encoding.UTF8.GetByteCount(str);
-			#endif
+			// WTF-8 = UTF-8 plus unpaired surrogates, so any string round-trips losslessly
+			int wtf8size = WTF8Encoding.Instance.GetByteCount(str);
 			// worst-case overhead: 2 bytes for start/end markers + 5 for string length
 			int requiredBytes = 7 + wtf8size;
 
@@ -542,13 +504,7 @@ partial class SyncBinary
 
 			Write((uint) wtf8size); // length prefix
 
-			#if NETSTANDARD2_0 || NETFRAMEWORK
-			var outBytes = Encoding.UTF8.GetBytes(array, 0, array.Length);
-			outBytes.CopyTo(outSpan.Slice(_i));
-			int wtf8size2 = outBytes.Length;
-			#else
-			int wtf8size2 = Encoding.UTF8.GetBytes(str, outSpan.Slice(_i));
-			#endif
+			int wtf8size2 = WTF8Encoding.Instance.GetBytes(str, outSpan.Slice(_i));
 			Debug.Assert(wtf8size == wtf8size2);
 			_i += wtf8size;
 
