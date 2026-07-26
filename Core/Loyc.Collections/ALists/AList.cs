@@ -456,11 +456,7 @@ namespace Loyc.Collections
 			}
 		}
 
-		// Random is not thread-safe. A single shared instance means two threads sorting
-		// two *different* ALists concurrently can corrupt its internal state (on .NET
-		// Framework this can leave it returning 0 forever, degrading the quicksort pivot
-		// choice to worst-case O(n^2)). Random.Shared is thread-safe and lock-free;
-		// where it is unavailable, give each thread its own instance.
+		// A `static Random` is not thread-safe, but `Random.Shared` is thread-safe & lock-free
 		#if NET6_0_OR_GREATER
 		static Random _r => Random.Shared;
 		#else

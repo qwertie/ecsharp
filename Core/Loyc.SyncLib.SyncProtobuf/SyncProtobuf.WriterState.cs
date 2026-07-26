@@ -24,8 +24,8 @@ partial class SyncProtobuf
 		internal Options _opt;
 		internal IBufferWriter<byte> _output;
 		// Was ObjectIDGenerator, which lives in the BinaryFormatter corner of the BCL.
-		// ObjectIdTable is the same reference-equality id table (IDs also start at one).
-		readonly ObjectIdTable _idGen = new ObjectIdTable();
+		// ObjectIdGenerator is the same reference-equality id table (IDs also start at one).
+		readonly ObjectIdGenerator _idGen = new ObjectIdGenerator();
 
 		byte[] _data;
 		int _pos;

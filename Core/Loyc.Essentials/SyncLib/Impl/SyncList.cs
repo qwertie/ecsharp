@@ -206,8 +206,6 @@ namespace Loyc.SyncLib.Impl
 		public static readonly Func<int, List<T>> List = min => new List<T>(min <= 1 ? 4 : min);
 		public static readonly Func<int, DList<T>> DList = min => new DList<T>(min <= 1 ? 4 : min);
 		
-		// HashSet<T>(int capacity) exists in .NET Framework 4.7.2 (our netfx floor)
-		// and in netstandard2.1, so only netstandard2.0 needs the capacity-less ctor.
 		#if NETSTANDARD2_0
 		public static readonly Func<int, HashSet<T>> HashSet = min => new HashSet<T>();
 		#else

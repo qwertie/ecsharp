@@ -252,7 +252,7 @@
     <Compile Include="SyncLib\Impl\ListSaver.cs" />
     <Compile Include="SyncLib\Impl\Memory2.cs" />
     <Compile Include="SyncLib\Impl\ObjectSyncher.cs" />
-    <Compile Include="SyncLib\Impl\ObjectTable.cs" />
+    <Compile Include="SyncLib\Impl\ObjectIdGenerator.cs" />
     <Compile Include="SyncLib\Impl\SyncTime.cs" />
     <Compile Include="SyncLib\Impl\SyncEnum.cs" />
     <Compile Include="SyncLib\Impl\SyncList.cs" />

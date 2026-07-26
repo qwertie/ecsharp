@@ -7,7 +7,7 @@ namespace Loyc.SyncLib.Impl
 	/// <summary>An <see cref="IEqualityComparer{T}"/> that uses reference identity,
 	///   ignoring any <c>Equals</c>/<c>GetHashCode</c> overrides on T.</summary>
 	/// <remarks>This matters for strings in particular: two equal but distinct string
-	///   instances must be treated as two different objects by <see cref="ObjectIdTable"/>,
+	///   instances must be treated as two different objects by <see cref="ObjectIdGenerator"/>,
 	///   exactly as the old <c>ObjectIDGenerator</c> did.</remarks>
 	internal sealed class ObjectReferenceComparer<T> : IEqualityComparer<T> where T : class
 	{
@@ -26,7 +26,7 @@ namespace Loyc.SyncLib.Impl
 	///   assigned sequentially starting at 1, objects are compared by reference identity, and
 	///   <c>GetId</c> reports whether the object had been seen before.
 	/// </remarks>
-	public sealed class ObjectIdTable
+	public sealed class ObjectIdGenerator
 	{
 		readonly Dictionary<object, long> _ids = new Dictionary<object, long>(ObjectReferenceComparer<object>.Instance);
 		long _nextId = 1; // IDs start at one, matching ObjectIDGenerator

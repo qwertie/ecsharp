@@ -12,10 +12,7 @@ namespace Loyc.SyncLib.Impl
 		//protected Memory<byte> _buf; // a sub-buffer returned from _output
 		protected int _i = 0; // next index within _out to write
 
-		// Was System.Runtime.Serialization.ObjectIDGenerator, which Microsoft marked
-		// obsolete in .NET 8 (SYSLIB0050). ObjectIdTable is behaviour-compatible:
-		// reference identity, IDs starting at one, same GetId(obj, out firstTime) shape.
-		protected internal ObjectIdTable _idGen = new ObjectIdTable();
+		protected internal ObjectIdGenerator _idGen = new ObjectIdGenerator();
 
 		const int MinimumBufSize = 1024;
 
