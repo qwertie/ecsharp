@@ -120,5 +120,36 @@ namespace Loyc.Essentials.Tests
 			a.SetTag("SomethingElseFirst", "hello");
 			a.SetTag((string?) null!, "hi");
 		}
+
+		[Test]
+		public void CopyToDoesNotClobberFirstEntry()
+		{
+			// Regression: once the dictionary existed, CopyTo copied it and THEN
+			// overwrote array[arrayIndex] with the cached pair (which is already in the
+			// dictionary), losing one entry and duplicating another.
+			var a = new HashTags<string>();
+			a.SetTag("one", "1");
+			a.SetTag("two", "2");
+			a.SetTag("three", "3");
+			var coll = (ICollection<KeyValuePair<Symbol, string>>)a;
+			Assert.AreEqual(3, coll.Count);
+
+			var array = new KeyValuePair<Symbol, string>[3];
+			coll.CopyTo(array, 0);
+
+			var byKey = array.ToDictionary(kv => kv.Key.Name, kv => kv.Value);
+			Assert.AreEqual(3, byKey.Count); // no duplicates
+			Assert.AreEqual("1", byKey["one"]);
+			Assert.AreEqual("2", byKey["two"]);
+			Assert.AreEqual("3", byKey["three"]);
+
+			// The single-tag case (no dictionary yet) must still work
+			var b = new HashTags<string>();
+			b.SetTag("only", "x");
+			var one = new KeyValuePair<Symbol, string>[1];
+			((ICollection<KeyValuePair<Symbol, string>>)b).CopyTo(one, 0);
+			Assert.AreEqual("only", one[0].Key.Name);
+			Assert.AreEqual("x", one[0].Value);
+		}
 	};
 }

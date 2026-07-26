@@ -10,7 +10,7 @@ namespace Loyc.Essentials.Tests
 {
 	/// <summary>Unit tests for <see cref="ListExt"/>.</summary>
 	[TestFixture]
-	public class ListExtTests
+	public class ListExtTests : Loyc.Collections.Impl.TestHelpers
 	{
 		const int FuzzTrials = 200, MaxListSize = 200, KeyRange = 150;
 		Random _r = new Random();
@@ -163,6 +163,72 @@ namespace Loyc.Essentials.Tests
 				numSortedAfter[i - k] = numSortedAfter.TryGetValue(i - k, 0) + 1;
 			}
 			Assert.That(numSortedAfter.ContainsKey(1));
+		}
+
+		[Test]
+		public void TestReverseInPlace()
+		{
+			// Regression: the swap partner was `c - i` instead of `c - 1 - i`, so this
+			// threw ArgumentOutOfRangeException for EVERY list of length >= 2.
+			for (int n = 0; n <= 8; n++) {
+				var list = new List<int>(Enumerable.Range(0, n));
+				list.ReverseInPlace();
+				ExpectList(list, Enumerable.Range(0, n).Reverse().ToArray());
+			}
+			// The IArray<T> overload must behave identically (ListSlice<T> is an IArray)
+			for (int n = 0; n <= 8; n++) {
+				var backing = new List<int>(Enumerable.Range(0, n));
+				IArray<int> slice = new ListSlice<int>(backing);
+				slice.ReverseInPlace();
+				ExpectList(backing, Enumerable.Range(0, n).Reverse().ToArray());
+			}
+		}
+
+		[Test]
+		public void TestAdjacentPairsCircular()
+		{
+			// Regression: the IEnumerable overload delegated to AdjacentPairs, dropping
+			// the wrap-around pair that is this method's entire reason to exist.
+			var pairs = new[] { 1, 2, 3, 4 }.AdjacentPairsCircular().ToList();
+			ExpectList(pairs, Pair.Create(1, 2), Pair.Create(2, 3), Pair.Create(3, 4), Pair.Create(4, 1));
+			// Degenerate cases
+			ExpectList(new int[0].AdjacentPairsCircular().ToList());
+			ExpectList(new[] { 7 }.AdjacentPairsCircular().ToList(), Pair.Create(7, 7));
+			// Plain AdjacentPairs must NOT wrap
+			ExpectList(new[] { 1, 2, 3 }.AdjacentPairs().ToList(), Pair.Create(1, 2), Pair.Create(2, 3));
+		}
+
+		[Test]
+		public void TestIndexOfMinMaxSkipsLeadingNulls()
+		{
+			// Regression: the null-skipping loop advanced `i` but never updated `min_i`,
+			// so the index of a LEADING NULL was returned instead of the real min/max.
+			var withLeadingNull = new string?[] { null, "b", "a", "c" };
+			Assert.AreEqual(2, withLeadingNull.IndexOfMin());  // "a"
+			Assert.AreEqual(3, withLeadingNull.IndexOfMax());  // "c"
+			var twoNulls = new string?[] { null, null, "z", "y" };
+			Assert.AreEqual(3, twoNulls.IndexOfMin());         // "y"
+			Assert.AreEqual(2, twoNulls.IndexOfMax());         // "z"
+			// No nulls: unchanged behaviour
+			Assert.AreEqual(1, new[] { "b", "a", "c" }.IndexOfMin());
+			// All null / empty
+			Assert.AreEqual(-1, new string?[] { null, null }.IndexOfMin());
+			Assert.AreEqual(-1, new string?[0].IndexOfMin());
+		}
+
+		[Test]
+		public void TestConcatNow()
+		{
+			// Regression: the IReadOnlyList overload never incremented a_i, so it
+			// returned the first element of each list repeated.
+			IReadOnlyList<int> a = new[] { 1, 2, 3 };
+			IReadOnlyList<int> b = new[] { 4, 5 };
+			ExpectList(a.ConcatNow(b), 1, 2, 3, 4, 5);
+			ExpectList(a.ConcatNow(new int[0]), 1, 2, 3);
+			ExpectList(((IReadOnlyList<int>)new int[0]).ConcatNow(b), 4, 5);
+			ExpectList(((IReadOnlyList<int>)new int[0]).ConcatNow(new int[0]));
+			// Must agree with the T[] overload
+			ExpectList(a.ConcatNow(b), new[] { 1, 2, 3 }.ConcatNow(new[] { 4, 5 }));
 		}
 	}
 }

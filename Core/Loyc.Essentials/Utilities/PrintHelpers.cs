@@ -36,6 +36,10 @@ namespace Loyc.Syntax
 		/// escaped (typically one of <c>' " `</c>)</param>
 		public static string EscapeCStyle(UString s, EscapeC flags, char quoteType)
 		{
+			// PopFirst mutates `s` (it is a struct), so snapshot it first; otherwise the
+			// "nothing was escaped" fast path below can never trigger, because by the end
+			// of the loop s.Length is always 0.
+			UString original = s;
 			StringBuilder s2 = new StringBuilder(s.Length+1);
 			bool usedEscapes = false, fail;
 			for (;;) {
@@ -43,8 +47,9 @@ namespace Loyc.Syntax
 				if (fail) break;
 				usedEscapes |= EscapeCStyle(c, s2, flags, quoteType);
 			}
-			if (!usedEscapes && s.InternalString?.Length == s.Length)
-				return s.InternalString;
+			if (!usedEscapes && original.InternalString != null
+				&& original.InternalStart == 0 && original.InternalString.Length == original.Length)
+				return original.InternalString;
 			return s2.ToString();
 		}
 
@@ -131,7 +136,10 @@ namespace Loyc.Syntax
 							else
 								EscapeU(c, @out, flags);
 						} else
-							@out.Append(c);
+							// Note the cast: `c` is an int, so Append(c) would bind to
+							// StringBuilder.Append(int) and emit the DECIMAL DIGITS of the
+							// code point (e.g. "1" for U+0001) instead of the character.
+							@out.Append((char)c);
 					}
 				} else if (c == '\"' && (flags & EscapeC.DoubleQuotes) != 0) {
 					@out.Append("\\\"");

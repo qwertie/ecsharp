@@ -113,6 +113,9 @@ namespace Loyc.Collections
 			for (min = e.Current; min == null; i++, min = e.Current)
 				if (!e.MoveNext())
 					return -1;
+			// The loop above skips leading nulls; min_i must follow, otherwise a
+			// leading null's index is returned instead of the first non-null item's.
+			min_i = i;
 			while (e.MoveNext()) {
 				i++;
 				if ((cur = e.Current) != null && comparer.Compare(cur, min) < 0) {
@@ -247,6 +250,9 @@ namespace Loyc.Collections
 			for (min = e.Current; min == null; i++, min = e.Current)
 				if (!e.MoveNext())
 					return -1;
+			// The loop above skips leading nulls; min_i must follow, otherwise a
+			// leading null's index is returned instead of the first non-null item's.
+			min_i = i;
 			while (e.MoveNext()) {
 				i++;
 				if ((cur = e.Current) != null && comparer.Compare(cur, min) > 0) {
@@ -421,7 +427,7 @@ namespace Loyc.Collections
 		/// <summary>Returns all adjacent pairs, treating the first and last 
 		/// pairs as adjacent (e.g. for the list {1,2,3,4}, returns the pairs
 		/// {(1,2),(2,3),(3,4),(4,1)}.)</summary>
-		public static IEnumerable<Pair<T, T>> AdjacentPairsCircular<T>(this IEnumerable<T> list) { return AdjacentPairs(list.GetEnumerator()); }
+		public static IEnumerable<Pair<T, T>> AdjacentPairsCircular<T>(this IEnumerable<T> list) { return AdjacentPairsCircular(list.GetEnumerator()); }
 		public static IEnumerable<Pair<T, T>> AdjacentPairsCircular<T>(this IEnumerator<T> e)
 		{
 			if (e.MoveNext()) {

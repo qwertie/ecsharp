@@ -242,6 +242,11 @@ namespace Loyc
 					}
 					if (repl != '\0')
 						sb.Append(repl);
+					// The result differs from the input unless the replacement happens to
+					// be the very same (invalid) character. Without this, `changed` stayed
+					// false forever and the method always returned `text` unmodified.
+					if (repl != c)
+						changed = true;
 				} else
 					sb.Append(c);
 			}
@@ -349,7 +354,10 @@ namespace Loyc
 				x |= (x >> 16);
 				return (CountOnes(x) - 1);
 			#else
-				return BitOperations.Log2(x);
+				// BitOperations.Log2 does `value |= 1`, so Log2(0) == 0. This method is
+				// documented to return -1 for zero (and MathEx.Log2Floor does), so the
+				// zero case must be handled explicitly to keep all targets consistent.
+				return x == 0 ? -1 : BitOperations.Log2(x);
 			#endif
 		}
 		/// <summary>

@@ -84,7 +84,15 @@ namespace Loyc.Collections
 				_map._valueCount++;
 			}
 
-			public void Clear() => _map._dict.Remove(_key);
+			public void Clear()
+			{
+				// Removing the list must also deduct its items from the value count,
+				// otherwise MultiMap.Count permanently over-reports.
+				if (_map._dict.TryGetValue(_key, out var values)) {
+					_map._valueCount -= values.Count;
+					_map._dict.Remove(_key);
+				}
+			}
 
 			public bool Contains(V item) => GetValues() is { } values && values!.Contains(item);
 

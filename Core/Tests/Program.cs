@@ -114,7 +114,8 @@ namespace Loyc.Tests
 				SelectDictionaryFromKeysTests.TestObjects[0],
 				SelectDictionaryFromKeysTests.TestObjects[1],
 				new GTests(),
-				new PrintHelpersTests()
+				new PrintHelpersTests(),
+				new Tier0RegressionTests()
 			);
 		}
 		public static int Loyc_SyncLib()

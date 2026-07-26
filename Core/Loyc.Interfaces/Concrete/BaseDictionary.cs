@@ -10,10 +10,11 @@ namespace Loyc.Collections.Impl
 	/// <summary>A base class for user-defined dictionaries that want to implement 
 	/// both <c>IDictionary(K,V)</c> and <c>IReadOnlyDictionary(K, V)</c>.</summary>
 	/// <remarks>Modified version of source: datavault project. License: Apache License 2.0.</remarks>
-    // Note: there used to be a [DebuggerTypeProxy] here that named
-    // System.Collections.Generic.Mscorlib_DictionaryDebugView`2 in mscorlib
-    // 2.0.0.0. That type does not exist on .NET Core / .NET Standard, so the
-    // attribute was dead weight (or worse) on 3 of our 4 target frameworks.
+    // Note: this used to name mscorlib 2.0's internal
+    // System.Collections.Generic.Mscorlib_DictionaryDebugView`2 by string. Our own
+    // proxy below resolves on every target framework rather than relying on that
+    // type being present (and on assembly unification) in the debugger.
+    [DebuggerTypeProxy(typeof(DictionaryDebugView<,>))]
     [DebuggerDisplay("Count = {Count}")]
     public abstract class DictionaryBase<TKey, TValue> : IDictionaryAndReadOnly<TKey, TValue>
 		where TKey: notnull
@@ -31,7 +32,7 @@ namespace Loyc.Collections.Impl
         protected abstract void SetValue(TKey key, TValue value);
 
         public bool IsReadOnly => false;
-        public bool IsEmpty => Count != 0;
+        public bool IsEmpty => Count == 0;
         public TValue TryGet(TKey key, [MaybeNullWhen(false)] out bool fail)
         {
             fail = !TryGetValue(key, out TValue? value);
@@ -116,4 +117,27 @@ namespace Loyc.Collections.Impl
                 array[arrayIndex++] = item;
         }
     }
+
+    /// <summary>Debugger proxy that shows the contents of a dictionary as a flat
+    ///   array of key-value pairs. Used by <see cref="DictionaryBase{TKey,TValue}"/>.</summary>
+    /// <remarks>This replaces a [DebuggerTypeProxy] that referred, by string, to an
+    ///   internal mscorlib 2.0 type. This one exists on every target framework.</remarks>
+    internal class DictionaryDebugView<TKey, TValue> where TKey : notnull
+    {
+        private readonly IDictionary<TKey, TValue> _dict;
+
+        public DictionaryDebugView(IDictionary<TKey, TValue> dictionary)
+            => _dict = dictionary ?? throw new ArgumentNullException(nameof(dictionary));
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public KeyValuePair<TKey, TValue>[] Items
+        {
+            get {
+                var array = new KeyValuePair<TKey, TValue>[_dict.Count];
+                _dict.CopyTo(array, 0);
+                return array;
+            }
+        }
+    }
+
 }

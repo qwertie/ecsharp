@@ -53,7 +53,10 @@ namespace Loyc.Collections
 		}
 		public new System.Collections.IEnumerator GetEnumerator()
 		{
-			return GetEnumerator();
+			// `new` hides the base method but the return type is not part of the
+			// signature, so the unqualified call bound to THIS method and recursed
+			// until the stack overflowed. It must delegate to the base explicitly.
+			return base.GetEnumerator();
 		}
 		[return: MaybeNull]
 		public T NextHigherItem(ref int? index)

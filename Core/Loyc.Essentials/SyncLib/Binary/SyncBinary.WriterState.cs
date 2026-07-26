@@ -6,6 +6,7 @@ using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Loyc.SyncLib;
@@ -449,16 +450,37 @@ partial class SyncBinary
 
 		public void Write(float num)
 		{
-			// Unsafe.As is a pure reinterpret-cast with no allocation, and is available on
-			// every target via System.Runtime.CompilerServices.Unsafe. It replaces the old
-			// netstandard2.0/net472 path, which allocated a byte[] for every single float.
-			uint bytes = Unsafe.As<float, uint>(ref num);
+			uint bytes = unchecked((uint) SingleToInt32Bits(num));
 			#if !(NETSTANDARD2_0 || NETFRAMEWORK)
 			if (IsReversedEndian)
 				bytes = BinaryPrimitives.ReverseEndianness(bytes);
 			#endif
 			WriteLittleEndianUInt32(bytes, GetOutSpan(4));
 		}
+
+		#if !(NETSTANDARD2_0 || NETFRAMEWORK)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static int SingleToInt32Bits(float value) => BitConverter.SingleToInt32Bits(value);
+		#else
+		// netstandard2.0 and .NET Framework lack BitConverter.SingleToInt32Bits. An
+		// explicit-layout union reinterprets the bits with no allocation (the previous
+		// implementation allocated a byte[4] on every call) and no /unsafe. Same pattern
+		// as MathEx.SingleToInt32Bits.
+		[StructLayout(LayoutKind.Explicit)]
+		private struct SingleInt32Union
+		{
+			[FieldOffset(0)] public int Int32;
+			[FieldOffset(0)] public float Single;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static int SingleToInt32Bits(float value)
+		{
+			var u = new SingleInt32Union();
+			u.Single = value;
+			return u.Int32;
+		}
+		#endif
 
 		public void Write(decimal num)
 		{

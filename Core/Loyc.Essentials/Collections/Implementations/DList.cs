@@ -93,11 +93,12 @@ namespace Loyc.Collections
 
 		public void InsertRange(int index, IEnumerable<T> e)
 		{
-			var s = e as IReadOnlyCollection<T>;
-			if (s != null)
+			// Note: a sequence can implement BOTH IReadOnlyCollection and ICollection
+			// (Enumerable.Range does, on modern .NET). Without this `else`, such a
+			// sequence was inserted twice.
+			if (e is IReadOnlyCollection<T> s)
 				InsertRange(index, s);
-			var c = e as ICollection<T>;
-			if (c != null)
+			else if (e is ICollection<T> c)
 				InsertRange(index, c);
 			else
 				InsertRange(index, (ICollection<T>)new List<T>(e));
@@ -258,7 +259,10 @@ namespace Loyc.Collections
 				throw new ArgumentOutOfRangeException("sourceIndex");
 			if ((uint)destinationIndex > (uint)destination.Length)
 				throw new ArgumentOutOfRangeException("sourceIndex");
-			if ((uint)subcount > (uint)Math.Max(_dlist.Count - sourceIndex, destination.Length - destinationIndex))
+			// Must be Min, not Max: subcount has to fit BOTH the remaining source items
+			// and the remaining destination space. Max let an oversized subcount through
+			// whenever either side happened to be large enough.
+			if ((uint)subcount > (uint)Math.Min(_dlist.Count - sourceIndex, destination.Length - destinationIndex))
 				throw new ArgumentOutOfRangeException("subcount");
 			
 			_dlist.CopyTo(sourceIndex, destination, destinationIndex, subcount);

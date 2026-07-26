@@ -62,5 +62,21 @@ namespace Loyc.Essentials.Tests
 				ExpectList(result, bytes);
 			}
 		}
+
+		[Test]
+		public void ByteArrayOverloadForwardsForceInitialEscape()
+		{
+			// Regression: the byte[] overload of ConvertFromBytes silently dropped its
+			// forceInitialEscape argument when delegating to the span overload.
+			var bytes = new byte[] { 65, 66, 67 };
+			Assert.AreEqual("!ABC", ByteArrayInString.ConvertFromBytes(bytes, false, forceInitialEscape: true));
+			Assert.AreEqual("ABC", ByteArrayInString.ConvertFromBytes(bytes, false, forceInitialEscape: false));
+			// The span overload was always correct; the two must now agree
+			Assert.AreEqual(ByteArrayInString.ConvertFromBytes(bytes.AsSpan(), false, true),
+			                ByteArrayInString.ConvertFromBytes(bytes, false, true));
+			// ...and the result must still round-trip (AreEqual on byte[] compares
+			// references, so use the element-wise helper)
+			ExpectList(ByteArrayInString.ConvertToBytes("!ABC").ToArray(), bytes);
+		}
 	}
 }

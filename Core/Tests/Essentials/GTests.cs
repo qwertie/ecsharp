@@ -130,6 +130,50 @@ namespace Loyc.Essentials.Tests
 			Assert.AreEqual(typeof(EqualityComparer<int>).GetProperty("Default").GetGetMethod(), G.GetMethodInfo(() => EqualityComparer<int>.Default));
 		}
 
+		[Test]
+		public void TestLog2FloorOfZero()
+		{
+			// Regression: BitOperations.Log2 does `value |= 1`, so on .NET 6 Log2Floor(0)
+			// returned 0 while netstandard2.0/net472 (and MathEx.Log2Floor) returned -1.
+			// The documented contract is -1 for zero or negative.
+			Assert.AreEqual(-1, G.Log2Floor(0u));
+			Assert.AreEqual(-1, G.Log2Floor(0));
+			Assert.AreEqual(-1, G.Log2Floor(-1));
+			Assert.AreEqual(-1, G.Log2Floor(int.MinValue));
+			// Non-zero values are unaffected
+			Assert.AreEqual(0, G.Log2Floor(1u));
+			Assert.AreEqual(10, G.Log2Floor(1024u));
+			Assert.AreEqual(9, G.Log2Floor(1000u));
+			Assert.AreEqual(31, G.Log2Floor(uint.MaxValue));
+			// ...and must agree with Loyc.Math.MathEx on every target
+			for (uint i = 0; i < 300; i++)
+				Assert.AreEqual(Loyc.Math.MathEx.Log2Floor(i), G.Log2Floor(i));
+		}
+
+		[Test]
+		public void TestMakeValidFileName()
+		{
+			// Regression: the `changed` flag was never set, so this method always
+			// returned its input unmodified -- the documented replacement never happened.
+			// NOTE: Path.GetInvalidFileNameChars() is platform-dependent (Windows bans
+			// many characters, Unix only '\0' and '/'), so assert only on '/', which is
+			// invalid everywhere, and otherwise assert platform-independent properties.
+			Assert.AreEqual("a_b", G.MakeValidFileName("a/b", '_', fancy: false));
+			Assert.AreEqual("ab", G.MakeValidFileName("a/b", null, fancy: false));
+			// The 'fancy' substitution for '/' is U+2044 FRACTION SLASH
+			Assert.AreEqual("a⁄b", G.MakeValidFileName("a/b", '_', fancy: true));
+			// Unchanged input is returned as-is
+			Assert.AreEqual("already valid", G.MakeValidFileName("already valid"));
+			// An all-invalid name that would otherwise be empty becomes "_"
+			Assert.AreEqual("_", G.MakeValidFileName("//", null, fancy: false));
+			// Whatever comes out must actually be a valid file name on THIS platform
+			var invalid = System.IO.Path.GetInvalidFileNameChars();
+			foreach (var name in new[] { "a<b>c", "a\"b/c", "x:y|z?" }) {
+				var result = G.MakeValidFileName(name, '_', fancy: false);
+				Assert.AreEqual(-1, result.IndexOfAny(invalid));
+			}
+		}
+
 		//[Test]
 		//public void TestPerf()
 		//{

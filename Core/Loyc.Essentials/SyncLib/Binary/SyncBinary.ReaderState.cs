@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Buffers.Binary;
 using System.Numerics;
 using System.Diagnostics.CodeAnalysis;
@@ -315,11 +316,32 @@ partial class SyncBinary
 			if (num == FloatNullBitPattern)
 				return null;
 
-			// Unsafe.As is a pure reinterpret-cast with no allocation, and is available on
-			// every target via System.Runtime.CompilerServices.Unsafe. It replaces the old
-			// netstandard2.0/net472 path, which allocated a byte[] for every single float.
-			return Unsafe.As<uint, float>(ref num);
+			return Int32BitsToSingle(unchecked((int) num));
 		}
+
+		#if !(NETSTANDARD2_0 || NETFRAMEWORK)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static float Int32BitsToSingle(int bits) => BitConverter.Int32BitsToSingle(bits);
+		#else
+		// netstandard2.0 and .NET Framework lack BitConverter.Int32BitsToSingle. An
+		// explicit-layout union reinterprets the bits with no allocation (the previous
+		// implementation allocated a byte[4] on every call) and no /unsafe. Same pattern
+		// as MathEx.Int32BitsToSingle.
+		[StructLayout(LayoutKind.Explicit)]
+		private struct SingleInt32Union
+		{
+			[FieldOffset(0)] public int Int32;
+			[FieldOffset(0)] public float Single;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static float Int32BitsToSingle(int bits)
+		{
+			var u = new SingleInt32Union();
+			u.Int32 = bits;
+			return u.Single;
+		}
+		#endif
 
 		internal double? ReadDoubleOrNull()
 		{
@@ -398,6 +420,7 @@ partial class SyncBinary
 		internal BigInteger? ReadBigIntegerOrNull()
 		{
 			var cur = _frame.Pointer;
+			ExpectBytes(ref cur, 1); // fail properly if the stream ends before the tag byte
 			if (cur.Byte == 0xFE)
 			{
 				BigInteger value = DecodeLargestIntFormat(ref cur);

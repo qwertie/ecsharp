@@ -569,9 +569,13 @@ namespace Loyc
 		/// <param name="maxReplacements"></param>
 		/// <returns>Returns a new string with replacements made, or the same 
 		/// string if no replacements occurred.</returns>
+		/// <remarks>If <paramref name="what"/> is empty, no replacement is possible and
+		/// this string is returned unchanged (rather than looping forever, which is what
+		/// earlier versions did). This matches the documented "same string if no
+		/// replacements occurred" contract and the <c>maxReplacements &lt;= 0</c> case.</remarks>
 		public UString Replace(UString what, UString replacement, bool ignoreCase = false, int maxReplacements = int.MaxValue)
 		{
-			if (maxReplacements <= 0)
+			if (maxReplacements <= 0 || what.Length == 0)
 				return this;
 			UString sub = Find(what, ignoreCase);
 			if (sub.IsEmpty)

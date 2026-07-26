@@ -170,7 +170,7 @@ namespace Loyc
 
 		/// <inheritdoc cref="ConvertFromBytes(Memory{byte}, bool)"/>
 		public static string ConvertFromBytes(byte[] bytes, bool allowControlChars, bool forceInitialEscape = false)
-			=> ConvertFromBytes(bytes.AsSpan(), allowControlChars);
+			=> ConvertFromBytes(bytes.AsSpan(), allowControlChars, forceInitialEscape);
 
 
 		/// <summary>Decodes a BAIS string back to a byte array.</summary>

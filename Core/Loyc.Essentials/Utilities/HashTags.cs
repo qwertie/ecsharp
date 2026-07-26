@@ -206,8 +206,12 @@ namespace Loyc
 			if (((IDictionary<Symbol, ValueT>)this).Count > array.Length - arrayIndex)
 				CheckParam.ThrowBadArgument("Insufficient space in supplied array");
 			if (_attrs != null)
+				// Once the dictionary exists it also holds the cached pair, so copying it
+				// is complete. Writing the cached pair afterwards (as this used to do
+				// unconditionally) clobbered array[arrayIndex], losing one entry and
+				// duplicating another.
 				((ICollection<KeyValuePair<Symbol, ValueT>>)_attrs).CopyTo(array, arrayIndex);
-			if (_cachedAttrKey != null)
+			else if (_cachedAttrKey != null)
 				array[arrayIndex] = new KeyValuePair<Symbol, ValueT>(_cachedAttrKey, _cachedAttrValue);
 		}
 		

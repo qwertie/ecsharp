@@ -61,5 +61,19 @@ namespace Loyc.Essentials.Tests
 			AreEqual(nos.Replace(no, yes, false), (UString)"oNoNoNoNo");
 			AreEqual(nos.Replace(no, yes, true), (UString)"oYesYesYesYes");
 		}
+
+		[Test]
+		public void ReplaceWithEmptySearchStringTerminates()
+		{
+			// Regression: Replace("", x) looped forever, growing a StringBuilder until
+			// the process died. An empty search string cannot match, so by the documented
+			// "same string if no replacements occurred" contract we return this unchanged.
+			UString abc = "abc";
+			AreEqual(abc, abc.Replace("", "x"));
+			AreEqual(abc, abc.Replace("", "x", ignoreCase: true));
+			AreEqual((UString)"", ((UString)"").Replace("", "x"));
+			// A normal replacement still works
+			AreEqual((UString)"axc", abc.Replace("b", "x"));
+		}
 	}
 }

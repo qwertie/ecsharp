@@ -138,7 +138,9 @@ namespace Loyc.Collections
 		}
 		public bool Contains(T item)
 		{
-			return EqualityComparer<T>.Default.Equals(_value, item);
+			// A zero-length Repeated<T> contains nothing, even if item happens to
+			// equal the repeated value.
+			return _count > 0 && EqualityComparer<T>.Default.Equals(_value, item);
 		}
 
 		#endregion
@@ -161,9 +163,16 @@ namespace Loyc.Collections
 		{
 			get { return First; }
 		}
+		[return: MaybeNull] // There's no attribute like [return: MaybeNullIf("fail")]
 		public T PopLast(out bool fail)
 		{
-			return PopLast(out fail);
+			// This used to call itself, causing an uncatchable StackOverflowException.
+			// Every element is identical, so popping the last is the same as the first.
+			if (!(fail = _count <= 0)) {
+				_count--;
+				return _value;
+			} else
+				return default(T);
 		}
 
 		public T First

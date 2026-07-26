@@ -87,5 +87,33 @@ namespace Loyc.Collections.Tests
 				}
 			}
 		}
+
+		[Test]
+		public void ClearingAValueListUpdatesTheValueCount()
+		{
+			// Regression: ValueList.Clear() removed the list but never deducted its items
+			// from _valueCount, so MultiMap.Count over-reported forever afterward.
+			var mmap = new MultiMap<string, int>();
+			mmap["a"].Add(1);
+			mmap["a"].Add(2);
+			mmap["b"].Add(3);
+			Assert.AreEqual(3, mmap.Count);
+			Assert.AreEqual(2, mmap.KeyCount);
+
+			mmap["a"].Clear();
+
+			Assert.AreEqual(1, mmap.Count);
+			Assert.AreEqual(1, mmap.KeyCount);
+			Assert.AreEqual(1, System.Linq.Enumerable.Count<KeyValuePair<string, int>>(mmap));  // what enumeration actually yields
+
+			// Clearing a key that isn't present must not change anything
+			mmap["nonexistent"].Clear();
+			Assert.AreEqual(1, mmap.Count);
+			Assert.AreEqual(1, mmap.KeyCount);
+
+			mmap["b"].Clear();
+			Assert.AreEqual(0, mmap.Count);
+			Assert.AreEqual(0, mmap.KeyCount);
+		}
 	}
 }

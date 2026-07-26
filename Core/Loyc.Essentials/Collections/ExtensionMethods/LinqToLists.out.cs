@@ -261,7 +261,7 @@ namespace Loyc.Collections
 					a = b;
 					aCount = b.Count;
 				}
-				@out[out_i] = a[a_i];
+				@out[out_i] = a[a_i++];
 			}
 			return @out;
 		}

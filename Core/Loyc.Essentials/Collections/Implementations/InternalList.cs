@@ -233,11 +233,12 @@ namespace Loyc.Collections.Impl
 		}
 		public void InsertRange(int index, IEnumerable<T> e)
 		{
-			var s = e as IReadOnlyCollection<T>;
-			if (s != null)
+			// Note: a sequence can implement BOTH IReadOnlyCollection and ICollection
+			// (Enumerable.Range does, on modern .NET). Without this `else`, such a
+			// sequence was inserted twice.
+			if (e is IReadOnlyCollection<T> s)
 				InsertRange(index, s);
-			var c = e as ICollection<T>;
-			if (c != null)
+			else if (e is ICollection<T> c)
 				InsertRange(index, c);
 			else
 				InsertRange(index, (ICollection<T>)new List<T>(e));

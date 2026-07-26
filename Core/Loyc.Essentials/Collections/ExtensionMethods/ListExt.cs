@@ -636,17 +636,17 @@ namespace Loyc.Collections
 			return c - to;
 		}
 
-		public static void ReverseInPlace<T>(this IList<T> list) 
+		public static void ReverseInPlace<T>(this IList<T> list)
 		{
 			int c = list.Count;
 			for (int i = 0; i < (c >> 1); i++)
-				list.Swap(i, c - i);
+				list.Swap(i, c - 1 - i);
 		}
-		public static void ReverseInPlace<T>(this IArray<T> list) 
+		public static void ReverseInPlace<T>(this IArray<T> list)
 		{
 			int c = list.Count;
 			for (int i = 0; i < (c >> 1); i++)
-				list.Swap(i, c - i);
+				list.Swap(i, c - 1 - i);
 		}
 
 		public static void AddRange<T>(this IList<T> list, IEnumerable<T> range)

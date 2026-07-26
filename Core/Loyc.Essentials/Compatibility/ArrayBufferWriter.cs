@@ -63,6 +63,12 @@ namespace Loyc.Compatibility
 		private void CheckAndResizeBuffer(int sizeHint)
 		{
 			CheckParam.IsNotNegative(nameof(sizeHint), sizeHint);
+			// Match the BCL: a sizeHint of 0 means "give me whatever you have, but at
+			// least one element". Returning an empty span here would make the standard
+			// IBufferWriter loop (GetSpan/Advance until done) spin forever once the
+			// buffer happened to be exactly full.
+			if (sizeHint == 0)
+				sizeHint = 1;
 			if (sizeHint <= FreeCapacity) {
 				return;
 			}

@@ -124,8 +124,11 @@ namespace Loyc.Graphs
 			GetReachableEdgesCore(node, seen, edges);
 			if (node.HasInbound) {
 				foreach (var edge in node.Inbound) {
+					// An INBOUND edge points at `node`, so edge.To == node; recursing on
+					// it never went upstream. The upstream neighbour is edge.From -- the
+					// same node the `seen` test above already checks.
 					if (edges.Add(edge) && (seen == null || !seen.Contains(edge.From)))
-						ScanComponentCore(edge.To, seen, edges);
+						ScanComponentCore(edge.From, seen, edges);
 				}
 			}
 		}

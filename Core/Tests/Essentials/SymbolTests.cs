@@ -127,5 +127,39 @@ namespace Loyc.Essentials.Tests
 					GSymbol.Get(i.ToString());
 			});
 		}
+
+		[Test]
+		public void AbandonedEnumeratorDoesNotHoldThePoolLock()
+		{
+			// Regression: GetEnumerator() was an iterator method with `lock (_map)`
+			// wrapped around `yield return`, so the Monitor was held from the first
+			// MoveNext() until the iterator completed OR was disposed. An enumerator
+			// that was advanced and then abandoned (never disposed) held the pool lock
+			// forever, deadlocking every subsequent Get() on another thread.
+			var pool = new SymbolPool();
+			pool.Get("a");
+			pool.Get("b");
+
+			var e = pool.GetEnumerator();
+			Assert.IsTrue(e.MoveNext());   // acquires the lock in the old implementation
+			// deliberately NOT disposed, and deliberately not finished
+
+			// Another thread must still be able to use the pool.
+			Exception? failure = null;
+			var t = new System.Threading.Thread(() => {
+				try { pool.Get("c"); } catch (Exception ex) { failure = ex; }
+			});
+			t.IsBackground = true;
+			t.Start();
+			Assert.IsTrue(t.Join(TimeSpan.FromSeconds(10)), "Deadlock: the pool lock was still held by an abandoned enumerator");
+			Assert.IsNull(failure);
+
+			// Enumeration itself must still work and see what existed at snapshot time
+			var names = new List<string>();
+			foreach (Symbol s in pool)
+				names.Add(s.Name);
+			Assert.IsTrue(names.Contains("a"));
+			Assert.IsTrue(names.Contains("b"));
+		}
 	}
 }

@@ -403,10 +403,19 @@ namespace Loyc
 
 		public IEnumerator<Symbol> GetEnumerator()
 		{
+			// Snapshot under the lock, then enumerate outside it. This used to be an
+			// iterator method with `lock` wrapped around `yield return`, which meant the
+			// pool stayed locked for the whole duration of the caller's loop body, and
+			// leaked the lock permanently if the enumerator was never disposed (the
+			// Monitor is only released when the iterator completes or is disposed) --
+			// deadlocking every later GSymbol.Get. Tradeoff: one O(n) copy, and the
+			// snapshot may be stale by the time the caller reads it, which is the normal
+			// contract for enumerating a shared, concurrently-mutated collection.
+			List<Symbol> snapshot;
 			lock (_map) {
-				foreach (Symbol symbol in _map.Values)
-					yield return symbol;
+				snapshot = new List<Symbol>(_map.Values);
 			}
+			return snapshot.GetEnumerator();
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
@@ -480,11 +489,16 @@ namespace Loyc
 
 		public new IEnumerator<SymbolE> GetEnumerator()
 		{
+			// See the note on SymbolPool.GetEnumerator: snapshot under the lock, then
+			// enumerate outside it.
+			List<SymbolE> snapshot;
 			lock (_map)
 			{
+				snapshot = new List<SymbolE>(_map.Count);
 				foreach (SymbolE symbol in _map.Values)
-					yield return symbol;
+					snapshot.Add(symbol);
 			}
+			return snapshot.GetEnumerator();
 		}
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
