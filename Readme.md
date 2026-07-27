@@ -79,28 +79,14 @@ This is a note-to-self / note-to-AI-agent; pull-requestors can ignore it. Steps 
 
 ### 6. Sync Core/ to the LoycCore repository
 
-The `Core/` folder is mirrored to the master branch of https://github.com/qwertie/LoycCore (which also hosts the core.loyc.net site on its gh-pages branch). Commits are copied verbatim — author, dates, and message — with each commit's `Core/` snapshot as its tree, and the mirror carries no marker of its origin. That is why commits touching `Core/` must be scoped to Core only, with messages that make sense in LoycCore (see AGENTS.md). To sync (no checkout needed; works in a Linux container):
+The `Core/` folder is a [git-subrepo](https://github.com/ingydotnet/git-subrepo) of https://github.com/qwertie/LoycCore (master branch; that repo also hosts the core.loyc.net site on gh-pages). `Core/.gitrepo` records the sync state. The `.gitrepo` file is *not* pushed to LoycCore and commits that only touch it are skipped, so LoycCore looks like an ordinary standalone repo.
 
-```bash
-cd LoycCore                        # a clone of qwertie/LoycCore
-git fetch /path/to/ecsharp master  # objects land in FETCH_HEAD; no remote is added
-# Find the last-synced ecsharp commit: the newest whose Core/ tree == master's tree
-TREE=$(git rev-parse 'master^{tree}')
-LAST=$(git rev-list --first-parent FETCH_HEAD -- Core | while read c; do
-        [ "$(git rev-parse $c:Core)" = "$TREE" ] && { echo $c; break; }; done)
-echo "LAST=$LAST"   # empty = the mirror has drifted; investigate, do NOT proceed
-prev=$(git rev-parse master)
-for c in $(git rev-list --reverse --first-parent $LAST..FETCH_HEAD -- Core); do
-  export GIT_AUTHOR_NAME="$(git log -1 --format=%an $c)" GIT_AUTHOR_EMAIL="$(git log -1 --format=%ae $c)" GIT_AUTHOR_DATE="$(git log -1 --format=%aD $c)"
-  export GIT_COMMITTER_NAME="$(git log -1 --format=%cn $c)" GIT_COMMITTER_EMAIL="$(git log -1 --format=%ce $c)" GIT_COMMITTER_DATE="$(git log -1 --format=%cD $c)"
-  prev=$(git log -1 --format=%B $c | git commit-tree $c:Core -p $prev)
-done
-git diff --stat $prev FETCH_HEAD:Core   # MUST print nothing (byte-identical)
-git update-ref refs/heads/master $prev $(git rev-parse master)
-git push origin master   # (credentials)
-```
+- **Push Core changes made here:** `git subrepo push Core` — every commit touching `Core/` since the last sync is copied to LoycCore with its message unchanged (hence the commit-scoping rule in AGENTS.md); other commits are skipped.
+- **Pull changes made directly in LoycCore:** `git subrepo pull Core` — creates one merge commit here and updates `.gitrepo`. Editing either repo independently is fine; pull before push if both moved.
+- Both commands need a **clean working tree** (`git stash` around them if needed) and git-subrepo on PATH.
+- Windows/bind-mount caveat: a checkout with `core.symlinks=false` turns `lib/git-subrepo.d/bash+.bash` into a text file containing a path; replace it with a copy of (or real symlink to) `ext/bashplus/lib/bash+.bash`. If a command aborts and later complains "There is already a worktree with branch subrepo/Core", run `git subrepo clean Core`.
 
-This replays each first-parent commit that touched `Core/`; merge commits appear as single commits, and the histories stay decoupled — never force-push the mirror. (History: this replaced git-subtree, whose era is preserved in a local `master-old-ecsharp-subtree` branch; git-subrepo was considered but never wired up — there is no `.gitrepo` file.)
+(History: Core was synced with git-subtree long ago — see LoycCore's local `master-old-ecsharp-subtree` branch — then briefly by a replay script; since v30.3.1 it is a true git-subrepo, adopted by hand-writing the `commit`/`parent` baselines in `.gitrepo` because `git subrepo clone` refuses non-empty directories.)
 
 ### 7. GitHub release (requires Windows + Visual Studio)
 
