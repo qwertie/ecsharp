@@ -24,6 +24,7 @@ namespace Loyc.Geometry
 	/// <seealso cref="Loyc.Geometry.PointMath"/>
 	/// <seealso cref="Loyc.Geometry.VectorMath{T}"/>
 	/// <seealso cref="Point{T}"/>
+	[Serializable]
 	public struct Vector<T> : IPoint<T>, INewPoint<Vector<T>, T> where T : IConvertible, IEquatable<T>
 	{
 		static ISignedMath<T> m = Maths<T>.SignedMath;

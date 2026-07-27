@@ -12,6 +12,7 @@ namespace Loyc.Geometry
 	/// <typeparam name="T">Coordinate type.</typeparam>
 	/// <seealso cref="PointMath"/>
 	/// <seealso cref="Vector{T}"/>
+	[Serializable]
 	public struct Point<T> : IPoint<T>, INewPoint<Point<T>,T> where T:IConvertible, IEquatable<T>
 	{
 		static IMath<T> m = Maths<T>.Math;
