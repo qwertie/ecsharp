@@ -10,6 +10,10 @@ Lib\LeMP\LeMP.exe path/to/file.ecs        (Windows)
 mono Lib/LeMP/LeMP.exe path/to/file.ecs   (Linux/macOS; LeMP.exe is a .NET Framework binary)
 ```
 
+To avoid noisy commits: if regenerating a `.out.cs` changed nothing but the LeMP version
+banner in its header, don't commit it (revert it instead). Commit regenerated files only
+when they contain substantive changes.
+
 Notes on Enhanced C# / LeMP:
 - Most basic C# syntax works, but most C# 10+ syntax is NOT available.
 - There are occasional unpatched parser bugs, e.g. you may need to write `X<Y<Z> >`
