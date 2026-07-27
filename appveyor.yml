@@ -1,4 +1,4 @@
-version: 30.2.{build}
+version: 30.3.{build}
 
 image: Visual Studio 2026
 
@@ -13,7 +13,7 @@ before_build:
 build_script:
     # First, set some environment variables.
     # SEMVER is set manually. Not sure how this can be automated.
-    - set SEMVER=30.2.1
+    - set SEMVER=30.3.0
     - echo %APPVEYOR_REPO_TAG%
     # Build packages as SEMVER-ci{build}
     - ps: if ($env:APPVEYOR_REPO_TAG -eq $True) { $env:PKG_VERSION = $env:SEMVER; } else { $env:PKG_VERSION = "$($env:SEMVER)-ci$($env:APPVEYOR_BUILD_NUMBER)"; }
@@ -83,7 +83,7 @@ deploy:
     - provider: NuGet
       api_key:
           # API key from NuGet.org, encrypted with https://ci.appveyor.com/tools/encrypt
-          secure: gM4SjsPdN+1tZ3mk8Y6lz1zpaO14tQK2f7Fb1eAvEDT3HIItJeK0eMkVKJDM3yKz
+          secure: VYrWBU+wn64cvILSfWmmI7lQ3fXS3k2g/KALuX+gJfX8idZRTCq9+pCQ/0JH+rQj
       skip_symbols: false         # Whether to not publish symbol pkgs (src/pdb)
       artifact: /.*\.s?nupkg/
       on:
