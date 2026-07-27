@@ -34,6 +34,8 @@ The `Core/` folder is mirrored to https://github.com/qwertie/LoycCore using `git
 with messages copied unchanged, so when making commits:
 
 - Never mix changes under `Core/` with changes outside `Core/` in the same commit.
+  (Exception: the `⬤ Version X.Y.Z` release commits pair `Core/AssemblyVersion.cs` with
+  appveyor.yml; their message is universal, so it syncs fine.)
 - Write each Core commit's message as if LoycCore were the whole repository: scope it to
   the Core change alone, and don't mention paths or files that exist only in ecsharp
   (`Main/`, `appveyor.yml`, the VS extension, etc.).

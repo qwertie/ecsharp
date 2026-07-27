@@ -69,7 +69,7 @@ This is a note-to-self / note-to-AI-agent; pull-requestors can ignore it. Steps 
 
 ### 4. Commit, push, watch AppVeyor
 
-- Commit with a message like `⬤ Version 30.3.0` (the ⬤ marks release commits in the history). Per the Core/ commit-scoping rule in AGENTS.md, put the `Core/AssemblyVersion.cs` bump in the ⬤ commit and the appveyor.yml changes in a separate commit.
+- Commit with a message like `⬤ Version 30.3.0` (the ⬤ marks release commits in the history). The ⬤ commit contains both the `Core/AssemblyVersion.cs` and appveyor.yml bumps — the sanctioned exception to the Core/ commit-scoping rule in AGENTS.md, since its message reads fine in LoycCore too.
 - Push master (credentials) and confirm the AppVeyor build is green. Pushes to master build `-ciNNN` NuGet packages as artifacts but publish nothing.
 
 ### 5. Tag to publish the NuGet packages
