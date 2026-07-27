@@ -47,16 +47,18 @@ namespace Loyc.Collections
 			}
 		}
 
-		public struct ValueList : ICollection<V>
+		public IReadOnlyDictionary<K, ValueList> Groups => this;
+
+		public struct ValueList : ICollection<V>, IReadOnlyCollection<V>
 		{
 			MultiMap<K, V> _map;
 			K _key;
 
 			public ValueList(MultiMap<K, V> map, K key) { _map = map; _key = key; }
 
-			List<V>? GetValues()
+			public List<V>? GetList()
 			{
-				_map._dict.TryGetValue(_key, out var values);
+				_map._dict.TryGetValueSafe(_key, out var values);
 				return values;
 			}
 			List<V> GetOrMakeValues()
@@ -67,14 +69,14 @@ namespace Loyc.Collections
 					.GetValueRefOrAddDefault(_map._dict, _key, out _);
 				return slot ??= new List<V>();
 				#else
-				var values = GetValues();
+				var values = GetList();
 				if (values == null)
 					_map._dict.Add(_key, values = new List<V>());
 				return values;
 				#endif
 			}
 
-			public int Count => GetValues()?.Count ?? 0;
+			public int Count => GetList()?.Count ?? 0;
 
 			public bool IsReadOnly => false;
 
@@ -94,11 +96,11 @@ namespace Loyc.Collections
 				}
 			}
 
-			public bool Contains(V item) => GetValues() is { } values && values!.Contains(item);
+			public bool Contains(V item) => GetList() is { } values && values!.Contains(item);
 
 			public void CopyTo(V[] array, int arrayIndex)
 			{
-				if (GetValues() is { } values)
+				if (GetList() is { } values)
 					values!.CopyTo(array, arrayIndex);
 			}
 
@@ -106,7 +108,7 @@ namespace Loyc.Collections
 			IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 			public List<V>.Enumerator GetEnumerator()
 			{
-				var values = GetValues();
+				var values = GetList();
 				return values != null ? values.GetEnumerator() : Empty<V>.Enumerator;
 			}
 
