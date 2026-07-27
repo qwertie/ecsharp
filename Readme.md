@@ -69,7 +69,7 @@ This is a note-to-self / note-to-AI-agent; pull-requestors can ignore it. Steps 
 
 ### 4. Commit, push, watch AppVeyor
 
-- Commit with a message like `⬤ Version 30.3.0` (the ⬤ marks release commits in the history).
+- Commit with a message like `⬤ Version 30.3.0` (the ⬤ marks release commits in the history). Per the Core/ commit-scoping rule in AGENTS.md, put the `Core/AssemblyVersion.cs` bump in the ⬤ commit and the appveyor.yml changes in a separate commit.
 - Push master (credentials) and confirm the AppVeyor build is green. Pushes to master build `-ciNNN` NuGet packages as artifacts but publish nothing.
 
 ### 5. Tag to publish the NuGet packages
@@ -79,26 +79,28 @@ This is a note-to-self / note-to-AI-agent; pull-requestors can ignore it. Steps 
 
 ### 6. Sync Core/ to the LoycCore repository
 
-The `Core/` folder is mirrored to the master branch of https://github.com/qwertie/LoycCore (which also hosts the core.loyc.net site on its gh-pages branch). Since v30.3.0, every mirrored commit ends with an `ecsharp-commit: <sha>` trailer naming its source commit, so the sync point is machine-findable. To sync (no checkout needed; works in a Linux container):
+The `Core/` folder is mirrored to the master branch of https://github.com/qwertie/LoycCore (which also hosts the core.loyc.net site on its gh-pages branch). Commits are copied verbatim — author, dates, and message — with each commit's `Core/` snapshot as its tree, and the mirror carries no marker of its origin. That is why commits touching `Core/` must be scoped to Core only, with messages that make sense in LoycCore (see AGENTS.md). To sync (no checkout needed; works in a Linux container):
 
 ```bash
-cd LoycCore   # a clone of qwertie/LoycCore, master checked out or not
-git remote add ecsharp /path/to/ecsharp; git fetch ecsharp master
-# Last synced ecsharp commit (before the trailers existed, v30.1.3 = 9fc22ca0):
-LAST=$(git log -1 --format=%B master | grep '^ecsharp-commit:' | cut -d' ' -f2)
-git diff --stat $LAST:Core master   # sanity check: MUST be empty before proceeding
+cd LoycCore                        # a clone of qwertie/LoycCore
+git fetch /path/to/ecsharp master  # objects land in FETCH_HEAD; no remote is added
+# Find the last-synced ecsharp commit: the newest whose Core/ tree == master's tree
+TREE=$(git rev-parse 'master^{tree}')
+LAST=$(git rev-list --first-parent FETCH_HEAD -- Core | while read c; do
+        [ "$(git rev-parse $c:Core)" = "$TREE" ] && { echo $c; break; }; done)
+echo "LAST=$LAST"   # empty = the mirror has drifted; investigate, do NOT proceed
 prev=$(git rev-parse master)
-for c in $(git rev-list --reverse --first-parent $LAST..ecsharp/master -- Core); do
+for c in $(git rev-list --reverse --first-parent $LAST..FETCH_HEAD -- Core); do
   export GIT_AUTHOR_NAME="$(git log -1 --format=%an $c)" GIT_AUTHOR_EMAIL="$(git log -1 --format=%ae $c)" GIT_AUTHOR_DATE="$(git log -1 --format=%aD $c)"
   export GIT_COMMITTER_NAME="$(git log -1 --format=%cn $c)" GIT_COMMITTER_EMAIL="$(git log -1 --format=%ce $c)" GIT_COMMITTER_DATE="$(git log -1 --format=%cD $c)"
-  prev=$( { git log -1 --format=%B $c; echo; echo "ecsharp-commit: $c"; } | git commit-tree $c:Core -p $prev )
+  prev=$(git log -1 --format=%B $c | git commit-tree $c:Core -p $prev)
 done
-git diff --stat $prev ecsharp/master:Core   # MUST be empty
+git diff --stat $prev FETCH_HEAD:Core   # MUST print nothing (byte-identical)
 git update-ref refs/heads/master $prev $(git rev-parse master)
 git push origin master   # (credentials)
 ```
 
-This replays each first-parent commit that touched `Core/`, reusing its author, dates and message, with the commit's `Core/` snapshot as the tree — so the mirror ends up byte-identical to `ecsharp/Core` and the histories stay decoupled (no force pushes). Merge commits appear as single commits. (History: this replaced git-subtree, whose era is preserved in the `master-old-ecsharp-subtree` branch; git-subrepo was considered but never wired up — there is no `.gitrepo` file.)
+This replays each first-parent commit that touched `Core/`; merge commits appear as single commits, and the histories stay decoupled — never force-push the mirror. (History: this replaced git-subtree, whose era is preserved in a local `master-old-ecsharp-subtree` branch; git-subrepo was considered but never wired up — there is no `.gitrepo` file.)
 
 ### 7. GitHub release (requires Windows + Visual Studio)
 

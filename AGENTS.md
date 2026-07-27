@@ -23,3 +23,13 @@ Notes on Enhanced C# / LeMP:
   using Loyc.MiniTest, not NUnit/xUnit — test fixtures must be registered in
   `Core/Tests/Program.cs`. Pass the menu choice as argv, e.g. `2` runs the SyncLib suite.
 - A test marked `[Test(Fails = "...")]` is a known failure and does not fail the run.
+
+## Commit scoping: Core/ is mirrored to another repository
+
+The `Core/` folder is mirrored to https://github.com/qwertie/LoycCore using `git subrepo`,
+with messages copied unchanged, so when making commits:
+
+- Never mix changes under `Core/` with changes outside `Core/` in the same commit.
+- Write each Core commit's message as if LoycCore were the whole repository: scope it to
+  the Core change alone, and don't mention paths or files that exist only in ecsharp
+  (`Main/`, `appveyor.yml`, the VS extension, etc.).
