@@ -91,7 +91,8 @@ namespace Loyc.Math
 		{
 			long m = (long)a * mulBy;
 			remainder = (int)(m % divBy);
-			return (int)(m / divBy);
+			long q = m / divBy;
+			return (int)q == q ? (int)q : q > 0 ? int.MaxValue : int.MinValue;
 		}
 		/// <inheritdoc cref="MulDiv(int,int,int,out int)"/>
 		/// <remarks>If the final result does not fit in the original data type, 
@@ -101,7 +102,8 @@ namespace Loyc.Math
 		{
 			ulong m = (ulong)a * mulBy;
 			remainder = (uint)(m % divBy);
-			return (uint)(m / divBy);
+			ulong q = m / divBy;
+			return q <= uint.MaxValue ? (uint)q : uint.MaxValue;
 		}
 		/// <inheritdoc cref="MulDiv(int,int,int,out int)"/>
 		/// <remarks>If the final result does not fit in the original data type, 
@@ -128,12 +130,14 @@ namespace Loyc.Math
 		/// <inheritdoc cref="MulDiv(int, int, int, out int)"/>
 		public static int MulDiv(int a, int mulBy, int divBy)
 		{
-			return (int)((long)a * mulBy / divBy);
+			long q = (long)a * mulBy / divBy;
+			return (int)q == q ? (int)q : q > 0 ? int.MaxValue : int.MinValue;
 		}
 		/// <inheritdoc cref="MulDiv(uint, uint, uint, out uint)"/>
 		public static uint MulDiv(uint a, uint mulBy, uint divBy)
 		{
-			return (uint)((ulong)a * mulBy / divBy);
+			ulong q = (ulong)a * mulBy / divBy;
+			return q <= uint.MaxValue ? (uint)q : uint.MaxValue;
 		}
 		/// <inheritdoc cref="MulDiv(long, long, long, out long)"/>
 		public static long MulDiv(long a, long mulBy, long divBy)

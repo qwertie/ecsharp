@@ -10,6 +10,23 @@ namespace Loyc.Math
 	public class MathExTests : Assert
 	{
 		[Test]
+		public void TestMulDivSaturates()
+		{
+			// The docs always promised saturation, but the int/uint overloads wrapped
+			AreEqual(6, MathEx.MulDiv(4, 3, 2));
+			AreEqual(-6, MathEx.MulDiv(4, -3, 2, out int r) + r);
+			AreEqual(int.MaxValue, MathEx.MulDiv(int.MaxValue, 3, 2));
+			AreEqual(int.MinValue, MathEx.MulDiv(int.MaxValue, -3, 2));
+			AreEqual(int.MaxValue, MathEx.MulDiv(int.MaxValue, 2, 1, out r));
+			AreEqual(0, r);
+			AreEqual(uint.MaxValue, MathEx.MulDiv(uint.MaxValue, 3u, 2u));
+			AreEqual(uint.MaxValue, MathEx.MulDiv(uint.MaxValue, 3u, 2u, out uint ur));
+			AreEqual(1u, ur);
+			AreEqual(long.MaxValue, MathEx.MulDiv(long.MaxValue, 3, 2));
+			AreEqual(long.MinValue, MathEx.MulDiv(long.MaxValue, -3, 2));
+		}
+
+		[Test]
 		public void TestInRange()
 		{
 			Assert.IsFalse(1.IsInRange(2, 5));

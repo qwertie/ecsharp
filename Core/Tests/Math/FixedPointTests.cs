@@ -84,12 +84,12 @@ namespace Loyc.Math
 		}
 
 		/// <summary>Exact expected value of a/b for a Frac-bit fixed-point type: the
-		/// 128-bit quotient (a.N &lt;&lt; Frac) / b.N, truncated toward zero and wrapped
-		/// to 64 bits (the same thing FPI16.operator/ does with 32-bit N).</summary>
+		/// 128-bit quotient (a.N &lt;&lt; Frac) / b.N, truncated toward zero and
+		/// saturated to the range of N (like MathEx.MulDiv).</summary>
 		static long ExpectedDivN(long aN, long bN, int frac)
 		{
 			BigInteger q = BigInteger.Divide(new BigInteger(aN) << frac, bN);
-			return unchecked((long)(ulong)(q & ulong.MaxValue));
+			return q > long.MaxValue ? long.MaxValue : q < long.MinValue ? long.MinValue : (long)q;
 		}
 
 		[Test]
@@ -128,18 +128,27 @@ namespace Loyc.Math
 		}
 
 		[Test]
-		public void DivisionOverflowWrapsLikeFPI16()
+		public void DivisionOverflowSaturates()
 		{
-			// FPI16 wraps when the quotient doesn't fit in N; FPL16/FPL32 must do the same
-			// x / Epsilon == x.N << Frac, which is exactly 2^(bits of N) in these cases
-			Assert.AreEqual(0, (FPI16.One / FPI16.Epsilon).N);
-			Assert.AreEqual(0L, (FPL32.One / FPL32.Epsilon).N);
-			Assert.AreEqual(0L, (FPL16.Prescaled(1L << 48) / FPL16.Epsilon).N);
+			// x / Epsilon == x.N << Frac, which exceeds the range of N in these cases
+			Assert.AreEqual(int.MaxValue, (FPI16.One / FPI16.Epsilon).N);
+			Assert.AreEqual(65536, (FPI8.One / FPI8.Epsilon).N);  // 256.0: fits, stays exact
+			Assert.AreEqual(int.MaxValue, (FPI8.Prescaled(1 << 24) / FPI8.Epsilon).N);
+			Assert.AreEqual(int.MaxValue, (FPI23.One / FPI23.Epsilon).N);
+			Assert.AreEqual(long.MaxValue, (FPL32.One / FPL32.Epsilon).N);
+			Assert.AreEqual(long.MaxValue, (FPL16.Prescaled(1L << 48) / FPL16.Epsilon).N);
 
-			// One extra Epsilon in the numerator survives the wrap as one whole unit
-			Assert.AreEqual(1 << 16, (FPI16.Prescaled((1 << 16) + 1) / FPI16.Epsilon).N);
-			Assert.AreEqual(1L << 32, (FPL32.Prescaled((1L << 32) + 1) / FPL32.Epsilon).N);
-			Assert.AreEqual(1L << 16, (FPL16.Prescaled((1L << 48) + 1) / FPL16.Epsilon).N);
+			// Negative overflow saturates to MinValue
+			Assert.AreEqual(int.MinValue, (-FPI16.One / FPI16.Epsilon).N);
+			Assert.AreEqual(long.MinValue, (-FPL32.One / FPL32.Epsilon).N);
+			Assert.AreEqual(int.MinValue, (FPI16.One / -FPI16.Epsilon).N);
+			Assert.AreEqual(long.MinValue, (FPL32.One / -FPL32.Epsilon).N);
+
+			// The largest quotients that fit are still exact
+			Assert.AreEqual(int.MaxValue, (FPI16.Prescaled(int.MaxValue) / FPI16.One).N);
+			Assert.AreEqual(long.MaxValue, (FPL32.Prescaled(long.MaxValue) / FPL32.One).N);
+			Assert.AreEqual(int.MinValue, (FPI16.Prescaled(int.MinValue) / FPI16.One).N);
+			Assert.AreEqual(long.MinValue, (FPL32.Prescaled(long.MinValue) / FPL32.One).N);
 		}
 
 		[Test]

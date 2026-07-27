@@ -213,7 +213,12 @@ namespace Loyc.Math
 
 
 		public static FPI8 operator *(FPI8 a, FPI8 b) { return Prescaled((int)((long)a.N * (long)b.N >> Frac)); }
-		public static FPI8 operator /(FPI8 a, FPI8 b) { return Prescaled((int)(((long)a.N << Frac) / b.N)); }
+		public static FPI8 operator /(FPI8 a, FPI8 b)
+		{
+			// Truncates toward zero; saturates on overflow
+			long q = ((long)a.N << Frac) / b.N;
+			return Prescaled((int)q == q ? (int)q : q > 0 ? int.MaxValue : int.MinValue);
+		}
 
 		public static FPI8 operator %(FPI8 a, FPI8 b) { a.N %= b.N; return a; }
 		public static FPI8 operator <<(FPI8 a, int b) { a.N <<= b; return a; }
@@ -557,7 +562,12 @@ namespace Loyc.Math
 
 
 		public static FPI16 operator *(FPI16 a, FPI16 b) { return Prescaled((int)((long)a.N * (long)b.N >> Frac)); }
-		public static FPI16 operator /(FPI16 a, FPI16 b) { return Prescaled((int)(((long)a.N << Frac) / b.N)); }
+		public static FPI16 operator /(FPI16 a, FPI16 b)
+		{
+			// Truncates toward zero; saturates on overflow
+			long q = ((long)a.N << Frac) / b.N;
+			return Prescaled((int)q == q ? (int)q : q > 0 ? int.MaxValue : int.MinValue);
+		}
 
 		public static FPI16 operator %(FPI16 a, FPI16 b) { a.N %= b.N; return a; }
 		public static FPI16 operator <<(FPI16 a, int b) { a.N <<= b; return a; }
@@ -895,7 +905,12 @@ namespace Loyc.Math
 
 
 		public static FPI23 operator *(FPI23 a, FPI23 b) { return Prescaled((int)((long)a.N * (long)b.N >> Frac)); }
-		public static FPI23 operator /(FPI23 a, FPI23 b) { return Prescaled((int)(((long)a.N << Frac) / b.N)); }
+		public static FPI23 operator /(FPI23 a, FPI23 b)
+		{
+			// Truncates toward zero; saturates on overflow
+			long q = ((long)a.N << Frac) / b.N;
+			return Prescaled((int)q == q ? (int)q : q > 0 ? int.MaxValue : int.MinValue);
+		}
 
 		public static FPI23 operator %(FPI23 a, FPI23 b) { a.N %= b.N; return a; }
 		public static FPI23 operator <<(FPI23 a, int b) { a.N <<= b; return a; }
@@ -1236,10 +1251,8 @@ namespace Loyc.Math
 		}
 		public static FPL16 operator /(FPL16 a, FPL16 b)
 		{
-			// (a.N << Frac) / b.N computed in 128 bits: truncates toward zero, wraps on overflow
-			long numHi, quoHi, remainder;
-			ulong numLo = Math128.Multiply(a.N, Unit, out numHi);
-			a.N = unchecked((long)Math128.Divide(numHi, numLo, b.N, out quoHi, out remainder, false));
+			// (a.N << Frac) / b.N computed in 128 bits: truncates toward zero, saturates on overflow
+			a.N = MathEx.MulDiv(a.N, Unit, b.N);
 			return a;
 		}
 
@@ -1591,10 +1604,8 @@ namespace Loyc.Math
 		}
 		public static FPL32 operator /(FPL32 a, FPL32 b)
 		{
-			// (a.N << Frac) / b.N computed in 128 bits: truncates toward zero, wraps on overflow
-			long numHi, quoHi, remainder;
-			ulong numLo = Math128.Multiply(a.N, Unit, out numHi);
-			a.N = unchecked((long)Math128.Divide(numHi, numLo, b.N, out quoHi, out remainder, false));
+			// (a.N << Frac) / b.N computed in 128 bits: truncates toward zero, saturates on overflow
+			a.N = MathEx.MulDiv(a.N, Unit, b.N);
 			return a;
 		}
 

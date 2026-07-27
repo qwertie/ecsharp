@@ -206,15 +206,18 @@ namespace Loyc.Math
 		}
 		public static <#=T#> operator /(<#=T#> a, <#=T#> b)
 		{
-			// (a.N << Frac) / b.N computed in 128 bits: truncates toward zero, wraps on overflow
-			long numHi, quoHi, remainder;
-			ulong numLo = Math128.Multiply(a.N, Unit, out numHi);
-			a.N = unchecked((long)Math128.Divide(numHi, numLo, b.N, out quoHi, out remainder, false));
+			// (a.N << Frac) / b.N computed in 128 bits: truncates toward zero, saturates on overflow
+			a.N = MathEx.MulDiv(a.N, Unit, b.N);
 			return a;
 		}
 <#		} else { #>
 		public static <#=T#> operator *(<#=T#> a, <#=T#> b) { return Prescaled((int)((long)a.N * (long)b.N >> Frac)); }
-		public static <#=T#> operator /(<#=T#> a, <#=T#> b) { return Prescaled((int)(((long)a.N << Frac) / b.N)); }
+		public static <#=T#> operator /(<#=T#> a, <#=T#> b)
+		{
+			// Truncates toward zero; saturates on overflow
+			long q = ((long)a.N << Frac) / b.N;
+			return Prescaled((int)q == q ? (int)q : q > 0 ? int.MaxValue : int.MinValue);
+		}
 <#		} #>
 		public static <#=T#> operator %(<#=T#> a, <#=T#> b) { a.N %= b.N; return a; }
 		public static <#=T#> operator <<(<#=T#> a, int b) { a.N <<= b; return a; }
