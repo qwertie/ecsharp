@@ -77,7 +77,30 @@ This is a note-to-self / note-to-AI-agent; pull-requestors can ignore it. Steps 
 - Create an unannotated tag and push it: `git tag v30.3.0 && git push origin v30.3.0` (credentials).
 - The tag push makes AppVeyor build again and **publish all packages to NuGet.org** (Loyc.* plus LeMP, LLLPG, LeMP-Tool) at the SEMVER version. Deployment only runs for tags on master, and needs the encrypted NuGet API key in appveyor.yml to be current — if publishing fails with 401/403, encrypt a fresh nuget.org key at https://ci.appveyor.com/tools/encrypt and update the `secure:` line.
 
-### 6. GitHub release (requires Windows + Visual Studio)
+### 6. Sync Core/ to the LoycCore repository
+
+The `Core/` folder is mirrored to the master branch of https://github.com/qwertie/LoycCore (which also hosts the core.loyc.net site on its gh-pages branch). Since v30.3.0, every mirrored commit ends with an `ecsharp-commit: <sha>` trailer naming its source commit, so the sync point is machine-findable. To sync (no checkout needed; works in a Linux container):
+
+```bash
+cd LoycCore   # a clone of qwertie/LoycCore, master checked out or not
+git remote add ecsharp /path/to/ecsharp; git fetch ecsharp master
+# Last synced ecsharp commit (before the trailers existed, v30.1.3 = 9fc22ca0):
+LAST=$(git log -1 --format=%B master | grep '^ecsharp-commit:' | cut -d' ' -f2)
+git diff --stat $LAST:Core master   # sanity check: MUST be empty before proceeding
+prev=$(git rev-parse master)
+for c in $(git rev-list --reverse --first-parent $LAST..ecsharp/master -- Core); do
+  export GIT_AUTHOR_NAME="$(git log -1 --format=%an $c)" GIT_AUTHOR_EMAIL="$(git log -1 --format=%ae $c)" GIT_AUTHOR_DATE="$(git log -1 --format=%aD $c)"
+  export GIT_COMMITTER_NAME="$(git log -1 --format=%cn $c)" GIT_COMMITTER_EMAIL="$(git log -1 --format=%ce $c)" GIT_COMMITTER_DATE="$(git log -1 --format=%cD $c)"
+  prev=$( { git log -1 --format=%B $c; echo; echo "ecsharp-commit: $c"; } | git commit-tree $c:Core -p $prev )
+done
+git diff --stat $prev ecsharp/master:Core   # MUST be empty
+git update-ref refs/heads/master $prev $(git rev-parse master)
+git push origin master   # (credentials)
+```
+
+This replays each first-parent commit that touched `Core/`, reusing its author, dates and message, with the commit's `Core/` snapshot as the tree — so the mirror ends up byte-identical to `ecsharp/Core` and the histories stay decoupled (no force pushes). Merge commits appear as single commits. (History: this replaced git-subtree, whose era is preserved in the `master-old-ecsharp-subtree` branch; git-subrepo was considered but never wired up — there is no `.gitrepo` file.)
+
+### 7. GitHub release (requires Windows + Visual Studio)
 
 - Uninstall the previously installed LeMP VS extension (from within VS), then run `UpdateLibLeMPAndReinstall.bat`. It builds `Loyc.netfx.sln` (Release) plus the VS extension, and copies all outputs — dll/exe/xml/exe.config/pdb files and `LeMP_VisualStudio.vsix` — into `Lib\LeMP`. Manually check that the extension still works.
 - Copy `Lib\LeMP` to a sibling folder named for the release, e.g. `Lib\LeMP-30.3`.
@@ -85,7 +108,7 @@ This is a note-to-self / note-to-AI-agent; pull-requestors can ignore it. Steps 
 - Zip the folder at maximum compression, with the folder itself as the zip root: `7z a -tzip -mx=9 LeMP-30.3.zip LeMP-30.3\` (entries should look like `LeMP-30.3/LeMP.exe`).
 - On github.com, create a release from the `vX.Y.Z` tag with **two assets**: `LeMP-X.Y.zip` and `Lib\LeMP\LeMP_VisualStudio.vsix` (attached separately, which is why it was deleted from the zip). Link the version history in the description.
 
-### 7. Documentation & Marketplace
+### 8. Documentation & Marketplace
 
 - Regenerate API docs by running `doc/Doxygen.bat` in the gh-pages branch (Windows), and push the gh-pages branches of both sites, including the step-3 edits (credentials).
 - If applicable, publish the new VSIX on the Visual Studio Marketplace (credentials).
