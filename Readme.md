@@ -48,18 +48,44 @@ Visual Studio may complain, while building a .NET Framework 4.7.2 project, that 
 How to publish new versions
 ---------------------------
 
-This is more of a note-to-self than anything. Pull-requestors can ignore it.
+This is a note-to-self / note-to-AI-agent; pull-requestors can ignore it. Steps that need Windows, Visual Studio, or push/publish credentials are marked; everything else can be done by an agent in a Linux container.
 
-1. Rebuild all (Release configuration in Loyc.all.sln) and run tests (Tests.exe)
-2. Update version in Core/AssemblyVersion.cs
-3. Update appveyor.yml at `version:` (first line)
-4. Update appveyor.yml at `- set SEMVER=`
-5. (Tentative) If the VS extension is to be released, update the version number in Visual Studio Integration\LoycForVS2017\source.extension.vsixmanifest
-6. If a GitHub release is to be created, uninstall the LeMP VS extension and rebuild it with UpdateLibLeMPAndReinstall.bat. Manually check that it still works.
-7. Commit changes
-8. Push changes and check whether the build succeeded on AppVeyor.
-9. On success, create an (unannotated) git tag like `v31.1.0` locally: `git tag v31.1.0`.
-10. Push the tag to make Appveyor publish NuGet packages: `git push origin v31.1.0`.
-11. Every so often, create a release on GitHub.com. Prepare a zip file from the built binaries and include Lib\LeMP\LeMP_VisualStudio.vsix separately as part of the release.
-12. Update version-history.md on ecsharp.net and core.loyc.net, and update documentation by running doc/Doxygen.bat in the gh-pages branch.
-13. If applicable, release a new version of the extension on the Visual Studio Marketplace
+### 1. Update version numbers
+
+- `Core/AssemblyVersion.cs`: both `AssemblyVersion` and `AssemblyFileVersion` (e.g. `30.3.0`).
+- `appveyor.yml`: the `version:` line at the top (e.g. `30.3.{build}`) **and** the `- set SEMVER=` line (e.g. `30.3.0`). SEMVER becomes the NuGet package version, so it must match AssemblyVersion.cs.
+- If the VS extension will be released too: the version in `Visual Studio Integration\LoycForVS2022\source.extension.vsixmanifest`.
+
+### 2. Build & test (Release configuration)
+
+- On Windows: build `Loyc.all.sln` (Release) and run `Bin\Release\Tests.exe 12345` then `Tests.exe 67` (each digit selects a test-menu item; set 8, LLLPG, is excluded because it is sometimes nondeterministic).
+- On Linux: `dotnet build -c Release Loyc.netstd.sln`, then run test suites 1–6 one at a time: `cd Core/Bin/Release/net6.0 && DOTNET_ROLL_FORWARD=Major dotnet LoycCore.Tests.dll N`. A small number of environment-dependent failures is normal on Linux (BinaryFormatter-based serialization tests, a `%TEMP%`-related test, `TokenTests.StructSizeCheck`); any *new* failure blocks the release. Optionally also build `Loyc.netfx.sln` using the `Microsoft.NETFramework.ReferenceAssemblies.net472` package with `-p:FrameworkPathOverride`, and run the test EXE under mono to exercise the .NET Framework code paths.
+
+### 3. Update the version history & docs
+
+- Add a `### vX.Y.Z: Month Day, Year ###` section to `version-history.md` at the root of the core.loyc.net site (the **gh-pages branch of qwertie/LoycCore**), summarizing commit messages since the previous release tag. Omit trivial changes; put breaking changes first.
+- If LeMP, LLLPG or Enhanced C# changed: also `lemp/version-history.md` / `lllpg/version-history.md` on ecsharp.net (the **gh-pages branch of this repo**).
+- Update any affected manuals (e.g. `synclib/manual.md` on core.loyc.net).
+
+### 4. Commit, push, watch AppVeyor
+
+- Commit with a message like `⬤ Version 30.3.0` (the ⬤ marks release commits in the history).
+- Push master (credentials) and confirm the AppVeyor build is green. Pushes to master build `-ciNNN` NuGet packages as artifacts but publish nothing.
+
+### 5. Tag to publish the NuGet packages
+
+- Create an unannotated tag and push it: `git tag v30.3.0 && git push origin v30.3.0` (credentials).
+- The tag push makes AppVeyor build again and **publish all packages to NuGet.org** (Loyc.* plus LeMP, LLLPG, LeMP-Tool) at the SEMVER version. Deployment only runs for tags on master, and needs the encrypted NuGet API key in appveyor.yml to be current — if publishing fails with 401/403, encrypt a fresh nuget.org key at https://ci.appveyor.com/tools/encrypt and update the `secure:` line.
+
+### 6. GitHub release (requires Windows + Visual Studio)
+
+- Uninstall the previously installed LeMP VS extension (from within VS), then run `UpdateLibLeMPAndReinstall.bat`. It builds `Loyc.netfx.sln` (Release) plus the VS extension, and copies all outputs — dll/exe/xml/exe.config/pdb files and `LeMP_VisualStudio.vsix` — into `Lib\LeMP`. Manually check that the extension still works.
+- Copy `Lib\LeMP` to a sibling folder named for the release, e.g. `Lib\LeMP-30.3`.
+- In the copy, delete **all `*.pdb` files** and **`LeMP_VisualStudio.vsix`**. Everything else ships, including the demo and test EXEs and the XML doc files. (To double-check the expected contents, list a previous release's zip.)
+- Zip the folder at maximum compression, with the folder itself as the zip root: `7z a -tzip -mx=9 LeMP-30.3.zip LeMP-30.3\` (entries should look like `LeMP-30.3/LeMP.exe`).
+- On github.com, create a release from the `vX.Y.Z` tag with **two assets**: `LeMP-X.Y.zip` and `Lib\LeMP\LeMP_VisualStudio.vsix` (attached separately, which is why it was deleted from the zip). Link the version history in the description.
+
+### 7. Documentation & Marketplace
+
+- Regenerate API docs by running `doc/Doxygen.bat` in the gh-pages branch (Windows), and push the gh-pages branches of both sites, including the step-3 edits (credentials).
+- If applicable, publish the new VSIX on the Visual Studio Marketplace (credentials).
