@@ -177,9 +177,13 @@ static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Bytes
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-attribs"></a>
 Protected static fields</h2></td></tr>
-<tr class="memitem:a25df6417af50b672ba330648c5b9b487"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a25df6417af50b672ba330648c5b9b487"></a>
-static Comparer&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>DefaultComparer</b> = Comparer&lt;T&gt;.Default</td></tr>
+<tr class="memitem:a25df6417af50b672ba330648c5b9b487"><td class="memItemLeft" align="right" valign="top">static Comparer&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1CPTrie_3_01T_01_4.html#a25df6417af50b672ba330648c5b9b487">DefaultComparer</a> = Comparer&lt;T&gt;.Default</td></tr>
+<tr class="memdesc:a25df6417af50b672ba330648c5b9b487"><td class="mdescLeft">&#160;</td><td class="mdescRight">Not used by CPTrie itself any longer; retained because it is a protected member of a public, publicly-constructible class and so may be used by derived classes outside this assembly. <a href="#a25df6417af50b672ba330648c5b9b487">More...</a><br /></td></tr>
 <tr class="separator:a25df6417af50b672ba330648c5b9b487"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63db397d95e703b135931e2da5d31c45"><td class="memItemLeft" align="right" valign="top">static readonly <br class="typebreak" />
+EqualityComparer&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1CPTrie_3_01T_01_4.html#a63db397d95e703b135931e2da5d31c45">DefaultValueComparer</a> = EqualityComparer&lt;T&gt;.Default</td></tr>
+<tr class="memdesc:a63db397d95e703b135931e2da5d31c45"><td class="mdescLeft">&#160;</td><td class="mdescRight">Equality comparer used to compare values for the Contains and Remove implementations. <a href="#a63db397d95e703b135931e2da5d31c45">More...</a><br /></td></tr>
+<tr class="separator:a63db397d95e703b135931e2da5d31c45"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a6d21e8d842b1e4e7079378d4fb98d0a0"></a>
@@ -347,11 +351,57 @@ static Comparer&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b
 
 </div>
 </div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a class="anchor" id="a25df6417af50b672ba330648c5b9b487"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Comparer&lt;T&gt; Loyc.Collections.CPTrie&lt; T &gt;.DefaultComparer = Comparer&lt;T&gt;.Default</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Not used by CPTrie itself any longer; retained because it is a protected member of a public, publicly-constructible class and so may be used by derived classes outside this assembly.</p>
+
+</div>
+</div>
+<a class="anchor" id="a63db397d95e703b135931e2da5d31c45"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">readonly EqualityComparer&lt;T&gt; Loyc.Collections.CPTrie&lt; T &gt;.DefaultValueComparer = EqualityComparer&lt;T&gt;.Default</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Equality comparer used to compare values for the Contains and Remove implementations.</p>
+<p>These call sites only ever test for equality, but previously used <a class="el" href="classLoyc_1_1Collections_1_1CPTrie_3_01T_01_4.html#a25df6417af50b672ba330648c5b9b487" title="Not used by CPTrie itself any longer; retained because it is a protected member of a public...">DefaultComparer</a>. Comparer&lt;T&gt;.Default.Compare THROWS InvalidOperationException for any T that does not implement IComparable, so e.g. CPStringTrie&lt;SomeClass&gt;.Contains(kvp) threw instead of returning false. EqualityComparer&lt;T&gt;.Default always works and honours IEquatable&lt;T&gt; without boxing.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 24 2026 19:07:28 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jul 27 2026 06:54:02 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

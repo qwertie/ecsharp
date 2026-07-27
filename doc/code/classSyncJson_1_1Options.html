@@ -92,6 +92,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#nested-classes">Nested classes</a> &#124;
 <a href="#properties">Properties</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="classSyncJson_1_1Options-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">SyncJson.Options Class Reference</div>  </div>
@@ -148,7 +149,149 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a3e6145cd858413ab061797afb8397e95"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3e6145cd858413ab061797afb8397e95"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Options</b> (bool compactMode=false)</td></tr>
 <tr class="separator:a3e6145cd858413ab061797afb8397e95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a730a5b4b8bb11397bc244755f94b5a19"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a730a5b4b8bb11397bc244755f94b5a19"></a>
+delegate ulong&#160;</td><td class="memItemRight" valign="bottom"><b>OverflowHandler</b> (FieldId field, BigInteger num, bool signedField)</td></tr>
+<tr class="separator:a730a5b4b8bb11397bc244755f94b5a19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a50dc716ada72f690fee5bbc70ca1b796"><td class="memItemLeft" align="right" valign="top">static ulong&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncJson_1_1Options.html#a50dc716ada72f690fee5bbc70ca1b796">ThrowOnOverflow</a> (FieldId field, BigInteger num, bool signedField)</td></tr>
+<tr class="memdesc:a50dc716ada72f690fee5bbc70ca1b796"><td class="mdescLeft">&#160;</td><td class="mdescRight">A value for <a class="el" href="classSyncJson_1_1Options_1_1ForReader.html#a90c2f07c769524cc1334f9fe64c532a4" title="Called when a number overflows the requested data type.">ForReader.HandleOverflow</a> that throws. <a href="#a50dc716ada72f690fee5bbc70ca1b796">More...</a><br /></td></tr>
+<tr class="separator:a50dc716ada72f690fee5bbc70ca1b796"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c14eea00c3d41da307166772b82a597"><td class="memItemLeft" align="right" valign="top">static ulong&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncJson_1_1Options.html#a3c14eea00c3d41da307166772b82a597">TruncateOnOverflow</a> (FieldId field, BigInteger num, bool signedField)</td></tr>
+<tr class="memdesc:a3c14eea00c3d41da307166772b82a597"><td class="mdescLeft">&#160;</td><td class="mdescRight">A value for <a class="el" href="classSyncJson_1_1Options_1_1ForReader.html#a90c2f07c769524cc1334f9fe64c532a4" title="Called when a number overflows the requested data type.">ForReader.HandleOverflow</a> that truncates. <a href="#a3c14eea00c3d41da307166772b82a597">More...</a><br /></td></tr>
+<tr class="separator:a3c14eea00c3d41da307166772b82a597"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad992ecfb2e08fe749f1f068accfec70e"><td class="memItemLeft" align="right" valign="top">static ulong&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncJson_1_1Options.html#ad992ecfb2e08fe749f1f068accfec70e">ClampOnOverflow</a> (FieldId field, BigInteger num, bool signedField)</td></tr>
+<tr class="memdesc:ad992ecfb2e08fe749f1f068accfec70e"><td class="mdescLeft">&#160;</td><td class="mdescRight">A value for <a class="el" href="classSyncJson_1_1Options_1_1ForReader.html#a90c2f07c769524cc1334f9fe64c532a4" title="Called when a number overflows the requested data type.">ForReader.HandleOverflow</a> that returns long.MinValue/ long.MaxValue if the target field is signed, or 0/ulong.MaxValue otherwise. <a class="el" href="structSyncJson_1_1Reader.html" title="An implementation of ISyncManager for reading JSON objects. Designed to be both fast and flexible...">SyncJson.Reader</a> then truncates the return value to the target size. <a href="#ad992ecfb2e08fe749f1f068accfec70e">More...</a><br /></td></tr>
+<tr class="separator:ad992ecfb2e08fe749f1f068accfec70e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="ad992ecfb2e08fe749f1f068accfec70e"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static ulong SyncJson.Options.ClampOnOverflow </td>
+          <td>(</td>
+          <td class="paramtype">FieldId&#160;</td>
+          <td class="paramname"><em>field</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">BigInteger&#160;</td>
+          <td class="paramname"><em>num</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>signedField</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>A value for <a class="el" href="classSyncJson_1_1Options_1_1ForReader.html#a90c2f07c769524cc1334f9fe64c532a4" title="Called when a number overflows the requested data type.">ForReader.HandleOverflow</a> that returns long.MinValue/ long.MaxValue if the target field is signed, or 0/ulong.MaxValue otherwise. <a class="el" href="structSyncJson_1_1Reader.html" title="An implementation of ISyncManager for reading JSON objects. Designed to be both fast and flexible...">SyncJson.Reader</a> then truncates the return value to the target size.</p>
+
+</div>
+</div>
+<a class="anchor" id="a50dc716ada72f690fee5bbc70ca1b796"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static ulong SyncJson.Options.ThrowOnOverflow </td>
+          <td>(</td>
+          <td class="paramtype">FieldId&#160;</td>
+          <td class="paramname"><em>field</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">BigInteger&#160;</td>
+          <td class="paramname"><em>num</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>signedField</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>A value for <a class="el" href="classSyncJson_1_1Options_1_1ForReader.html#a90c2f07c769524cc1334f9fe64c532a4" title="Called when a number overflows the requested data type.">ForReader.HandleOverflow</a> that throws.</p>
+
+</div>
+</div>
+<a class="anchor" id="a3c14eea00c3d41da307166772b82a597"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static ulong SyncJson.Options.TruncateOnOverflow </td>
+          <td>(</td>
+          <td class="paramtype">FieldId&#160;</td>
+          <td class="paramname"><em>field</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">BigInteger&#160;</td>
+          <td class="paramname"><em>num</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>signedField</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>A value for <a class="el" href="classSyncJson_1_1Options_1_1ForReader.html#a90c2f07c769524cc1334f9fe64c532a4" title="Called when a number overflows the requested data type.">ForReader.HandleOverflow</a> that truncates.</p>
+
+</div>
+</div>
 <h2 class="groupheader">Property Documentation</h2>
 <a class="anchor" id="aa39c9286c8b50fec905466d06279f68b"></a>
 <div class="memitem">
@@ -246,7 +389,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 24 2026 19:07:26 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jul 27 2026 06:54:00 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

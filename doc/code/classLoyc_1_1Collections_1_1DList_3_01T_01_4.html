@@ -89,6 +89,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-attribs">Public fields</a> &#124;
 <a href="#properties">Properties</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pro-attribs">Protected fields</a> &#124;
@@ -128,6 +129,12 @@ Inheritance diagram for Loyc.Collections.DList&lt; T &gt;:</div>
 <p>An <a href="http://core.loyc.net/collections/dlist.html">article</a> about this class is available. </p>
 <dl class="section see"><dt>See also</dt><dd>InternalDList{T}, <a class="el" href="classLoyc_1_1Collections_1_1DList.html" title="This class is the same as DList{object} except that it also implements the IList interface. ">DList</a></dd></dl>
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public fields</h2></td></tr>
+<tr class="memitem:adf41a0912fbf455b84fb2b5037adee77"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adf41a0912fbf455b84fb2b5037adee77"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsReadOnly</b> =&gt; false</td></tr>
+<tr class="separator:adf41a0912fbf455b84fb2b5037adee77"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:ad8bea5cf8b1ff3da0957e7f46b4e3fcd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad8bea5cf8b1ff3da0957e7f46b4e3fcd"></a>
@@ -142,9 +149,6 @@ T&#160;</td><td class="memItemRight" valign="bottom"><b>this[int index, T defaul
 <tr class="memitem:a044c0240a6293862bad39fab6bd91c33"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a044c0240a6293862bad39fab6bd91c33"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>Count</b><code> [get]</code></td></tr>
 <tr class="separator:a044c0240a6293862bad39fab6bd91c33"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adf41a0912fbf455b84fb2b5037adee77"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adf41a0912fbf455b84fb2b5037adee77"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsReadOnly</b><code> [get]</code></td></tr>
-<tr class="separator:adf41a0912fbf455b84fb2b5037adee77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a751aba3bd93d78df5bd06d84740f9221"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a751aba3bd93d78df5bd06d84740f9221"></a>
 T&#160;</td><td class="memItemRight" valign="bottom"><b>First</b><code> [get, set]</code></td></tr>
 <tr class="separator:a751aba3bd93d78df5bd06d84740f9221"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -360,9 +364,6 @@ InternalDList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_
 <a class="anchor" id="a3424bff1b4734e85cb2b5f3971390fc6"></a>
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="structLoyc_1_1void.html">void</a> <a class="el" href="classLoyc_1_1Collections_1_1DList.html">Loyc.Collections.DList</a>&lt; T &gt;.Add </td>
@@ -372,11 +373,6 @@ InternalDList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>An alias for PushLast().</p>
@@ -406,9 +402,6 @@ InternalDList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_
 <a class="anchor" id="afce3169419bd8a78c8d49ac29841ccfc"></a>
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">bool <a class="el" href="classLoyc_1_1Collections_1_1DList.html">Loyc.Collections.DList</a>&lt; T &gt;.Contains </td>
@@ -418,11 +411,6 @@ InternalDList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Returns true if and only if the collection contains the specified item.</p>
@@ -488,9 +476,6 @@ InternalDList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_
 <a class="anchor" id="a9a103fc587e0a7f5bc1489d23844645c"></a>
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">ListSlice&lt;T&gt; <a class="el" href="classLoyc_1_1Collections_1_1DList.html">Loyc.Collections.DList</a>&lt; T &gt;.Slice </td>
@@ -510,11 +495,6 @@ InternalDList&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Returns a sub-range of this list.</p>
@@ -550,7 +530,7 @@ public Slice_&lt;T&gt; Slice(int start, int count) { return new Slice_&lt;T&gt;(
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 24 2026 19:07:28 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jul 27 2026 06:54:02 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

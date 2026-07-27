@@ -142,6 +142,9 @@ Func&lt; string, ReadOnlyMemory<br class="typebreak" />
 <tr class="memitem:adf99b04844bffc307166f5ed68df0fe8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncJson_1_1Options_1_1ForReader.html#adf99b04844bffc307166f5ed68df0fe8">ReadNullPrimitivesAsDefault</a> = false<code> [get, set]</code></td></tr>
 <tr class="memdesc:adf99b04844bffc307166f5ed68df0fe8"><td class="mdescLeft">&#160;</td><td class="mdescRight">This property requests that if a property is set to null but read as a primitive type, the default value of that type should be returned instead of throwing an exception. For example, if Reader.Sync(FieldId, int) encounters a null, it will return 0 instead if throwing an exception if this property is true. <a href="#adf99b04844bffc307166f5ed68df0fe8">More...</a><br /></td></tr>
 <tr class="separator:adf99b04844bffc307166f5ed68df0fe8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90c2f07c769524cc1334f9fe64c532a4"><td class="memItemLeft" align="right" valign="top">OverflowHandler&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncJson_1_1Options_1_1ForReader.html#a90c2f07c769524cc1334f9fe64c532a4">HandleOverflow</a> = false<code> [get, set]</code></td></tr>
+<tr class="memdesc:a90c2f07c769524cc1334f9fe64c532a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called when a number overflows the requested data type. <a href="#a90c2f07c769524cc1334f9fe64c532a4">More...</a><br /></td></tr>
+<tr class="separator:a90c2f07c769524cc1334f9fe64c532a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Property Documentation</h2>
 <a class="anchor" id="a6bff5cea5febb0f891edddacd804147b"></a>
@@ -207,6 +210,28 @@ Func&lt; string, ReadOnlyMemory<br class="typebreak" />
 </div><div class="memdoc">
 
 <p>When attempting to read a boolean value, a string can be accepted instead if that string has the value specified here.</p>
+
+</div>
+</div>
+<a class="anchor" id="a90c2f07c769524cc1334f9fe64c532a4"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">OverflowHandler SyncJson.Options.ForReader.HandleOverflow = false</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span><span class="mlabel">set</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Called when a number overflows the requested data type.</p>
 
 </div>
 </div>
@@ -401,7 +426,7 @@ Func&lt; string, ReadOnlyMemory<br class="typebreak" />
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 24 2026 19:07:26 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jul 27 2026 06:54:00 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

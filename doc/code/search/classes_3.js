@@ -2,7 +2,6 @@ var searchData=
 [
   ['callnode',['CallNode',['../classLoyc_1_1Syntax_1_1CallNode.html',1,'Loyc::Syntax']]],
   ['cg',['CG',['../classLoyc_1_1Collections_1_1CG.html',1,'Loyc::Collections']]],
-  ['charcategory',['CharCategory',['../classLoyc_1_1Syntax_1_1Lexing_1_1CharCategory.html',1,'Loyc::Syntax::Lexing']]],
   ['checkparam',['CheckParam',['../classLoyc_1_1CheckParam.html',1,'Loyc']]],
   ['checkpoint',['Checkpoint',['../structLoyc_1_1Syntax_1_1Impl_1_1PrinterState_1_1Checkpoint.html',1,'Loyc::Syntax::Impl::PrinterState']]],
   ['co',['Co',['../classLoyc_1_1Utilities_1_1Co.html',1,'Loyc::Utilities']]],

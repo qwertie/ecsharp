@@ -89,6 +89,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Nested classes</a> &#124;
 <a href="#pub-attribs">Public fields</a> &#124;
 <a href="#pub-static-attribs">Public static fields</a> &#124;
 <a href="#properties">Properties</a> &#124;
@@ -141,6 +142,11 @@ TextValue range: some constructors create an "uninterpreted literal" which is ab
 <p>A generic token also cannot convert itself to a properly-formatted string. The <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a1eccc35d7873f34d5d7002fb616e741b" title="Reconstructs a string that represents the token, if possible. Does not work for whitespace and commen...">ToString</a> method does allow you to provide an optional reference to ICharSource which allows the token to get its original text, and in any case you can call SetToStringStrategy to control the method by which a token converts itself to a string. </p>
 <p>Fun fact: originally I planned to use <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a> as the common token type, because it is extensible and could nicely represent tokens in all languages; unfortunately, <a class="el" href="classLoyc_1_1Symbol.html" title="Represents a symbol, which is a singleton string that supports fast comparisons and extensible enums...">Symbol</a> may reduce parsing performance because it cannot be used with the switch opcode (i.e. the switch statement in C#), so I decided to indicate token types via integers instead. Each language should have, in the namespace of that language, an extension method <code>public static TokenType Type(this Token t)</code> that converts the TypeInt to the enum type for that language. Optionally, the TokenType enum for your language can be based on <a class="el" href="namespaceLoyc_1_1Syntax_1_1Lexing.html#a67239b79e43c15aed84329612553103d" title="A list of token categories that most programming languages have.">TokenKind</a> so that the <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#af6a9c75808482f583bb3937121e4b4b1" title="Token category. This value is only meaningful if the token type integers are based on TokenKinds...">Kind</a> property returns a meaningful value. </p>
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Nested classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1Lexing_1_1Token_1_1ToStringStrategyHolder.html">ToStringStrategyHolder</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
 <tr class="memitem:a25ec9f2c4ffb2c6ed1c9592a726d2af7"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html#a25ec9f2c4ffb2c6ed1c9592a726d2af7">TypeInt</a> =&gt; _typeInt</td></tr>
@@ -170,11 +176,10 @@ int <a class="el" href="interfaceLoyc_1_1Syntax_1_1Lexing_1_1ISimpleToken.html">
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
-<tr class="memitem:ae26f1fa03d5c0124a1f7c11e1ebaedac"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae26f1fa03d5c0124a1f7c11e1ebaedac"></a>
-static readonly <br class="typebreak" />
-ThreadLocalVariable&lt; Func<br class="typebreak" />
-&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>, <a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a>, string &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ToStringStrategyTLV</b> = new ThreadLocalVariable&lt;Func&lt;<a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>,<a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a>,string&gt;&gt;(<a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1TokenExt.html#aab8363a3e076af09da8293f4eb1b75b0">Loyc.Syntax.Les.TokenExt.ToString</a>)</td></tr>
-<tr class="separator:ae26f1fa03d5c0124a1f7c11e1ebaedac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a502cd84a43fbad936400d4fe59cc842c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a502cd84a43fbad936400d4fe59cc842c"></a>
+static Func&lt; <a class="el" href="structLoyc_1_1Syntax_1_1Lexing_1_1Token.html">Token</a>, <br class="typebreak" />
+<a class="el" href="interfaceLoyc_1_1Collections_1_1ICharSource.html">ICharSource</a>, string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_toStringStrategy</b></td></tr>
+<tr class="separator:a502cd84a43fbad936400d4fe59cc842c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
@@ -1105,7 +1110,7 @@ When no value is needed (because the Type() is enough): null </li>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 24 2026 19:07:35 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jul 27 2026 06:54:07 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -12,9 +12,10 @@ var searchData=
   ['wlistbase_3c_20t_20_3e',['WListBase&lt; T &gt;',['../classLoyc_1_1Collections_1_1WListBase_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['wlistprotected_3c_20t_20_3e',['WListProtected&lt; T &gt;',['../classLoyc_1_1Collections_1_1WListProtected_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['wrapperbase_3c_20t_20_3e',['WrapperBase&lt; T &gt;',['../classLoyc_1_1WrapperBase_3_01T_01_4.html',1,'Loyc']]],
-  ['writer',['Writer',['../structSyncBinary_1_1Writer.html',1,'SyncBinary']]],
   ['writer',['Writer',['../structLoyc_1_1SyncLib_1_1SyncJson_1_1Writer.html',1,'Loyc::SyncLib::SyncJson']]],
+  ['writer',['Writer',['../structSyncBinary_1_1Writer.html',1,'SyncBinary']]],
   ['writer',['Writer',['../structSyncJson_1_1Writer.html',1,'SyncJson']]],
   ['writer',['Writer',['../structSyncProtobuf_1_1Writer.html',1,'SyncProtobuf']]],
-  ['writerstatebase',['WriterStateBase',['../classLoyc_1_1SyncLib_1_1Impl_1_1WriterStateBase.html',1,'Loyc::SyncLib::Impl']]]
+  ['writerstatebase',['WriterStateBase',['../classLoyc_1_1SyncLib_1_1Impl_1_1WriterStateBase.html',1,'Loyc::SyncLib::Impl']]],
+  ['wtf8encoding',['WTF8Encoding',['../classLoyc_1_1WTF8Encoding.html',1,'Loyc']]]
 ];

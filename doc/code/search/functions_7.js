@@ -3,6 +3,7 @@ var searchData=
   ['handlechildsplit',['HandleChildSplit',['../classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_3_01K_00_01T_01_4.html#a3d66769bc2894c160251cf168516a708',1,'Loyc::Collections::Impl::AListInnerBase&lt; K, T &gt;']]],
   ['handles',['Handles',['../classTypeSyncRegistry.html#ade53391bdcfc8a0973d7e83664c87aba',1,'TypeSyncRegistry']]],
   ['handleundersized',['HandleUndersized',['../classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_3_01K_00_01T_01_4.html#a0fb092a94c2d8bc16853f2d071228d22',1,'Loyc::Collections::Impl::AListInnerBase&lt; K, T &gt;']]],
+  ['hasid',['HasId',['../classLoyc_1_1SyncLib_1_1Impl_1_1ObjectIdGenerator.html#ada36f68f258e27e3febf7b8df83a861a',1,'Loyc::SyncLib::Impl::ObjectIdGenerator']]],
   ['hasimplicitleadingnewline',['HasImplicitLeadingNewline',['../classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a1c12ae772609f64573cdc6d2f7c3e17c',1,'Loyc::Syntax::StandardTriviaInjector']]],
   ['hasindex_3c_20t_20_3e',['HasIndex&lt; T &gt;',['../classLoyc_1_1Collections_1_1LCInterfaces.html#aef7ef2d58959125eb91108eb2378b3fa',1,'Loyc::Collections::LCInterfaces']]],
   ['haslistchanging',['HasListChanging',['../classLoyc_1_1Collections_1_1Impl_1_1AListNode_3_01K_00_01T_01_4.html#a67d4aeddc04cdb8052e9e09eb3fd4b87',1,'Loyc::Collections::Impl::AListNode&lt; K, T &gt;']]],

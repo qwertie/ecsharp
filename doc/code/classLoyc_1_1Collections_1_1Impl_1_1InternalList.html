@@ -434,6 +434,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>AllEqual&lt; T
  With a seed of 5: 5, 10, 18, 32, 58, 102, 180, 316, 554...<br />
  With a seed of 7: 7, 14, 26, 46, 82, 144, 254, 446, 782... </p>
 <p>75% size increases require 23.9% more allocations than size doubling (1.75 to the 1.239th power is about 2.0), but memory utilization is increased. With size doubling, the average list uses 2/3 of its entries, but with this resizing pattern, the average list uses 72.72% of its entries. The average size of a list is 8.3% lower. Originally I used 50% size increases, but they required 71% more allocations, which seemed like too much. </p>
+<p>If the computed size would overflow int, the maximum supported array length is returned instead. </p>
 
 </div>
 </div>
@@ -538,7 +539,7 @@ capacityLimit is returned instead. If the return value would be slightly less th
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 24 2026 19:07:31 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jul 27 2026 06:54:04 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -371,7 +371,9 @@ static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Appen
 </div><div class="memdoc">
 
 <p>Calls an internal method of Exception that records an exception's stack trace so that the stack trace does not change if the exception is rethrown (e.g. on another thread).</p>
-<p>Exception ex = null; var thread = new ThreadEx(() =&gt; { try { SomethingThatMightThrowOrTakeForever(); } catch (Exception e) { ex = e; ex.PreserveStackTrace(); } }); thread.Start(); if (!thread.Join(timeout)) { thread.Abort(); thread.Join(timeout); } if (ex != null) throw ex; // includes stack trace from the other thread </p>
+<p><b>This method does nothing except on .NET Framework.</b> It works by reflecting for <code>Exception.InternalPreserveStackTrace</code>, a private method that does not exist on .NET Core / .NET 5 and above, so on those runtimes it silently does nothing. Use System.Runtime.ExceptionServices.ExceptionDispatchInfo instead: </p><div class="fragment"><div class="line">var edi = ExceptionDispatchInfo.Capture(ex); <span class="comment">// where the exception was caught</span></div>
+<div class="line">edi.Throw();                                 <span class="comment">// rethrow, preserving the stack trace</span></div>
+</div><!-- fragment --><p>  Exception ex = null; var thread = new ThreadEx(() =&gt; { try { SomethingThatMightThrowOrTakeForever(); } catch (Exception e) { ex = e; ex.PreserveStackTrace(); } }); thread.Start(); if (!thread.Join(timeout)) { thread.Abort(); thread.Join(timeout); } if (ex != null) throw ex; // includes stack trace from the other thread </p>
 <p>Note: when rethrowing an exception that was just caught, you should always use "catch;" instead of calling this method. </p>
 
 </div>
@@ -411,7 +413,7 @@ static StringBuilder&#160;</td><td class="memItemRight" valign="bottom"><b>Appen
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 24 2026 19:07:26 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jul 27 2026 06:54:01 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

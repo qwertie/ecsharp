@@ -2,10 +2,12 @@ var searchData=
 [
   ['handlechildsplit',['HandleChildSplit',['../classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_3_01K_00_01T_01_4.html#a3d66769bc2894c160251cf168516a708',1,'Loyc::Collections::Impl::AListInnerBase&lt; K, T &gt;']]],
   ['handled',['Handled',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8a827211270de454ea3e0df8f57995efed',1,'Loyc::Syntax']]],
+  ['handleoverflow',['HandleOverflow',['../classSyncJson_1_1Options_1_1ForReader.html#a90c2f07c769524cc1334f9fe64c532a4',1,'SyncJson::Options::ForReader']]],
   ['handles',['Handles',['../classTypeSyncRegistry.html#ade53391bdcfc8a0973d7e83664c87aba',1,'TypeSyncRegistry']]],
   ['handleundersized',['HandleUndersized',['../classLoyc_1_1Collections_1_1Impl_1_1AListInnerBase_3_01K_00_01T_01_4.html#a0fb092a94c2d8bc16853f2d071228d22',1,'Loyc::Collections::Impl::AListInnerBase&lt; K, T &gt;']]],
   ['hasescapes',['HasEscapes',['../namespaceLoyc_1_1Syntax.html#aee9716da50d3d135d672d14a85f6d4afada59406dcc899473190d02c4f195abe4',1,'Loyc::Syntax']]],
   ['hashtags_3c_20valuet_20_3e',['HashTags&lt; ValueT &gt;',['../classLoyc_1_1HashTags_3_01ValueT_01_4.html',1,'Loyc']]],
+  ['hasid',['HasId',['../classLoyc_1_1SyncLib_1_1Impl_1_1ObjectIdGenerator.html#ada36f68f258e27e3febf7b8df83a861a',1,'Loyc::SyncLib::Impl::ObjectIdGenerator']]],
   ['hasimplicitleadingnewline',['HasImplicitLeadingNewline',['../classLoyc_1_1Syntax_1_1StandardTriviaInjector.html#a1c12ae772609f64573cdc6d2f7c3e17c',1,'Loyc::Syntax::StandardTriviaInjector']]],
   ['hasinbound',['HasInbound',['../interfaceLoyc_1_1Graphs_1_1INode_3_01out_01EdgeList_01_4.html#abebd47ae6b3409b5565c358575dc73c2',1,'Loyc::Graphs::INode&lt; out EdgeList &gt;']]],
   ['hasindex_3c_20t_20_3e',['HasIndex&lt; T &gt;',['../classLoyc_1_1Collections_1_1LCInterfaces.html#aef7ef2d58959125eb91108eb2378b3fa',1,'Loyc::Collections::LCInterfaces']]],

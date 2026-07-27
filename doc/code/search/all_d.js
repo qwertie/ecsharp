@@ -52,6 +52,8 @@ var searchData=
   ['maycontain',['MayContain',['../classLoyc_1_1SymbolSet.html#adc83e8de19e20fe568684aa671474df0',1,'Loyc::SymbolSet']]],
   ['memoizedtypename',['MemoizedTypeName',['../classLoyc_1_1MemoizedTypeName.html',1,'Loyc']]],
   ['memoizedtypename_3c_20t_20_3e',['MemoizedTypeName&lt; T &gt;',['../classLoyc_1_1MemoizedTypeName_3_01T_01_4.html',1,'Loyc']]],
+  ['memory',['Memory',['../structMemory2_3_01T_01_4.html#adaf5f63207da2ae89fbd13b33874c1dc',1,'Memory2&lt; T &gt;.Memory()'],['../structReadOnlyMemory2_3_01T_01_4.html#a6f8f4d3fc818e0eb056acaf5d35dc888',1,'ReadOnlyMemory2&lt; T &gt;.Memory()']]],
+  ['memory2_3c_20t_20_3e',['Memory2&lt; T &gt;',['../structMemory2_3_01T_01_4.html',1,'']]],
   ['memorybuilder_3c_20t_20_3e',['MemoryBuilder&lt; T &gt;',['../structLoyc_1_1SyncLib_1_1Impl_1_1MemoryBuilder_3_01T_01_4.html',1,'Loyc::SyncLib::Impl']]],
   ['memorycomparer_3c_20t_20_3e',['MemoryComparer&lt; T &gt;',['../structLoyc_1_1Collections_1_1MemoryComparer_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['merge',['Merge',['../namespaceLoyc_1_1SyncLib.html#aaa1141d03979700afb25026605f5128ba68be4837f6c739877233e527a996dd00',1,'Loyc::SyncLib']]],

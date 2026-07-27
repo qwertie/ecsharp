@@ -14,6 +14,7 @@ var searchData=
   ['maybe_3c_20t_20_3e',['Maybe&lt; T &gt;',['../structLoyc_1_1Maybe_3_01T_01_4.html',1,'Loyc']]],
   ['memoizedtypename',['MemoizedTypeName',['../classLoyc_1_1MemoizedTypeName.html',1,'Loyc']]],
   ['memoizedtypename_3c_20t_20_3e',['MemoizedTypeName&lt; T &gt;',['../classLoyc_1_1MemoizedTypeName_3_01T_01_4.html',1,'Loyc']]],
+  ['memory2_3c_20t_20_3e',['Memory2&lt; T &gt;',['../structMemory2_3_01T_01_4.html',1,'']]],
   ['memorybuilder_3c_20t_20_3e',['MemoryBuilder&lt; T &gt;',['../structLoyc_1_1SyncLib_1_1Impl_1_1MemoryBuilder_3_01T_01_4.html',1,'Loyc::SyncLib::Impl']]],
   ['memorycomparer_3c_20t_20_3e',['MemoryComparer&lt; T &gt;',['../structLoyc_1_1Collections_1_1MemoryComparer_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['messagefilter',['MessageFilter',['../classLoyc_1_1MessageFilter.html',1,'Loyc']]],

@@ -4,6 +4,7 @@ var searchData=
   ['matchcast',['MatchCast',['../classLoyc_1_1LLParserGenerator_1_1GeneralCodeGenHelper.html#adb0d4a6bb3ef9a70bfeabb4d7ffca49f',1,'Loyc::LLParserGenerator::GeneralCodeGenHelper']]],
   ['matches',['Matches',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a4741f5dc76ed68f5ebfe7d46c7b66100',1,'Loyc::Syntax::CodeSymbols']]],
   ['maxdepthnodes',['MaxDepthNodes',['../structLoyc_1_1Collections_1_1Impl_1_1InternalSetStats.html#a17b159658ded678758107f69b224d8b2',1,'Loyc::Collections::Impl::InternalSetStats']]],
+  ['memory',['Memory',['../structMemory2_3_01T_01_4.html#adaf5f63207da2ae89fbd13b33874c1dc',1,'Memory2&lt; T &gt;.Memory()'],['../structReadOnlyMemory2_3_01T_01_4.html#a6f8f4d3fc818e0eb056acaf5d35dc888',1,'ReadOnlyMemory2&lt; T &gt;.Memory()']]],
   ['missing',['Missing',['../structLoyc_1_1SyncLib_1_1FieldId.html#acddbdd271ddd46dfe2d6fe7af3dc1a45',1,'Loyc.SyncLib.FieldId.Missing()'],['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a546c2a6bcc42131c1eacfef1937d2338',1,'Loyc.Syntax.CodeSymbols.Missing()'],['../classLoyc_1_1Syntax_1_1LNode.html#aa4b2c33e3c0b733dc9664093608338e9',1,'Loyc.Syntax.LNode.Missing()']]],
   ['mod',['Mod',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a6789dccc54facf2cafd3b5b853bf5cda',1,'Loyc::Syntax::CodeSymbols']]],
   ['modassign',['ModAssign',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a360e63e2bca0ac5ebe3c56dad2624d1c',1,'Loyc::Syntax::CodeSymbols']]],

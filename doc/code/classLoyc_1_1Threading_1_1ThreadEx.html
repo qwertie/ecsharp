@@ -266,6 +266,7 @@ Events</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Raises a System.Threading.ThreadAbortException in the thread on which it is invoked, to begin the process of terminating the thread while also providing exception information about the thread termination. Calling this method usually terminates the thread. </p>
+<p>Thread aborts are only supported on .NET Framework. On .NET Core / .NET 5 and above the underlying <code>Thread.Abort</code> is unsupported and always throws PlatformNotSupportedException, so this method throws it directly rather than emitting an SYSLIB0006 obsoletion warning at build time. Use cooperative cancellation (System.Threading.CancellationToken) instead. </p>
 
 </div>
 </div>
@@ -670,7 +671,7 @@ Events</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 24 2026 19:07:36 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jul 27 2026 06:54:07 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

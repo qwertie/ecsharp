@@ -90,7 +90,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Nested classes</a> &#124;
-<a href="#pub-attribs">Public fields</a> &#124;
 <a href="#properties">Properties</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4-members.html">List of all members</a>  </div>
@@ -99,7 +98,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Holds the shared state behind an ambient service (the Ambient Service Pattern): a global default instance, plus an async-local override installed by <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#ada0b68405d38a4b7b61fc7a4ee941fca" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end.">Set</a> in a <code>using</code> statement.  
+<p>Holds the shared state behind an ambient service (the Ambient Service Pattern): a global default instance, plus an async-local override installed by <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a884e46fb9f44aef38423bb99dfd179cf" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end. If requested, changes GlobalDefault too.">Set</a> in a <code>using</code> statement.  
  <a href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Utilities/AmbientService.cs'>/Core/Loyc.Essentials/Utilities/AmbientService.cs</a></li>
@@ -114,46 +113,36 @@ Inheritance diagram for Loyc.Threading.AmbientService&lt; T &gt;:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Holds the shared state behind an ambient service (the Ambient Service Pattern): a global default instance, plus an async-local override installed by <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#ada0b68405d38a4b7b61fc7a4ee941fca" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end.">Set</a> in a <code>using</code> statement. </p>
-<p>This is based on AsyncLocal, which is reportedly slow. <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a8e77af50c380cb9db78b28f5d9502616" title="Gets the current T instance (the current async execution context&#39;s override if one is active...">Value</a> has a fast path for the case that no override is active anywhere. </p>
+<div class="textblock"><p>Holds the shared state behind an ambient service (the Ambient Service Pattern): a global default instance, plus an async-local override installed by <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a884e46fb9f44aef38423bb99dfd179cf" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end. If requested, changes GlobalDefault too.">Set</a> in a <code>using</code> statement. </p>
+<p>This is based on AsyncLocal, which is reportedly slow, so <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a8e77af50c380cb9db78b28f5d9502616" title="Gets the current T instance (the current async execution context&#39;s override if one is active...">Value</a> doesn't touch it while no override exists anywhere. </p>
 <p>Because the override is an AsyncLocal rather than a ThreadLocal, it flows across <code>await</code> points to continuations, even when they resume on a different thread. </p>
-<div class="typeconstraint">
-<dl><dt><b>Type Constraints</b></dt><dd>
-<table border="0" cellspacing="2" cellpadding="0">
-<tr><td valign="top"><em>T</em></td><td>&#160;:</td><td valign="top"><em>class</em></td><td>&#160;</td></tr>
-</table>
-</dl>
-</div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Nested classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1Threading_1_1AmbientService_3_01T_01_4_1_1Saved.html">Saved</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returned by <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#ada0b68405d38a4b7b61fc7a4ee941fca" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end.">Set</a>; restores the previous ambient override (if any) when disposed. <a href="structLoyc_1_1Threading_1_1AmbientService_3_01T_01_4_1_1Saved.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returned by <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a884e46fb9f44aef38423bb99dfd179cf" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end. If requested, changes GlobalDefault too.">Set</a>; restores the previous ambient override (if any) when disposed. <a href="structLoyc_1_1Threading_1_1AmbientService_3_01T_01_4_1_1Saved.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
-Public fields</h2></td></tr>
-<tr class="memitem:a8e77af50c380cb9db78b28f5d9502616"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a8e77af50c380cb9db78b28f5d9502616">Value</a> =&gt; _overrideCount == 0 ? _globalDefault : _override.Value ?? _globalDefault</td></tr>
-<tr class="memdesc:a8e77af50c380cb9db78b28f5d9502616"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the current T instance (the current async execution context's override if one is active, otherwise <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#acf99a721bf2fda17953938d4d9bfcea0" title="The instance used by every execution context that has no ambient override from Set. It can be replaced app-wide.">GlobalDefault</a>. <a href="#a8e77af50c380cb9db78b28f5d9502616">More...</a><br /></td></tr>
-<tr class="separator:a8e77af50c380cb9db78b28f5d9502616"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="properties"></a>
 Properties</h2></td></tr>
 <tr class="memitem:acf99a721bf2fda17953938d4d9bfcea0"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#acf99a721bf2fda17953938d4d9bfcea0">GlobalDefault</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:acf99a721bf2fda17953938d4d9bfcea0"><td class="mdescLeft">&#160;</td><td class="mdescRight">The instance used by every execution context that has no ambient override from <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#ada0b68405d38a4b7b61fc7a4ee941fca" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end.">Set</a>. It can be replaced app-wide. <a href="#acf99a721bf2fda17953938d4d9bfcea0">More...</a><br /></td></tr>
+<tr class="memdesc:acf99a721bf2fda17953938d4d9bfcea0"><td class="mdescLeft">&#160;</td><td class="mdescRight">The instance used by every execution context that has no ambient override from <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a884e46fb9f44aef38423bb99dfd179cf" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end. If requested, changes GlobalDefault too.">Set</a>. It can be replaced app-wide. <a href="#acf99a721bf2fda17953938d4d9bfcea0">More...</a><br /></td></tr>
 <tr class="separator:acf99a721bf2fda17953938d4d9bfcea0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e77af50c380cb9db78b28f5d9502616"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a8e77af50c380cb9db78b28f5d9502616">Value</a><code> [get]</code></td></tr>
+<tr class="memdesc:a8e77af50c380cb9db78b28f5d9502616"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the current T instance (the current async execution context's override if one is active, otherwise <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#acf99a721bf2fda17953938d4d9bfcea0" title="The instance used by every execution context that has no ambient override from Set. It can be replaced app-wide.">GlobalDefault</a>. <a href="#a8e77af50c380cb9db78b28f5d9502616">More...</a><br /></td></tr>
+<tr class="separator:a8e77af50c380cb9db78b28f5d9502616"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:afb493a97bd156e251dea827ab80310c0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afb493a97bd156e251dea827ab80310c0"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>AmbientService</b> (T globalDefault)</td></tr>
 <tr class="separator:afb493a97bd156e251dea827ab80310c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ada0b68405d38a4b7b61fc7a4ee941fca"><td class="memItemLeft" align="right" valign="top">Saved&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#ada0b68405d38a4b7b61fc7a4ee941fca">Set</a> (T newValue)</td></tr>
-<tr class="memdesc:ada0b68405d38a4b7b61fc7a4ee941fca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Installs an ambient (async-local) override. Designed to be used in a <code>using</code> statement, which restores the old value at the end. <a href="#ada0b68405d38a4b7b61fc7a4ee941fca">More...</a><br /></td></tr>
-<tr class="separator:ada0b68405d38a4b7b61fc7a4ee941fca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a884e46fb9f44aef38423bb99dfd179cf"><td class="memItemLeft" align="right" valign="top">Saved&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a884e46fb9f44aef38423bb99dfd179cf">Set</a> (T newValue, bool alsoSetGlobalDefault=false)</td></tr>
+<tr class="memdesc:a884e46fb9f44aef38423bb99dfd179cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Installs an ambient (async-local) override. Designed to be used in a <code>using</code> statement, which restores the old value at the end. If requested, changes <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#acf99a721bf2fda17953938d4d9bfcea0" title="The instance used by every execution context that has no ambient override from Set. It can be replaced app-wide.">GlobalDefault</a> too. <a href="#a884e46fb9f44aef38423bb99dfd179cf">More...</a><br /></td></tr>
+<tr class="separator:a884e46fb9f44aef38423bb99dfd179cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="ada0b68405d38a4b7b61fc7a4ee941fca"></a>
+<a class="anchor" id="a884e46fb9f44aef38423bb99dfd179cf"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -164,8 +153,18 @@ Public Member Functions</h2></td></tr>
           <td class="memname">Saved Loyc.Threading.AmbientService&lt; T &gt;.Set </td>
           <td>(</td>
           <td class="paramtype">T&#160;</td>
-          <td class="paramname"><em>newValue</em></td><td>)</td>
+          <td class="paramname"><em>newValue</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>alsoSetGlobalDefault</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -175,23 +174,8 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Installs an ambient (async-local) override. Designed to be used in a <code>using</code> statement, which restores the old value at the end.</p>
-<p>An override installed inside an async method does not propagate up to its caller's context, so call <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#ada0b68405d38a4b7b61fc7a4ee941fca" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end.">Set</a> in the same method as the <code>using</code> block that scopes it.</p>
-
-</div>
-</div>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a class="anchor" id="a8e77af50c380cb9db78b28f5d9502616"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">T Loyc.Threading.AmbientService&lt; T &gt;.Value =&gt; _overrideCount == 0 ? _globalDefault : _override.Value ?? _globalDefault</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Gets the current T instance (the current async execution context's override if one is active, otherwise <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#acf99a721bf2fda17953938d4d9bfcea0" title="The instance used by every execution context that has no ambient override from Set. It can be replaced app-wide.">GlobalDefault</a>.</p>
+<p>Installs an ambient (async-local) override. Designed to be used in a <code>using</code> statement, which restores the old value at the end. If requested, changes <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#acf99a721bf2fda17953938d4d9bfcea0" title="The instance used by every execution context that has no ambient override from Set. It can be replaced app-wide.">GlobalDefault</a> too.</p>
+<p>An override installed inside an async method does not propagate up to its caller's context, so call <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a884e46fb9f44aef38423bb99dfd179cf" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end. If requested, changes GlobalDefault too.">Set</a> in the same method as the <code>using</code> block that scopes it.</p>
 
 </div>
 </div>
@@ -214,7 +198,29 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>The instance used by every execution context that has no ambient override from <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#ada0b68405d38a4b7b61fc7a4ee941fca" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end.">Set</a>. It can be replaced app-wide.</p>
+<p>The instance used by every execution context that has no ambient override from <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a884e46fb9f44aef38423bb99dfd179cf" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end. If requested, changes GlobalDefault too.">Set</a>. It can be replaced app-wide.</p>
+
+</div>
+</div>
+<a class="anchor" id="a8e77af50c380cb9db78b28f5d9502616"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">T Loyc.Threading.AmbientService&lt; T &gt;.Value</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">get</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Gets the current T instance (the current async execution context's override if one is active, otherwise <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#acf99a721bf2fda17953938d4d9bfcea0" title="The instance used by every execution context that has no ambient override from Set. It can be replaced app-wide.">GlobalDefault</a>.</p>
 
 </div>
 </div>
@@ -222,7 +228,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 24 2026 19:07:36 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jul 27 2026 06:54:07 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

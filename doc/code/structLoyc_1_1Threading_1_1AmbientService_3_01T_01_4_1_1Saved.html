@@ -97,7 +97,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Returned by <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#ada0b68405d38a4b7b61fc7a4ee941fca" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end.">Set</a>; restores the previous ambient override (if any) when disposed. 
+<p>Returned by <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a884e46fb9f44aef38423bb99dfd179cf" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end. If requested, changes GlobalDefault too.">Set</a>; restores the previous ambient override (if any) when disposed. 
  <a href="structLoyc_1_1Threading_1_1AmbientService_3_01T_01_4_1_1Saved.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/Utilities/AmbientService.cs'>/Core/Loyc.Essentials/Utilities/AmbientService.cs</a></li>
@@ -112,20 +112,19 @@ Inheritance diagram for Loyc.Threading.AmbientService&lt; T &gt;.Saved:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Returned by <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#ada0b68405d38a4b7b61fc7a4ee941fca" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end.">Set</a>; restores the previous ambient override (if any) when disposed.</p>
+<div class="textblock"><p>Returned by <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a884e46fb9f44aef38423bb99dfd179cf" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end. If requested, changes GlobalDefault too.">Set</a>; restores the previous ambient override (if any) when disposed.</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public fields</h2></td></tr>
 <tr class="memitem:a9ef8d77c23f96de8ad79a029056261ae"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9ef8d77c23f96de8ad79a029056261ae"></a>
 AmbientService&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_owner</b></td></tr>
 <tr class="separator:a9ef8d77c23f96de8ad79a029056261ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8996d5d5e7c3e29215106e926b2ff987"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8996d5d5e7c3e29215106e926b2ff987"></a>
-T&#160;</td><td class="memItemRight" valign="bottom"><b>_oldValue</b></td></tr>
-<tr class="separator:a8996d5d5e7c3e29215106e926b2ff987"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_attribs_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4')"><img src="closed.png" alt="-"/>&#160;Public fields inherited from <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html">Loyc.Threading.AmbientService&lt; T &gt;</a></td></tr>
-<tr class="memitem:a8e77af50c380cb9db78b28f5d9502616 inherit pub_attribs_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a8e77af50c380cb9db78b28f5d9502616">Value</a> =&gt; _overrideCount == 0 ? _globalDefault : _override.Value ?? _globalDefault</td></tr>
-<tr class="memdesc:a8e77af50c380cb9db78b28f5d9502616 inherit pub_attribs_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the current T instance (the current async execution context's override if one is active, otherwise <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#acf99a721bf2fda17953938d4d9bfcea0" title="The instance used by every execution context that has no ambient override from Set. It can be replaced app-wide.">GlobalDefault</a>. <a href="#a8e77af50c380cb9db78b28f5d9502616">More...</a><br /></td></tr>
-<tr class="separator:a8e77af50c380cb9db78b28f5d9502616 inherit pub_attribs_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f30f71c4391041a120945d58134540b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8f30f71c4391041a120945d58134540b"></a>
+<a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_oldValue</b></td></tr>
+<tr class="separator:a8f30f71c4391041a120945d58134540b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ba0255abbd05d6c0aa3f1b6b108fdc8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ba0255abbd05d6c0aa3f1b6b108fdc8"></a>
+<a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_oldGlobalDefault</b></td></tr>
+<tr class="separator:a0ba0255abbd05d6c0aa3f1b6b108fdc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -136,22 +135,25 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:afb493a97bd156e251dea827ab80310c0 inherit pub_methods_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afb493a97bd156e251dea827ab80310c0"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>AmbientService</b> (T globalDefault)</td></tr>
 <tr class="separator:afb493a97bd156e251dea827ab80310c0 inherit pub_methods_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ada0b68405d38a4b7b61fc7a4ee941fca inherit pub_methods_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">Saved&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#ada0b68405d38a4b7b61fc7a4ee941fca">Set</a> (T newValue)</td></tr>
-<tr class="memdesc:ada0b68405d38a4b7b61fc7a4ee941fca inherit pub_methods_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Installs an ambient (async-local) override. Designed to be used in a <code>using</code> statement, which restores the old value at the end. <a href="#ada0b68405d38a4b7b61fc7a4ee941fca">More...</a><br /></td></tr>
-<tr class="separator:ada0b68405d38a4b7b61fc7a4ee941fca inherit pub_methods_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a884e46fb9f44aef38423bb99dfd179cf inherit pub_methods_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">Saved&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a884e46fb9f44aef38423bb99dfd179cf">Set</a> (T newValue, bool alsoSetGlobalDefault=false)</td></tr>
+<tr class="memdesc:a884e46fb9f44aef38423bb99dfd179cf inherit pub_methods_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Installs an ambient (async-local) override. Designed to be used in a <code>using</code> statement, which restores the old value at the end. If requested, changes <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#acf99a721bf2fda17953938d4d9bfcea0" title="The instance used by every execution context that has no ambient override from Set. It can be replaced app-wide.">GlobalDefault</a> too. <a href="#a884e46fb9f44aef38423bb99dfd179cf">More...</a><br /></td></tr>
+<tr class="separator:a884e46fb9f44aef38423bb99dfd179cf inherit pub_methods_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header properties_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td colspan="2" onclick="javascript:toggleInherit('properties_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html">Loyc.Threading.AmbientService&lt; T &gt;</a></td></tr>
 <tr class="memitem:acf99a721bf2fda17953938d4d9bfcea0 inherit properties_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#acf99a721bf2fda17953938d4d9bfcea0">GlobalDefault</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:acf99a721bf2fda17953938d4d9bfcea0 inherit properties_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">The instance used by every execution context that has no ambient override from <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#ada0b68405d38a4b7b61fc7a4ee941fca" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end.">Set</a>. It can be replaced app-wide. <a href="#acf99a721bf2fda17953938d4d9bfcea0">More...</a><br /></td></tr>
+<tr class="memdesc:acf99a721bf2fda17953938d4d9bfcea0 inherit properties_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">The instance used by every execution context that has no ambient override from <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a884e46fb9f44aef38423bb99dfd179cf" title="Installs an ambient (async-local) override. Designed to be used in a using statement, which restores the old value at the end. If requested, changes GlobalDefault too.">Set</a>. It can be replaced app-wide. <a href="#acf99a721bf2fda17953938d4d9bfcea0">More...</a><br /></td></tr>
 <tr class="separator:acf99a721bf2fda17953938d4d9bfcea0 inherit properties_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e77af50c380cb9db78b28f5d9502616 inherit properties_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#a8e77af50c380cb9db78b28f5d9502616">Value</a><code> [get]</code></td></tr>
+<tr class="memdesc:a8e77af50c380cb9db78b28f5d9502616 inherit properties_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the current T instance (the current async execution context's override if one is active, otherwise <a class="el" href="classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4.html#acf99a721bf2fda17953938d4d9bfcea0" title="The instance used by every execution context that has no ambient override from Set. It can be replaced app-wide.">GlobalDefault</a>. <a href="#a8e77af50c380cb9db78b28f5d9502616">More...</a><br /></td></tr>
+<tr class="separator:a8e77af50c380cb9db78b28f5d9502616 inherit properties_classLoyc_1_1Threading_1_1AmbientService_3_01T_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 24 2026 19:07:36 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jul 27 2026 06:54:07 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

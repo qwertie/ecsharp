@@ -218,6 +218,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a3ad39648da7666c5a99fa07ceb210ebd"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3ad39648da7666c5a99fa07ceb210ebd"></a>
 ReadOnlyMemory&lt; char &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>AsMemory</b> ()</td></tr>
 <tr class="separator:a3ad39648da7666c5a99fa07ceb210ebd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade0ff2c33f0c3cea03cdb87a77492114"><td class="memItemLeft" align="right" valign="top">ReadOnlySpan&lt; char &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1UString.html#ade0ff2c33f0c3cea03cdb87a77492114">AsSpan</a> ()</td></tr>
+<tr class="memdesc:ade0ff2c33f0c3cea03cdb87a77492114"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the contents of this slice as a ReadOnlySpan{T}. <a href="#ade0ff2c33f0c3cea03cdb87a77492114">More...</a><br /></td></tr>
+<tr class="separator:ade0ff2c33f0c3cea03cdb87a77492114"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e4671b555a1afff1b6521b7f9ca482e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3e4671b555a1afff1b6521b7f9ca482e"></a>
 uchar&#160;</td><td class="memItemRight" valign="bottom"><b>PopFirst</b> (out bool fail)</td></tr>
 <tr class="separator:a3e4671b555a1afff1b6521b7f9ca482e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -454,11 +457,28 @@ If 'count' is below zero, or if 'start' is above the original Length, the Count 
 if (start + count) is above the original Length, the Count of the new slice is reduced to <code>list.Length - start</code>. </li>
 </ul>
 
-<p>Referenced by <a class="el" href="structLoyc_1_1UString.html#ac468abbbaa21cf56f7540da3646f186f">Loyc.UString.Find()</a>, <a class="el" href="structLoyc_1_1UString.html#aee216d0c56d95fb1dc5e7aa11c643489">Loyc.UString.Left()</a>, <a class="el" href="structLoyc_1_1UString.html#a3d2ad2100a402e6644fabb251360c3e0">Loyc.UString.Right()</a>, <a class="el" href="structLoyc_1_1UString.html#af50a5219815a755aa275a4b607f9f263">Loyc.UString.Slice()</a>, and <a class="el" href="structLoyc_1_1UString.html#a4e388d141fbc6296ccf14d0e6c2e3d3a">Loyc.UString.Substring()</a>.</p>
+<p>Referenced by <a class="el" href="structLoyc_1_1UString.html#ac468abbbaa21cf56f7540da3646f186f">Loyc.UString.Find()</a>, <a class="el" href="structLoyc_1_1UString.html#aee216d0c56d95fb1dc5e7aa11c643489">Loyc.UString.Left()</a>, <a class="el" href="structLoyc_1_1UString.html#a3d2ad2100a402e6644fabb251360c3e0">Loyc.UString.Right()</a>, <a class="el" href="structLoyc_1_1UString.html#af50a5219815a755aa275a4b607f9f263">Loyc.UString.Slice()</a>, <a class="el" href="structLoyc_1_1UString.html#a4e388d141fbc6296ccf14d0e6c2e3d3a">Loyc.UString.Substring()</a>, and <a class="el" href="structLoyc_1_1UString.html#af4c7f6894d1cc3ebad9f429898fb221d">Loyc.UString.ToUpper()</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="ade0ff2c33f0c3cea03cdb87a77492114"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ReadOnlySpan&lt;char&gt; Loyc.UString.AsSpan </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the contents of this slice as a ReadOnlySpan{T}.</p>
+
+</div>
+</div>
 <a class="anchor" id="a6dd742be02e7fbff30e8d8332e8f3815"></a>
 <div class="memitem">
 <div class="memproto">
@@ -718,8 +738,10 @@ if (start + count) is above the original Length, the Count of the new slice is r
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Returns a new string with replacements made, or the same string if no replacements occurred.</dd></dl>
+<p>If <em>what</em>  is empty, no replacement is possible and this string is returned unchanged (rather than looping forever, which is what earlier versions did). This matches the documented "same string if no
+replacements occurred" contract and the <code>maxReplacements &lt;= 0</code> case.</p>
 
-<p>References <a class="el" href="structLoyc_1_1UString.html#ac468abbbaa21cf56f7540da3646f186f">Loyc.UString.Find()</a>, and <a class="el" href="structLoyc_1_1UString.html#a9cb84d273ee67b66789a9388ec047743">Loyc.UString.IsEmpty</a>.</p>
+<p>References <a class="el" href="structLoyc_1_1UString.html#ac468abbbaa21cf56f7540da3646f186f">Loyc.UString.Find()</a>, <a class="el" href="structLoyc_1_1UString.html#a9cb84d273ee67b66789a9388ec047743">Loyc.UString.IsEmpty</a>, and <a class="el" href="structLoyc_1_1UString.html#ac824ea42089ecb6e9f95122a7f56153c">Loyc.UString.Length</a>.</p>
 
 </div>
 </div>
@@ -829,7 +851,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 
 <p>References <a class="el" href="structLoyc_1_1UString.html#ade29bd1b471cd9949b735376b1d1eef7">Loyc.UString.Slice()</a>.</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrecedenceMap.html#aa6b07dcdc98d938ec66f831bab133946">Loyc.Syntax.Les.Les3PrecedenceMap.IsNaturalOperator()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrecedenceMap.html#a072386fb68c363514e31dd4263c9aa7f">Loyc.Syntax.Les.Les3PrecedenceMap.IsNaturalOperatorToken()</a>, and <a class="el" href="structLoyc_1_1UString.html#ade29bd1b471cd9949b735376b1d1eef7">Loyc.UString.Slice()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrecedenceMap.html#a072386fb68c363514e31dd4263c9aa7f">Loyc.Syntax.Les.Les3PrecedenceMap.IsNaturalOperatorToken()</a>, and <a class="el" href="structLoyc_1_1UString.html#ade29bd1b471cd9949b735376b1d1eef7">Loyc.UString.Slice()</a>.</p>
 
 </div>
 </div>
@@ -961,6 +983,8 @@ if (start + count) is above the original Length, the Count of the new slice is r
 
 <p>References <a class="el" href="structLoyc_1_1UString.html#a20980209ed7c1dae5f778c6d9dc363b7">Loyc.UString.UString()</a>.</p>
 
+<p>Referenced by <a class="el" href="structLoyc_1_1UString.html#af4c7f6894d1cc3ebad9f429898fb221d">Loyc.UString.ToUpper()</a>.</p>
+
 </div>
 </div>
 <a class="anchor" id="a420d806ba5fbc1a5e8b93d6672fc98d7"></a>
@@ -1014,7 +1038,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 
 <p>Converts the string to uppercase using the 'invariant' culture.</p>
 
-<p>References <a class="el" href="structLoyc_1_1UString.html#ac824ea42089ecb6e9f95122a7f56153c">Loyc.UString.Length</a>.</p>
+<p>References <a class="el" href="structLoyc_1_1UString.html#ac824ea42089ecb6e9f95122a7f56153c">Loyc.UString.Length</a>, <a class="el" href="structLoyc_1_1UString.html#a4e388d141fbc6296ccf14d0e6c2e3d3a">Loyc.UString.Substring()</a>, and <a class="el" href="structLoyc_1_1UString.html#a20980209ed7c1dae5f778c6d9dc363b7">Loyc.UString.UString()</a>.</p>
 
 </div>
 </div>
@@ -1092,7 +1116,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 
 <p>Gets the length of the string in code units (which may be greater than the number of actual characters or code points).</p>
 
-<p>Referenced by <a class="el" href="classLoyc_1_1StringBuilderExt.html#a9aea19fcf610a9eceaee876cf191e3e5">Loyc.StringBuilderExt.EndsWith()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1PrintHelpers.html#a7a0bb4207de33944e4e3a368bf0005fa">Loyc.Syntax.PrintHelpers.EscapeCStyle()</a>, <a class="el" href="structLoyc_1_1UString.html#a74e5690f2f6376500c566343a43cbb61">Loyc.UString.Find()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Les_1_1Les3PrecedenceMap.html#aa6b07dcdc98d938ec66f831bab133946">Loyc.Syntax.Les.Les3PrecedenceMap.IsNaturalOperator()</a>, <a class="el" href="classLoyc_1_1StringBuilderExt.html#a25343b4c0462d71d97c12ff5c1b5e9a5">Loyc.StringBuilderExt.LastIndexOf()</a>, <a class="el" href="classLoyc_1_1StringBuilderExt.html#affc1387abde2f9df416eb36236e16071">Loyc.StringBuilderExt.StartsWith()</a>, <a class="el" href="structLoyc_1_1UString.html#a84fccee5e87cd01d5691945e4e1fd7ee">Loyc.UString.StartsWith()</a>, <a class="el" href="classLoyc_1_1StringBuilderExt.html#a296fd5a48cee038edd7d3a93e5b6b850">Loyc.StringBuilderExt.SubstringEquals()</a>, <a class="el" href="structLoyc_1_1UString.html#af4c7f6894d1cc3ebad9f429898fb221d">Loyc.UString.ToUpper()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#acda35107491ca1ff25a4c59c8d97046a">Loyc.Syntax.ParseHelpers.UnescapeCStyle()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Impl_1_1LNodePrinterHelper.html#aeb1719ddba52cd8a2429321a8550d0fb">Loyc.Syntax.Impl.LNodePrinterHelper.Write()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Impl_1_1LNodePrinterHelperExt.html#a7dc066d4e287659bf1369023d765f099">Loyc.Syntax.Impl.LNodePrinterHelperExt.WriteSmartly()</a>.</p>
+<p>Referenced by <a class="el" href="classLoyc_1_1StringBuilderExt.html#a9aea19fcf610a9eceaee876cf191e3e5">Loyc.StringBuilderExt.EndsWith()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1PrintHelpers.html#a7a0bb4207de33944e4e3a368bf0005fa">Loyc.Syntax.PrintHelpers.EscapeCStyle()</a>, <a class="el" href="structLoyc_1_1UString.html#a74e5690f2f6376500c566343a43cbb61">Loyc.UString.Find()</a>, <a class="el" href="classLoyc_1_1StringBuilderExt.html#a25343b4c0462d71d97c12ff5c1b5e9a5">Loyc.StringBuilderExt.LastIndexOf()</a>, <a class="el" href="structLoyc_1_1UString.html#aa10969232f461b9540f28395faf5eaf0">Loyc.UString.Replace()</a>, <a class="el" href="classLoyc_1_1StringBuilderExt.html#affc1387abde2f9df416eb36236e16071">Loyc.StringBuilderExt.StartsWith()</a>, <a class="el" href="structLoyc_1_1UString.html#a84fccee5e87cd01d5691945e4e1fd7ee">Loyc.UString.StartsWith()</a>, <a class="el" href="classLoyc_1_1StringBuilderExt.html#a296fd5a48cee038edd7d3a93e5b6b850">Loyc.StringBuilderExt.SubstringEquals()</a>, <a class="el" href="structLoyc_1_1UString.html#af4c7f6894d1cc3ebad9f429898fb221d">Loyc.UString.ToUpper()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1ParseHelpers.html#acda35107491ca1ff25a4c59c8d97046a">Loyc.Syntax.ParseHelpers.UnescapeCStyle()</a>, <a class="el" href="classLoyc_1_1Syntax_1_1Impl_1_1LNodePrinterHelper.html#aeb1719ddba52cd8a2429321a8550d0fb">Loyc.Syntax.Impl.LNodePrinterHelper.Write()</a>, and <a class="el" href="classLoyc_1_1Syntax_1_1Impl_1_1LNodePrinterHelperExt.html#a7dc066d4e287659bf1369023d765f099">Loyc.Syntax.Impl.LNodePrinterHelperExt.WriteSmartly()</a>.</p>
 
 </div>
 </div>
@@ -1198,7 +1222,7 @@ if (start + count) is above the original Length, the Count of the new slice is r
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Jul 24 2026 19:07:27 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jul 27 2026 06:54:01 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>
