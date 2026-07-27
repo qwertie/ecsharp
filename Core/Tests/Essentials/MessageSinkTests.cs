@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Loyc.MiniTest;
+using Loyc.Threading;
 
 namespace Loyc.Essentials.Tests
 {
@@ -22,6 +23,27 @@ namespace Loyc.Essentials.Tests
 				Assert.AreSame(a, MessageSink.Default);
 			}
 			Assert.AreSame(before, MessageSink.Default);
+		}
+
+		[Test]
+		public void AmbientServiceSupportsValueTypes()
+		{
+			var amb = new AmbientService<int>(42);
+			Assert.AreEqual(42, amb.Value);
+			using (amb.Set(7)) {
+				Assert.AreEqual(7, amb.Value);
+				using (amb.Set(0))  // default(int) is a legal override
+					Assert.AreEqual(0, amb.Value);
+				Assert.AreEqual(7, amb.Value);
+				Assert.AreEqual(42, amb.GlobalDefault);
+			}
+			Assert.AreEqual(42, amb.Value);
+			using (amb.Set(8, alsoSetGlobalDefault: true)) {
+				Assert.AreEqual(8, amb.Value);
+				Assert.AreEqual(8, amb.GlobalDefault);
+			}
+			Assert.AreEqual(42, amb.GlobalDefault);
+			Assert.AreEqual(42, amb.Value);
 		}
 
 		[Test]
