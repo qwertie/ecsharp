@@ -58,7 +58,7 @@ namespace Loyc.Collections
 
 			public List<V>? GetList()
 			{
-				_map._dict.TryGetValueSafe(_key, out var values);
+				_map._dict.TryGetValue(_key, out var values);
 				return values;
 			}
 			List<V> GetOrMakeValues()
@@ -96,7 +96,7 @@ namespace Loyc.Collections
 				}
 			}
 
-			public bool Contains(V item) => GetList() is { } values && values!.Contains(item);
+			public bool Contains(V item) => GetList() is { } values && values.Contains(item);
 
 			public void CopyTo(V[] array, int arrayIndex)
 			{
