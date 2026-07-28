@@ -1,21 +1,18 @@
 # Notes for AI agents
 
-## Generated code: .ecs → .out.cs (LeMP)
+## Generated code: .ecs files (LeMP)
 
-Files ending in `.out.cs` are GENERATED from Enhanced C# (`.ecs`) source files in the
-same directory. Never edit a `.out.cs` file directly — edit the `.ecs` file and regenerate:
+To regenerate `.out.cs` files from `.ecs` (Enhanced C#) files:
 
 ```
-Lib\LeMP\LeMP.exe path/to/file.ecs        (Windows)
-mono Lib/LeMP/LeMP.exe path/to/file.ecs   (Linux/macOS; LeMP.exe is a .NET Framework binary)
+Lib\LeMP\LeMP.exe --outext=.out.cs path/to/file.ecs        (Windows)
+mono Lib/LeMP/LeMP.exe --outext=.out.cs path/to/file.ecs   (Linux/macOS)
 ```
 
-To avoid noisy commits: if regenerating a `.out.cs` changed nothing but the LeMP version
-banner in its header, don't commit it (revert it instead). Commit regenerated files only
-when they contain substantive changes.
+To avoid noise, don't commit generated files if ONLY the first line (LeMP version banner) changed.
 
-Notes on Enhanced C# / LeMP:
-- Most basic C# syntax works, but most C# 10+ syntax is NOT available.
+Notes on Enhanced C#:
+- Most basic C# syntax works, but some C# 10+ syntax is not available.
 - There are occasional unpatched parser bugs, e.g. you may need to write `X<Y<Z> >`
   instead of `X<Y<Z>>`.
 - Re-use the macro patterns you see in existing `.ecs` files.
