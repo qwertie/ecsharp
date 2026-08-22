@@ -61,7 +61,7 @@ namespace Loyc.SyncLib
 		///   registered with a tag in a <see cref="TypeSyncRegistry"/>. This is
 		///   useful for compactness when the object's type is known statically, or
 		///   for interoperability with data formats that lack type tags.</summary>
-		/// <remarks>Since most data formats are not self-describing (e.g.
+		/// <remarks>Since most some formats are not self-describing (e.g.
 		///   <see cref="SyncBinary"/>), the same flag must be used when writing an
 		///   object and when reading it back; otherwise the data cannot be read
 		///   correctly. Note: an object written with this flag cannot be read

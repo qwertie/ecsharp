@@ -85,10 +85,10 @@ public static class DefaultSynchronizer<SyncManager, T> where SyncManager: ISync
 		var sync = PredefinedSynchronizer<SyncManager>.Get<T>();
 		if (sync != null)
 			return sync;
-		// If the (ambient) SyncTypeRegistry can handle T — either T itself is
+		// If the (ambient) TypeSyncRegistry can handle T — either T itself is
 		// registered or some type derived from T is — return a dynamic-typing
 		// synchronizer. Note: the cached synchronizer is registry-AGNOSTIC (it
-		// consults SyncTypeRegistry.Default on every call), which keeps this
+		// consults TypeSyncRegistry.Default on every call), which keeps this
 		// process-global cache correct when the ambient registry is swapped.
 		if (TypeSyncRegistry.Default.Handles(typeof(T)))
 			return SyncViaRegistry;

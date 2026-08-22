@@ -104,7 +104,7 @@ namespace Loyc.SyncLib.Tests
 
 	/// <summary>An alternative ellipse synchronizer with a different tag but the same
 	///   field layout — used to test the pluggable TagMismatch policy. It is never
-	///   registered in any SyncTypeRegistry.</summary>
+	///   registered in any TypeSyncRegistry.</summary>
 	public static class DynOvalSync<SM> where SM : ISyncManager
 	{
 		[TypeTag("Oval")]
@@ -429,7 +429,7 @@ namespace Loyc.SyncLib.Tests
 		[Test]
 		public void ExplicitRegistriesBypassAmbient()
 		{
-			// The registries are passed explicitly to SyncDynamic; the ambient
+			// The registries are passed explicitly to SyncDyn; the ambient
 			// defaults are never swapped and never consulted.
 			var (synchronizers, tags) = DynTestData.NewShapeRegistries();
 			var box = new DynBox { Shape = DynTestData.NewPolygon() };
@@ -559,7 +559,7 @@ namespace Loyc.SyncLib.Tests
 		{
 			using (DynTestData.UseShapeRegistries()) {
 				// Hand-written JSON with no "\t" property: when the expected type itself
-				// is registered, SyncDynamic falls back to it.
+				// is registered, SyncDyn falls back to it.
 				var json = @"{ ""Shape"": { ""Id"": 1, ""Width"": 10.5, ""Height"": 5.25 } }";
 				var box = SyncJson.Read<DynBox>(Encoding.UTF8.GetBytes(json), (sm, v) => {
 					v ??= new DynBox();

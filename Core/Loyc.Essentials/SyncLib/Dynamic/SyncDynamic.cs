@@ -19,7 +19,7 @@ namespace Loyc.SyncLib;
 public struct DynamicSync<SM, T> : ISyncField<SM, T> where SM : ISyncManager
 {
 	ObjectMode _mode;
-	TypeSyncRegistry? _synchronizers; // null => use the ambient SyncTypeRegistry.Default
+	TypeSyncRegistry? _synchronizers; // null => use the ambient TypeSyncRegistry.Default
 	TypeTagRegistry? _tags;           // null => use the ambient TypeTagRegistry.Default
 
 	public DynamicSync(ObjectMode mode)
@@ -84,9 +84,9 @@ public struct DynamicSync<SM, T> : ISyncField<SM, T> where SM : ISyncManager
 				var body = tables.TryByType(type) ?? throw new FormatException(
 					tag == null
 					? $"'{name.Name}' has no type tag, and {typeof(T).NameWithGenericArgs()} itself " +
-					  "is not registered in the SyncTypeRegistry."
+					  "is not registered in the TypeSyncRegistry."
 					: $"'{name.Name}' (tagged '{tag}'): {type.NameWithGenericArgs()} " +
-					  "is not registered in the SyncTypeRegistry.");
+					  "is not registered in the TypeSyncRegistry.");
 				result = body(sync, value);
 				sync.CurrentObject = result!;
 			}
@@ -95,7 +95,7 @@ public struct DynamicSync<SM, T> : ISyncField<SM, T> where SM : ISyncManager
 				Type runtimeType = value != null ? value.GetType() : typeof(T);
 				var body = tables.TryByType(runtimeType) ?? throw new NotSupportedException(
 					$"Cannot synchronize '{name.Name}' dynamically: {runtimeType.NameWithGenericArgs()} " +
-					"is not registered in the SyncTypeRegistry.");
+					"is not registered in the TypeSyncRegistry.");
 				if ((_mode & ObjectMode.NoTypeTag) == 0)
 				{
 					string? tag = tags.TagOf(runtimeType);

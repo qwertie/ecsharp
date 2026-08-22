@@ -38,7 +38,7 @@ static class ShapeSync<SM> where SM : ISyncManager
 // ---- Dynamic tier only: registration (typically at startup).
 //      Add() scans the whole class; the tags it discovers are recorded in
 //      TypeTagRegistry.Default (the instance ambient at the time of the call). ----
-SyncTypeRegistry.Default.Add(typeof(ShapeSync<>));
+TypeSyncRegistry.Default.Add(typeof(ShapeSync<>));
 
 // ---- Usage ----
 class Drawing
@@ -54,7 +54,7 @@ class Drawing
         // the synchronizer has a [TypeTag] — so this data stays readable dynamically.
         d.Border = sm.Sync("Border", d.Border, ShapeSync<SM>.Sync);
         // DYNAMIC TIER: opt-in mode; dispatches on GetType() (write) / tag (read).
-        d.Shapes = sm.SyncDynamicList("Shapes", d.Shapes);
+        d.Shapes = sm.SyncDynList("Shapes", d.Shapes);
         return d;
     }
 }
@@ -103,7 +103,7 @@ no-codegen performance trick. `PredefinedSynchronizer<SM>` scans SM's `Sync` ins
 primitives; `TupleSynchronizer<SM>` covers tuples; `FallbackSync` self-patches so **late
 registration works** — a type that threw at static-init retries `FindSynchronizer()` on each call.
 
-Dynamic typing plugs into `FindSynchronizer()`: if the ambient `SyncTypeRegistry` `Handles(typeof(T))`
+Dynamic typing plugs into `FindSynchronizer()`: if the ambient `TypeSyncRegistry` `Handles(typeof(T))`
 — T itself or any subtype is registered — it returns a registry-consulting synchronizer.
 
 ---
@@ -138,7 +138,7 @@ Owns three customizable things:
      a different tag than the synchronizer's. Throws by default; if an override returns normally,
      the read proceeds with the expected synchronizer anyway.
 
-### `SyncTypeRegistry` — *maps types to synchronizers; knows nothing about tags*
+### `TypeSyncRegistry` — *maps types to synchronizers; knows nothing about tags*
 
 - `Add(typeof(ShapeSync<>))` scans an open generic class with a single type parameter constrained
   to `ISyncManager` for two synchronizer shapes: static **bodies** `T Sync(SM, T)` (the
@@ -163,7 +163,7 @@ Owns three customizable things:
 **not** intended for the business types themselves. `TypeTagRegistry` interprets it.
 
 To run multiple synchronizers/tags for one type, swap registry *pairs*:
-`using (TypeTagRegistry.SetDefault(tagsB)) using (SyncTypeRegistry.SetDefault(syncB)) {...}`, or skip
+`using (TypeTagRegistry.SetDefault(tagsB)) using (TypeSyncRegistry.SetDefault(syncB)) {...}`, or skip
 ambient state entirely with the explicit-instance overloads below.
 
 ---
@@ -186,10 +186,10 @@ ambient state entirely with the explicit-instance overloads below.
 
 ### Dynamic tier (opt-in, per call site)
 
-- `sm.SyncDynamic(name, value [, mode])`, `sm.SyncDynamicList(...)`, or compose `DynamicSync<SM, T>`
+- `sm.SyncDyn(name, value [, mode])`, `sm.SyncDynList(...)`, or compose `DynamicSync<SM, T>`
   (an ordinary `ISyncField`) with any list/collection helper.
 - **Explicit-instance overloads** bypass the ambient services:
-  `sm.SyncDynamic(name, value, synchronizers, tags)` / `new DynamicSync<SM, T>(synchronizers, tags, mode)`
+  `sm.SyncDyn(name, value, synchronizers, tags)` / `new DynamicSync<SM, T>(synchronizers, tags, mode)`
   (`tags: null` still means `TypeTagRegistry.Default`). Use when different streams need different
   registrations concurrently, and to avoid dependence on thread identity — thread-local ambient
   state does not flow across `await`.
@@ -212,7 +212,7 @@ SyncManager's special handling, e.g. Base64 in JSON), `List`/`IList`/`IReadOnlyL
 `Dictionary`/`IDictionary`, `KeyValuePair`, enums (numeric), `DateTime`/`TimeSpan` (ISO strings),
 all composing recursively via `DefaultSyncField<SM, T>`. For user types it returns a
 registry-consulting dynamic synchronizer — the process-global cache stores only **registry-agnostic**
-delegates (they consult `SyncTypeRegistry.Default` on each call), so ambient swaps stay correct.
+delegates (they consult `TypeSyncRegistry.Default` on each call), so ambient swaps stay correct.
 
 ---
 
@@ -220,7 +220,7 @@ delegates (they consult `SyncTypeRegistry.Default` on each call), so ambient swa
 
 1. **Two registries + attribute, not one global `SyncTypes` static.** The proposal had a single
    global class holding both maps and explicit `RegisterDynamic<T>("tag", ...)` calls. The final
-   design splits tag-resolution (`TypeTagRegistry`) from synchronizer-resolution (`SyncTypeRegistry`),
+   design splits tag-resolution (`TypeTagRegistry`) from synchronizer-resolution (`TypeSyncRegistry`),
    moves tags onto synchronizers via `[TypeTag]`, and makes both ambient/swappable. Result: business
    objects stay clean, the tag convention and error policy are override points, and concurrent
    streams with different registrations are expressible.
@@ -273,7 +273,7 @@ delegates (they consult `SyncTypeRegistry.Default` on each call), so ambient swa
 - `Core/Loyc.Essentials/SyncLib/TypeTagRegistry.cs` — the tag module (dictionary, convention,
   policies, ambient service).
 - `Core/Loyc.Essentials/SyncLib/TypeTagAttribute.cs` — the attribute (data only).
-- `Core/Loyc.Essentials/SyncLib/SyncTypeRegistry.cs` — synchronizer registry, dispatch tables,
+- `Core/Loyc.Essentials/SyncLib/TypeSyncRegistry.cs` — synchronizer registry, dispatch tables,
   `DynamicSync<SM,T>`, `SyncDynamicExt` (incl. explicit-instance overloads).
 - `Core/Loyc.Essentials/SyncLib/TypeStuff.cs` — `DefaultSynchronizer` registry hookup,
   `DefaultSyncField<SM,T>`, `ExtraSynchronizers<SM>` (collections/enums/dates).
@@ -296,7 +296,7 @@ delegates (they consult `SyncTypeRegistry.Default` on each call), so ambient swa
 - SyncProtobuf with a **deduplicated root**: an inner field that is the *same instance* as the root
   value becomes an unresolvable back-reference unless the root synchronizer sets `CurrentObject` —
   pre-existing dedup semantics; tests wrap values in a container.
-- `SyncTypeRegistry.Add` records tags in the *ambient* `TypeTagRegistry.Default` at call time — code
+- `TypeSyncRegistry.Add` records tags in the *ambient* `TypeTagRegistry.Default` at call time — code
   building parallel registry pairs must wrap the `Add` calls in `TypeTagRegistry.SetDefault(...)`.
 
 ---

@@ -41,13 +41,13 @@ namespace Loyc.SyncLib;
 ///   <b>Ambient Service Pattern</b>: the registry used by <see cref="DynamicSync{SM, T}"/>
 ///   is <see cref="Default"/>, an async-local value that can be swapped temporarily:
 ///   <code>
-///   using (SyncTypeRegistry.SetDefault(myRegistry))
+///   using (TypeSyncRegistry.SetDefault(myRegistry))
 ///       SyncJson.Write(drawing, Drawing.Sync&lt;SyncJson.Writer>);
 ///   </code>
 ///   This also means multiple synchronizers can exist for one type: register each
 ///   in a different registry and swap (usually together with a paired
 ///   <see cref="TypeTagRegistry"/>). Alternatively, pass a specific registry to
-///   the <see cref="SyncDynamicExt.SyncDynamic{SM, T}(SM, FieldId, T, TypeSyncRegistry, TypeTagRegistry?, ObjectMode)"/>
+///   the <see cref="SyncDynamicExt.SyncDyn{SM, T}(SM, FieldId, T, TypeSyncRegistry, TypeTagRegistry?, ObjectMode)"/>
 ///   overloads to bypass the ambient service entirely. Registration is expected
 ///   to happen at startup, but late registration is supported and thread-safe.
 /// </remarks>

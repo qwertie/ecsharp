@@ -225,7 +225,7 @@ public class TypeTagRegistry
 		=> throw new FormatException(
 			$"Expected an object tagged '{expectedTag}' ({expectedType.NameWithGenericArgs()}), " +
 			$"but the data stream contains an object tagged '{tagInStream}'. If '{field.Name}' " +
-			"was written dynamically, it must also be read dynamically (e.g. with SyncDynamic).");
+			"was written dynamically, it must also be read dynamically (e.g. with SyncDyn).");
 
 	#endregion
 }

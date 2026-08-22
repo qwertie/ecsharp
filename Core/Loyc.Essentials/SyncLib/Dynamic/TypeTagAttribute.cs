@@ -17,7 +17,8 @@ namespace Loyc.SyncLib;
 ///   <ul>
 ///   <li>When a synchronizer has a type tag, the tag is written whether the
 ///     object appears in a statically-typed context (an explicit synchronizer
-///     was given) or a dynamically-typed one (<see cref="SyncDynamicExt.SyncDynamic{SM, T}"/>),
+///     was given) or a dynamically-typed one
+///     (<see cref="SyncDynamicExt.SyncDyn{SM, T}(SM, FieldId, T, ObjectMode)"/>),
 ///     so data written statically can be read back dynamically and vice versa.</li>
 ///   <li>When reading statically, the tag in the data stream is checked against
 ///     the expected tag; a mismatch is reported to

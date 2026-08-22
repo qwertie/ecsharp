@@ -228,9 +228,14 @@ namespace Loyc.SyncLib
 				where SyncField : ISyncField<SM, T>
 			=> new SyncList<SM, T, HashSet<T>, SyncField>(syncItem, listMode, tupleLength, Alloc<T>.HashSet).Sync(ref sync, name, savable);
 
+		/// <param name="ignored">This parameter is not used. Its only purpose is to
+		///   allow the C# compiler to infer <c>T</c>, which otherwise appears only in
+		///   the constraints (where type inference cannot see it). Call it like this:
+		///   <c>sm.SyncColl("Coll", obj.Coll, syncItem, cap => new DList&lt;X&gt;(cap),
+		///   ignored: default(X))</c>.</param>
 		public static Coll? SyncColl<SM, Coll, T, SyncField>(this SM sync,
 			FieldId name, Coll? savable, SyncField syncItem, Func<int, Coll> alloc,
-			ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
+			ObjectMode listMode = ObjectMode.List, int tupleLength = -1, T? ignored = default)
 				where SM : ISyncManager
 				where Coll : ICollection<T>
 				where SyncField : ISyncField<SM, T>
@@ -342,10 +347,15 @@ namespace Loyc.SyncLib
 			=> new SyncList<SM, T, HashSet<T>, ObjectSyncher<SM, SyncObj, T>>
 				(new ObjectSyncher<SM, SyncObj, T>(syncItem, itemMode), listMode, tupleLength, Alloc<T>.HashSet).Sync(ref sync, name, savable);
 
+		/// <param name="ignored">This parameter is not used. Its only purpose is to
+		///   allow the C# compiler to infer <c>T</c>, which otherwise appears only in
+		///   the constraints (where type inference cannot see it). Call it like this:
+		///   <c>sm.SyncColl("Coll", obj.Coll, syncItem, cap => new DList&lt;X&gt;(cap),
+		///   ignored: default(X))</c>.</param>
 		public static Coll? SyncColl<SM, Coll, T, SyncObj>(this SM sync,
 			FieldId name, Coll? savable, SyncObj syncItem, Func<int, Coll> alloc,
 			ObjectMode itemMode = ObjectMode.Deduplicate,
-			ObjectMode listMode = ObjectMode.List, int tupleLength = -1)
+			ObjectMode listMode = ObjectMode.List, int tupleLength = -1, T? ignored = default)
 				where SM : ISyncManager
 				where Coll : ICollection<T>
 				where SyncObj : ISyncObject<SM, T>
