@@ -57,32 +57,23 @@ class Class {
 ~~~csharp
 // Output of LeMP
 int _x;
-int X {
-  get {
+int X { get {
     return _x;
-  }
-  set {
+  } set {
     _x = value;
-  }
-}
+  } }
 int _y;
-int Y {
-  get {
+int Y { get {
     return _y;
-  }
-  set {
+  } set {
     _y = value;
-  }
-}
+  } }
 Int32 _z;
-int Z {
-  get {
+int Z { get {
     return _z;
-  }
-  set {
+  } set {
     _z = value;
-  }
-}
+  } }
 ~~~
 </div>
 
@@ -105,7 +96,7 @@ true;
 ~~~
 </div>
 
-Returns the literal true if two or more syntax trees are equal, or false if not. This macro is largely superceded by the `` `staticMatches` `` operator.
+Returns the literal true if two or more syntax trees are equal, or false if not. The arguments are macro-preprocessed, and trivia (such as comments) is ignored. `codeEquals` is a synonym. This macro is largely superceded by the `` `staticMatches` `` operator.
 
 ### concatId ###
 
@@ -202,11 +193,17 @@ Type Prop { get ==> target; set ==> target; }
 
 ~~~csharp
 // Output of LeMP
-Type SomeMethod(Type param) { return target.Method(param); }
-int Compute(int x) { return base.Compute(x); }
-Type Property { get {
+Type SomeMethod(Type param) {
+  return target.Method(param);
+}
+int Compute(int x) {
+  return base.Compute(x);
+}
+Type Property {
+  get {
     return target.Property;
-  } }
+  }
+}
 Type Prop { get {
     return target;
   } set {
@@ -275,15 +272,29 @@ byte[] content = includeFileBinary("Filename.doc")
 
 Converts a binary file into a byte array literal.
 
+### \#lines ###
+
+	#lines;
+
+C#-specific: adds a `#line` directive in front of many statements in the code that follows, so that compiler error messages refer to the original source file rather than the output file. This macro doesn't know exactly how the output will be printed, so it tends to emit more `#line` directives than necessary in order to increase the chance of a correct mapping.
+
 ### macro_scope ###
 
-~~~exec
+<div class='sbs' markdown='1'>
+~~~csharp
 macro_scope { 
   define Foo() { ReplacedByAMacro(); }
   Foo(); // replaced
 }
 Foo();
 ~~~
+
+~~~csharp
+// Output of LeMP
+ReplacedByAMacro();	// replaced
+Foo();
+~~~
+</div>
 
 Creates a scope for local macros and local $variables to be defined. The call itself (`macro_scope` and braces) disappear from the output.
 
@@ -298,10 +309,13 @@ match (var) { case pattern: handler }; // EC# syntax
 match (var) { pattern => { handler }; }; // LES syntax (also works in EC#)
 ~~~
 
+**Deprecated**: this macro is in the `LeMP.ecs.deprecated` namespace, and since C# itself now has pattern matching, you should use C# `switch` and `is` patterns instead. Its support for nested `is` patterns (such as `$p is Point<int>($x, $y)` below) broke when the EC# parser gained support for C# 9 patterns, so the output shown here is from an older version of LeMP.
+
 Attempts to match and deconstruct an object against a "pattern", such as a tuple or an algebraic data type. There can be multiple 'case' blocks, and a `default`. Example:
 
 <div class='sbs' markdown='1'>
 ~~~csharp
+#importMacros(LeMP.ecs.deprecated);
 match (obj) {  
   case is Shape(ShapeType.Circle, $size, 
        Location: $p is Point<int>($x, $y)): 
@@ -310,7 +324,7 @@ match (obj) {
 ~~~
 
 ~~~csharp
-// Output of LeMP
+// Output of LeMP v2.x (match is deprecated)
 do
   if (obj is Shape) {
     Shape tmp_10 = (Shape) obj;
@@ -362,11 +376,11 @@ dynamic Eval(LNode code)
   matchCode(code) {
   case $x + $y:
     return Eval(x)+Eval(y);
-  case $x * $y:
+  case ($x * $y):
     return Eval(x)*Eval(y);
   case $x == $y:
     return Eval(x) == Eval(y);
-  case $x ? $y : $z:
+  case ($x ? $y : $z):
     return Eval(x) ? Eval(y) : Eval(z);
   default:
     if (code.IsLiteral)
@@ -388,16 +402,18 @@ dynamic Eval(LNode code)
   dynamic value;
   {
     LNode x, y, z;
-    if (code.Calls(CodeSymbols.Add, 2) && (x = code.Args[0]) != null && (y = code.Args[1]) != null)
+    if (code.Calls(CodeSymbols.Add, 2) && (x = code.Args[0]) != null && (y = code.Args[1]) != null) {
       return Eval(x) + Eval(y);
-    else if (code.Calls(CodeSymbols.Mul, 2) && (x = code.Args[0]) != null && (y = code.Args[1]) != null)
+    } else if (code.Calls(CodeSymbols.Mul, 2) && (x = code.Args[0]) != null && (y = code.Args[1]) != null) {
       return Eval(x) * Eval(y);
-    else if (code.Calls(CodeSymbols.Eq, 2) && (x = code.Args[0]) != null && (y = code.Args[1]) != null)
+    } else if (code.Calls(CodeSymbols.Eq, 2) && (x = code.Args[0]) != null && (y = code.Args[1]) != null) {
       return Eval(x) == Eval(y);
-    else if (code.Calls(CodeSymbols.QuestionMark, 3) && (x = code.Args[0]) != null && (y = code.Args[1]) != null && (z = code.Args[2]) != null)
+    } else if (code.Calls(CodeSymbols.QuestionMark, 3) && (x = code.Args[0]) != null && (y = code.Args[1]) != null && (z = code.Args[2]) != null) {
       return Eval(x) ? Eval(y) : Eval(z);
-    else if (code.IsLiteral)
-      return code.Value;
+    } else {
+      if (code.IsLiteral)
+        return code.Value;
+    }
   }
 }
 ~~~
@@ -413,7 +429,7 @@ Converts the "key" name component of an expression to a string. Example:
 
 <div class='sbs' markdown='1'>
 ~~~csharp
-#importMacros(LeMP.CSharp6);
+#importMacros(LeMP.CSharp6.To.OlderVersions);
 nameof(Ant.Banana<C>(Dandilion));
 ~~~
 
@@ -472,7 +488,7 @@ Assign A = B only when A is null. **Caution**: currently, A is evaluated twice.
 <div class='sbs' markdown='1'>
 ~~~csharp
 #ecs;
-#importMacros(LeMP.CSharp6);
+#importMacros(LeMP.CSharp6.To.OlderVersions);
 void Example() {
   if (a.b?.c.d ?? false) {
     ItsTrue();
@@ -492,10 +508,10 @@ void Example() {
     ItsTrue();
   }
   {
-    var F_12 = F(x);
+    var F_10 = F(x);
     // Note: the #trivia currently shown in the output 
     // is automatically erased when printing in C# mode
-    if (((([#trivia_isTmpVar] F_12) != null ? F_12.c.d : null) ?? 0) > 0) {
+    if (((F_10 != null ? F_10.c.d : null) ?? 0) > 0) {
       Positive();
     }
   }
@@ -523,20 +539,14 @@ try {
   try {
     try {
       {
-        var result = _obj.ReadFile(filename);
-        Trace.WriteLine(result);
+        var result = _obj.ReadFile(filename); Trace.WriteLine(result);
         return result;
       }
-    } catch (Exception exc) {
-      _success = false;
+    } catch (Exception exc) { _success = false;
       throw;
     }
-  } catch (Exception exc) {
-    MessageBox.Show(exc.Message);
-  }
-} finally {
-  _obj = null;
-}
+  } catch (Exception exc) { MessageBox.Show(exc.Message); }
+} finally { _obj = null; }
 ~~~
 </div>
 
@@ -552,12 +562,27 @@ if (int.Parse(text)=:num > 0)
 
 ~~~csharp
 // Output of LeMP
-if (([] var num = int.Parse(text)) > 0)
+if (var (num = int.Parse(text)) > 0)
   positives += num;
 ~~~
 </div>
 
 This macro isn't useful yet - the feature that it represents is not yet functional.
+
+### := ###
+
+<div class='sbs' markdown='1'>
+~~~csharp
+x := Compute();
+~~~
+
+~~~csharp
+// Output of LeMP
+var x = Compute();
+~~~
+</div>
+
+`A := B` declares a variable `A` and sets it to the value of `B`. It is equivalent to `var A = B`.
 
 ### quote ###
 
@@ -611,10 +636,26 @@ LNode.Call(CodeSymbols.Substitute, LNode.List(LNode.Id((Symbol) "foo"))).SetStyl
 
 Behaves the same as `quote(code)` except that the substitution operator `$` is treated the same as all other code, instead of being recognized as a request for substitution.
 
+### quoteWithTrivia, rawQuoteWithTrivia ###
+
+<div class='sbs' markdown='1'>
+~~~csharp
+var q = quoteWithTrivia(/* cool! */ $foo);
+~~~
+
+~~~csharp
+// Output of LeMP
+var q = foo.PlusAttrs(LNode.List(LNode.Trivia(CodeSymbols.TriviaMLComment, " cool! ")));
+~~~
+</div>
+
+`quoteWithTrivia` and `rawQuoteWithTrivia` behave the same as `quote` and `rawQuote` respectively, except that trivia (such as comments and newlines) is included in the output. `quote` and `rawQuote` discard trivia.
+
 ### Range operators (`..` and `...`) ###
 
 <div class='sbs' markdown='1'>
 ~~~csharp
+#importMacros(LeMP.ecs.deprecated);
 lo..hi; 
 ..hi; 
 lo.._;
@@ -636,7 +677,8 @@ Range.StartingAt(lo);
 
 ### reset_macros ###
 
-~~~exec
+<div class='sbs' markdown='1'>
+~~~csharp
 define Foo() { Food(); }
 Foo();
 reset_macros { 
@@ -646,11 +688,56 @@ reset_macros {
 Foo();
 ~~~
 
+~~~csharp
+// Output of LeMP
+Food(); Football();	// replaced Food();
+~~~
+</div>
+
 While processing the arguments of `reset_macros`,
 
 - locally-created macros defined outside of `reset_macros` are forgotten
 - scoped properties are reset to predefined values
 - the list of open namespaces is reset to defaults
+
+### saveAndRestore ###
+
+<div class='sbs' markdown='1'>
+~~~csharp
+void Paint(Graphics g)
+{
+  saveAndRestore(g.Transform);
+  saveAndRestore(_indent = _indent + 1);
+  DrawStuff(g);
+}
+~~~
+
+~~~csharp
+// Output of LeMP
+void Paint(Graphics g)
+{
+  var oldTransform_10 = g.Transform;
+  try {
+    var old_indent_11 = _indent;
+    _indent = _indent + 1;
+    try {
+      DrawStuff(g);
+    } finally {
+      _indent = old_indent_11;
+    }
+  } finally {
+    g.Transform = oldTransform_10;
+  }
+}
+~~~
+</div>
+
+    saveAndRestore(VarOrProperty);
+    saveAndRestore(VarOrProperty = NewValue);
+
+Saves the value of a variable or property, and uses [`on_finally`](ref-on_star.html) to restore it at the end of the current scope. If the argument is an assignment `P = V`, then `P` is set to `V` after its value is saved.
+
+**Caution**: any expression through which the variable or property is accessed is evaluated twice. For example, `saveAndRestore(A.B)` evaluates `A` twice: once to save the value and again to restore it. If `A` changes between the save and restore points, the value will be "restored" into the wrong `B`.
 
 ### scope(...) ###
 
@@ -692,6 +779,7 @@ Configures the type and creation method for tuples, either for a specific size o
 
 <div class='sbs' markdown='1'>
 ~~~csharp
+#importMacros(LeMP.CSharp7.To.OlderVersions);
 #setTupleType(2, Pair);
 var pair = (1234, "bad password");
 #useDefaultTupleTypes;
@@ -730,6 +818,7 @@ Converts an expression to a string (note: original formatting is not preserved.)
 
 <div class='sbs' markdown='1'>
 ~~~csharp
+#importMacros(LeMP.CSharp7.To.OlderVersions);
 (x,);
 (x, y);
 (x, y, z);
@@ -749,6 +838,7 @@ Create a tuple.
 
 <div class='sbs' markdown='1'>
 ~~~csharp
+#importMacros(LeMP.CSharp7.To.OlderVersions);
 #<int, string, double> tuple;
 ~~~
 
@@ -764,6 +854,7 @@ Tuple<int, string, double> tuple;
 
 <div class='sbs' markdown='1'>
 ~~~csharp
+#importMacros(LeMP.CSharp7.To.OlderVersions);
 (a, b, var c) = expr;
 ~~~
 
@@ -806,6 +897,43 @@ void Increment()
 
 Replaces each symbol in the code that follows with a `static readonly` variable named `sy_X` for each symbol `@@X`. The #useSymbols; statement should be placed near the top of a class definition.
 
+### \#useSequenceExpressions ###
+
+<div class='sbs' markdown='1'>
+~~~csharp
+#useSequenceExpressions;
+class C {
+  void F() {
+    if (Foo.Bar()::b.Baz != null)
+      b.Baz.Method();
+  }
+}
+~~~
+
+~~~csharp
+// Output of LeMP
+class C {
+  void F() {
+    {
+      var b = Foo.Bar();
+      if (b.Baz != null)
+        b.Baz.Method();
+    }
+  }
+}
+~~~
+</div>
+
+Enables variable declarations and `#runSequence` expressions in expression contexts in the code that follows, including the quick-binding operator `::` (shown above) and the `with` expression. `#useSequenceExpressions` should be used at class or namespace level, not inside a method.
+
+`#runSequence` is normally used together with `#useSequenceExpressions`, but `#runSequence(...)` can also be used without it at brace scope (i.e. as a statement).
+
+### \#ecs ###
+
+	#ecs;
+
+Typically used at the top of a file, this macro enables certain EC# features by implementing them as macros. Currently, `#ecs` is equivalent to `#useSymbols; #useSequenceExpressions;`.
+
 ### unless ###
 
 <div class='sbs' markdown='1'>
@@ -815,7 +943,7 @@ unless (Fingers.Cold && Fingers.Dead) { Hold(Gun); }
 
 ~~~csharp
 // Output of LeMP
-if (!@`'&&`(Fingers.Cold, Fingers.Dead)) { Hold(Gun); }
+if (!(Fingers.Cold && Fingers.Dead)) { Hold(Gun); }
 ~~~
 </div>
 
@@ -853,9 +981,7 @@ with (Some.Thing) { .Member = 0; .Method(); }
 ~~~csharp
 // Output of LeMP
 {
-  var tmp_13 = Some.Thing;
-  tmp_13.Member = 0;
-  tmp_13.Method();
+  var tmp_10 = Some.Thing; tmp_10.Member = 0; tmp_10.Method();
 }
 ~~~
 </div>

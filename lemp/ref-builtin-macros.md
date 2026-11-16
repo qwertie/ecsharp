@@ -78,17 +78,35 @@ Alias for `#noLexicalMacros`. Passes code through to the output language, withou
 
 Alias for `#getScopedProperty`. Gets a literal or code snippet that was previously set in this scope. If the key is an identifier, it is treated as a symbol instead, e.g. `#get(Foo)` is equivalent to `#get(@@Foo)`.
 
-### import_macros ###
+### \#preprocessArgsOf ###
 
-	import_macros Namespace
+	#preprocessArgsOf(macroCall(...))
 
-Use macros from specified namespace. The 'macros' modifier imports macros only, deleting this statement from the output.
+Preprocesses all arguments of `macroCall` before `macroCall` itself runs. Normally LeMP runs a macro first and then processes its output, so the arguments of a macro are usually not preprocessed when the macro sees them. This macro works around that limitation when a macro needs to see the expanded form of its arguments.
 
-### printKnownMacros ###
+**Caution**: if an argument contains a macro that queries its Parent node, the parent will be `#preprocessArgsOf` rather than `macroCall`. Also, the arguments may be preprocessed twice: once by `#preprocessArgsOf`, and again afterward if `macroCall` includes its arguments in its output (unless `macroCall` blocks further processing).
 
-	printKnownMacros;
+### \#preprocessChild ###
 
-Prints a table of all macros known to LeMP, as (invalid) C# code.
+	#preprocessChild(paths, syntaxTree(...));
+	#preprocessChild(paths in syntaxTree(...)); // EC# syntax
+
+Like `#preprocessArgsOf`, but preprocesses only specific parts of `syntaxTree`. `paths` can be
+
+1. an integer indicating which child to preprocess, where 0 is the first argument and -1 is the Target;
+2. the Name of a child to preprocess (only the first child with that name is processed);
+3. a tuple containing a list of children to preprocess; or
+4. a path to a deeper child, consisting of a series of these items separated by the `/` operator.
+
+For example, in `#preprocessChild(0 / (hi, -1), { greetings(hi(Fred), hello); })`, the path `0 / (hi, -1)` means "inside child 0, preprocess the child whose name is `hi` and the child whose index is -1". Child 0 is the first statement inside the braced block, `greetings(hi(Fred), hello)`. Inside that, `hi` refers to `hi(Fred)` and -1 refers to the Target, `greetings`.
+
+The cautions that apply to `#preprocessArgsOf` also apply to `#preprocessChild`.
+
+### \#statement ###
+
+	#statement { statements; }
+
+Replaces itself with the contents of the braced block, e.g. `#statement { x = 1; }` becomes `x = 1`. This allows statements to be written in an expression context. If there are multiple statements, they are enclosed in a `#splice()` node, e.g. `#statement { x = 1; y = 2; }` becomes `#splice(x = 1, y = 2)`.
 
 ### \#set and #snippet ###
 
@@ -108,6 +126,6 @@ Use macros from specified namespace.
 
 ### printKnownMacros ###
 
-	printKnownMacros;
+	#printKnownMacros;
 
-Prints a table of all macros known to LeMP, including macros that have _not_ been imported. The output is not valid C# code.
+Prints a table of all macros known to LeMP, including macros that have _not_ been imported, along with the documentation of each macro. The output is not valid C# code. `printKnownMacros` and `#help` are synonyms.

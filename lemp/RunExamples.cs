@@ -1,17 +1,12 @@
-//css_ref ../../ecsharp/Lib/LeMP/Loyc.Essentials.dll;
-//css_ref ../../ecsharp/Lib/LeMP/Loyc.Collections.dll;
-//css_ref ../../ecsharp/Lib/LeMP/Loyc.Syntax.dll;
-//css_ref ../../ecsharp/Lib/LeMP/Loyc.Ecs.dll;
-//css_ref ../../ecsharp/Lib/LeMP/LeMP.exe;
-//css_ref ../../ecsharp/Lib/LeMP/LeMP.StdMacros.dll;
+// Usage (requires .NET SDK 10+; builds LeMP from the ecsharp repo next to this one):
+//   dotnet run -c Release RunExamples.cs -- [--in-place] file1.md file2.md ...
+// (A Debug build also works, but a failed Debug.Assert in LeMP terminates the process.)
+#:project ../../ecsharp/Main/LeMP/LeMP.csproj
+#:property TargetFramework=net10.0
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 using LeMP;
 using Loyc;
 using Loyc.Collections;
@@ -20,48 +15,28 @@ using Loyc.Syntax;
 
 class Program
 {
-  static MacroProcessor MP = new LeMP.MacroProcessor(MessageSink.Console, typeof(LeMP.Prelude.BuiltinMacros));
-
-  [STAThread]
   public static void Main(string[] args)
   {
-    Console.WriteLine("This program scans file for code blocks to execute in LeMP ");
-    Console.WriteLine("between `~~~exec`and `~~~`, and places the output side-by-side ");
-    Console.WriteLine("(assuming there is a CSS class 'sbs' to provide this effect). ");
-    Console.WriteLine("It also re-runs the first code block in existing pairs.");
-    
+    bool inPlace = args.Contains("--in-place");
+    args = args.Where(a => a != "--in-place").ToArray();
     if (args.Length == 0) {
-      var ofd = new OpenFileDialog
-      {
-        Title = "Select markdown files with code blocks to process with LeMP",
-        Filter = "Markdown files (*.md)|*.md|All files|*.*",
-        Multiselect = true
-      };
-      if (ofd.ShowDialog() != DialogResult.OK)
-        return;
-      args = ofd.FileNames;
+      Console.WriteLine("Usage: dotnet run -c Release RunExamples.cs -- [--in-place] file1.md file2.md ...");
+      Console.WriteLine("Scans markdown files for code blocks to execute in LeMP between `~~~exec` and `~~~`,");
+      Console.WriteLine("and places the output side-by-side (assuming there is a CSS class 'sbs' to provide");
+      Console.WriteLine("this effect). It also re-runs the first code block in existing pairs.");
+      Console.WriteLine("Each example is processed like an .ecs file converted to .out.cs by LeMP.exe.");
+      Console.WriteLine("Without --in-place, output is written to file.md.out");
+      return;
     }
-
-    Console.WriteLine("Modify files in-place? (Y/N) ");
-    bool inPlace = false;
-    while (true) {
-      var k = Console.ReadKey(false);
-      if ((inPlace = k.Key == ConsoleKey.Y) || k.Key == ConsoleKey.N)
-        break;
-    }
-
-    MP.AddMacros(typeof(LeMP.StandardMacros).Assembly);
-    MP.PreOpenedNamespaces.Add((Symbol) "LeMP");
-    MP.PreOpenedNamespaces.Add((Symbol) "LeMP.Prelude");
 
     foreach (var filename in args)
     {
       try {
         var code = File.ReadAllLines(filename);
         int numProcessed;
-        using (MessageSink.PushCurrent(MessageSink.Console)) {
-          MessageSink.Current.Write(Severity.Note, "", "Starting {0}", filename);
-          var output = TransformFile(MP, code, out numProcessed);
+        using (MessageSink.SetDefault(ConsoleMessageSink.Value)) {
+          MessageSink.Default.Write(Severity.Note, "", "Starting {0}", filename);
+          var output = TransformFile(Path.GetFileName(filename), code, out numProcessed);
           if (output == null)
             Console.WriteLine("Processing failed");
           else if (numProcessed == 0)
@@ -70,31 +45,29 @@ class Program
             Console.WriteLine("Processed {0} code blocks.", numProcessed);
             var outFileName = inPlace ? filename : filename + ".out";
             Console.WriteLine(" ... Writing {0} ...", outFileName);
-            File.WriteAllText(outFileName, output);
+            File.WriteAllText(outFileName, output + "\n");
           }
         }
       } catch (IOException e) {
         Console.WriteLine(e.DescriptionAndStackTrace());
       }
     }
-    Console.WriteLine("Press any key to continue...");
-    Console.ReadKey(true);
   }
 
   const string OutputComment = "// Output of LeMP";
 
-  private static string TransformFile(MacroProcessor MP, string[] input_, out int numProcessed)
+  private static string TransformFile(string fileName, string[] input_, out int numProcessed)
   {
     List<string> output = new List<string>();
     numProcessed = 0;
-    var input = input_.Slice(0);
+    var input = new ArraySlice<string>(input_);
     while (input.Count > 0) {
       int index = input_.Length - input.Count;
       bool expectOutputBlock = input_.TryGet(index - 1, "").StartsWith("<div class='sbs'");
       if ((input[0] == "~~~exec") || expectOutputBlock && input[0] == "~~~csharp") {
         if (!expectOutputBlock)
           output.Add("<div class='sbs' markdown='1'>");
-        if (ProcessCodeBlock(ref input, output, expectOutputBlock, index + 1))
+        if (ProcessCodeBlock(fileName, ref input, output, expectOutputBlock, index + 1))
           numProcessed++;
         else
           return null;
@@ -108,12 +81,12 @@ class Program
     return output.Join("\n");
   }
 
-  private static bool ProcessCodeBlock(ref ArraySlice<string> input, List<string> output, bool expectOutputBlock, int inputLine0)
+  private static bool ProcessCodeBlock(string fileName, ref ArraySlice<string> input, List<string> output, bool expectOutputBlock, int inputLine0)
   {
-    var sink = MessageSink.Current;
+    var sink = MessageSink.Default;
     output.Add("~~~csharp");
 
-    int numInputLines = input.Slice(1).IndexWhere(s => s == "~~~");
+    int numInputLines = input.Slice(1).FirstIndexWhere(s => s == "~~~") ?? -1;
     if (numInputLines == -1) {
       sink.Write(Severity.Error, "Line " + inputLine0, "No matching end marker ~~~ for input code");
       return false;
@@ -123,7 +96,7 @@ class Program
     output.AddRange(inputLines);
     output.Add(input[1 + numInputLines]); // ~~~
     input = input.Slice(1 + numInputLines + 1);
-    
+
     if (expectOutputBlock)
     {
       int line0 = inputLine0 + numInputLines + 2;
@@ -137,7 +110,7 @@ class Program
         sink.Write(Severity.Note, "Line " + (line0 + 1), "Leaving customized output block unchanged");
         return true;
       }
-      int numOutputLines = input.Slice(2).IndexWhere(s => s == "~~~");
+      int numOutputLines = input.Slice(2).FirstIndexWhere(s => s == "~~~") ?? -1;
       if (numOutputLines == -1) {
         sink.Write(Severity.Error, "Line " + (line0 + 1), "No matching end marker ~~~ on output code");
         return false;
@@ -145,8 +118,9 @@ class Program
       input = input.Slice(numOutputLines + 3);
     }
 
-    // Process input with LEMP!
-    var outputCode = Process(MP, inputLines.Join("\n"), inputLine0);
+    // Process input with LEMP! Messages refer to a virtual file named after the
+    // example's first line in the markdown file, e.g. "ref-other.md line 375.ecs"
+    var outputCode = Process(inputLines.Join("\n"), $"{fileName} line {inputLine0 + 1}.ecs");
     if (outputCode == null)
       return false;
     if (outputCode.EndsWith("\n")) // remove extra newline
@@ -160,34 +134,39 @@ class Program
     return true;
   }
 
-  private static string Process(MacroProcessor MP, string codeStr, int lineZero)
+  /// <summary>Runs one example through the same pipeline as LeMP.exe, as if the example
+  /// were an .ecs file being converted to .out.cs. Returns null if an error occurred.</summary>
+  private static string Process(string code, string virtualFileName)
   {
-    VList<LNode> output = VList<LNode>.Empty;
     var msgs = new MessageHolder();
-    using (MessageSink.PushCurrent(msgs))
-    {
-      var code = EcsLanguageService.Value.Parse(codeStr, msgs);
-      if (!msgs.List.Any(m => m.Severity >= Severity.Error))
-        output = MP.ProcessSynchronously(LNode.List(code));
-    }
+    var compiler = new ExampleCompiler(msgs, code, virtualFileName);
+    // LeMP.exe does this too; it affects macros such as stringify and notnull
+    using (LNode.SetPrinter(EcsLanguageService.WithPlainCSharpPrinter))
+      compiler.Run();
     foreach (var m in msgs.List)
-    {
-      // Goal: add lineNo to line number of error message to get correct line number
-      object loc = MessageSink.LocationOf(m.Context);
-      SourcePos pos = default(SourcePos);
-      if (loc is SourceRange) pos = ((SourceRange)loc).Start;
-      else if (loc is SourcePos) pos = ((SourcePos)loc);
-      else pos = new SourcePos("Unknown", 0, 0);
-      pos = new SourcePos(pos.FileName, pos.Line + lineZero, pos.PosInLine);
+      if (m.Severity > Severity.Verbose)
+        m.WriteTo(ConsoleMessageSink.Value);
+    return msgs.List.Any(m => m.Severity >= Severity.Error) ? null : compiler.Output;
+  }
 
-      MessageSink.Current.Write(m.Severity, pos, m.Format, m.Args);
+  /// <summary>A LeMP <see cref="Compiler"/> that processes a single in-memory file and
+  /// captures the output as a string, indented with two spaces instead of tabs.</summary>
+  class ExampleCompiler : Compiler
+  {
+    public string Output;
+
+    public ExampleCompiler(IMessageSink sink, string code, string fileName)
+      : base(sink, typeof(LeMP.Prelude.BuiltinMacros), new[] { new InputOutput(new UString(code), fileName) })
+    {
+      Parallel = false;
+      OutExt = ".out.cs";
+      OutOptions.IndentString = "  ";
+      AddStdMacros();
     }
-    if (msgs.List.Any(m => m.Severity >= Severity.Error))
-      return null;
-    else {
-      var opt = new LNodePrinterOptions { IndentString = "  " };
-      return EcsLanguageService.Value.Print(output, null, ParsingMode.File, opt);
+
+    protected override void WriteOutput(InputOutput io)
+    {
+      Output = io.OutPrinter.Print(io.Output, Sink, null, io.OutOptions);
     }
   }
 }
-

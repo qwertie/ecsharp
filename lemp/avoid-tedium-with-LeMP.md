@@ -175,15 +175,9 @@ MakeSquare(float);
 
 ~~~csharp
 // Output of LeMP
-int Square(int x) {
-  return x * x;
-}
-double Square(double x) {
-  return x * x;
-}
-float Square(float x) {
-  return x * x;
-}
+static int Square(int x) { return x * x; }
+static double Square(double x) { return x * x; }
+static float Square(float x) { return x * x; }
 ~~~
 </div>
 
@@ -229,6 +223,7 @@ void DoPizza(IEnumerable<Topping> toppings)
 
 ~~~csharp
 // Output of LeMP
+
 string _curTask = "<No task running>";
 
 void DoPizza(IEnumerable<Topping> toppings)
@@ -240,9 +235,7 @@ void DoPizza(IEnumerable<Topping> toppings)
     FlattenDough(d);
     AddToppings(d, toppings);
     Bake(d, TimeSpan.FromMinutes(12));
-  } finally {
-    _curTask = old_curTask;
-  }
+  } finally { _curTask = old_curTask; }
 }
 ~~~
 </div>
@@ -260,7 +253,7 @@ The `define` macro can also match operators. For example
 <div class='sbs' markdown='1'>
 ~~~csharp
 [Passive]
-replace operator=(Foo[$index], $value) {
+define (Foo[$index] = $value) {
     Foo.SetAt($index, $value);
 }
 x = Foo[y] = z;
@@ -272,7 +265,7 @@ x = Foo.SetAt(y, z);
 ~~~
 </div>
 
-This example has a couple of interesting elements. First, notice that the first parameter of this "operator" is `Foo[$index]`. This means that the macro has no effect unless the left-hand side of `=` matches `Foo[$index]`. For example, `Bar[index]` would not match this pattern, but `Foo[x + y]` would. Another intersting thing is the `[Passive]` attribute. This tells the macro processor not to print a warning when an `=` operator is found that does not match the pattern. In the code afterward there are two usages of the `=` operator (the outer one, `x = (Foo[y] = z)`, and the inner one, `Foo[y] = z`). Only the inner one matches and is replaced.
+This example has a couple of interesting elements. First, notice that the left-hand side of `=` in the pattern is `Foo[$index]`. This means that the macro has no effect unless the left-hand side of `=` matches `Foo[$index]`. For example, `Bar[index]` would not match this pattern, but `Foo[x + y]` would. Another intersting thing is the `[Passive]` attribute. This tells the macro processor not to print a warning when an `=` operator is found that does not match the pattern. In the code afterward there are two usages of the `=` operator (the outer one, `x = (Foo[y] = z)`, and the inner one, `Foo[y] = z`). Only the inner one matches and is replaced.
 
 Technically, the `define` macro is more than stylistically different from the `replace` macro described above. `replace` _directly_ performs a search-and-replace of the code that follows it. On the other hand, `define` actually _creates a new macro by the specified name_, which allows any replacements it performs to happen later on, interleaved with other macro evaluations. However, this fact doesn't make a difference in most cases.
 
@@ -397,30 +390,30 @@ The constructor here uses another LeMP feature: the [contextual keyword `set`](
 
 **Note:** The `[$(..attrs)]` part of this example requires LeMP version 2.3.0 or higher.
 
-unroll & notnull
-----------------
+\#\#unroll & notnull
+--------------------
 
-`unroll..in` is a kind of compile-time `foreach` loop. It generates several copies of a piece of code, replacing one or more identifiers each time. Unlike `replace`, `unroll` can only match simple identifiers on the left side of `in`.
+`##unroll (pattern in list)` is a kind of compile-time `foreach` loop. It generates several copies of a piece of code, matching each item in the list against the pattern on the left side of `in`. Like `replace`, `##unroll` marks each capture variable with `$`, and the pattern can be any expression, not just an identifier. (The older `unroll` macro, which can only match simple identifiers without `$`, is obsolete.)
 
 ~~~csharp
 /// Input
 void ProcessInfo(string firstName, string lastName, object data, string phoneNumber)
 {
-    unroll ((VAR) in (firstName, lastName, data, phoneNumber)) {
-        if (VAR != null) throw new ArgumentNullException(stringify(VAR));
+    ##unroll ($VAR in (firstName, lastName, data, phoneNumber)) {
+        if ($VAR == null) throw new ArgumentNullException(stringify($VAR));
     }
     implementation here;
 }
 /// Output
 void ProcessInfo(string firstName, string lastName, object data, string phoneNumber)
 {
-    if (firstName != null) 
+    if (firstName == null) 
         throw new ArgumentNullException("firstName");
-    if (lastName != null)
+    if (lastName == null)
         throw new ArgumentNullException("lastName");
-    if (data != null)
+    if (data == null)
         throw new ArgumentNullException("data");
-    if (phoneNumber != null)
+    if (phoneNumber == null)
         throw new ArgumentNullException("phoneNumber");
 
     implementation here;
@@ -443,11 +436,11 @@ void SetInfo(notnull string firstName, notnull string lastName, notnull object d
 // Output of LeMP
 void SetInfo(string firstName, string lastName, object data, string phoneNumber)
 {
-    Contract.Assert(firstName != null, "Precondition failed: firstName != null");
-    Contract.Assert(lastName != null, "Precondition failed: lastName != null");
-    Contract.Assert(data != null, "Precondition failed: data != null");
-    Contract.Assert(phoneNumber != null, "Precondition failed: phoneNumber != null");
-    implementation here;
+  Contract.Assert(firstName != null, "Precondition failed: firstName != null");
+  Contract.Assert(lastName != null, "Precondition failed: lastName != null");
+  Contract.Assert(data != null, "Precondition failed: data != null");
+  Contract.Assert(phoneNumber != null, "Precondition failed: phoneNumber != null");
+  implementation here;
 }
 ~~~
 </div>
@@ -613,20 +606,20 @@ The following code, for example, relies on the lack of a distinction (in the syn
 
     /// Input
     string nums = string.Concat(
-        unroll(N in (1,2,3,4,5,6,7)) { 
-          stringify(N); 
+        ##unroll($N in (1,2,3,4,5,6,7)) { 
+          stringify($N); 
         }, " [the end]"
     );
     /// Output
-    string x = string.Concat("1", "2", "3", "4", "5", "6", "7", " [the end]");
+    string nums = string.Concat("1", "2", "3", "4", "5", "6", "7", " [the end]");
 
-`unroll` doesn't know or care that it's located in an "expression context" instead of a "statement context".
+`##unroll` doesn't know or care that it's located in an "expression context" instead of a "statement context".
 
-When the parser is parsing expressions (e.g. `1,2,3`) they are separated by commas, but curly braces normally cause a switch to statement-parsing mode; therefore `stringify(N)` is followed by a semicolon. The semicolon isn't part of the syntax tree, it's merely marks the end of each statement. Then when the `unroll` macro is done, it deletes itself along with the curly braces, leaving only a list of expressions `"1", "2", "3"`, etc. Because these are _printed_ in a location where _expressions_, are expected, they are separated by commas and not semicolons.
+When the parser is parsing expressions (e.g. `1,2,3`) they are separated by commas, but curly braces normally cause a switch to statement-parsing mode; therefore `stringify($N)` is followed by a semicolon. The semicolon isn't part of the syntax tree, it's merely marks the end of each statement. Then when the `##unroll` macro is done, it deletes itself along with the curly braces, leaving only a list of expressions `"1", "2", "3"`, etc. Because these are _printed_ in a location where _expressions_, are expected, they are separated by commas and not semicolons.
 
 On the other hand if we simply write
 
-    unroll(N in (1,2,3,4,5,6,7)) { nameof(N); }
+    ##unroll($N in (1,2,3,4,5,6,7)) { stringify($N); }
 
 The output _is_ separated by semicolons:
 

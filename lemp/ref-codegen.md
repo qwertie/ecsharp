@@ -13,8 +13,9 @@ One of the main uses of LeMP is generating code.
 
 - The `compileTime` and `precompute` macros make decisions at compile-time by running C# code (powered by Microsoft's C# Interactive engine). This can produce numbers, expressions or blocks of code that are inserted into the output; it can also read or write files (or, in fact, do anything that you could do at runtime*)
     <div class="sidebox">* I don't consider this a good thing: it is a security risk, but .NET has never offered a very reliable sandboxing mechanism, and with the move to .NET Core, the old AppDomain sandboxing mechanism is going away. Giving you unlimited power to do anything at compile time seems like the best choice under the circumstances.</div>
-- The `macro`, `define`, `replace`, and `unroll` macros are typically used to generate user-defined code, but may also be useful for other tasks, such as implementing optimizations or doing syntactically predictable refactorings.
-- The `static` macros (`static if`, `static deconstruct`, `static matchCode`, `staticMatches`) make decisions at compile-time by analyzing syntax.
+- The `macro`, `define`, `replace`, and `##unroll` macros are typically used to generate user-defined code, but may also be useful for other tasks, such as implementing optimizations or doing syntactically predictable refactorings.
+- The list-processing macros (`##map`, `##mapWithFilter`, `##mapTarget`, `##filter`, `##filterOut`, `##targetOf`, `##withTarget`) transform argument lists and call targets at compile time. They are building blocks for `define` macros that need to process a variable number of arguments.
+- The `static` macros (`static if`, `static deconstruct`, `static matchCode`, `staticMatches`) and `##switch` make decisions at compile-time by analyzing syntax.
 - The `alt class` macro is the only macro on this page designed for a particular use case: generating disjoint union types in the form of class hierarchies. `alt class` has largely been superceded by C# 9 record types.
 
 Most code generation tasks can be accomplished with just four macros: `macro`, `matchCode`, `quote`, and `compileTime`. Most of the other macros here were introduced before `compileTime` and `macro`, and they are mostly useful for simple code generation scenarios that do not need to invoke the heavyweight C# Interactive engine.
@@ -52,14 +53,12 @@ public partial abstract alt class Tree<T>
 ~~~csharp
 // Output of LeMP
 // A binary tree
-public partial abstract class Tree<T>
- where T: IComparable<T> {
+public partial abstract class Tree<T> where T: IComparable<T> {
   public Tree(T Value) {
     this.Value = Value;
   }
-  public T Value { get; private set; }
-  public abstract Tree<T>
-  WithValue(T newValue);
+  public T Value { get; set; }
+  public abstract Tree<T> WithValue(T newValue);
   [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public T Item1 {
     get {
       return Value;
@@ -68,32 +67,26 @@ public partial abstract class Tree<T>
 }
 // A binary tree
 public partial abstract static partial class Tree {
-  public static Tree<T>
-  New<T>(T Value) where T: IComparable<T> {
-    return new Tree<T>
-    (Value);
+  public static Tree<T> New<T>(T Value) where T: IComparable<T> {
+    return new Tree<T>(Value);
   }
 }
-class Leaf<T> : Tree<T>
- where T: IComparable<T> {
+class Leaf<T> : Tree<T> where T: IComparable<T> {
   public Leaf(T Value)
      : base(Value) { }
-  public override Tree<T>
-  WithValue(T newValue) {
+  public override Tree<T> WithValue(T newValue) {
     return new Leaf<T>(newValue);
   }
 }
-class Node<T> : Tree<T>
- where T: IComparable<T> {
+class Node<T> : Tree<T> where T: IComparable<T> {
   public Node(T Value, Tree<T> Left, Tree<T> Right)
      : base(Value) {
     this.Left = Left;
     this.Right = Right;
   }
-  public Tree<T> Left { get; private set; }
-  public Tree<T> Right { get; private set; }
-  public override Tree<T>
-  WithValue(T newValue) {
+  public Tree<T> Left { get; set; }
+  public Tree<T> Right { get; set; }
+  public override Tree<T> WithValue(T newValue) {
     return new Node<T>(newValue, Left, Right);
   }
   public Node<T> WithLeft(Tree<T> newValue) {
@@ -181,6 +174,8 @@ LeMP will evaluate macros in the code block before executing it. For example, yo
 
 `compileTime` blocks do not appear in the output file, but `compileTimeAndRuntime` blocks are both executed and also copied to the output file. If you are unsure what effect a macro has inside a `compileTime` block, try changing it to `compileTimeAndRuntime` temporarily and look at the output file. Also, when a compiler error occurs in C# Interactive, LeMP will include, in the error message, the final line of code that was given to C# Interactive, instead of the original EC# code.
 
+`rawCompileTime` and `rawCompileTimeAndRuntime` behave like `compileTime` and `compileTimeAndRuntime`, except that LeMP does not run macros on the code block first, so the block must already be plain C# code.
+
 There are four kinds of errors that can occur when using code-execution macros:
 
 1. Enhanced C# parser errors. These errors do not include an error code, only a location.
@@ -229,7 +224,6 @@ MakeSquare(float);
 ~~~csharp
 // Output of LeMP
 x = Foo.SetAt(y, z);
-
 void Square(int x) => x * x;
 void Square(double x) => x * x;
 void Square(float x) => x * x;
@@ -244,7 +238,8 @@ The `[Passive]` option in the above example prevents warning messages when assig
 
 Matching and replacement occur the same way as in the older [`replace`](#replace) macro. One difference is worth noting: if you are using the _method syntax_ and there are braces around a matching argument, those braces are treated literally, not ignored (even though the braces around the replacement code are _not_ considered part of the replacement code; they _are_ ignored). If you are using the _general syntax_ then it has no effect to enclose the _entire pattern_ in braces, but braces are significant inside the pattern. In the following example, the braces around `$body` are significant, but the braces around the entire `while` loop are ignored:
 
-~~~exec
+<div class='sbs' markdown='1'>
+~~~csharp
 // Fun fact: while(true) {...} is equivalent to for(;;) {...}
 [Passive]
 define ({ while (true) { $body; } }) 
@@ -257,6 +252,14 @@ while (true) {
 }
 ~~~
 
+~~~csharp
+// Output of LeMP
+
+for (;;)
+  Keep.Going();
+~~~
+</div>
+
 The general syntax ignores the _outer_ braces in order to allow you to use statement syntax `while (true) {...}` (which is not a legal EC# _expression_). **Note:** if you want to write a pattern that matches braces themselves, you simply need to use double braces, i.e. `define ({ { $body; } }) { ... }`
 
 `define` has the ability to generate unique names.
@@ -266,13 +269,14 @@ The general syntax ignores the _outer_ braces in order to allow you to use state
 
 Example:
 
-~~~exec
+<div class='sbs' markdown='1'>
+~~~csharp
 define change_temporarily($lhs = $rhs)
 {
 	var old_unique# = $lhs; // save previous value
 	$lhs = $rhs;
 	on_finally { $lhs = old_unique#; } // restore
-};
+}
 
 void Example()
 {
@@ -282,6 +286,25 @@ void Example()
 	Console.WriteLine("And we're in " + Environment.CurrentDirectory);
 }
 ~~~
+
+~~~csharp
+// Output of LeMP
+
+void Example()
+{
+  var old_10 = Environment.CurrentDirectory;	// save previous value
+  Environment.CurrentDirectory = @"C:\";
+  try {
+    var old_11 = Console.ForegroundColor;	// save previous value
+    Console.ForegroundColor = ConsoleColor.Red;
+    try {
+      Console.WriteLine("Text color is temporarily red...");
+      Console.WriteLine("And we're in " + Environment.CurrentDirectory);
+    } finally { Console.ForegroundColor = old_11; }	// restore
+  } finally { Environment.CurrentDirectory = old_10; }	// restore
+}
+~~~
+</div>
 
 The technical difference between `define` and the older `replace` macro is that `replace` performs a find-and-replace operation directly, whereas this one creates a macro with a specific name. This leads to a couple of differences in behavior which ensure that the old macro is still useful in certain situations.
 
@@ -423,24 +446,110 @@ Inside the `macro` body it should be possible to reference assemblies with `#r` 
 
 My TO-DO list says to write a macro-writing guide. In the meantime, [please leave your questions here](https://github.com/qwertie/ecsharp/discussions/categories/q-a).
 
+### \#\#filter, \#\#filterOut ###
+
+	##filter(inputList, pattern1, pattern2, ...);
+	##filter(inputList, skipSpec, pattern1, pattern2, ...);
+	##filterOut(inputList, pattern1, pattern2, ...);
+	##filterOut(inputList, skipSpec, pattern1, pattern2, ...);
+
+<div class='sbs' markdown='1'>
+~~~csharp
+##filter(Call(x++, y(), z++), $v++);
+##filterOut(Call(x++, y(), z++), $v++);
+~~~
+
+~~~csharp
+// Output of LeMP
+Call(x++, z++);
+Call(y());
+~~~
+</div>
+
+`##filter` keeps the arguments of `inputList` that match at least one of the patterns, and deletes the others. `##filterOut` does the opposite: it deletes the arguments that match any of the patterns. If no patterns are provided, `##filter` deletes all the arguments and `##filterOut` returns `inputList` unchanged. `##whereMatches` is a synonym for `##filter`.
+
+Unlike `##map`, these macros do not preprocess `inputList` before filtering it, so `inputList` should be the literal list rather than (for example) a call to `#get`.
+
+The optional `skipSpec` works the same way as in [`##map`](#map-mapwithfilter-maptarget).
+
+### \#\#map, \#\#mapWithFilter, \#\#mapTarget ###
+
+	##map(inputList, pattern => replacement, ...);
+	##map(inputList, skipSpec, pattern => replacement, ...);
+	##mapWithFilter(inputList, pattern => replacement, ...);
+	##mapTarget(inputCall, pattern => replacement, ...);
+
+<div class='sbs' markdown='1'>
+~~~csharp
+var a = ##map(foo(var, 5 + 5), $x => stringify($x));
+##map(Print(x, y, -3), 1, $x => Abs($x));
+var b = ##map(new int[] { x, y }, 1, $x => Abs($x));
+var c = ##map((1, 2, 3, 4), { $a; $b; } => $a + $b);
+var d = ##map((a, b), $x => { $x; $x; });
+var e = ##mapWithFilter((1+2, 3, 4*5), 
+          ($a + $b) => $a - $b, 
+          (($a * $b)) => $a / $b);
+var f = ##mapTarget(Foo(x, y), Foo => Bar);
+~~~
+
+~~~csharp
+// Output of LeMP
+var a = foo("var", "5 + 5");
+Print(x, Abs(y), Abs(-3));
+var b = new int[] { 
+  Abs(x), Abs(y)
+};
+var c = (1 + 2, 3 + 4);
+var d = (a, a, b, b);
+var e = (1 - 2, 4 / 5);
+var f = Bar(x, y);
+~~~
+</div>
+
+`##map` performs a find-and-replace operation on each argument of a call or list. First, it preprocesses all of its arguments that are not of the form `pattern => replacement`, including `inputList`. Then it compares each argument of `inputList` with each pattern in order, and replaces the argument with the replacement associated with the first pattern that matches. The patterns use `$captures` in the same way as [`replace`](#replace) and [`define`](#define). The target of the call (e.g. `foo` in `foo(var, 5 + 5)`) is not changed, so the output is the same kind of list as the input.
+
+If an argument doesn't match any of the patterns, `##map` copies it to the output unchanged, while `##mapWithFilter` deletes it.
+
+A pattern in braces with more than one statement, such as `{ $a; $b; }`, matches a sequence of consecutive arguments. Similarly, a replacement in braces with more than one statement, such as `{ $x; $x; }`, produces multiple output arguments. Note that a `$(..x)` capture in such a sequence matches exactly one argument; it does not consume the rest of the list.
+
+The optional `skipSpec` argument (the second argument) specifies which arguments of `inputList` to process:
+
+- An integer literal N skips the first N arguments. For example, this is needed to transform C# array expressions like `new int[] { x, y }`, because the first argument of `new` is the data type (`int[]`), which you usually don't want to transform.
+- A range `lo..hi` processes the arguments from index `lo` up to (but not including) `hi`. For example, `##map((a, b, c, d), 1..3, $x => -$x)` produces `(a, -b, -c, d)`. Neither integer is required to be in range.
+- The Target of the call has index -1 and attributes have more negative indexes, so `-1` transforms the Target and all arguments. If `skipSpec` is -1 or less, `inputList` is not required to be a call.
+
+`##mapTarget(inputCall, ...)` transforms only the Target of a call. It is equivalent to `##map(inputCall, -1..0, ...)`.
+
+**Note**: The `=>` operator has a high precedence on its left side, so `$a + $b => $b + $a` means `$a + ($b => $b + $a)`, which is not a valid argument to `##map`. Put the pattern in parentheses: `($a + $b) => $b + $a`. Also, `($a * $b) => ...` is parsed as a lambda function with a pointer parameter, `$a* $b`, so multiplication patterns need double parentheses: `(($a * $b)) => ...`.
+
 ### precompute, rawPrecompute ###
 
 These macros evaluate an expression using the C# interactive engine. The expression is allowed to return either a primitive value, a syntax tree ([Loyc tree](http://loyc.net/loyc-trees)), or a list of syntax trees. In all cases, the macro call is replaced with its result.
 
-~~~exec
+<div class='sbs' markdown='1'>
+~~~csharp
 double Talk() { 
-	precompute(new List<LNode> {
+	precompute(LNode.List(
 		quote(Console.WriteLine("hello")),
 		quote { return $(LNode.Literal(Math.PI)); }
-	});
+	));
 }
 ~~~
 
+~~~csharp
+// Output of LeMP
+double Talk() {
+  Console.WriteLine("hello");
+  return 3.141592653589793;
+}
+~~~
+</div>
+
 `precompute` shares the same instance of C# Interactive as `compileTime`, and most of the documentation of that macro applies to this one.
 
-`rawCompute` is like `precompute` except that macros are blocked:
+`rawPrecompute` is like `precompute` except that macros are blocked:
 
-1. macros are not evaluated inside the expression (e.g. `rawCompute(quote(x))` produces an error). **Note:** other macros such as `replace` could still be used to change the code before `rawPrecompute` sees it.
+1. macros are not evaluated inside the expression (e.g. `rawPrecompute(quote(x))` produces an error). **Note:** other macros such as `replace` could still be used to change the code before `rawPrecompute` sees it.
 2. if the expression returns a syntax tree, macros are not evaluated on it afterward.
 
 Runtime variables and functions are not visible at compile-time, and variables created inside `precompute` disappear immediately afterward. For example, in the following code, the second call to `precompute` cannot access `array` or `x`, so an error occurs.
@@ -509,8 +618,11 @@ void LaterThatDay()
 
 ~~~csharp
 // Output of LeMP
+
 void LaterThatDay()
 {
+
+  
   List<Item> paidItems = new List<Item>();
   foreach (var it in items) {
     if (it.IsPaid) {
@@ -543,15 +655,70 @@ Console.WriteLine("Hello {0}!", name);
 
 The alternate name `replacePP(...)` additionally preprocesses the match and replacement expressions, which may be useful to get around problems with macro execution order. Caution: `replacePP` runs the macro processor twice on the replacement expression: once at the beginning, and again on the final output.
 
-### unroll ###
+### \#\#switch ###
+
+	##switch(syntaxTree) { case pattern1: result1; case pattern2, pattern3: result2; ... }
 
 <div class='sbs' markdown='1'>
 ~~~csharp
-unroll ((X, Y) in ((X, Y), (Y, X)))
+#snippet decl = { int[] list; };
+var length = ##switch(#get(decl)) {
+  case { $T[] $x; }:      $x.Length;
+  case { List<$T> $x; }:  $x.Count;
+  default:                0;
+};
+var sum = ##switch(2 + 3) { 
+  case $a + $b: Add($a, $b);
+};
+~~~
+
+~~~csharp
+// Output of LeMP
+var length = list.Length;
+var sum = Add(2, 3);
+~~~
+</div>
+
+Preprocesses `syntaxTree`, then compares it with each `case` pattern. When a pattern matches, the `##switch` call is replaced with the handler below that `case`, with the `$captures` replaced by the corresponding parts of `syntaxTree`.
+
+`##switch` is a newer version of [`static matchCode`](#static-matchcode), with two differences:
+
+1. If none of the cases match and there is no `default:` case, `##switch` prints a warning and produces `syntaxTree` itself as its output (whereas `static matchCode` produces no output). For example, `##switch(x * y) { case $a + $b: Add($a, $b); }` produces `x * y`. To produce no output instead, add an empty `default:` case.
+2. `##switch` preprocesses each `case` pattern, so patterns can contain macros such as `#get`.
+
+As with `static matchCode`, you can use `case pattern1, pattern2:` to handle multiple patterns with the same handler, each pattern can be enclosed in braces to allow statement syntax, and `break` is not expected at the end of each case (if `break` is present at the end of the matching case, it is emitted literally into the output). In LES, use `pattern => result` instead of `case pattern: result`.
+
+### \#\#targetOf, \#\#withTarget ###
+
+<div class='sbs' markdown='1'>
+~~~csharp
+var t = ##targetOf(Foo(x, y));
+var u = ##targetOf(x);
+var w = ##withTarget(Foo(x, y), Bar);
+~~~
+
+~~~csharp
+// Output of LeMP
+var t = Foo;
+var u = x;
+var w = Bar(x, y);
+~~~
+</div>
+
+`##targetOf(call)` gets the Target of a call node, e.g. the Target of `Foo(x, y)` is `Foo`. If the argument is not a call, `##targetOf` returns the argument itself.
+
+`##withTarget(call, newTarget)` replaces the Target of `call` with `newTarget`.
+
+### \#\#unroll ###
+
+	##unroll (pattern in list) { output; }
+
+<div class='sbs' markdown='1'>
+~~~csharp
+##unroll (($X, $Y) in ((X, Y), (Y, X)))
 { 
-	DoSomething(X, Y);
-	DoSomethingElse(X, Y);
-	DoSomethingMore(X, Y);
+  DoSomething($X, $Y);
+  DoSomethingElse($X, $Y);
 }
 ~~~
 
@@ -559,18 +726,84 @@ unroll ((X, Y) in ((X, Y), (Y, X)))
 // Output of LeMP
 DoSomething(X, Y);
 DoSomethingElse(X, Y);
-DoSomethingMore(X, Y);
 DoSomething(Y, X);
 DoSomethingElse(Y, X);
-DoSomethingMore(Y, X);
 ~~~
 </div>
 
-Produces variations of a block of code, by replacing an identifier left of `in` with each of the corresponding expressions on the right of `in`.
+Produces variations of a block of code, by matching each item in `list` against the `pattern` on the left side of `in`. For each item, `##unroll` emits a copy of the `output` block in which the `$captures` are replaced with the corresponding parts of the item. The braces around the output block are not included in the output.
 
-The left hand side of `unroll` must be either a simple identifier or a tuple. The braces are not included in the output.
+The pattern uses `$` to mark capture variables, in the same way as [`replace`](#replace) and [`define`](#define), so it can be any expression, not just an identifier:
 
-The right-hand side of `in` can be a tuple in parentheses, or a list of statements in braces, or a call to the `#splice(...)` pseudo-operator. If the right-hand side of `in` is none of these things, `unroll()` runs macros on the right-hand side of `in` in the hope that doing so will produce a list. However, note that this behavior can cause macros to be executed twice in some cases: once on the right-hand side of `in`, and then again on the final output of `unroll`. For example, the `noMacros` macro doesn't work if macros run twice.
+<div class='sbs' markdown='1'>
+~~~csharp
+##unroll ({ $T $name; } in { int Size; string Name; })
+{
+  public static readonly $T $name = default($T);
+}
+~~~
+
+~~~csharp
+// Output of LeMP
+public static readonly int Size = default(int); public static readonly string Name = default(string);
+~~~
+</div>
+
+A pattern in braces with more than one statement matches several consecutive items, and `$(..x)` matches zero or more arguments inside an item:
+
+<div class='sbs' markdown='1'>
+~~~csharp
+##unroll ({ $type; $name; } in (int, x, uint, y))
+{
+  $type $name = 0;
+}
+##unroll (($f, $(..args)) in ((Reset,), (Move, dx, dy)))
+{
+  _inner.$f($args);
+}
+~~~
+
+~~~csharp
+// Output of LeMP
+int x = 0;
+uint y = 0;
+_inner.Reset();
+_inner.Move(dx, dy);
+~~~
+</div>
+
+(Note: in EC#, `(Reset)` means `Reset` in parentheses, which does not match the pattern `($f, $(..args))`. That's why the example uses the one-item tuple `(Reset,)` instead.)
+
+The list on the right side of `in` must be a tuple in parentheses, a list of statements in braces, a call to `#splice(...)`, or (in LES3) a JSON-style list in square brackets. `##unroll` preprocesses the list before matching, so the list can be produced by another macro:
+
+<div class='sbs' markdown='1'>
+~~~csharp
+#snippet Fields = (Name, Age);
+##unroll ($field in #get(Fields)) {
+  Console.WriteLine(stringify($field) + ": " + $field);
+}
+~~~
+
+~~~csharp
+// Output of LeMP
+Console.WriteLine("Name" + ": " + Name);
+Console.WriteLine("Age" + ": " + Age);
+~~~
+</div>
+
+Every item in the list should match the pattern. If any item does not match, `##unroll` reports an error and leaves that item out of the output.
+
+`##unroll (P in L) { output; }` is equivalent to `##map(L, (P) => { output; })` (see [`##map`](#map-mapwithfilter-maptarget)), except that `##map` copies unmatched items to the output instead of reporting an error.
+
+### unroll (obsolete) ###
+
+	unroll ((X, Y) in ((X, Y), (Y, X))) { DoSomething(X, Y); }
+
+This is the older version of `##unroll`. It replaces each identifier on the left side of `in` with the corresponding expression on the right side of `in`. The left side must be either a simple identifier or a tuple of simple identifiers; patterns are not supported.
+
+To convert to `##unroll`, put `$` in front of each use of each variable. For example, `unroll (f in (F, G)) { f(f); }` becomes `##unroll ($f in (F, G)) { $f($f); }`.
+
+If the right-hand side of `in` is not a list (tuple, braced block, or `#splice`), `unroll` runs macros on the right-hand side in the hope of producing a list. This can cause macros to run twice: once on the right-hand side of `in`, and again on the final output of `unroll`. For example, the `noMacro` macro doesn't work if macros run twice.
 
 ### static deconstruct a.k.a. #deconstruct ###
 
@@ -634,6 +867,7 @@ var t = static_if(true, T(), F());
 // Output of LeMP
 
 WeAreInFoo();
+
 var t = T();
 ~~~
 </div>
@@ -659,7 +893,7 @@ static matchCode(#get(expression)) {
   case $x > $y, $x < $y:
     Compare($x, $y);
   case $call($(..args)): 
-    void $call(unroll(arg in $(..args)) { int arg; }) 
+    void $call(##unroll($arg in $(..args)) { int $arg; }) 
       { base.$call($args); }
   default:
     DefaultAction($#);
@@ -679,6 +913,8 @@ If `expr` is a single statement inside braces, the braces are stripped. Next, ma
 If none of the cases match and there is no `default:` case, the entire `static matchCode` construct and all its cases are eliminated from the output.
 
 Use `case pattern1, pattern2:` to handle multiple cases with the same handler. Unlike C# `switch`, this statement does not expect `break` at the end of each case. If `break` is present at the end of the matching case, it is emitted literally into the output.
+
+See also [`##switch`](#switch), a newer variation of `static matchCode` that preprocesses its patterns and keeps the input unchanged when no case matches.
 
 ### staticMatches operator ###
 
@@ -704,6 +940,8 @@ ConfectionMode = "apple";
 
 ``syntaxTree `staticMatches` pattern`` returns the literal `true` if the form of the syntax tree on the left matches the pattern on the right.
 
-The pattern can use `$variables` to match any subtree. `$(..lists)` (multiple statements or arguments) can be matched too. In addition, if the result is true then a syntax variable is created for each binding in the pattern other than `$_`. For example, ``Foo(123) `codeMatches` Foo($arg)`` sets `$arg` to `123`; you can use `$arg` later in your code.
+The pattern can use `$variables` to match any subtree. `$(..lists)` (multiple statements or arguments) can be matched too. In addition, if the result is true then a syntax variable is created for each binding in the pattern other than `$_`. For example, ``Foo(123) `staticMatches` Foo($arg)`` sets `$arg` to `123`; you can use `$arg` later in your code.
 
 The syntax tree on the left is macro-preprocessed, but the argument on the right is not. If either side is a single statement in braces (before preprocessing), the braces are ignored.
+
+`staticMatchesCode` is a synonym for `staticMatches`.
