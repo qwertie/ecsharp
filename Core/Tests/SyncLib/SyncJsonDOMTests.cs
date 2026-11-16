@@ -19,6 +19,15 @@ namespace Loyc.SyncLib.Tests
 	public class SyncJsonDOMTests : SyncLibTests<SyncJsonDOM.Reader, SyncJson.Writer>
 	{
 		SyncJson.Options _options = new SyncJson.Options();
+
+		[Test]
+		public void MinimumListLengthIsNullOutsideLists()
+		{
+			var reader = SyncJsonDOM.NewReader(System.Text.Json.JsonDocument.Parse("[1, 2]"), _options);
+			Assert.AreEqual(null, reader.MinimumListLength);
+			Assert.That(reader.BeginSubObject(null, null, ObjectMode.List).Begun);
+			Assert.AreEqual(2, reader.MinimumListLength);
+		}
 		ObjectMode _saveMode;
 
 		public SyncJsonDOMTests(bool newtonCompat, bool nonDefaultSettings = false, bool minify = false)

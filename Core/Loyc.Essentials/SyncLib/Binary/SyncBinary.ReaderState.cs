@@ -24,7 +24,6 @@ partial class SyncBinary
 		{
 			_scanner = scanner;
 			_opt = options;
-			_frame.ObjectStartIndex = int.MaxValue;
 		}
 
 		public ReaderState(ReadOnlyMemory<byte> bytes, Options options)
@@ -38,9 +37,9 @@ partial class SyncBinary
 		private Memory<byte> _scannerBuf; // not used by ReaderState; it's passed to _scanner.Read()
 		private ReadingFrame _frame;
 		private InternalList<StackEntry> _stack = new InternalList<StackEntry>(4);
-		public bool IsInsideList => _stack.Last.Type != ObjType.Normal;
+		public bool IsInsideList => _stack.Count != 0 && _stack.Last.Type != ObjType.Normal;
 		public int Depth => _stack.Count;
-		public int MinimumListLength => IsInsideList ? _stack.Last.Length : 0;
+		public int? MinimumListLength => _stack.Count != 0 && _stack.Last.Type == ObjType.List ? _stack.Last.Length : null;
 		
 		// This is only created if an object with an ID (marked with '#') is encountered.
 		// It maps previously-encountered object IDs to objects.
@@ -65,11 +64,8 @@ partial class SyncBinary
 			public ReadOnlyMemory2<byte> Buf;
 			// The current position as an index into Buf.
 			public int Index;
-			// Location within the JSON file of Buf.Span[0] (used for error reporting)
+			// Location within the data stream of Buf.Span[0] (used for error reporting)
 			public long PositionOfBuf0;
-			// A location in Buf that shouldn't be unloaded when reading further into the
-			// file (int.MaxValue if none)
-			public int ObjectStartIndex;
 
 			public ReadingPointer Pointer => new ReadingPointer {
 				Buf = Buf.Span,
@@ -144,14 +140,11 @@ partial class SyncBinary
 
 			int requestSize = Max(requiredBytes, DefaultMinimumScanSize);
 			// Unload committed data only, since the caller may still need what it has read
-			int skip = Min(_frame.Index, _frame.ObjectStartIndex);
+			int skip = _frame.Index;
 
 			_frame.Buf = _scanner.Read(skip, (cur.Index -= skip) + requestSize, ref _scannerBuf);
 			_frame.Index -= skip;
 			_frame.PositionOfBuf0 += skip;
-
-			if (_frame.ObjectStartIndex != int.MaxValue)
-				_frame.ObjectStartIndex -= skip;
 
 			cur.Buf = _frame.Buf.Span;
 			return cur.BytesLeft >= requiredBytes;

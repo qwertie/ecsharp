@@ -62,6 +62,25 @@ public class SyncBinaryReaderTests : TestHelpers
 			"Reading a forged byte list from a stream allocated {0} bytes", allocated);
 	}
 
+	[Test]
+	public void MinimumListLengthIsNullOutsideLists()
+	{
+		var options = new SyncBinary.Options { Markers = SyncBinary.Markers.None };
+		var reader = SyncBinary.NewReader(new byte[] { 2, 7, 8, 9 }, options);
+		Assert.IsFalse(reader.IsInsideList);
+		Assert.AreEqual(null, reader.MinimumListLength);
+
+		Assert.That(reader.BeginSubObject(null, null, ObjectMode.List).Begun);
+		Assert.IsTrue(reader.IsInsideList);
+		Assert.AreEqual(2, reader.MinimumListLength);
+		reader.EndSubObject();
+
+		// A tuple has a fixed length, so it isn't a list whose length must be scanned
+		Assert.That(reader.BeginSubObject(null, null, ObjectMode.Tuple, 2).Begun);
+		Assert.AreEqual(null, reader.MinimumListLength);
+		reader.EndSubObject();
+	}
+
 	internal static long MeasureAllocations(Action action)
 	{
 		#if DotNet45 // .NET Framework can't measure this, so allocation checks are skipped

@@ -98,7 +98,8 @@ public partial class SyncJson
 
 		public bool? ReachedEndOfList => _s.IsInsideList ? _s.ReachedEndOfList : null;
 
-		public int? MinimumListLength => 0;
+		// JSON doesn't say how long a list is. (The root counts as "inside a list".)
+		public int? MinimumListLength => _s.IsInsideList && _s.Depth > 0 ? 0 : null;
 
 		public int Depth => _s.Depth;
 

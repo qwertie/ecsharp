@@ -11,6 +11,15 @@ namespace Loyc.SyncLib.Tests
 {
 	public class SyncJsonReaderTests : TestHelpers
 	{
+		[Test]
+		public void MinimumListLengthIsNullOutsideLists()
+		{
+			var reader = SyncJson.NewReader("[1, 2]");
+			Assert.AreEqual(null, reader.MinimumListLength);
+			Assert.That(reader.BeginSubObject(null, null, ObjectMode.List).Begun);
+			Assert.AreEqual(0, reader.MinimumListLength); // JSON doesn't say how long a list is
+		}
+		
 		// Regression: ToNameBuf sized _nameBuf to `len` but WriteStringCore writes
 		// len+2 bytes (the name plus both quotes), so an out-of-order lookup of a name
 		// whose escaped UTF-8 length was 7 mod 8 threw IndexOutOfRangeException.

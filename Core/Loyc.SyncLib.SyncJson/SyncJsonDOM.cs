@@ -162,7 +162,7 @@ public static partial class SyncJsonDOM
 
 		public bool? ReachedEndOfList => _s.IsInsideList ? _s.ReachedEndOfList : null;
 
-		public int? MinimumListLength => _s.ListLengthRemaining;
+		public int? MinimumListLength => _s.IsInsideList && _s.Depth > 0 ? _s.ListLengthRemaining : null;
 
 		public int Depth => _s.Depth;
 

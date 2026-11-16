@@ -603,6 +603,9 @@ namespace Loyc.SyncLib;
 ///   <c>new byte[] { 1, 200 }</c> is encoded as <c>'[', 2, 1, 200</c>. This is the same
 ///   format as a string.
 /// <para/>
+///   Lists of chars are not an exception: each char is stored like a <c>ushort</c>, so a
+///   <c>char[]</c> can be changed to a <c>ushort[]</c> or vice versa, but not to a string.
+/// <para/>
 ///   When writing null, list markers are omitted (only 0xFF is written).
 ///   
 /// </remarks>
