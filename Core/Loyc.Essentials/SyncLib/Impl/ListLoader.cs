@@ -8,6 +8,17 @@ using System.Text;
 
 namespace Loyc.SyncLib.Impl
 {
+	public static class ListLoader
+	{
+		/// <summary>The maximum amount of memory that a list loader preallocates for a
+		///   list (when the data stream says how long it is). A longer list still loads,
+		///   but its memory grows as items are actually read, so that a corrupt or
+		///   malicious length prefix cannot cause a huge allocation. Readers that load a
+		///   list's data in bulk (e.g. byte lists in SyncBinary) use the same limit for
+		///   the amount of data they request before seeing that the data exists.</summary>
+		public const int MaxPreallocationBytes = 16 * 1024 * 1024;
+	}
+
 	public struct ListLoader<SyncManager, TList, T, ListBuilder, SyncItem> : ISyncField<SyncManager, TList>
 		where SyncManager : ISyncManager
 		where ListBuilder : IListBuilder<TList, T>
@@ -40,7 +51,8 @@ namespace Loyc.SyncLib.Impl
 						for (int index = _tupleLength; sync.ReachedEndOfList != true && index > 0; index--)
 							_builder.Add(_syncItem.Sync(ref sync, null, default(T))!);
 					} else {
-						_builder.Alloc(sync.MinimumListLength!.Value);
+						int maxPrealloc = ListLoader.MaxPreallocationBytes / Unsafe.SizeOf<T>();
+						_builder.Alloc(System.Math.Min(sync.MinimumListLength!.Value, maxPrealloc));
 						for (int index = listLength; sync.ReachedEndOfList != true && index > 0; index--)
 							_builder.Add(_syncItem.Sync(ref sync, null, default(T))!);
 					}

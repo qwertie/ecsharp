@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Loyc.Essentials;
+using Loyc.SyncLib.Impl;
 
 namespace Loyc.SyncLib.Tests;
 
@@ -36,6 +37,31 @@ public class SyncBinaryReaderTests : TestHelpers
 		Assert.That(numbers.SequenceEqual(result!));
 	}
 
+	[Test]
+	public void LargeByteListAllocations()
+	{
+		const int Size = 50 * MiB;
+		var options = new SyncBinary.Options { Markers = SyncBinary.Markers.None, RootMode = ObjectMode.NotNull };
+		var data = SyncBinary.Write(new byte[Size], (SyncBinary.Writer sm, byte[] v) => sm.SyncArray("b", v)!, options).ToArray();
+
+		// A genuine 50 MiB byte list in memory is loaded into one 50 MiB array, without extra copies
+		long allocated = MeasureAllocations(() =>
+			Assert.AreEqual(Size, SyncBinary.NewReader(data, options).SyncArray("b", (byte[]?)null)!.Length));
+		Assert.That(allocated < Size + MiB, "Reading a 50 MiB byte list from memory allocated {0} bytes", allocated);
+
+		// A forged 50 MiB length prefix followed by only a few bytes must not cause a 50 MiB
+		// allocation, whether the data is in memory or comes from a stream
+		var forged = data.Take(10).ToArray();
+		allocated = MeasureAllocations(() => Assert.Throws<FormatException>(() =>
+			SyncBinary.NewReader(forged, options).SyncArray("b", (byte[]?)null)));
+		Assert.That(allocated < MiB, "Reading a forged byte list from memory allocated {0} bytes", allocated);
+
+		allocated = MeasureAllocations(() => Assert.Throws<FormatException>(() =>
+			SyncBinary.NewReader(new StreamScanner(new MemoryStream(forged)), options).SyncArray("b", (byte[]?)null)));
+		Assert.That(allocated < ListLoader.MaxPreallocationBytes + MiB,
+			"Reading a forged byte list from a stream allocated {0} bytes", allocated);
+	}
+
 	internal static long MeasureAllocations(Action action)
 	{
 		#if DotNet45 // .NET Framework can't measure this, so allocation checks are skipped
@@ -46,6 +72,29 @@ public class SyncBinaryReaderTests : TestHelpers
 		action();
 		return GC.GetAllocatedBytesForCurrentThread() - before;
 		#endif
+	}
+
+	[Test]
+	public void LargeByteListAndStringViaStream()
+	{
+		// Both are longer than MaxPreallocationBytes, so the reader loads them in chunks
+		var bytes = new byte[ListLoader.MaxPreallocationBytes * 2 + 12345];
+		new Random(1).NextBytes(bytes);
+		var str = new string('é', ListLoader.MaxPreallocationBytes / 2 + 5); // 2 bytes each in UTF-8
+
+		var options = new SyncBinary.Options();
+		var data = SyncBinary.Write((bytes, str), (SyncBinary.Writer sm, (byte[], string) v) => {
+			sm.SyncArray("b", v.Item1);
+			sm.Sync("s", v.Item2);
+			return v;
+		}, options).ToArray();
+
+		var reader = SyncBinary.NewReader(new StreamScanner(new MemoryStream(data)), options);
+		var result = SyncManagerExt.Sync(reader, null, default((byte[]?, string?)),
+			(SyncBinary.Reader sm, (byte[]?, string?) v) => (sm.SyncArray("b", v.Item1), sm.Sync("s", v.Item2)),
+			options.RootMode);
+		Assert.IsTrue(bytes.SequenceEqual(result.Item1!));
+		Assert.AreEqual(str, result.Item2);
 	}
 
 	static byte[] Bytes(params object[] parts)

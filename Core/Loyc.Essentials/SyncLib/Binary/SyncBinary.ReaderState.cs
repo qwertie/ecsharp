@@ -302,11 +302,37 @@ partial class SyncBinary
 		internal ReadOnlySpan<byte> ReadRawBytes(int count)
 		{
 			var cur = _frame.Pointer;
+			if (count > ListLoader.MaxPreallocationBytes && count > cur.BytesLeft && _scanner != null)
+				return ReadRawBytesInChunks(count);
+
 			ExpectBytes(ref cur, count);
 			var bytes = cur.Slice(0, count);
 			cur.Index += count;
 			Commit(cur);
 			return bytes;
+		}
+
+		// Reads `count` bytes from the scanner without trusting `count`, which could be a
+		// corrupt or malicious length prefix: asking the scanner for that many bytes at once
+		// could make it allocate a huge buffer. So no request is larger than the amount 
+		// already received (or MaxPreallocationBytes), which limits memory use to about
+		// twice the size of the data that actually exists.
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private byte[] ReadRawBytesInChunks(int count)
+		{
+			var result = new byte[0];
+			for (int received = 0; received < count;) {
+				int chunkSize = Min(count - received, Max(received, ListLoader.MaxPreallocationBytes));
+				var cur = _frame.Pointer;
+				ExpectBytes(ref cur, chunkSize);
+
+				Array.Resize(ref result, received + chunkSize);
+				cur.Slice(0, chunkSize).CopyTo(result.AsSpan(received));
+				received += chunkSize;
+				cur.Index += chunkSize;
+				Commit(cur);
+			}
+			return result;
 		}
 
 		#endregion

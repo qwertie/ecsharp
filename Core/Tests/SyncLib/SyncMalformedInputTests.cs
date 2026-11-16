@@ -1,4 +1,7 @@
 using Loyc.Collections.Impl;
+using Loyc.Essentials;
+using Loyc.SyncLib.Impl;
+using System.IO;
 using Loyc.MiniTest;
 using System;
 using System.Collections.Generic;
@@ -143,7 +146,7 @@ namespace Loyc.SyncLib.Tests
 					int caseSeed = baseSeed + i;
 					var rng = new Random(caseSeed);
 					byte[] data = Mutate(rng, original);
-					CheckReadContract(label, caseSeed, data, read);
+					CheckReadContract(label, "seed " + caseSeed, data, read);
 				}
 			}
 
@@ -153,11 +156,12 @@ namespace Loyc.SyncLib.Tests
 				var rng = new Random(caseSeed);
 				var data = new byte[rng.Next(0, 100)];
 				rng.NextBytes(data);
-				CheckReadContract(label, caseSeed, data, read);
+				CheckReadContract(label, "seed " + caseSeed, data, read);
 			}
 		}
 
-		static void CheckReadContract(string label, int caseSeed, byte[] data, Action<byte[]> read)
+		/// <param name="caseId">Identifies the input in the failure message, e.g. "seed 123"</param>
+		static void CheckReadContract(string label, string caseId, byte[] data, Action<byte[]> read)
 		{
 			try {
 				read(data); // reading garbage "successfully" is fine; crashing is not
@@ -165,8 +169,8 @@ namespace Loyc.SyncLib.Tests
 				for (Exception? x = e; x != null; x = x.InnerException)
 					if (AllowedExceptions.Any(t => t.IsInstanceOfType(x)))
 						return; // an allowed exception type (possibly wrapped)
-				Fail("{0} reader broke its error contract on fuzzed input (seed {1}, {2} bytes: {3}): {4}",
-					label, caseSeed, data.Length, string.Join(",", data.Take(48).Select(b => b.ToString("X2"))), e);
+				Fail("{0} reader broke its error contract on bad input ({1}; {2} bytes: {3}): {4}",
+					label, caseId, data.Length, string.Join(",", data.Take(48).Select(b => b.ToString("X2"))), e);
 			}
 		}
 
@@ -209,7 +213,7 @@ namespace Loyc.SyncLib.Tests
 				Enumerable.Range(0, 10_000).Select(_ => (byte)0x0A).ToArray(), // deep nesting must not overflow the stack
 			};
 			foreach (byte[] data in evil)
-				CheckReadContract("SyncProtobuf(evil)", 0, data,
+				CheckReadContract("SyncProtobuf(evil)", "handcrafted", data,
 					d => SyncProtobuf.Read<Person>(d, new PersonSync<SyncProtobuf.Reader>().Sync, options));
 
 			// A corrupt list length prefix must fail fast rather than allocate or loop.
@@ -217,7 +221,7 @@ namespace Loyc.SyncLib.Tests
 			for (int i = 0; i < list.Length; i++) {
 				var corrupt = (byte[])list.Clone();
 				corrupt[i] = 0xFF; // oversized length varints, bad tags, etc.
-				CheckReadContract("SyncProtobuf(evil)", 100 + i, corrupt,
+				CheckReadContract("SyncProtobuf(evil)", $"byte {i} set to 0xFF", corrupt,
 					d => SyncProtobuf.Read<int[]>(d, (SyncProtobuf.Reader sm, int[]? v) => sm.SyncArray("l", v)!, options));
 			}
 		}
@@ -249,7 +253,7 @@ namespace Loyc.SyncLib.Tests
 				Enumerable.Repeat((byte)'{', 10_000).ToArray(), // deep nesting must not overflow the stack
 			};
 			foreach (byte[] data in evil)
-				CheckReadContract("SyncBinary(evil)", 0, data,
+				CheckReadContract("SyncBinary(evil)", "handcrafted", data,
 					d => SyncBinary.Read<Person>(d, new PersonSync<SyncBinary.Reader>().Sync, options));
 
 			// A corrupt list length must fail fast rather than allocate or loop
@@ -258,8 +262,35 @@ namespace Loyc.SyncLib.Tests
 			// Patch the length byte (value 3, following '{' '[') to 0x7F = 127
 			int lengthIndex = Array.IndexOf(truncatedBigList, (byte)3);
 			truncatedBigList[lengthIndex] = 0x7F;
-			CheckReadContract("SyncBinary(evil)", 1, truncatedBigList,
+			CheckReadContract("SyncBinary(evil)", "list length 127, 3 items", truncatedBigList,
 				d => SyncBinary.Read<int[]>(d, (SyncBinary.Reader sm, int[]? v) => sm.SyncArray("l", v)!, options));
+
+			// A list length of int.MaxValue (F0 7F FF FF FF) must not cause a huge allocation
+			var hugeList = new byte[] { (byte)'(', (byte)'[', 0xF0, 0x7F, 0xFF, 0xFF, 0xFF, 1, 2, 3 };
+			CheckReadContract("SyncBinary(evil)", "int.MaxValue length as int[]", hugeList,
+				d => SyncBinary.Read<int[]>(d, (SyncBinary.Reader sm, int[]? v) => sm.SyncArray("l", v)!, options));
+			CheckReadContract("SyncBinary(evil)", "int.MaxValue length as byte[]", hugeList,
+				d => SyncBinary.Read<byte[]>(d, (SyncBinary.Reader sm, byte[]? v) => sm.SyncArray("l", v)!, options));
+			CheckReadContract("SyncBinary(evil)", "int.MaxValue length as List<string>", hugeList,
+				d => SyncBinary.Read<List<string>>(d, (SyncBinary.Reader sm, List<string>? v)
+					=> sm.SyncList("l", v, (SyncBinary.Reader sm2, string? s) => sm2.Sync(null, s))!, options));
+
+			// Via a stream, a huge byte-list or string length must not make the scanner
+			// allocate a huge buffer (it must not ask for more than MaxPreallocationBytes
+			// before the data has arrived)
+			ReadHugeListViaStream<byte[]>(hugeList, options, (sm, v) => sm.SyncArray("l", v)!);
+			ReadHugeListViaStream<string>(hugeList, options, (sm, v) => sm.Sync("l", v)!);
+		}
+
+		static void ReadHugeListViaStream<T>(byte[] data, SyncBinary.Options options, SyncObjectFunc<SyncBinary.Reader, T> sync)
+		{
+			long allocated = SyncBinaryReaderTests.MeasureAllocations(() =>
+				CheckReadContract("SyncBinary(evil stream)", "int.MaxValue length as " + typeof(T).Name, data, d => {
+					var reader = SyncBinary.NewReader(new StreamScanner(new MemoryStream(d)), options);
+					SyncManagerExt.Sync(reader, null, default(T), sync, options.RootMode);
+				}));
+			Assert.IsTrue(allocated < 2 * ListLoader.MaxPreallocationBytes,
+				"Reading a huge {0} length via a stream allocated {1} bytes", typeof(T).Name, allocated);
 		}
 
 		[Test]
@@ -279,11 +310,11 @@ namespace Loyc.SyncLib.Tests
 				"{\"Age\":" + new string('9', 100_000) + "}",      // enormous number
 			};
 			foreach (string json in evil)
-				CheckReadContract("SyncJson(evil)", 0, Encoding.UTF8.GetBytes(json),
+				CheckReadContract("SyncJson(evil)", "handcrafted", Encoding.UTF8.GetBytes(json),
 					d => SyncJson.Read<Person>(d, new PersonSync<SyncJson.Reader>().Sync, options));
 
 			// Invalid UTF-8 bytes inside a string
-			CheckReadContract("SyncJson(evil)", 1, new byte[] { (byte)'{', (byte)'"', 0xC3, (byte)'"', (byte)':', (byte)'1', (byte)'}' },
+			CheckReadContract("SyncJson(evil)", "invalid UTF-8 in a string", new byte[] { (byte)'{', (byte)'"', 0xC3, (byte)'"', (byte)':', (byte)'1', (byte)'}' },
 				d => SyncJson.Read<Person>(d, new PersonSync<SyncJson.Reader>().Sync, options));
 		}
 
@@ -306,7 +337,7 @@ namespace Loyc.SyncLib.Tests
 			foreach (string json in evil) {
 				var data = Encoding.UTF8.GetBytes(json);
 				var timer = System.Diagnostics.Stopwatch.StartNew();
-				CheckReadContract("SyncJson(null-in-list)", 0, data,
+				CheckReadContract("SyncJson(null-in-list)", "handcrafted", data,
 					d => SyncJson.Read<Person>(d, new PersonSync<SyncJson.Reader>().Sync, options));
 				timer.Stop();
 				// The bug took ~90 seconds; a healthy reader finishes in microseconds. The
