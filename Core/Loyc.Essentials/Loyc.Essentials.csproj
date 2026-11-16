@@ -48,6 +48,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>ISyncManager.ecs</DependentUpon>
     </Compile>
+    <Compile Update="SyncLib\Dynamic\ExtraSynchronizers.out.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ExtraSynchronizers.ecs</DependentUpon>
+    </Compile>
     <None Update="Collections\ExtensionMethods\EnumerableExt.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>EnumerableExt.out.cs</LastGenOutput>
@@ -82,6 +87,10 @@
     <None Update="SyncLib\Impl\SyncPrimitive.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>SyncPrimitive.out.cs</LastGenOutput>
+    </None>
+    <None Update="SyncLib\Dynamic\ExtraSynchronizers.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>ExtraSynchronizers.out.cs</LastGenOutput>
     </None>
     <None Update="SyncLib\ISyncManager.ecs">
       <Generator>LeMP</Generator>

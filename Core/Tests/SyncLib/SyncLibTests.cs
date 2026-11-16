@@ -92,6 +92,34 @@ namespace Loyc.SyncLib.Tests
 		}
 
 		[Test]
+		public void DefaultSynchronizerTreatsAllListsOfBytesAlike()
+		{
+			// Bug fixed in Nov 2026: DefaultSynchronizer gave byte[], char[] and bool[] the
+			// sync manager's special treatment (e.g. raw bytes in SyncBinary, a string in
+			// SyncJson), but synchronized other kinds of lists of these types one item at a
+			// time, which differed from what SyncManagerExt.SyncList does.
+			ExpectSameFormatAsSyncList(new byte[] { 1, 200, 255 }, (Writer sm, List<byte> v) => sm.SyncList("f", v)!);
+			ExpectSameFormatAsSyncList(new[] { 'h', 'i', 'é' }, (Writer sm, List<char> v) => sm.SyncList("f", v)!);
+			ExpectSameFormatAsSyncList(new[] { true, false, true }, (Writer sm, List<bool> v) => sm.SyncList("f", v)!);
+		}
+		void ExpectSameFormatAsSyncList<T>(T[] items, SyncObjectFunc<Writer, List<T>> syncList)
+		{
+			byte[] expected = Write(items.ToList(), syncList, ObjectMode.Normal);
+			ExpectReadable(expected, items.ToList());
+			ExpectReadable(expected, (IList<T>)items.ToList());
+			ExpectReadable(expected, (IReadOnlyList<T>)items.ToList());
+
+			void ExpectReadable<List>(byte[] expected, List list) where List : IEnumerable<T>
+			{
+				ExpectList(WriteViaDefaultSynchronizer(list), expected);
+				var read = Read(expected, (Reader sm, List? v) => DefaultSynchronizer.Sync(ref sm, "f", v))!;
+				ExpectList(read, items);
+			}
+		}
+		byte[] WriteViaDefaultSynchronizer<T>(T value)
+			=> Write(value, (Writer sm, T v) => DefaultSynchronizer.Sync(ref sm, "f", v)!, ObjectMode.Normal);
+
+		[Test]
 		public void RoundTripSmallObject()
 		{
 			var obj = new SmallObject {

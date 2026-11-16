@@ -1,0 +1,33 @@
+using System;
+using System.Collections.Generic;
+using Loyc.SyncLib.Impl;
+
+#nullable enable
+
+namespace Loyc.SyncLib;
+
+// Indicates that the argument is a type (e.g. `Foo[]` alone would be an indexer call)
+[Passive]
+define (#type<$T>) { $T; }
+
+// Lists of bytes, chars and bools get special treatment from the SyncManager itself
+// (e.g. SyncBinary stores a byte list as raw bytes, and SyncJson stores it as a Base64
+// or BAIS string). These non-generic overloads take priority over the generic
+// collection synchronizers in DefaultSynchronizer.cs, so that DefaultSynchronizer
+// gives every kind of list of these types that special treatment, not only arrays.
+static partial class ExtraSynchronizers<SyncManager>
+{
+	##unroll($T in (byte, char, bool))
+	{
+		##unroll(($List, $SyncList, $(..extraArgs)) in (
+			(#type<$T[]? >, SyncArray),
+			(#type<List<$T>? >, SyncList),
+			(#type<IList<$T>? >, SyncList),
+			(#type<IReadOnlyList<$T>? >, SyncList),
+			(#type<HashSet<$T>? >, SyncColl, Alloc<$T>.HashSet)))
+		{
+			public static $List Sync(ref SyncManager sync, FieldId name, $List value)
+				=> sync.$SyncList(name, value, $extraArgs);
+		}
+	}
+}

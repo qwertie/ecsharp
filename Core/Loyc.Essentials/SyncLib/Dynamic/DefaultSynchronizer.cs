@@ -117,18 +117,10 @@ public static class DefaultSynchronizer<SyncManager, T> where SyncManager: ISync
 ///   KeyValuePair, enums, DateTime and TimeSpan. Collection items are
 ///   synchronized recursively via <see cref="DefaultSyncField{SM,T}"/>, so e.g.
 ///   <c>List&lt;(int, Person[])></c> works as long as Person is registered in the
-///   ambient <see cref="TypeSyncRegistry"/>.</summary>
-static class ExtraSynchronizers<SyncManager> where SyncManager : ISyncManager
+///   ambient <see cref="TypeSyncRegistry"/>. Lists of bytes, chars and bools are
+///   handled in ExtraSynchronizers.ecs.</summary>
+static partial class ExtraSynchronizers<SyncManager> where SyncManager : ISyncManager
 {
-	// Lists of bytes/bools/chars get special treatment from the SyncManager
-	// itself (e.g. SyncJson stores byte[] as a Base64 or BAIS string).
-	public static byte[]? Sync(ref SyncManager sync, FieldId name, byte[]? value)
-		=> sync.SyncArray(name, value);
-	public static bool[]? Sync(ref SyncManager sync, FieldId name, bool[]? value)
-		=> sync.SyncArray(name, value);
-	public static char[]? Sync(ref SyncManager sync, FieldId name, char[]? value)
-		=> sync.SyncArray(name, value);
-
 	public static DateTime Sync(ref SyncManager sync, FieldId name, DateTime value)
 		=> new SyncTimeAsString<SyncManager>(null, System.Globalization.DateTimeStyles.AllowWhiteSpaces)
 			.Sync(ref sync, name, value);

@@ -238,6 +238,11 @@
     <Compile Include="SyncLib\Binary\SyncBinary.Writer.cs" />
     <Compile Include="SyncLib\Binary\SyncBinary.WriterState.cs" />
     <Compile Include="SyncLib\Dynamic\DefaultSynchronizer.cs" />
+    <Compile Include="SyncLib\Dynamic\ExtraSynchronizers.out.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ExtraSynchronizers.ecs</DependentUpon>
+    </Compile>
     <Compile Include="SyncLib\Dynamic\PredefinedSynchronizer.cs" />
     <Compile Include="SyncLib\Dynamic\SyncDynamic.cs" />
     <Compile Include="SyncLib\Dynamic\SyncDynamicExt.cs" />
@@ -276,6 +281,10 @@
     <Compile Include="Utilities\Extensions.cs" />
     <None Include="packages.config" />
     <None Include="SyncLib\Impl\SyncPrimitive.ecs" />
+    <None Include="SyncLib\Dynamic\ExtraSynchronizers.ecs">
+      <Generator>LeMP</Generator>
+      <LastGenOutput>ExtraSynchronizers.out.cs</LastGenOutput>
+    </None>
     <None Include="SyncLib\ISyncManager.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>ISyncManager.out.cs</LastGenOutput>
