@@ -28,6 +28,9 @@ namespace Loyc.SyncLib.Tests
 			Assert.That(reader.BeginSubObject(null, null, ObjectMode.List).Begun);
 			Assert.AreEqual(2, reader.MinimumListLength);
 		}
+
+		// Like Json.NET, Newtonsoft mode writes byte[] as Base64 without deduplicating it
+		protected override bool DeduplicatesByteArrays => !_options.NewtonsoftCompatibility;
 		ObjectMode _saveMode;
 
 		public SyncJsonDOMTests(bool newtonCompat, bool nonDefaultSettings = false, bool minify = false)

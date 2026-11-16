@@ -310,24 +310,7 @@ public static partial class SyncJsonDOM
 		public List? SyncListCharImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 			where Scanner : IScanner<char>
 			where ListBuilder : IListBuilder<List, char>
-		{
-			var type = _s.HasField(name.Name);
-			if (type == SyncType.Null) {
-				_s.ConsumeNullListItem(name.Name);
-				return default(List);
-			} else if (type == SyncType.List) {
-				return new ListLoader<Reader, List, char, ListBuilder, SyncPrimitive<Reader>>
-					(new SyncPrimitive<Reader>(), builder, mode, tupleLength).Sync(ref this, name, saving);
-			} else {
-				var s = _s.ReadString(name.Name);
-				if (s == null)
-					return default(List); // missing (and Options.Read.AllowMissingFields is on)
-
-				builder.Alloc(s.Length);
-				builder.AddRange(s.AsSpan());
-				return builder.List;
-			}
-		}
+			=> _s.ReadCharList<ListBuilder, List>(name.Name, builder, mode, tupleLength);
 
 		public bool? Sync(FieldId name, bool? savable) => _s.ReadBoolean(name, true);
 

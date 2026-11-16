@@ -30,7 +30,18 @@ partial class SyncJson
 		///   be used for deduplication and resolution of circular references,
 		///   and byte arrays are encoded in Base64. If false, more compact 
 		///   SyncLib-style references and BAIS encoding are used instead.</summary>
+		/// <remarks>Like Json.NET, this mode does not deduplicate a byte or char list
+		///   that is written as a string (e.g. a Base64 byte array): even with
+		///   <see cref="ObjectMode.Deduplicate"/>, each reference to the list is written
+		///   in full and read back as a separate copy. Otherwise, a deduplicated list
+		///   that is written as a string is wrapped in an object, e.g.
+		///   <c>{"\f": 1, "": "..."}</c>.</remarks>
 		public bool NewtonsoftCompatibility { get; set; } = true;
+
+		// Whether a byte or char list written as a string is wrapped in an object in order to
+		// deduplicate it (Json.NET never does this, so neither does Newtonsoft mode)
+		internal bool WrapsDeduplicatedString(ObjectMode mode)
+			=> (mode & ObjectMode.Deduplicate) != 0 && !NewtonsoftCompatibility;
 
 		/// <summary>A function for altering names used in the first argument of 
 		///   ISyncManager.Sync. To use camelCase, set this to 

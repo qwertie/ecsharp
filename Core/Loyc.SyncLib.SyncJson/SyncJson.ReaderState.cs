@@ -445,9 +445,11 @@ partial class SyncJson
 					type = DetectTypeOfUnparsedValue(ref cur);
 				}
 
-				if (type == JsonType.List || type == JsonType.Object) {
+				if (type == JsonType.Object && (mode & ObjectMode.Deduplicate) != 0) {
+					return ReadDeduplicatedList<List, byte, ListBuilder>(name, builder, mode,
+						(n, b, m) => ReadByteArray<ListBuilder, List>(n, b, m));
+				} else if (type == JsonType.List || type == JsonType.Object) {
 					// Read array in the standard way
-					// TODO: support { "$id":"...", "$values":"byte array as string" }
 					var reader = new Reader(this);
 					var loader = new ListLoader<Reader, List, byte, ListBuilder, SyncPrimitive<Reader>>(new SyncPrimitive<Reader>(), builder, mode);
 					return loader.Sync(ref reader, name, default);
@@ -513,6 +515,45 @@ partial class SyncJson
 				}
 			}
 			return default;
+		}
+
+		internal List? ReadCharList<ListBuilder, List>(string? name, ListBuilder builder, ObjectMode mode, int tupleLength)
+			where ListBuilder : IListBuilder<List, char>
+		{
+			var type = HasFieldCore(name);
+			if (type == JsonType.Null) {
+				return default(List);
+			} else if (type == JsonType.Object && (mode & ObjectMode.Deduplicate) != 0) {
+				return ReadDeduplicatedList<List, char, ListBuilder>(name, builder, mode,
+					(n, b, m) => ReadCharList<ListBuilder, List>(n, b, m, tupleLength));
+			} else if (type == JsonType.List) {
+				var reader = new Reader(this);
+				return new ListLoader<Reader, List, char, ListBuilder, SyncPrimitive<Reader>>
+					(new SyncPrimitive<Reader>(), builder, mode, tupleLength).Sync(ref reader, name, default);
+			} else {
+				var s = ReadString(name)!;
+				builder.Alloc(s.Length);
+				builder.AddRange(s.AsSpan());
+				return builder.List;
+			}
+		}
+
+		// Reads a deduplicated byte or char list, which is an object such as {"\f": 1, "": ...}
+		// or {"$id": "1", "$values": ...}, or a back-reference to one. `readValue` reads the
+		// list itself (a string or an array) from the given property of that object.
+		List? ReadDeduplicatedList<List, T, ListBuilder>(string? name, ListBuilder builder, ObjectMode mode,
+			Func<string, ListBuilder, ObjectMode, List?> readValue)
+			where ListBuilder : IListBuilder<List, T>
+		{
+			var (begun, _, obj) = BeginSubObject(name, mode & ~ObjectMode.List);
+			if (!begun)
+				return obj == null ? default : builder.CastList(obj);
+
+			var list = readValue(_opt.NewtonsoftCompatibility ? "$values" : "", builder, mode & ~ObjectMode.Deduplicate);
+			if (list != null)
+				SetCurrentObject(list);
+			EndSubObject();
+			return list;
 		}
 
 		private List? BuildListFromSpan<ListBuilder, List>(Span<byte> span, ListBuilder builder)

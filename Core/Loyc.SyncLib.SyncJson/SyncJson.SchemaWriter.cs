@@ -349,7 +349,7 @@ partial class SyncJson
 				var node = Node(JsonSchemaType.String);
 				if ((mode & ObjectMode.Tuple) == ObjectMode.Tuple && tupleLength >= 0)
 					node.MinLength = node.MaxLength = tupleLength;
-				_s.SyncPrimValue(name.Name, node, mode);
+				_s.SyncListAsString(name.Name, node, mode);
 			} else {
 				// Character lists are written as arrays of single-character strings
 				_s.SyncPrimList(name.Name, CharNode(), mode, tupleLength);
@@ -371,7 +371,7 @@ partial class SyncJson
 				var node = Node(JsonSchemaType.String);
 				if (_s._opt.NewtonsoftCompatibility || _s._opt.ByteArrayMode == JsonByteArrayMode.Base64)
 					node.ContentEncoding = "base64";
-				_s.SyncPrimValue(name.Name, node, mode);
+				_s.SyncListAsString(name.Name, node, mode);
 			}
 			return default;
 		}

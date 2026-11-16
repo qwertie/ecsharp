@@ -409,14 +409,59 @@ partial class SyncJsonDOM
 		static readonly char[] _floatIndicators = { '.', 'e', 'E' };
 		#endif
 
+		internal List? ReadCharList<ListBuilder, List>(string? name, ListBuilder builder, ObjectMode mode, int tupleLength)
+			where ListBuilder : IListBuilder<List, char>
+		{
+			var type = HasField(name);
+			if (type == SyncType.Null) {
+				ConsumeNullListItem(name);
+				return default(List);
+			} else if (type == SyncType.Object && (mode & ObjectMode.Deduplicate) != 0) {
+				return ReadDeduplicatedList<List, char, ListBuilder>(name, builder, mode,
+					(n, b, m) => ReadCharList<ListBuilder, List>(n, b, m, tupleLength));
+			} else if (type == SyncType.List) {
+				var reader = new Reader(this);
+				return new ListLoader<Reader, List, char, ListBuilder, SyncPrimitive<Reader>>
+					(new SyncPrimitive<Reader>(), builder, mode, tupleLength).Sync(ref reader, name, default);
+			} else {
+				var s = ReadString(name);
+				if (s == null)
+					return default(List); // missing (and Options.Read.AllowMissingFields is on)
+
+				builder.Alloc(s.Length);
+				builder.AddRange(s.AsSpan());
+				return builder.List;
+			}
+		}
+
+		// Reads a deduplicated byte or char list, which is an object such as {"\f": 1, "": ...}
+		// or {"$id": "1", "$values": ...}, or a back-reference to one. `readValue` reads the
+		// list itself (a string or an array) from the given property of that object.
+		List? ReadDeduplicatedList<List, T, ListBuilder>(string? name, ListBuilder builder, ObjectMode mode,
+			Func<string, ListBuilder, ObjectMode, List?> readValue)
+			where ListBuilder : IListBuilder<List, T>
+		{
+			var (begun, _, obj) = BeginSubObject(name, mode & ~ObjectMode.List);
+			if (!begun)
+				return obj == null ? default : builder.CastList(obj);
+
+			var list = readValue(_opt.NewtonsoftCompatibility ? "$values" : "", builder, mode & ~ObjectMode.Deduplicate);
+			if (list != null)
+				SetCurrentObject(list);
+			EndSubObject();
+			return list;
+		}
+
 		internal List? ReadByteArray<ListBuilder, List>(string? name, ListBuilder builder, ObjectMode mode)
 			where ListBuilder : IListBuilder<List, byte>
 		{
 			if (TryFindProp(name, out JsonElement v, out int index)) {
 				var kind = v.ValueKind;
-				if (kind == JsonValueKind.Array || kind == JsonValueKind.Object) {
-					// Read array in the standard way (BeginSubObject re-finds the prop,
-					// and also handles the deduplicated form {"$id":..., "$values":[...]})
+				if (kind == JsonValueKind.Object && (mode & ObjectMode.Deduplicate) != 0) {
+					return ReadDeduplicatedList<List, byte, ListBuilder>(name, builder, mode,
+						(n, b, m) => ReadByteArray<ListBuilder, List>(n, b, m));
+				} else if (kind == JsonValueKind.Array || kind == JsonValueKind.Object) {
+					// Read array in the standard way (BeginSubObject re-finds the prop)
 					var reader = new Reader(this);
 					var loader = new ListLoader<Reader, List, byte, ListBuilder, SyncPrimitive<Reader>>(
 						new SyncPrimitive<Reader>(), builder, mode);

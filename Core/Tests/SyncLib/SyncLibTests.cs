@@ -15,6 +15,8 @@ namespace Loyc.SyncLib.Tests
 		protected abstract byte[] Write<T>(T value, SyncObjectFunc<Writer, T> sync, ObjectMode mode);
 		protected abstract T? Read<T>(byte[] data, SyncObjectFunc<Reader, T> sync);
 		protected virtual bool IsUTF8 => true;
+		// False if a byte[] is written as a string that can't be deduplicated
+		protected virtual bool DeduplicatesByteArrays => true;
 
 		[Test]
 		public void ExtremelyBasicTest()
@@ -66,18 +68,27 @@ namespace Loyc.SyncLib.Tests
 			// back-reference" (strings and byte lists were unaffected)
 			var numbers = new[] { 1, 2, 3 };
 			var names = new List<string?> { "a", "b" };
-			var obj = new SharedLists { A = numbers, B = numbers, C = names, D = names };
+			var bytes = new byte[] { 1, 200 };
+			var chars = new[] { 'h', 'i' };
+			var obj = new SharedLists { A = numbers, B = numbers, C = names, D = names, E = bytes, F = bytes, G = chars, H = chars };
 			RoundTripTest(obj, SharedLists.Sync, SharedLists.Sync, ObjectMode.Normal, (result, expected) => {
 				ExpectList(result!.A!, numbers);
 				ExpectList(result.C!, names);
+				ExpectList(result.E!, bytes);
+				ExpectList(result.F!, bytes);
+				ExpectList(result.G!, chars);
 				Assert.That(object.ReferenceEquals(result.A, result.B), "the int[] was not deduplicated");
 				Assert.That(object.ReferenceEquals(result.C, result.D), "the List<string> was not deduplicated");
+				Assert.That(object.ReferenceEquals(result.E, result.F) == DeduplicatesByteArrays, "the byte[] was not deduplicated as expected");
+				Assert.That(object.ReferenceEquals(result.G, result.H), "the char[] was not deduplicated");
 			});
 		}
 		class SharedLists
 		{
 			public int[]? A, B;
 			public List<string?>? C, D;
+			public byte[]? E, F;
+			public char[]? G, H;
 
 			public static SharedLists Sync<SM>(SM sm, SharedLists? obj) where SM : ISyncManager
 			{
@@ -87,6 +98,10 @@ namespace Loyc.SyncLib.Tests
 				obj.B = sm.SyncArray("B", obj.B, mode);
 				obj.C = sm.SyncList("C", obj.C, mode);
 				obj.D = sm.SyncList("D", obj.D, mode);
+				obj.E = sm.SyncArray("E", obj.E, mode);
+				obj.F = sm.SyncArray("F", obj.F, mode);
+				obj.G = sm.SyncArray("G", obj.G, mode);
+				obj.H = sm.SyncArray("H", obj.H, mode);
 				return obj;
 			}
 		}

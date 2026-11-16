@@ -250,21 +250,7 @@ public partial class SyncJson
 		public List? SyncListCharImpl<Scanner, List, ListBuilder>(FieldId name, Scanner scanner, List? saving, ListBuilder builder, ObjectMode mode, int tupleLength = -1)
 			where Scanner : IScanner<char>
 			where ListBuilder : IListBuilder<List, char>
-		{
-			var type = _s.HasFieldCore(name.Name);
-			if (type == JsonType.Null) {
-				return default(List);
-			} else if (type == JsonType.List) {
-				return new ListLoader<SyncJson.Reader, List, char, ListBuilder, SyncPrimitive<SyncJson.Reader>>
-					(new SyncPrimitive<SyncJson.Reader>(), builder, mode, tupleLength).Sync(ref this, name, saving);
-			} else {
-				var s = _s.ReadString(name.Name)!;
-
-				builder.Alloc(s.Length);
-				builder.AddRange(s.AsSpan());
-				return builder.List;
-			}
-		}
+			=> _s.ReadCharList<ListBuilder, List>(name.Name, builder, mode, tupleLength);
 
 		public bool? Sync(FieldId name, bool? savable) => _s.ReadBoolean(name, true);
 

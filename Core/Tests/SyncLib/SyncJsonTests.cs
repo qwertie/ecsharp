@@ -13,6 +13,9 @@ namespace Loyc.SyncLib.Tests
 	public class SyncJsonTests : SyncLibTests<SyncJson.Reader, SyncJson.Writer>
 	{
 		SyncJson.Options _options = new SyncJson.Options();
+
+		// Like Json.NET, Newtonsoft mode writes byte[] as Base64 without deduplicating it
+		protected override bool DeduplicatesByteArrays => !_options.NewtonsoftCompatibility;
 		ObjectMode _saveMode;
 
 		public SyncJsonTests(bool newtonCompat, bool nonDefaultSettings = false, bool minify = false)

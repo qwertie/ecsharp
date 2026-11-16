@@ -188,12 +188,14 @@ partial class SyncJson
 				Debug.Assert(!status.Begun && status.Object == null);
 				return default;
 			} else {
-				// TODO: support deduplication
 				if (_s._opt.Write.CharListAsString ?? !_s._opt.NewtonsoftCompatibility) {
 					// Write character list as string
-					var empty = default(Memory<char>);
-					var chars = scanner.Read(0, int.MaxValue, ref empty);
-					_s.WriteProp(name.Name ?? "", chars.Span);
+					if (BeginStringList(ref name, saving, mode)) {
+						var empty = default(Memory<char>);
+						var chars = scanner.Read(0, int.MaxValue, ref empty);
+						_s.WriteProp(name.Name ?? "", chars.Span);
+						EndStringList(mode);
+					}
 				} else {
 					// Write character list as array
 					var saver = new ScannerSaver<SyncJson.Writer, Scanner, char, SyncPrimitive<SyncJson.Writer>>(new SyncPrimitive<SyncJson.Writer>(), mode);
@@ -212,7 +214,6 @@ partial class SyncJson
 				Debug.Assert(!status.Begun && status.Object == null);
 				return default;
 			} else {
-				// TODO: support deduplication
 				if (_s._opt.NewtonsoftCompatibility && scanner is not InternalList.Scanner<byte> || 
 					_s._opt.ByteArrayMode == JsonByteArrayMode.Array) {
 					// Write bytes as list
@@ -220,12 +221,34 @@ partial class SyncJson
 					saver.Write(ref this, name, scanner!, saving, tupleLength);
 				} else {
 					// Write bytes as string
-					var empty = default(Memory<byte>);
-					var bytes = scanner.Read(0, int.MaxValue, ref empty);
-					_s.WriteBytesAsString(name.Name ?? "", bytes.Span);
+					if (BeginStringList(ref name, saving, mode)) {
+						var empty = default(Memory<byte>);
+						var bytes = scanner.Read(0, int.MaxValue, ref empty);
+						_s.WriteBytesAsString(name.Name ?? "", bytes.Span);
+						EndStringList(mode);
+					}
 				}
 				return saving;
 			}
+		}
+
+		// To deduplicate a byte or char list that is written as a string, the string is
+		// wrapped in an object: {"\f": id, "": "..."}. Returns false if a back-reference
+		// was written instead of the list; otherwise the caller writes the string under
+		// `name` and then calls EndStringList().
+		bool BeginStringList(ref FieldId name, object? saving, ObjectMode mode)
+		{
+			if (_s._opt.WrapsDeduplicatedString(mode)) {
+				if (!BeginSubObject(name, saving, mode & ~ObjectMode.List).Begun)
+					return false;
+				name = "";
+			}
+			return true;
+		}
+		void EndStringList(ObjectMode mode)
+		{
+			if (_s._opt.WrapsDeduplicatedString(mode))
+				EndSubObject();
 		}
 	}
 }

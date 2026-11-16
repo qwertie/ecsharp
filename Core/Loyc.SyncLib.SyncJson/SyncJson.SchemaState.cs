@@ -434,6 +434,16 @@ partial class SyncJson
 			Attach(name, node);
 		}
 
+		/// <summary>Records the schema of a byte or char list that is written as a string,
+		///   which is wrapped in an object if it is deduplicated.</summary>
+		public void SyncListAsString(string? name, SchemaNode node, ObjectMode mode)
+		{
+			if (_opt.WrapsDeduplicatedString(mode))
+				AttachOccurrence(name, node, mode, isList: true);
+			else
+				SyncPrimValue(name, node, mode);
+		}
+
 		/// <summary>Records the schema of a list of primitives (as written by
 		///   SyncListBoolImpl and friends, which do not call BeginSubObject).</summary>
 		public void SyncPrimList(string? name, SchemaNode itemNode, ObjectMode mode, int tupleLength)
