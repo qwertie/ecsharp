@@ -53,6 +53,41 @@ namespace Loyc.SyncLib.Tests
 			return SyncJson.Write(value, sync, _options).ToArray();
 		}
 
+		[Test]
+		public void LongStringsFitTheirReservedSpace()
+		{
+			// Bug fixed in Nov 2026 (found by GenerativeRoundTripFuzz): WriterState.WriteProp
+			// reserved output space for a string's contents but not its quotes, so a long
+			// string could be written past the end of the buffer from IBufferWriter. This
+			// is rare with ArrayBufferWriter, which usually offers more memory than requested.
+			var s = new string('é', 2000); // more than the 1024 bytes WriterStateBase requests
+			var value = (s, new List<string?> { s, s });
+			var output = new ExactBufferWriter();
+			_options.RootMode = ObjectMode.Normal;
+			var writer = SyncJson.NewWriter(output, _options);
+			SyncManagerExt.Sync(writer, null, value, SyncStrings, _options.RootMode);
+			writer.Flush();
+
+			var result = SyncJson.Read<(string?, List<string?>?)>(output.Written.ToArray(), SyncStrings, _options);
+			Assert.AreEqual(s, result.Item1);
+			ExpectList(result.Item2!, value.Item2);
+
+			static (string?, List<string?>?) SyncStrings<SM>(SM sm, (string?, List<string?>?) v) where SM : ISyncManager
+				=> (sm.Sync("p", v.Item1), sm.SyncList("list", v.Item2));
+		}
+
+		/// <summary>An IBufferWriter that offers exactly the amount of memory requested, so
+		///   that a writer that requests too little memory fails reliably.</summary>
+		class ExactBufferWriter : System.Buffers.IBufferWriter<byte>
+		{
+			public List<byte> Written = new List<byte>();
+			byte[] _buf = new byte[0];
+
+			public void Advance(int count) => Written.AddRange(_buf.Take(count));
+			public Memory<byte> GetMemory(int sizeHint = 0) => _buf = new byte[System.Math.Max(sizeHint, 1)];
+			public Span<byte> GetSpan(int sizeHint = 0) => GetMemory(sizeHint).Span;
+		}
+
 		[Test] public void HomePageCalendarTestV1() => HomePageCalendarTest(1);
 		[Test] public void HomePageCalendarTestV2() => HomePageCalendarTest(2);
 		public void HomePageCalendarTest(int apiVersion)

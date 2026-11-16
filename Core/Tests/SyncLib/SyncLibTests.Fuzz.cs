@@ -13,8 +13,10 @@ namespace Loyc.SyncLib.Tests
 	///   Each iteration builds a random object tree from a seed, writes it, reads it
 	///   back using the tree itself as the schema, and checks (1) structural equality
 	///   and (2) write stability (re-serializing the read-back tree yields identical
-	///   bytes). The failing seed is included in the failure message so any case can
-	///   be replayed. Set SYNCLIB_FUZZ_ITERS to change the iteration count.
+	///   bytes). The failing seed is included in the failure message; to replay a
+	///   case, call <see cref="GenerativeRoundTrip"/> with that seed (see
+	///   <see cref="GenerativeRoundTripRegressions"/>). Set SYNCLIB_FUZZ_ITERS to change
+	///   the iteration count.
 	/// </summary>
 	public abstract partial class SyncLibTests<Reader, Writer>
 		where Writer : ISyncManager
@@ -26,27 +28,38 @@ namespace Loyc.SyncLib.Tests
 			int iters = int.TryParse(Environment.GetEnvironmentVariable("SYNCLIB_FUZZ_ITERS"), out int n) ? n : 250;
 			int baseSeed = Environment.TickCount;
 
-			for (int i = 0; i < iters; i++) {
-				int caseSeed = baseSeed + i;
-				FuzzNode? tree = null;
-				try {
-					var rng = new Random(caseSeed);
-					tree = FuzzNode.GenerateObject(rng, maxDepth: 4);
+			for (int i = 0; i < iters; i++)
+				GenerativeRoundTrip(baseSeed + i);
+		}
 
-					// The template tree is the schema on both sides, so it is passed via
-					// closure (on the read side the savable parameter arrives as null)
-					FuzzNode template = tree;
-					var data = Write<FuzzNode>(tree, (Writer sm, FuzzNode? _) => FuzzNode.Sync(sm, template), 0);
-					var tree2 = Read<FuzzNode>(data, (Reader sm, FuzzNode? _) => FuzzNode.Sync(sm, template))!;
-					FuzzNode.AssertEqual(tree, tree2, "root");
+		/// <summary>Seeds that GenerativeRoundTripFuzz once failed on</summary>
+		[Test]
+		public void GenerativeRoundTripRegressions()
+		{
+			GenerativeRoundTrip(429700177); // SyncJson wrote past the end of its output buffer
+		}
 
-					// Write stability: serializing what we read must be byte-identical
-					var data2 = Write<FuzzNode>(tree2, (Writer sm, FuzzNode? _) => FuzzNode.Sync(sm, tree2!), 0);
-					ExpectList(data2, data);
-				} catch (Exception e) when (!(e is Loyc.MiniTest.IgnoreException)) {
-					Fail("Fuzz seed {0} failed{1}: {2}", caseSeed,
-						tree == null ? " (while generating)" : "", e);
-				}
+		/// <summary>Runs one case of <see cref="GenerativeRoundTripFuzz"/>.</summary>
+		protected void GenerativeRoundTrip(int seed)
+		{
+			FuzzNode? tree = null;
+			try {
+				var rng = new Random(seed);
+				tree = FuzzNode.GenerateObject(rng, maxDepth: 4);
+
+				// The template tree is the schema on both sides, so it is passed via
+				// closure (on the read side the savable parameter arrives as null)
+				FuzzNode template = tree;
+				var data = Write<FuzzNode>(tree, (Writer sm, FuzzNode? _) => FuzzNode.Sync(sm, template), 0);
+				var tree2 = Read<FuzzNode>(data, (Reader sm, FuzzNode? _) => FuzzNode.Sync(sm, template))!;
+				FuzzNode.AssertEqual(tree, tree2, "root");
+
+				// Write stability: serializing what we read must be byte-identical
+				var data2 = Write<FuzzNode>(tree2, (Writer sm, FuzzNode? _) => FuzzNode.Sync(sm, tree2!), 0);
+				ExpectList(data2, data);
+			} catch (Exception e) when (!(e is Loyc.MiniTest.IgnoreException)) {
+				Fail("Fuzz seed {0} failed{1}: {2}", seed,
+					tree == null ? " (while generating)" : "", e);
 			}
 		}
 	}

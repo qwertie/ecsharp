@@ -243,7 +243,7 @@ namespace Loyc.SyncLib
 					WriteNull(propName);
 				else {
 					int valueLen = GetLengthAsBytes(value, _optWrite.EscapeUnicode);
-					Span<byte> buf = BeginProp(propName, valueLen);
+					Span<byte> buf = BeginProp(propName, valueLen + 2); // +2 for the quotes
 					WriteStringCore(buf, value, valueLen, ref _i, _optWrite.EscapeUnicode);
 					_pendingComma = (byte)',';
 				}
