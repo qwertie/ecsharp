@@ -153,10 +153,10 @@ partial class SyncJson
 		///   without arguments, this function returns a <see cref="ArrayBufferWriter{T}"/>
 		///   (see example below).</summary>
 		/// <remarks>
-		///   It is only necessary to call this method just after writing a primitive 
-		///   (e.g. number or string), because flushing happens automatically when 
-		///   <see cref="ISyncManager.EndSubObject"/> is used to finish writing an 
-		///   object or list.
+		///   It is only necessary to call this method if the root value is a primitive 
+		///   (e.g. number or string), or if you want to see the output before the root
+		///   object or list is finished, because flushing happens automatically when 
+		///   <see cref="ISyncManager.EndSubObject"/> finishes the root object or list.
 		/// <para/>
 		///   Here's an example that uses this method to write a primitive:
 		/// <pre><![CDATA[

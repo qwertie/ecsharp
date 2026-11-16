@@ -60,14 +60,14 @@ namespace Loyc.SyncLib
 			Span<byte> GetNextBuf(int requiredBytes)
 			{
 				if (_pendingComma != 0) {
-					var buf = base.FlushAndGetOutSpan(requiredBytes + 1 + NewlineSize);
+					var buf = base.GetOutSpan(requiredBytes + 1 + NewlineSize);
 					if (_pendingComma != '\n')
 						buf[_i++] = _pendingComma;
 					MaybeNewlineWithIndent(buf);
 					_pendingComma = 0;
 					return buf;
 				} else {
-					return base.FlushAndGetOutSpan(requiredBytes);
+					return base.GetOutSpan(requiredBytes);
 				}
 			}
 

@@ -76,6 +76,21 @@ namespace Loyc.SyncLib.Tests
 				=> (sm.Sync("p", v.Item1), sm.SyncList("list", v.Item2));
 		}
 
+		[Test]
+		public void FinishingTheRootObjectFlushes()
+		{
+			// The writer buffers its output, but it must flush when the root object ends
+			var output = new ExactBufferWriter();
+			_options.RootMode = ObjectMode.Normal;
+			var writer = SyncJson.NewWriter(output, _options);
+			var list = new List<int> { 1, 2, 3 };
+			SyncObjectFunc<SyncJson.Writer, List<int>> sync = (w, v) => w.SyncList("list", v)!;
+			SyncManagerExt.Sync(writer, null, list, sync, ObjectMode.Normal);
+
+			// SyncJson.Write() calls Flush() explicitly
+			ExpectList(output.Written, SyncJson.Write(list, sync, _options).ToArray());
+		}
+
 		/// <summary>An IBufferWriter that offers exactly the amount of memory requested, so
 		///   that a writer that requests too little memory fails reliably.</summary>
 		class ExactBufferWriter : System.Buffers.IBufferWriter<byte>
