@@ -58,7 +58,13 @@ namespace Loyc.SyncLib.Impl
 		InternalList<T> _list;
 		public T[]? List => _list.AsArray();
 
-		public object Alloc(int minLength) => _list = minLength == 0 ? InternalList<T>.Empty : new InternalList<T>(minLength);
+		// Returns null because the array doesn't exist until loading is done (and boxing
+		// _list would allocate memory for no reason)
+		public object? Alloc(int minLength)
+		{
+			_list = minLength == 0 ? InternalList<T>.Empty : new InternalList<T>(minLength);
+			return null;
+		}
 
 		public T[] CastList(object value)
 		{

@@ -47,16 +47,20 @@ namespace Loyc.SyncLib.Impl
 				try {
 					if ((_listMode & ObjectMode.Tuple) == ObjectMode.Tuple) {
 						Debug.Assert(_tupleLength > -1);
-						_builder.Alloc(_tupleLength);
+						SetCurrentObject(ref sync, _builder.Alloc(_tupleLength));
 						for (int index = _tupleLength; sync.ReachedEndOfList != true && index > 0; index--)
 							_builder.Add(_syncItem.Sync(ref sync, null, default(T))!);
 					} else {
 						int maxPrealloc = ListLoader.MaxPreallocationBytes / Unsafe.SizeOf<T>();
-						_builder.Alloc(System.Math.Min(sync.MinimumListLength!.Value, maxPrealloc));
+						SetCurrentObject(ref sync, _builder.Alloc(System.Math.Min(sync.MinimumListLength!.Value, maxPrealloc)));
 						for (int index = listLength; sync.ReachedEndOfList != true && index > 0; index--)
 							_builder.Add(_syncItem.Sync(ref sync, null, default(T))!);
 					}
-					return _builder.List;
+					var list = _builder.List;
+					// The final list may differ from the one returned by Alloc (e.g. an array)
+					if ((_listMode & ObjectMode.Deduplicate) != 0)
+						SetCurrentObject(ref sync, list);
+					return list;
 				} finally {
 					sync.EndSubObject();
 				}
@@ -65,6 +69,14 @@ namespace Loyc.SyncLib.Impl
 				// deduplicated list that was read earlier (a back-reference)
 				return obj == null ? default : _builder.CastList(obj);
 			}
+		}
+
+		// In Deduplicate mode, this tells the sync manager which object the list is, so
+		// that later references to it (including any inside the list itself) can be read.
+		void SetCurrentObject(ref SyncManager sync, object? list)
+		{
+			if (list != null && (_listMode & ObjectMode.Deduplicate) != 0)
+				sync.CurrentObject = list;
 		}
 	}
 }

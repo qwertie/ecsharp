@@ -59,6 +59,39 @@ namespace Loyc.SyncLib.Tests
 		}
 
 		[Test]
+		public void RoundTripDeduplicatedLists()
+		{
+			// Bug fixed in Nov 2026: ListLoader didn't register a deduplicated list's ID, so
+			// reading a second reference to the same list threw "no object found for
+			// back-reference" (strings and byte lists were unaffected)
+			var numbers = new[] { 1, 2, 3 };
+			var names = new List<string?> { "a", "b" };
+			var obj = new SharedLists { A = numbers, B = numbers, C = names, D = names };
+			RoundTripTest(obj, SharedLists.Sync, SharedLists.Sync, ObjectMode.Normal, (result, expected) => {
+				ExpectList(result!.A!, numbers);
+				ExpectList(result.C!, names);
+				Assert.That(object.ReferenceEquals(result.A, result.B), "the int[] was not deduplicated");
+				Assert.That(object.ReferenceEquals(result.C, result.D), "the List<string> was not deduplicated");
+			});
+		}
+		class SharedLists
+		{
+			public int[]? A, B;
+			public List<string?>? C, D;
+
+			public static SharedLists Sync<SM>(SM sm, SharedLists? obj) where SM : ISyncManager
+			{
+				obj ??= new SharedLists();
+				var mode = ObjectMode.List | ObjectMode.Deduplicate;
+				obj.A = sm.SyncArray("A", obj.A, mode);
+				obj.B = sm.SyncArray("B", obj.B, mode);
+				obj.C = sm.SyncList("C", obj.C, mode);
+				obj.D = sm.SyncList("D", obj.D, mode);
+				return obj;
+			}
+		}
+
+		[Test]
 		public void RoundTripSmallObject()
 		{
 			var obj = new SmallObject {
