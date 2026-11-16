@@ -24,6 +24,38 @@ namespace Loyc.SyncLib.Tests;
 public class SyncBinaryWriterTests : TestHelpers
 {
 	[Test]
+	public void FinishingTheRootObjectFlushes()
+	{
+		var options = new SyncBinary.Options();
+		var output = new ArrayBufferWriter<byte>();
+		var writer = SyncBinary.NewWriter(output, options);
+		var list = new List<int> { 1, 2, 3 };
+		SyncObjectFunc<SyncBinary.Writer, List<int>> sync = (w, v) => w.SyncList("list", v)!;
+		SyncManagerExt.Sync(writer, null, list, sync, options.RootMode);
+
+		// SyncBinary.Write() calls Flush() explicitly
+		ExpectList(output.WrittenSpan.ToArray(), SyncBinary.Write(list, sync, options).ToArray());
+	}
+
+	[Test]
+	public void BitfieldsEndWithTheRootObject()
+	{
+		// The writer flushes when the root object ends, so a bitfield written after it
+		// starts a new byte (it can't share the flushed byte), and the reader must agree
+		var options = new SyncBinary.Options { Markers = SyncBinary.Markers.None };
+		var output = new ArrayBufferWriter<byte>();
+		var writer = SyncBinary.NewWriter(output, options);
+		SyncManagerExt.Sync(writer, null, 5, (SyncBinary.Writer w, int v) => w.Sync("a", v, 4, false), ObjectMode.NotNull);
+		writer.Sync("b", 3, 4, false);
+		writer.Flush();
+		ExpectList(output.WrittenSpan.ToArray(), new byte[] { 5, 3 });
+
+		var reader = SyncBinary.NewReader(output.WrittenMemory, options);
+		Assert.AreEqual(5, SyncManagerExt.Sync(reader, null, 0, (SyncBinary.Reader r, int v) => r.Sync("a", v, 4, false), ObjectMode.NotNull));
+		Assert.AreEqual(3, reader.Sync("b", 0, 4, false));
+	}
+
+	[Test]
 	public void WritingAfterFlushAppends()
 	{
 		// Bug fixed in Nov 2026: Flush() didn't discard its buffer, so the next write

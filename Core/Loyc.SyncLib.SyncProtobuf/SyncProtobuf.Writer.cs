@@ -38,6 +38,15 @@ partial class SyncProtobuf
 		return output.WrittenMemory;
 	}
 
+	/// <summary>Creates a writer that writes to <paramref name="output"/> (a new
+	///   <see cref="ArrayBufferWriter{T}"/> if it is null). To write a single value, it
+	///   is simpler to call SyncProtobuf.Write.</summary>
+	/// <remarks>Since Protobuf messages are length-prefixed, the whole output is kept in
+	///   memory until the root object or list is finished (by
+	///   <see cref="Writer.EndSubObject"/>), and then it is written to
+	///   <paramref name="output"/>. So you only need to call <see cref="Writer.Flush"/> if
+	///   the root value is not an object or list. Don't call it before the root object or
+	///   list is finished; that would corrupt the output.</remarks>
 	public static SyncProtobuf.Writer NewWriter(IBufferWriter<byte>? output = null, Options? options = null)
 		=> new Writer(new WriterState(output ?? new ArrayBufferWriter<byte>(), options ?? _defaultOptions));
 

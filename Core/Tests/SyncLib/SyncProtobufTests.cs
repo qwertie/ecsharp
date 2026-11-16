@@ -1,5 +1,8 @@
+using Loyc.Compatibility;
 using Loyc.MiniTest;
 using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Loyc.SyncLib.Tests
@@ -44,6 +47,20 @@ namespace Loyc.SyncLib.Tests
 		{
 			_options.RootMode = _lastRootMode = mode | _extraMode;
 			return SyncProtobuf.Write(value, sync, _options).ToArray();
+		}
+
+		[Test]
+		public void FinishingTheRootObjectFlushes()
+		{
+			_options.RootMode = ObjectMode.Normal;
+			var output = new ArrayBufferWriter<byte>();
+			var writer = SyncProtobuf.NewWriter(output, _options);
+			var list = new List<int> { 1, 2, 3 };
+			SyncObjectFunc<SyncProtobuf.Writer, List<int>> sync = (w, v) => w.SyncList("list", v)!;
+			SyncManagerExt.Sync(writer, null, list, sync, _options.RootMode);
+
+			// SyncProtobuf.Write() calls Flush() explicitly
+			ExpectList(output.WrittenSpan.ToArray(), SyncProtobuf.Write(list, sync, _options).ToArray());
 		}
 
 		#region Protobuf-specific tests

@@ -44,6 +44,16 @@ partial class SyncBinary
 		return output.WrittenMemory;
 	}
 
+	/// <summary>Creates a writer that writes to <paramref name="output"/> (a new
+	///   <see cref="ArrayBufferWriter{T}"/> if it is null). To write a single value, it
+	///   is simpler to call SyncBinary.Write.</summary>
+	/// <remarks>Output is buffered. It reaches <paramref name="output"/> (via
+	///   <see cref="IBufferWriter{T}.Advance"/>) when the writer's buffer fills up, and
+	///   when the root object or list is finished (by <see cref="Writer.EndSubObject"/>).
+	///   So you only need to call <see cref="Writer.Flush"/> if the root value is a
+	///   primitive (e.g. a number or string), or if you want to see the output before the
+	///   root object or list is finished (but not in the middle of a series of
+	///   bitfields).</remarks>
 	public static SyncBinary.Writer NewWriter(IBufferWriter<byte>? output = null, Options? options = null)
 		=> new Writer(new WriterState(output ?? new ArrayBufferWriter<byte>(), options ?? _defaultOptions));
 

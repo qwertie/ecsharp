@@ -484,6 +484,11 @@ namespace Loyc.SyncLib;
 ///   </code>
 ///   Then these three bytes are written: 0b00000011, 0b00111101, 0b00000111. When
 ///   reading these fields, the top two bits of the second byte are ignored.
+/// <para/>
+///   A series of bitfields also ends when the root object or list ends, because the
+///   writer flushes its output at that point. For the same reason, don't call
+///   <see cref="Writer.Flush"/> in the middle of a series of bitfields: the next
+///   bitfield would start a new byte, so the reader would misread it.
 ///   
 /// <h4>Strings</h4>
 ///   

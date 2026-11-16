@@ -574,6 +574,10 @@ partial class SyncProtobuf
 			int saved = f.SavedLastFieldId;
 			_stack.Pop();
 			_lastFieldId = saved;
+
+			// Finishing the root object or list completes the output
+			if (_stack.Count == 0)
+				Flush();
 		}
 
 		#endregion

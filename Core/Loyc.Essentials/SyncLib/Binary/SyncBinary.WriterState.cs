@@ -718,6 +718,18 @@ partial class SyncBinary
 			}
 
 			_stack.Pop();
+
+			// Finishing the root object or list completes the output
+			if (_stack.Count == 0)
+				Flush();
+		}
+
+		public new IBufferWriter<byte> Flush()
+		{
+			// Bits can't be added to a byte that has already been flushed, so this ends
+			// any run of bitfields that share a byte (see "Bitfields" in SyncBinary.cs)
+			_bitfieldBitsLeftInByte = 0;
+			return base.Flush();
 		}
 	}
 }

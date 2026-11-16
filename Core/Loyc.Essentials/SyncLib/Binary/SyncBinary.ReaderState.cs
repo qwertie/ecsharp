@@ -271,6 +271,11 @@ partial class SyncBinary
 			}
 
 			_stack.Pop();
+
+			// The writer flushes when the root object or list ends, which ends any run of
+			// bitfields that share a byte
+			if (_stack.Count == 0)
+				_bitfieldBitsLeft = 0;
 		}
 
 		#endregion
