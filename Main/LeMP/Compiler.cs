@@ -39,6 +39,8 @@ namespace LeMP
 		{
  			{ "help",      Pair.Create("", "show this screen") },
  			{ "macros",    Pair.Create("filename.dll", "load macros from given assembly") },
+			{ "macros-longname", Pair.Create("name", "load macros from the assembly with the given name\n  (e.g. --macros-longname=LLLPG)") },
+			{ "import",    Pair.Create("namespace", "import macros from a namespace in every file, like #importMacros\n  (e.g. --macros-longname=LLLPG --import=Loyc.LLPG does what LLLPG.exe does)") },
  			{ "max-expand",Pair.Create("N", "stop expanding macros after N nested or iterated expansions.") },
  			{ "verbose",   Pair.Create("", "Print extra status messages (e.g. discovered Types, list output files).") },
  			{ "parallel",  Pair.Create("", "Process all files in parallel (this is the default)") },
@@ -288,10 +290,12 @@ namespace LeMP
 				Assembly assembly;
 				TryCatch("While opening " + macroDll, sink, () =>
 				{
-					assembly = Assembly.Load(macroDll);
+					assembly = LoadAssemblyByName(macroDll);
 					AddMacros(assembly);
 				});
 			}
+			foreach (string ns in options["import"])
+				MacroProcessor.PreOpenedNamespaces.Add(GSymbol.Get(ns));
 			if ((flag = ParseBoolOption(options, "noparallel", sink)) != null)
 				Parallel = flag.Value;
 			if (options.TryGetValue("outext", out OutExt)) {
@@ -550,6 +554,21 @@ namespace LeMP
 				}
 			}
 			return openFiles;
+		}
+
+		// Loads an assembly by name. On .NET Core, Assembly.Load only finds assemblies listed in
+		// the app's .deps.json file, so if that fails, look in LeMP's own folder. (For example,
+		// the LeMP-tool package contains LLLPG.dll, which isn't a dependency of LeMP.)
+		static Assembly LoadAssemblyByName(string name)
+		{
+			try {
+				return Assembly.Load(name);
+			} catch (FileNotFoundException) {
+				string path = Path.Combine(AppContext.BaseDirectory, new AssemblyName(name).Name + ".dll");
+				if (!File.Exists(path))
+					throw;
+				return Assembly.LoadFrom(path);
+			}
 		}
 
 		public int AddMacros(Assembly assembly)
