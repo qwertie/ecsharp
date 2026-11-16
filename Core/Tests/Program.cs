@@ -126,6 +126,7 @@ namespace Loyc.Tests
 				new SyncBinaryGoldenTests(),
 				new SyncBinaryTests(false),
 				new SyncBinaryTests(true),
+				new SyncBinaryTests(false, readViaStream: true),
 				new SyncBinaryReaderTests(),
 				new WTF8EncodingTests(),
 				new SyncJsonWriterTests(),

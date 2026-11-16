@@ -24,6 +24,7 @@ partial class SyncBinary
 		{
 			_scanner = scanner;
 			_opt = options;
+			_frame.ObjectStartIndex = int.MaxValue;
 		}
 
 		public ReaderState(ReadOnlyMemory<byte> bytes, Options options)
@@ -68,7 +69,7 @@ partial class SyncBinary
 			public long PositionOfBuf0;
 			// A location in Buf that shouldn't be unloaded when reading further into the
 			// file (int.MaxValue if none)
-			public int ObjectStartIndex; // = int.MaxValue;
+			public int ObjectStartIndex;
 
 			public ReadingPointer Pointer => new ReadingPointer {
 				Buf = Buf.Span,
@@ -142,9 +143,12 @@ partial class SyncBinary
 				return false;
 
 			int requestSize = Max(requiredBytes, DefaultMinimumScanSize);
-			int skip = Min(cur.Index, _frame.ObjectStartIndex);
+			// Unload committed data only, since the caller may still need what it has read
+			int skip = Min(_frame.Index, _frame.ObjectStartIndex);
 
 			_frame.Buf = _scanner.Read(skip, (cur.Index -= skip) + requestSize, ref _scannerBuf);
+			_frame.Index -= skip;
+			_frame.PositionOfBuf0 += skip;
 
 			if (_frame.ObjectStartIndex != int.MaxValue)
 				_frame.ObjectStartIndex -= skip;

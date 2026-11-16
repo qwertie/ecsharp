@@ -4,12 +4,50 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Numerics;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using Loyc.Essentials;
 
 namespace Loyc.SyncLib.Tests;
 
 [TestFixture]
 public class SyncBinaryReaderTests : TestHelpers
 {
+	const int MiB = 1024 * 1024;
+
+	[Test]
+	public void ReadingFromStreamIsFast()
+	{
+		// Bug fixed in Nov 2026: SyncBinary.Reader never unloaded data it had already read
+		// from an IScanner, so every refill asked the scanner for the entire stream so far.
+		// Reading this 1.2 MB stream took about 2.8 seconds and allocated 22 GB before the
+		// fix, versus about 17 ms (including JIT compilation) and 1.7 MB afterward.
+		var options = new SyncBinary.Options { Markers = SyncBinary.Markers.None, RootMode = ObjectMode.NotNull };
+		var numbers = Enumerable.Range(0, 400_000).ToArray();
+		var data = SyncBinary.Write(numbers, (SyncBinary.Writer sm, int[] v) => sm.SyncArray("l", v)!, options).ToArray();
+
+		int[]? result = null;
+		var timer = Stopwatch.StartNew();
+		long allocated = MeasureAllocations(() =>
+			result = SyncBinary.NewReader(new StreamScanner(new MemoryStream(data)), options).SyncArray("l", (int[]?)null));
+		Assert.That(timer.ElapsedMilliseconds < 400, "Reading a {0}-byte stream took {1} ms", data.Length, timer.ElapsedMilliseconds);
+		Assert.That(allocated < 8 * MiB, "Reading a {0}-byte stream allocated {1} bytes", data.Length, allocated);
+		Assert.That(numbers.SequenceEqual(result!));
+	}
+
+	internal static long MeasureAllocations(Action action)
+	{
+		#if DotNet45 // .NET Framework can't measure this, so allocation checks are skipped
+		action();
+		return 0;
+		#else
+		long before = GC.GetAllocatedBytesForCurrentThread();
+		action();
+		return GC.GetAllocatedBytesForCurrentThread() - before;
+		#endif
+	}
+
 	static byte[] Bytes(params object[] parts)
 	{
 		var list = new List<byte>();
