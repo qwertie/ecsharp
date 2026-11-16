@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.Linq;
 using Loyc.Collections.Impl;
 using Loyc.Compatibility;
+using System.Buffers;
 
 namespace Loyc.SyncLib.Tests;
 
@@ -22,6 +23,22 @@ namespace Loyc.SyncLib.Tests;
 [TestFixture]
 public class SyncBinaryWriterTests : TestHelpers
 {
+	[Test]
+	public void WritingAfterFlushAppends()
+	{
+		// Bug fixed in Nov 2026: Flush() didn't discard its buffer, so the next write
+		// overwrote output that had already been flushed (this produced 03 00 00)
+		var output = new ArrayBufferWriter<byte>();
+		var writer = SyncBinary.NewWriter(output, new SyncBinary.Options { Markers = SyncBinary.Markers.None });
+		writer.Sync("a", 1);
+		writer.Flush();
+		writer.Sync("b", 2);
+		writer.Flush();
+		writer.Sync("c", 3);
+		writer.Flush();
+		ExpectList(output.WrittenSpan.ToArray(), new byte[] { 1, 2, 3 });
+	}
+
 	public static List<byte> GetExpectedBinaryEncodingForStandardFieldsWithSeed110(SyncBinary.Markers markers)
 	{
 		var standardFieldsBinary = new List<byte> {

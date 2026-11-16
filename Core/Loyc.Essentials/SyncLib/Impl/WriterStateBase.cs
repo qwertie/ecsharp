@@ -41,6 +41,7 @@ namespace Loyc.SyncLib.Impl
 		{
 			_output.Advance(_i);
 			_i = 0;
+			_buf = default; // after Advance(), _buf may overlap memory that is no longer ours
 			return _output;
 		}
 	}
