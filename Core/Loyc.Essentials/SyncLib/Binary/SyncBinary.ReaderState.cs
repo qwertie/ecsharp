@@ -39,6 +39,7 @@ partial class SyncBinary
 		private InternalList<StackEntry> _stack = new InternalList<StackEntry>(4);
 		public bool IsInsideList => _stack.Last.Type != ObjType.Normal;
 		public int Depth => _stack.Count;
+		public int MinimumListLength => IsInsideList ? _stack.Last.Length : 0;
 		
 		// This is only created if an object with an ID (marked with '#') is encountered.
 		// It maps previously-encountered object IDs to objects.
@@ -102,6 +103,7 @@ partial class SyncBinary
 			public long Id; // Object ID used for deduplication (comes after a '#' marker)
 			public bool HasId;
 			public ObjType Type;
+			public int Length; // list or tuple length
 		}
 
 		#endregion
@@ -245,6 +247,7 @@ partial class SyncBinary
 				Id = refId.GetValueOrDefault(),
 				HasId = refId.HasValue,
 				Type = (ObjType)objectKind,
+				Length = listLength,
 			});
 
 			return (true, listLength, null);

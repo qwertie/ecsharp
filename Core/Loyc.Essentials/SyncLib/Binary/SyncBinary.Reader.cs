@@ -81,7 +81,7 @@ partial class SyncBinary
 		public bool IsInsideList => _s.IsInsideList;
 
 		public bool? ReachedEndOfList => null;
-		public int? MinimumListLength => 0;
+		public int? MinimumListLength => _s.MinimumListLength;
 
 		public int Depth => _s.Depth;
 
