@@ -1,4 +1,4 @@
-// Generated from Samples.ecs by LeMP custom tool. LeMP version: 2.9.1.0
+// Generated from Samples.ecs by LeMP custom tool. LeMP version: 30.4.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -18,6 +18,8 @@ using Loyc.Syntax.Lexing;
 using Loyc.Syntax.Les;
 using Loyc.Ecs;
 using TT = Loyc.Syntax.Les.TokenType;
+// The range operators (e.g. 1..5) produce Range, which is ambiguous with System.Range
+using Range = Loyc.Range;
 
 namespace Samples
 {
@@ -417,7 +419,7 @@ struct EmailAddress
 	{
 		int la0;
 		src.Match(UsernameChars_set0);
-		// Line 141: ([!#-'*+\-/-9=?A-Z^-~])*
+		// Line 143: ([!#-'*+\-/-9=?A-Z^-~])*
 		for (;;) {
 			la0 = src.LA0;
 			if (UsernameChars_set0.Contains(la0))
@@ -433,11 +435,11 @@ struct EmailAddress
 	{
 		int la0;
 		src.Match(DomainCharSeq_set0);
-		// Line 146: (([\-])? [0-9A-Za-z])*
+		// Line 148: (([\-])? [0-9A-Za-z])*
 		for (;;) {
 			la0 = src.LA0;
 			if (DomainCharSeq_set1.Contains(la0)) {
-				// Line 146: ([\-])?
+				// Line 148: ([\-])?
 				la0 = src.LA0;
 				if (la0 == '-')
 					src.Skip();
@@ -453,13 +455,13 @@ struct EmailAddress
 	public static EmailAddress Parse(UString email)
 	{
 		int la0;
-		// line 154
+		// line 156
 		if (src == null)
 			src = new LexerSource<UString>(email, "", 0, false);
 		else
 			src.Reset(email, "", 0, false);	// re-use old object
 		UsernameChars(src);
-		// Line 159: ([.] UsernameChars)*
+		// Line 161: ([.] UsernameChars)*
 		for (;;) {
 			la0 = src.LA0;
 			if (la0 == '.') {
@@ -468,13 +470,13 @@ struct EmailAddress
 			} else
 				break;
 		}
-		// line 160
+		// line 162
 		int at = src.InputPosition;
-		// line 161
+		// line 163
 		UString userName = email.Substring(0, at);
 		src.Match('@');
 		DomainCharSeq(src);
-		// Line 163: ([.] DomainCharSeq)*
+		// Line 165: ([.] DomainCharSeq)*
 		for (;;) {
 			la0 = src.LA0;
 			if (la0 == '.') {
@@ -484,9 +486,9 @@ struct EmailAddress
 				break;
 		}
 		src.Match(-1);
-		// line 164
+		// line 166
 		UString domain = email.Substring(at + 1);
-		// line 165
+		// line 167
 		return new EmailAddress(userName, domain);
 	}
 	
@@ -525,7 +527,7 @@ public partial class SExprParser : BaseParserForList<Token, int>
 	{
 		LNode result = default(LNode);
 		Token t = default(Token);
-		// Line 205: ( List | (TT.Assignment|TT.BQId|TT.BQOperator|TT.Dot|TT.Id|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) | TT.Literal )
+		// Line 207: ( List | (TT.Assignment|TT.BQId|TT.BQOperator|TT.Dot|TT.Id|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) | TT.Literal )
 		switch ((TT) LA0) {
 		case TT.LParen: case TT.SpaceLParen:
 			result = List();
@@ -535,14 +537,14 @@ public partial class SExprParser : BaseParserForList<Token, int>
 		case TT.PreOrSufOp:
 			{
 				t = MatchAny();
-				// line 207
+				// line 209
 				result = F.Id((Symbol) t.Value, t.StartIndex, t.EndIndex);
 			}
 			break;
 		default:
 			{
 				t = Match((int) TT.Literal);
-				// line 208
+				// line 210
 				result = F.Literal(t.Value, t.StartIndex, t.EndIndex);
 			}
 			break;
@@ -556,19 +558,19 @@ public partial class SExprParser : BaseParserForList<Token, int>
 		Token lit_lpar = default(Token);
 		Token lit_rpar = default(Token);
 		LNode target = default(LNode);
-		// Line 211: ((TT.LParen|TT.SpaceLParen) TT.RParen | (TT.LParen|TT.SpaceLParen) Atom (Atom)* TT.RParen)
+		// Line 213: ((TT.LParen|TT.SpaceLParen) TT.RParen | (TT.LParen|TT.SpaceLParen) Atom (Atom)* TT.RParen)
 		la1 = (TT) LA(1);
 		if (la1 == TT.RParen) {
 			lit_lpar = Match((int) TT.LParen, (int) TT.SpaceLParen);
 			lit_rpar = MatchAny();
-			// line 212
+			// line 214
 			return F.AltList(LNode.List(), lit_lpar.StartIndex, lit_rpar.EndIndex);
 		} else {
-			// line 213
+			// line 215
 			var parts = LNode.List();
 			lit_lpar = Match((int) TT.LParen, (int) TT.SpaceLParen);
 			target = Atom();
-			// Line 214: (Atom)*
+			// Line 216: (Atom)*
 			for (;;) {
 				switch ((TT) LA0) {
 				case TT.Assignment: case TT.BQId: case TT.BQOperator: case TT.Dot:
@@ -582,7 +584,7 @@ public partial class SExprParser : BaseParserForList<Token, int>
 			}
 		stop:;
 			lit_rpar = Match((int) TT.RParen);
-			// line 215
+			// line 217
 			return F.Call(target, parts, lit_lpar.StartIndex, lit_rpar.EndIndex);
 		}
 	}

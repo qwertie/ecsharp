@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "lemp-tool": {
+      "version": "30.4.0",
+      "commands": [
+        "LeMP"
+      ],
+      "rollForward": false
+    }
+  }
+}

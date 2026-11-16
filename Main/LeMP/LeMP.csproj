@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
+    <!-- Run on newer versions of .NET too (otherwise the exact major version must be installed) -->
+    <RollForward>Major</RollForward>
     <!-- <OutputType>Exe</OutputType> produces a .dll file, but you can run it with dotnet <appname>.dll -->
     <OutputType>Exe</OutputType>
     <OutputPath>..\..\Bin\$(Configuration)\</OutputPath>
@@ -29,4 +31,42 @@
     <ProjectReference Include="..\LeMP.StdMacros\LeMP.StdMacros.csproj" />
     <Compile Include="..\..\Core\AssemblyVersion.cs" Link="Properties\AssemblyVersion.cs" />
   </ItemGroup>
+
+  <!-- `dotnet pack` produces the LeMP-tool package, a .NET tool whose command is `LeMP`.
+       Set the version with -p:PackageVersion=X.Y.Z -->
+  <PropertyGroup>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>LeMP</ToolCommandName>
+    <PackageId>LeMP-tool</PackageId>
+    <Authors>David Piepgrass</Authors>
+    <PackageLicenseExpression>LGPL-2.1-or-later</PackageLicenseExpression>
+    <PackageProjectUrl>http://ecsharp.net/lemp/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/qwertie/ecsharp</RepositoryUrl>
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
+    <PackageReleaseNotes>See http://ecsharp.net/lemp/version-history.html</PackageReleaseNotes>
+    <Description>This is the command-line version of the LeMP macro processor (and LLLPG parser generator), which can be installed with (for example) `dotnet tool install -g LeMP-tool`. It helps you avoid writing boilerplate and repetitive code, and it provides a framework in which you can run code-generation algorithms at compile-time. Once installed, invoke it with `LeMP filename.ecs` (add `--macros-longname=LLLPG` for LLLPG grammars).
+
+To integrate LeMP and LLLPG into Visual Studio, please download a release from https://github.com/qwertie/ecsharp/releases</Description>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);AddLLLPGToToolPackage</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\Readme.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  <!-- The tool package also contains LLLPG.dll, so that grammars can be processed by
+       LeMP's macros-longname=LLLPG option. LLLPG references LeMP, so it can't be a
+       ProjectReference; instead it is built here, when packing. -->
+  <Target Name="AddLLLPGToToolPackage">
+    <PropertyGroup>
+      <!-- If packing without building (NoBuild), just get the path of the LLLPG.dll built earlier -->
+      <_LLLPGTarget>Build</_LLLPGTarget>
+      <_LLLPGTarget Condition="'$(NoBuild)' == 'true'">GetTargetPath</_LLLPGTarget>
+    </PropertyGroup>
+    <MSBuild Projects="..\LLLPG\LLLPG.csproj" Targets="$(_LLLPGTarget)" Properties="Configuration=$(Configuration)"
+             RemoveProperties="TargetFramework;RuntimeIdentifier">
+      <Output TaskParameter="TargetOutputs" ItemName="_LLLPGAssembly" />
+    </MSBuild>
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="@(_LLLPGAssembly)" PackagePath="tools/$(TargetFramework)/any/" />
+    </ItemGroup>
+  </Target>
 </Project>

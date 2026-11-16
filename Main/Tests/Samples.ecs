@@ -3,6 +3,8 @@
 using System(, .Collections(, .Generic), .Text, .Linq);
 using Loyc(, .Collections, .MiniTest, .Syntax (, .Lexing, .Les), .Ecs);
 using TT = Loyc.Syntax.Les.TokenType;
+// The range operators (e.g. 1..5) produce Range, which is ambiguous with System.Range
+using Range = Loyc.Range;
 
 namespace Samples
 {

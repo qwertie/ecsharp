@@ -51,13 +51,8 @@ after_build:
     - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Main\Loyc.Ecs.nuspec
     - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Main\LeMP.nuspec
     - nuget pack -Version %PKG_VERSION% -Symbols -SymbolPackageFormat snupkg Main\LLLPG.nuspec
-    # .NET Core builds produce output that can ONLY run on the current machine
-    # (because important DLLs are not included in the output folder).
-    # To produce something runnable elsewhere, use a publish command:
-    - dotnet publish -c Release "Main\LeMP\LeMP.csproj" --no-build -o .\Bin\published
-    # The output of "dotnet publish" is needed to build LeMP-Tool, because tool packages 
-    # must be self-contained (no dependencies)
-    - nuget pack -Version %PKG_VERSION% Main\LeMP-Tool.nuspec
+    # LeMP-tool is a .NET tool package (see PackAsTool in LeMP.csproj); it also contains LLLPG.dll
+    - dotnet pack -c Release "Main\LeMP\LeMP.csproj" --no-build -p:PackageVersion=%PKG_VERSION% -o .
 
 test_script:
     # Unfortunately, test set 8 (LLLPG) sometimes fails due to nondeterminism.

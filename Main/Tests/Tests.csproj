@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
+    <!-- Run on newer versions of .NET too (otherwise the exact major version must be installed) -->
+    <RollForward>Major</RollForward>
     <!-- <OutputType>Exe</OutputType> produces a .dll file, but you can run it with dotnet <appname>.dll -->
     <OutputType>Exe</OutputType>
     <OutputPath>..\..\Bin\$(Configuration)\</OutputPath>

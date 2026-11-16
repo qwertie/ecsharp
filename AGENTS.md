@@ -2,12 +2,24 @@
 
 ## Generated code: .ecs files (LeMP)
 
-To regenerate `.out.cs` files from `.ecs` (Enhanced C#) files:
+To regenerate `.out.cs` files from `.ecs` (Enhanced C#) files, use the LeMP .NET tool
+(the LeMP-tool package, whose version is pinned in `.config/dotnet-tools.json`):
 
 ```
-Lib\LeMP\LeMP.exe --outext=.out.cs path/to/file.ecs        (Windows)
-mono Lib/LeMP/LeMP.exe --outext=.out.cs path/to/file.ecs   (Linux/macOS)
+dotnet tool restore                                    (once)
+dotnet LeMP --outext=.out.cs path/to/file.ecs
 ```
+
+A file whose `<Generator>` in the .csproj is `LLLPG` (a parser grammar) needs two more
+options, which make LeMP behave like LLLPG.exe:
+
+```
+dotnet LeMP --macros-longname=LLLPG --import=Loyc.LLPG --outext=.out.cs path/to/file.ecs
+```
+
+If `dotnet tool restore` fails because that version of LeMP-tool hasn't been published yet,
+run LeMP from source instead: `dotnet run --project Main/LeMP/LeMP.csproj -c Release --
+--outext=.out.cs path/to/file.ecs` (this can't run LLLPG).
 
 To avoid noise, don't commit generated files if ONLY the first line (LeMP version banner) changed.
 
