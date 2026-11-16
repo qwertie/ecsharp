@@ -260,8 +260,7 @@ public partial class SyncJson
 				var s = _s.ReadString(name.Name)!;
 
 				builder.Alloc(s.Length);
-				for (int i = 0; i < s.Length; i++)
-					builder.Add(s[i]);
+				builder.AddRange(s.AsSpan());
 				return builder.List;
 			}
 		}

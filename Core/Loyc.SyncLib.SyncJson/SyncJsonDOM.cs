@@ -324,8 +324,7 @@ public static partial class SyncJsonDOM
 					return default(List); // missing (and Options.Read.AllowMissingFields is on)
 
 				builder.Alloc(s.Length);
-				for (int i = 0; i < s.Length; i++)
-					builder.Add(s[i]);
+				builder.AddRange(s.AsSpan());
 				return builder.List;
 			}
 		}

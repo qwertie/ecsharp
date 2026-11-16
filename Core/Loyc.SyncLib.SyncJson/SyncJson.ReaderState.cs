@@ -519,8 +519,7 @@ partial class SyncJson
 			where ListBuilder : IListBuilder<List, byte>
 		{
 			builder.Alloc(span.Length);
-			for (int i = 0; i < span.Length; i++)
-				builder.Add(span[i]);
+			builder.AddRange(span);
 								
 			return builder.List;
 		}

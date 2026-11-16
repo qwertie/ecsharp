@@ -302,16 +302,14 @@ partial class SyncBinary
 		// and a bool list normally has one byte (0 or 1) per item.
 		internal List? ReadByteOrBoolList<List, T, ListBuilder>(ListBuilder builder, ObjectMode mode, int tupleLength)
 			where ListBuilder : IListBuilder<List, T>
+			where T : struct
 		{
 			var (begun, length, obj) = BeginSubObject(mode | ObjectMode.List, tupleLength);
 			if (begun) {
 				if (typeof(T) == typeof(byte)) {
 					var bytes = ReadRawBytes(length);
 					builder.Alloc(length);
-					for (int i = 0; i < bytes.Length; i++) {
-						byte item = bytes[i];
-						builder.Add(Unsafe.As<byte, T>(ref item));
-					}
+					builder.AddRange(MemoryMarshal.Cast<byte, T>(bytes));
 				} else {
 					builder.Alloc(Min(length, ListLoader.MaxPreallocationBytes));
 					ReadBools<List, T, ListBuilder>(length, ref builder);

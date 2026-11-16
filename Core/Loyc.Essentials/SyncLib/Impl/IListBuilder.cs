@@ -21,6 +21,8 @@ namespace Loyc.SyncLib.Impl
 		///   a cyclic reference to itself. If a cyclic reference is not possible,
 		///   this method can return null.</returns>
 		object? Alloc(int minLength);
+		/// <summary>Adds several items at once (equivalent to calling Add() on each).</summary>
+		void AddRange(ReadOnlySpan<T> items);
 		/// <summary>When the list being loaded was already read from the data 
 		///   stream earlier, this property is called to convert that existing object 
 		///   to the target list type, skipping the usual calls to Alloc(), Add(T)
@@ -41,6 +43,15 @@ namespace Loyc.SyncLib.Impl
 		public List<T> CastList(object value) => List = value as List<T> ?? new List<T>((IEnumerable<T>)value);
 
 		public void Add(T item) => List!.Add(item);
+
+		public void AddRange(ReadOnlySpan<T> items)
+		{
+			var list = List!;
+			if (list.Capacity < list.Count + items.Length)
+				list.Capacity = System.Math.Max(list.Count + items.Length, list.Capacity * 2);
+			foreach (var item in items)
+				list.Add(item);
+		}
 
 		//public ReadOnlySpan<T> ReadSpan()
 		//{
@@ -78,6 +89,8 @@ namespace Loyc.SyncLib.Impl
 		}
 
 		public void Add(T item) => _list.Add(item);
+
+		public void AddRange(ReadOnlySpan<T> items) => _list.AddRange(items);
 
 		//public ReadOnlySpan<T> ReadSpan()
 		//{
@@ -127,6 +140,8 @@ namespace Loyc.SyncLib.Impl
 
 		public void Add(T item) => _list.Add(item);
 
+		public void AddRange(ReadOnlySpan<T> items) => _list.AddRange(items);
+
 		public Memory<T> Empty => default;
 		ReadOnlyMemory<T> IListBuilder<ReadOnlyMemory<T>, T>.Empty => default;
 	}
@@ -158,6 +173,12 @@ namespace Loyc.SyncLib.Impl
 
 		public void Add(T item) => List!.Add(item);
 
+		public void AddRange(ReadOnlySpan<T> items)
+		{
+			foreach (var item in items)
+				List!.Add(item);
+		}
+
 		public TList Empty => _alloc(0);
 	}
 
@@ -187,6 +208,16 @@ namespace Loyc.SyncLib.Impl
 		}
 
 		public void Add(char item) => _sb!.Append(item);
+
+		public void AddRange(ReadOnlySpan<char> items)
+		{
+			#if NETSTANDARD2_0 || NETFRAMEWORK
+			foreach (char c in items)
+				_sb!.Append(c);
+			#else
+			_sb!.Append(items);
+			#endif
+		}
 
 		public string Empty => string.Empty;
 	}

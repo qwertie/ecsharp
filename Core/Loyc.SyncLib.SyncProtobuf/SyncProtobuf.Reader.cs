@@ -140,9 +140,7 @@ partial class SyncProtobuf
 			if (start == -2)
 				return builder.CastList(backref!);
 			builder.Alloc(length);
-			var span = _s.InputSpan.Slice(start, length);
-			for (int i = 0; i < length; i++)
-				builder.Add(span[i]);
+			builder.AddRange(_s.InputSpan.Slice(start, length));
 			return builder.List;
 		}
 

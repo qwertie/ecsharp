@@ -203,6 +203,15 @@ namespace Loyc.Collections.Tests
 		int _next;
 		public override int NextValue() => _next++;
 		public override IScan<int> ToScannable(List<int> list) => new InternalList<int>(list);
+
+		[Test]
+		public void AddRangeFromSpan()
+		{
+			var list = new InternalList<int>(new[] { 1, 2 }, 2); // full, so AddRange must grow it
+			list.AddRange(new[] { 3, 4, 5 }.AsSpan());
+			list.AddRange(ReadOnlySpan<int>.Empty);
+			Assert.AreEqual("1,2,3,4,5", string.Join(",", list));
+		}
 	}
 
 	public class BufferedSequenceScannerTests : ScannableTests<int>

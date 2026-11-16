@@ -248,6 +248,11 @@ namespace Loyc.Collections.Impl
 		{
 			InsertRange(_count, items);
 		}
+		public void AddRange(ReadOnlySpan<T> items)
+		{
+			InsertRangeHelper(_count, items.Length);
+			items.CopyTo(_array.AsSpan(_count - items.Length));
+		}
 		public void AddRange(ICollection<T> items)
 		{
 			InsertRange(_count, items);

@@ -1177,8 +1177,7 @@ partial class SyncJson
 			where ListBuilder : IListBuilder<List, char>
 		{
 			builder.Alloc(s.Length);
-			for (int i = 0; i < s.Length; i++)
-				builder.Add(s[i]);
+			builder.AddRange(s.AsSpan());
 			return builder.List;
 		}
 
