@@ -290,18 +290,23 @@ partial class SyncBinary
 			if (!begun)
 				return (string?) obj;
 
-			var cur = _frame.Pointer;
-			ExpectBytes(ref cur, strLength);
-
-			var span = cur.Buf.Slice(cur.Index, strLength);
 			// WTF-8: like UTF-8, but unpaired surrogates written by WriterState survive
-			var str = WTF8Encoding.Instance.GetString(span);
-
-			cur.Index += strLength;
-			Commit(cur);
+			var str = WTF8Encoding.Instance.GetString(ReadRawBytes(strLength));
 			SetCurrentObject(str); // in case a '#' marker gave the string an ID
 			EndSubObject();
 			return str;
+		}
+
+		/// <summary>Reads the next `count` bytes as-is. The returned span is only valid
+		///   until the next read operation.</summary>
+		internal ReadOnlySpan<byte> ReadRawBytes(int count)
+		{
+			var cur = _frame.Pointer;
+			ExpectBytes(ref cur, count);
+			var bytes = cur.Slice(0, count);
+			cur.Index += count;
+			Commit(cur);
+			return bytes;
 		}
 
 		#endregion

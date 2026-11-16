@@ -512,6 +512,14 @@ partial class SyncBinary
 				outSpan[_i++] = (byte)']';
 		}
 
+		/// <summary>Writes bytes as-is, without a length prefix or markers.</summary>
+		public void WriteRawBytes(ReadOnlySpan<byte> bytes)
+		{
+			var outSpan = GetOutSpan(bytes.Length);
+			bytes.CopyTo(outSpan.Slice(_i));
+			_i += bytes.Length;
+		}
+
 		public void WriteBitfield(uint value, uint bitfieldSize)
 		{
 			// Write the beginning bits of the bitfield
@@ -678,7 +686,7 @@ partial class SyncBinary
 				if ((_opt.Markers & Markers.ListStart) != 0)
 					span[_i++] = (byte)'[';
 
-				Write(listLength);
+				Write((uint) listLength); // unsigned, as for strings
 			}
 			else if (objectKind == ObjectMode.Tuple)
 			{

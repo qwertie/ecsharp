@@ -178,8 +178,22 @@ partial class SyncBinary
 			where Scanner : IScanner<byte>
 			where ListBuilder : IListBuilder<List, byte>
 		{
-			var loader = new ListLoader<Reader, List, byte, ListBuilder, SyncPrimitive<Reader>>(new SyncPrimitive<Reader>(), builder, mode, tupleLength);
-			return loader.Sync(ref this, name, saving);
+			// Unlike other lists, the items are raw bytes (the same format as strings)
+			var (begun, length, obj) = _s.BeginSubObject(mode | ObjectMode.List, tupleLength);
+			if (begun) {
+				var bytes = _s.ReadRawBytes(length);
+				builder.Alloc(length);
+				for (int i = 0; i < bytes.Length; i++)
+					builder.Add(bytes[i]);
+				var list = builder.List;
+				if ((mode & ObjectMode.Deduplicate) != 0)
+					_s.SetCurrentObject(list!); // in case a '#' marker gave the list an ID
+				_s.EndSubObject();
+				return list;
+			}
+			// obj is null if the stream contained a null list; otherwise it is a
+			// deduplicated list that was read earlier (a back-reference)
+			return obj == null ? default : builder.CastList(obj);
 		}
 
 		public List? SyncListCharImpl<Scanner, List, ListBuilder>(

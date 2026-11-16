@@ -199,8 +199,15 @@ partial class SyncBinary
 			where Scanner : IScanner<byte>
 			where ListBuilder : IListBuilder<List, byte>
 		{
-			var saver = new ScannerSaver<Writer, Scanner, byte, SyncPrimitive<Writer>>(new SyncPrimitive<Writer>(), mode);
-			saver.Write(ref this, name, scanner!, saving, tupleLength);
+			// Unlike other lists, the items are raw bytes (the same format as strings)
+			var (begun, _, _) = BeginSubObject(name, saving, mode | ObjectMode.List, tupleLength);
+			if (begun) {
+				Memory<byte> mem = default;
+				ReadOnlySpan<byte> span = default;
+				while ((span = scanner!.Read(span.Length, -1, ref mem).Span).Length != 0)
+					_s.WriteRawBytes(span);
+				EndSubObject();
+			}
 			return saving;
 		}
 

@@ -591,11 +591,17 @@ namespace Loyc.SyncLib;
 ///   
 ///   If list markers are enabled, '[' is written before a list and ']' afterward.
 /// <para/>
-///   Arrays/lists are length-prefixed, and the length itself uses the standard integer 
-///   format laid out above. For example, <c>new[] { 1, 10, 100, 1000 }</c> is encoded 
+///   Arrays/lists are length-prefixed, and the length itself uses the standard integer
+///   format laid out above (unsigned, as for strings, so lengths below 128 take one
+///   byte). For example, <c>new[] { 1, 10, 100, 1000 }</c> is encoded 
 ///   in seven bytes if markers are disabled (<c>4, 1, 10, 0x80, 100, 0b10000011, 0b11101000</c>)
 ///   and eight bytes with a start marker (<c>'[', 4, 1, 10, 0x80, 100, 0b10000011, 0b11101000</c>).
 ///   Null is encoded in a single byte (255). An empty array is also a single byte (0).
+/// <para/>
+///   Lists of bytes (e.g. <c>byte[]</c> and <c>Memory&lt;byte></c>) are an exception:
+///   each item is a raw byte rather than an integer in the standard format, so
+///   <c>new byte[] { 1, 200 }</c> is encoded as <c>'[', 2, 1, 200</c>. This is the same
+///   format as a string.
 /// <para/>
 ///   When writing null, list markers are omitted (only 0xFF is written).
 ///   

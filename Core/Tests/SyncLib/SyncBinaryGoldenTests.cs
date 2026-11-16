@@ -115,6 +115,30 @@ public class SyncBinaryGoldenTests : TestHelpers
 		new Golden("empty list", B('[', 0),
 			sm => sm.SyncArray("f", new int[0]), new int[0],
 			markers: SyncBinary.Markers.ListStart),
+		new Golden("byte list has raw bytes, like a string", B('[', 3, 1, 200, 0xFF, ']'),
+			sm => sm.SyncArray("f", new byte[] { 1, 200, 255 }), new byte[] { 1, 200, 255 },
+			markers: SyncBinary.Markers.Lists),
+		new Golden("byte list in tuple mode has no length", B(1, 200),
+			sm => sm.SyncArray("f", new byte[] { 1, 200 }, ObjectMode.Tuple, 2), new byte[] { 1, 200 }),
+		new Golden("null byte list is 0xFF", B(0xFF),
+			sm => sm.SyncArray("f", (byte[]?)null), null,
+			markers: SyncBinary.Markers.ListStart),
+		// A string can be changed to a byte list (and vice versa) without changing the format
+		new Golden("list length 100 is unsigned (one byte), like a string length",
+			new byte[] { 100 }.Concat(Enumerable.Repeat((byte)'x', 100)).ToArray(),
+			sm => sm.SyncArray("f", Enumerable.Repeat((byte)'x', 100).ToArray()),
+			Enumerable.Repeat((byte)'x', 100).ToArray()),
+		new Golden("deduplicated string", B('#', 1, 2, 'h', 'i', '@', 1),
+			sm => new object?[] { sm.Sync("a", "hi", ObjectMode.Deduplicate), sm.Sync("b", "hi", ObjectMode.Deduplicate) },
+			new object?[] { "hi", "hi" }),
+		new Golden("deduplicated byte list has the same format as a deduplicated string",
+			B('#', 1, 2, 'h', 'i', '@', 1),
+			sm => {
+				var hi = new byte[] { (byte)'h', (byte)'i' };
+				var mode = ObjectMode.List | ObjectMode.Deduplicate;
+				return new object?[] { sm.SyncArray("a", hi, mode), sm.SyncArray("b", hi, mode) };
+			},
+			new object?[] { B('h', 'i'), B('h', 'i') }),
 
 		// ---- BigInteger via the length-prefixed format ----
 		new Golden("BigInteger 2^64 uses 0xFE format", B(0xFE, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0),
