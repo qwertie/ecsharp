@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -189,8 +190,7 @@ partial class SyncBinary
 			where Scanner : IScanner<bool>
 			where ListBuilder : IListBuilder<List, bool>
 		{
-			var saver = new ScannerSaver<Writer, Scanner, bool, SyncPrimitive<Writer>>(new SyncPrimitive<Writer>(), mode);
-			saver.Write(ref this, name, scanner!, saving, tupleLength);
+			WriteByteOrBoolList<Scanner, bool>(name, scanner, saving, mode, tupleLength);
 			return saving;
 		}
 
@@ -199,15 +199,7 @@ partial class SyncBinary
 			where Scanner : IScanner<byte>
 			where ListBuilder : IListBuilder<List, byte>
 		{
-			// Unlike other lists, the items are raw bytes (the same format as strings)
-			var (begun, _, _) = BeginSubObject(name, saving, mode | ObjectMode.List, tupleLength);
-			if (begun) {
-				Memory<byte> mem = default;
-				ReadOnlySpan<byte> span = default;
-				while ((span = scanner!.Read(span.Length, -1, ref mem).Span).Length != 0)
-					_s.WriteRawBytes(span);
-				EndSubObject();
-			}
+			WriteByteOrBoolList<Scanner, byte>(name, scanner, saving, mode, tupleLength);
 			return saving;
 		}
 
@@ -219,6 +211,27 @@ partial class SyncBinary
 			var saver = new ScannerSaver<Writer, Scanner, char, SyncPrimitive<Writer>>(new SyncPrimitive<Writer>(), mode);
 			saver.Write(ref this, name, scanner!, saving, tupleLength);
 			return saving;
+		}
+
+		// Writes a list of bytes or bools (T must be byte or bool). Unlike other lists, these
+		// are written in bulk: raw bytes for a byte list (the same format as a string), and
+		// one byte (0 or 1) per item for a bool list.
+		void WriteByteOrBoolList<Scanner, T>(FieldId name, Scanner scanner, object? saving, ObjectMode mode, int tupleLength)
+			where Scanner : IScanner<T>
+			where T : struct
+		{
+			var (begun, _, _) = BeginSubObject(name, saving, mode | ObjectMode.List, tupleLength);
+			if (begun) {
+				Memory<T> mem = default;
+				ReadOnlySpan<T> span = default;
+				while ((span = scanner!.Read(span.Length, -1, ref mem).Span).Length != 0) {
+					if (typeof(T) == typeof(byte))
+						_s.WriteRawBytes(MemoryMarshal.Cast<T, byte>(span));
+					else
+						_s.WriteBools(MemoryMarshal.Cast<T, bool>(span));
+				}
+				EndSubObject();
+			}
 		}
 
 		public IBufferWriter<byte> Flush()

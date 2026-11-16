@@ -123,6 +123,13 @@ public class SyncBinaryGoldenTests : TestHelpers
 		new Golden("null byte list is 0xFF", B(0xFF),
 			sm => sm.SyncArray("f", (byte[]?)null), null,
 			markers: SyncBinary.Markers.ListStart),
+		new Golden("bool list has one byte per item", B('[', 3, 1, 0, 1),
+			sm => sm.SyncArray("f", new[] { true, false, true }), new[] { true, false, true },
+			markers: SyncBinary.Markers.ListStart),
+		// Interchangeability rule 5 (integers can be read as bools) also applies to lists
+		new Golden("int list read as bool list", B(5, 0, 1, 0x81, 0x2C, 0x7B, 0x80, 0x40),
+			sm => sm.SyncArray("f", new bool[5]), new[] { false, true, true, true, true },
+			writerCheck: false),
 		// A string can be changed to a byte list (and vice versa) without changing the format
 		new Golden("list length 100 is unsigned (one byte), like a string length",
 			new byte[] { 100 }.Concat(Enumerable.Repeat((byte)'x', 100)).ToArray(),

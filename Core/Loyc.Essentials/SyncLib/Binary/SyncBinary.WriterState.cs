@@ -520,6 +520,14 @@ partial class SyncBinary
 			_i += bytes.Length;
 		}
 
+		/// <summary>Writes each bool as the integer 0 or 1 (one byte each).</summary>
+		public void WriteBools(ReadOnlySpan<bool> bools)
+		{
+			var outSpan = GetOutSpan(bools.Length);
+			for (int i = 0; i < bools.Length; i++)
+				outSpan[_i++] = (byte)(bools[i] ? 1 : 0);
+		}
+
 		public void WriteBitfield(uint value, uint bitfieldSize)
 		{
 			// Write the beginning bits of the bitfield

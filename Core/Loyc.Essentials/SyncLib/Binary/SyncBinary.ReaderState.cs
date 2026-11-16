@@ -297,6 +297,63 @@ partial class SyncBinary
 			return str;
 		}
 
+		// Reads a list of bytes or bools (T must be byte or bool). Unlike other lists, these
+		// are read in bulk: a byte list is stored as raw bytes (the same format as a string),
+		// and a bool list normally has one byte (0 or 1) per item.
+		internal List? ReadByteOrBoolList<List, T, ListBuilder>(ListBuilder builder, ObjectMode mode, int tupleLength)
+			where ListBuilder : IListBuilder<List, T>
+		{
+			var (begun, length, obj) = BeginSubObject(mode | ObjectMode.List, tupleLength);
+			if (begun) {
+				if (typeof(T) == typeof(byte)) {
+					var bytes = ReadRawBytes(length);
+					builder.Alloc(length);
+					for (int i = 0; i < bytes.Length; i++) {
+						byte item = bytes[i];
+						builder.Add(Unsafe.As<byte, T>(ref item));
+					}
+				} else {
+					builder.Alloc(Min(length, ListLoader.MaxPreallocationBytes));
+					ReadBools<List, T, ListBuilder>(length, ref builder);
+				}
+				var list = builder.List;
+				if ((mode & ObjectMode.Deduplicate) != 0)
+					SetCurrentObject(list!); // in case a '#' marker gave the list an ID
+				EndSubObject();
+				return list;
+			}
+			// obj is null if the stream contained a null list; otherwise it is a
+			// deduplicated list that was read earlier (a back-reference)
+			return obj == null ? default : builder.CastList(obj);
+		}
+
+		// Reads `count` bools, which are normally one byte each (0 or 1). Since any integer
+		// can be read as a bool, larger integers (e.g. from a list of ints) are handled too.
+		void ReadBools<List, T, ListBuilder>(int count, ref ListBuilder builder)
+			where ListBuilder : IListBuilder<List, T>
+		{
+			while (count > 0) {
+				var cur = _frame.Pointer;
+				ExpectBytes(ref cur, 1);
+				var span = cur.Slice(0, Min(count, cur.BytesLeft));
+				int i = 0;
+				for (; i < span.Length && span[i] < 0x80; i++) {
+					bool item = span[i] != 0;
+					builder.Add(Unsafe.As<bool, T>(ref item));
+				}
+				cur.Index += i;
+				Commit(cur);
+				count -= i;
+
+				if (i < span.Length) {
+					// An integer that takes more than one byte (or a null, which is an error)
+					bool item = ReadNormalInt<int>() != 0;
+					builder.Add(Unsafe.As<bool, T>(ref item));
+					count--;
+				}
+			}
+		}
+
 		/// <summary>Reads the next `count` bytes as-is. The returned span is only valid
 		///   until the next read operation.</summary>
 		internal ReadOnlySpan<byte> ReadRawBytes(int count)
