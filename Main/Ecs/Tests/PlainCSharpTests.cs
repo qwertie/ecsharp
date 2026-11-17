@@ -613,6 +613,10 @@ namespace Loyc.Ecs.Tests
 			Stmt("int Foo { protected get; private set; }",
 				F.Property(F.Int32, Foo, BracesOnOneLine(
 					F.Attr(F.Protected, get), F.Attr(F.Private, set))));
+			// Bug fix: in plain C# mode, the printer dropped the attributes of accessors
+			Stmt("int Foo { [Obsolete] get; private set; }",
+				F.Property(F.Int32, Foo, BracesOnOneLine(
+					F.Attr(_("Obsolete"), get), F.Attr(F.Private, set))), p => p.SetPlainCSharpMode());
 
 			stmt = F.Property(Foo, F.@this, F.AltList(F.Var(F.Int64, x)), BracesOnOneLine(get, set));
 			Stmt("Foo this[long x] { get; set; }", stmt);

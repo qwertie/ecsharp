@@ -606,9 +606,13 @@ namespace Loyc.Ecs
 					PrintExpr(arg, StartExpr, flags);
 			}
 		}
-		private SPResult AutoPrintBodyOfMethodOrProperty(LNode body, bool skipFirstStmt = false)
+		/// <param name="spaceName">S.Fn for a method body. Property and event bodies use S.Property
+		/// and S.Event so that accessors such as `private set;` are treated as declarations, rather
+		/// than as statements whose attributes are dropped by DropNonDeclarationAttributes.</param>
+		private SPResult AutoPrintBodyOfMethodOrProperty(LNode body, bool skipFirstStmt = false, Symbol spaceName = null)
 		{
-			using (WithSpace(S.Fn)) {
+			spaceName = spaceName ?? S.Fn;
+			using (WithSpace(spaceName)) {
 				if (body == null)
 					return SPResult.NeedSemicolon;
 				if (body.Name == S.Forward)
@@ -621,7 +625,7 @@ namespace Loyc.Ecs
 				}
 				else if (body.Name == S.Braces && (_o.PreferPlainCSharp || body.BaseStyle != NodeStyle.PrefixNotation))
 				{
-					PrintBracedBlock(body, NewlineOpt.BeforeMethodBrace, skipFirstStmt, S.Fn, mode: IsAutoPropBody(body) ? BraceMode.AutoProp : BraceMode.Normal);
+					PrintBracedBlock(body, NewlineOpt.BeforeMethodBrace, skipFirstStmt, spaceName, mode: IsAutoPropBody(body) ? BraceMode.AutoProp : BraceMode.Normal);
 					return SPResult.NeedSuffixTrivia;
 				}
 				else
@@ -670,7 +674,7 @@ namespace Loyc.Ecs
 
 			PrintWhereClauses(_n.Args[1]);
 
-			var spr = AutoPrintBodyOfMethodOrProperty(_n.Args[3, null]);
+			var spr = AutoPrintBodyOfMethodOrProperty(_n.Args[3, null], spaceName: S.Property);
 			if (_n.Args.Count >= 5) {
 				var initializer = _n.Args[4];
 				if (!initializer.IsIdNamed(S.Missing)) {
@@ -717,7 +721,7 @@ namespace Loyc.Ecs
 			} else
 				PrintExpr(name, ContinueExpr);
 
-			return AutoPrintBodyOfMethodOrProperty(body);
+			return AutoPrintBodyOfMethodOrProperty(body, spaceName: S.Event);
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
