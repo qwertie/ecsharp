@@ -6,6 +6,16 @@ layout: article
 
 See also: version history of [LoycCore](http://core.loyc.net/version-history.html) and [LLLPG](/lllpg/version-history.html).
 
+### v30.4: November 16, 2026 ###
+
+This release is mostly about SyncLib (see the [Loyc Core version history](http://core.loyc.net/version-history.html)). LeMP changes:
+
+- The `LeMP-tool` package (a .NET tool whose command is `LeMP`) runs on .NET 6 and later again; v30.3.x required the .NET Core 2.0 runtime. It is now built with `PackAsTool`, and still includes LLLPG.
+- LeMP and LLLPG now target .NET 6 (plus .NET Framework 4.7.2) instead of .NET Core 2.x: the `LeMP` and `LLLPG` packages contain `lib/net6.0` builds. (The `LeMP` package's `lib/netstandard2.0` folder actually contained a .NET Core 2 app build, and the `LLLPG` package had no .NET Core build.)
+- Note: on .NET Core 3 and later, the code that EC#'s range operators produce (e.g. `1..5` becomes `Range.ExcludeHi(1, 5)`) is ambiguous with `System.Range` if you have `using System;`. Add `using Range = Loyc.Range;` to fix it.
+- `--macros-longname=Name` can now load an assembly that sits in LeMP's own folder (as LLLPG.dll does in the tool package) on .NET Core, and it is now listed by `--help`.
+- Added `--import=Namespace`, which imports macros from a namespace in every file, like `#importMacros`. So `LeMP --macros-longname=LLLPG --import=Loyc.LLPG file.ecs` does what LLLPG.exe does.
+
 ### v30.2: July 24, 2026 ###
 
 This release is mostly about the new [SyncLib](http://core.loyc.net/synclib) serialization framework in Loyc Core (see the [Loyc Core version history](http://core.loyc.net/version-history.html)). LeMP and EC# had minor changes:
