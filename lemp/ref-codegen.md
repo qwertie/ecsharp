@@ -57,7 +57,7 @@ public partial abstract class Tree<T> where T: IComparable<T> {
   public Tree(T Value) {
     this.Value = Value;
   }
-  public T Value { get; set; }
+  public T Value { get; private set; }
   public abstract Tree<T> WithValue(T newValue);
   [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)] public T Item1 {
     get {
@@ -84,8 +84,8 @@ class Node<T> : Tree<T> where T: IComparable<T> {
     this.Left = Left;
     this.Right = Right;
   }
-  public Tree<T> Left { get; set; }
-  public Tree<T> Right { get; set; }
+  public Tree<T> Left { get; private set; }
+  public Tree<T> Right { get; private set; }
   public override Tree<T> WithValue(T newValue) {
     return new Node<T>(newValue, Left, Right);
   }

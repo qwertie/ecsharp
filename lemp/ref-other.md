@@ -57,23 +57,11 @@ class Class {
 ~~~csharp
 // Output of LeMP
 int _x;
-int X { get {
-    return _x;
-  } set {
-    _x = value;
-  } }
+int X { get { return _x; } set { _x = value; } }
 int _y;
-int Y { get {
-    return _y;
-  } set {
-    _y = value;
-  } }
+int Y { get { return _y; } set { _y = value; } }
 Int32 _z;
-int Z { get {
-    return _z;
-  } set {
-    _z = value;
-  } }
+int Z { get { return _z; } set { _z = value; } }
 ~~~
 </div>
 
@@ -518,12 +506,12 @@ if (int.Parse(text)=:num > 0)
 
 ~~~csharp
 // Output of LeMP
-if (var (num = int.Parse(text)) > 0)
+if ((int.Parse(text) is var num ? num : default) > 0)
   positives += num;
 ~~~
 </div>
 
-This macro isn't useful yet - the feature that it represents is not yet functional.
+`A =: B` declares a variable `B` and sets it to the value of `A`, inside a larger expression. C# does not allow a variable declaration inside an expression, so LeMP prints it as an `is var` pattern that has the same effect (this requires C# 7.1 or later). Alternatively, [`#useSequenceExpressions`](#usesequenceexpressions) moves the declaration into a separate statement.
 
 ### := ###
 
@@ -538,7 +526,7 @@ var x = Compute();
 ~~~
 </div>
 
-`A := B` declares a variable `A` and sets it to the value of `B`. It is equivalent to `var A = B`.
+`A := B` declares a variable `A` and sets it to the value of `B`. It is equivalent to `var A = B`. Like `=:`, it can be used inside a larger expression, where LeMP prints it as an `is var` pattern, e.g. `Foo(x := 5)` becomes `Foo(5 is var x ? x : default)`.
 
 ### quote ###
 
@@ -937,7 +925,8 @@ with (Some.Thing) { .Member = 0; .Method(); }
 ~~~csharp
 // Output of LeMP
 {
-  var tmp_10 = Some.Thing; tmp_10.Member = 0; tmp_10.Method();
+  var tmp_10 = Some.Thing;
+  tmp_10.Member = 0; tmp_10.Method();
 }
 ~~~
 </div>
