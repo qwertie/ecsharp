@@ -118,6 +118,14 @@ namespace LeMP.Tests
 				var error = _msgHolder.List.Single(msg => msg.Severity == Severity.Error);
 				Assert.That(error.Formatted.Contains("#2"), error.Formatted);
 			}
+
+			// Bug fix: the wrong number of arguments caused an ArgumentOutOfRangeException
+			_msgHolder.List.Clear();
+			using (MessageSink.SetDefault(_msgHolder)) {
+				TestEcs("##unroll (@in($X, (a, b)));", "##unroll (@in($X, (a, b)));");
+				Assert.That(!_msgHolder.List.Any(msg => msg.Formatted.Contains("Exception")));
+				Assert.That(_msgHolder.List.Any(msg => msg.Formatted.Contains("Expected two arguments")));
+			}
 		}
 		
 		[Test]

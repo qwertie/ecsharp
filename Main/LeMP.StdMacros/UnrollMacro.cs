@@ -27,7 +27,7 @@ namespace LeMP
 		public static LNode unroll(LNode node, IMacroContext context)
 		{
 			if (node.ArgCount != 2)
-				Reject(context, node, "Expected two arguments, got {0}.".Localized(node.ArgCount));
+				return Reject(context, node,"Expected two arguments, got {0}.".Localized(node.ArgCount));
 
 			LNode spec = node[0], body = node[1];
 			if (spec.Calls(CodeSymbols.In, 2) || spec.Calls(@in, 2)) {
