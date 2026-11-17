@@ -93,13 +93,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Default synchronizers, beyond those provided by the SyncManager itself and by TupleSynchronizer{SM}, that DefaultSynchronizer{SM,T} discovers via reflection (once per closed generic pair): arrays, common collections, dictionaries, KeyValuePair, enums, DateTime and TimeSpan. Collection items are synchronized recursively via DefaultSyncField{SM,T}, so e.g. <code>List&lt;(int, Person[])&gt;</code> works as long as Person is registered in the ambient <a class="el" href="classTypeSyncRegistry.html" title="A registry that maps data types to synchronizers, to support dynamic typing (polymorphic serializatio...">TypeSyncRegistry</a>. 
+<p>Default synchronizers, beyond those provided by the SyncManager itself and by TupleSynchronizer{SM}, that DefaultSynchronizer{SM,T} discovers via reflection (once per closed generic pair): arrays, common collections, dictionaries, KeyValuePair, enums, DateTime and TimeSpan. Collection items are synchronized recursively via DefaultSyncField{SM,T}, so e.g. <code>List&lt;(int, Person[])&gt;</code> works as long as Person is registered in the ambient <a class="el" href="classTypeSyncRegistry.html" title="A registry that maps data types to synchronizers, to support dynamic typing (polymorphic serializatio...">TypeSyncRegistry</a>. Lists of bytes, chars and bools are handled in ExtraSynchronizers.ecs. 
  <a href="classExtraSynchronizers_3_01SyncManager_01_4.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/SyncLib/Dynamic/DefaultSynchronizer.cs'>/Core/Loyc.Essentials/SyncLib/Dynamic/DefaultSynchronizer.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Default synchronizers, beyond those provided by the SyncManager itself and by TupleSynchronizer{SM}, that DefaultSynchronizer{SM,T} discovers via reflection (once per closed generic pair): arrays, common collections, dictionaries, KeyValuePair, enums, DateTime and TimeSpan. Collection items are synchronized recursively via DefaultSyncField{SM,T}, so e.g. <code>List&lt;(int, Person[])&gt;</code> works as long as Person is registered in the ambient <a class="el" href="classTypeSyncRegistry.html" title="A registry that maps data types to synchronizers, to support dynamic typing (polymorphic serializatio...">TypeSyncRegistry</a>.</p>
+<div class="textblock"><p>Default synchronizers, beyond those provided by the SyncManager itself and by TupleSynchronizer{SM}, that DefaultSynchronizer{SM,T} discovers via reflection (once per closed generic pair): arrays, common collections, dictionaries, KeyValuePair, enums, DateTime and TimeSpan. Collection items are synchronized recursively via DefaultSyncField{SM,T}, so e.g. <code>List&lt;(int, Person[])&gt;</code> works as long as Person is registered in the ambient <a class="el" href="classTypeSyncRegistry.html" title="A registry that maps data types to synchronizers, to support dynamic typing (polymorphic serializatio...">TypeSyncRegistry</a>. Lists of bytes, chars and bools are handled in ExtraSynchronizers.ecs.</p>
 <div class="typeconstraint">
 <dl><dt><b>Type Constraints</b></dt><dd>
 <table border="0" cellspacing="2" cellpadding="0">
@@ -110,15 +110,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a2b89a79c060ffe155fb0aba7010a5659"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2b89a79c060ffe155fb0aba7010a5659"></a>
-static byte[]&#160;</td><td class="memItemRight" valign="bottom"><b>Sync</b> (ref SyncManager sync, FieldId name, byte[]?value)</td></tr>
-<tr class="separator:a2b89a79c060ffe155fb0aba7010a5659"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0dce346fcf74cb684971dd8810fdfdfc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0dce346fcf74cb684971dd8810fdfdfc"></a>
-static bool[]&#160;</td><td class="memItemRight" valign="bottom"><b>Sync</b> (ref SyncManager sync, FieldId name, bool[]?value)</td></tr>
-<tr class="separator:a0dce346fcf74cb684971dd8810fdfdfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9aba4357f81a5f2a06775f7c0fffdc81"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9aba4357f81a5f2a06775f7c0fffdc81"></a>
-static char[]&#160;</td><td class="memItemRight" valign="bottom"><b>Sync</b> (ref SyncManager sync, FieldId name, char[]?value)</td></tr>
-<tr class="separator:a9aba4357f81a5f2a06775f7c0fffdc81"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a662f80f1f311b0f811a0d8f5df69dfc8"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a662f80f1f311b0f811a0d8f5df69dfc8"></a>
 static DateTime&#160;</td><td class="memItemRight" valign="bottom"><b>Sync</b> (ref SyncManager sync, FieldId name, DateTime value)</td></tr>
 <tr class="separator:a662f80f1f311b0f811a0d8f5df69dfc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -214,7 +205,7 @@ static KeyValuePair&lt; K, V &gt;&#160;</td><td class="memItemRight" valign="bot
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:00 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:19 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

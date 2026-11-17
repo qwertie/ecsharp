@@ -36,6 +36,7 @@ var searchData=
   ['newstartingindex',['NewStartingIndex',['../structLoyc_1_1Collections_1_1ListChangeInfo_3_01T_01_4.html#a563eccc97f9af781867c36ffbffc7509',1,'Loyc::Collections::ListChangeInfo&lt; T &gt;']]],
   ['newsymbol',['NewSymbol',['../classLoyc_1_1SymbolPool.html#a80899f639cbdb2af7828af013427cf84',1,'Loyc.SymbolPool.NewSymbol()'],['../classLoyc_1_1SymbolPool_3_01SymbolE_01_4.html#a58dedfe48bfdbb7fedb11ca869cf30db',1,'Loyc.SymbolPool&lt; SymbolE &gt;.NewSymbol()']]],
   ['newtonsoftcompatibility',['NewtonsoftCompatibility',['../classSyncJson_1_1Options.html#a7ce4caf7198f6669ec8a1e32ecad90a3',1,'SyncJson::Options']]],
+  ['newwriter',['NewWriter',['../classSyncBinary.html#a80622269c573f651171f046a6805a057',1,'SyncBinary.NewWriter()'],['../classSyncJson.html#ac33f3bb4f4169f792e11a8d7dd998d94',1,'SyncJson.NewWriter()'],['../classSyncProtobuf.html#a89aa8c6c7d6faa67fd7971bd31ee757f',1,'SyncProtobuf.NewWriter()']]],
   ['nextfield',['NextField',['../interfaceLoyc_1_1SyncLib_1_1ISyncManager.html#aa4c170c40ee24e7c1fd10615d477b5b0',1,'Loyc::SyncLib::ISyncManager']]],
   ['nexthigher',['NextHigher',['../interfaceLoyc_1_1Math_1_1IIncrementer_3_01T_01_4.html#aa88fe7369c166fba886a277f6a63f2c2',1,'Loyc::Math::IIncrementer&lt; T &gt;']]],
   ['nexthigherindex_3c_20t_20_3e',['NextHigherIndex&lt; T &gt;',['../classLoyc_1_1Collections_1_1LCInterfaces.html#aa6c1e2b8521e31cb5d127b75bbd7254f',1,'Loyc::Collections::LCInterfaces']]],

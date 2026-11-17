@@ -36,6 +36,7 @@ var searchData=
   ['forcedlinebreakthreshold',['ForcedLineBreakThreshold',['../classLoyc_1_1Syntax_1_1Les_1_1Les3PrinterOptions.html#a27414abefdf6301a9bc408ac1b4a6932',1,'Loyc::Syntax::Les::Les3PrinterOptions']]],
   ['forcefrom',['ForceFrom',['../classLoyc_1_1Utilities_1_1GoInterface_3_01Interface_00_01T_01_4.html#a3437263edfbe5916b2767b78f7b58449',1,'Loyc::Utilities::GoInterface&lt; Interface, T &gt;']]],
   ['foreach',['ForEach',['../classLoyc_1_1Syntax_1_1CodeSymbols.html#a1c981b3d8b46caf926d4233621a43fc2',1,'Loyc::Syntax::CodeSymbols']]],
+  ['foreach_3c_20t_20_3e',['ForEach&lt; T &gt;',['../classLoyc_1_1Collections_1_1EnumerableExt.html#acb744ff4fb67da3a239866452d66b188',1,'Loyc.Collections.EnumerableExt.ForEach&lt; T &gt;(this IEnumerable&lt; T &gt; list, Action&lt; T &gt; action)'],['../classLoyc_1_1Collections_1_1EnumerableExt.html#a16d8993923185d49c1b91e9677a24d69',1,'Loyc.Collections.EnumerableExt.ForEach&lt; T &gt;(this IEnumerable&lt; T &gt; list, Action&lt; T, int &gt; action)']]],
   ['foreachinitializer',['ForEachInitializer',['../classLoyc_1_1Ecs_1_1EcsNodePrinter.html#a9c3b95fe21e2ff70c95988196f563bf0a906db9293715c6c5d602734d781ab36d',1,'Loyc::Ecs::EcsNodePrinter']]],
   ['formalarguments',['FormalArguments',['../classLoyc_1_1Syntax_1_1ParsingMode.html#afe5b6815f2046f4d0d086f81903f036b',1,'Loyc::Syntax::ParsingMode']]],
   ['format',['Format',['../interfaceLoyc_1_1ILogMessage.html#a7ad3474f9c383dcdcaa1ceb62efe00b0',1,'Loyc::ILogMessage']]],

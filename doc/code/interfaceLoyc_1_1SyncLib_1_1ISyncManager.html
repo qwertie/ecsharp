@@ -1654,7 +1654,7 @@ bool int object <a class="el" href="namespaceLoyc_1_1SyncLib.html#a133f8f4548136
 <p>Returns the number of objects for which BeginSubObject opened an object, list or tuple that was not closed <a class="el" href="interfaceLoyc_1_1SyncLib_1_1ISyncManager.html#ab46eafe52b4658f7e9acc3b7c40fc81e" title="If you called BeginSubObject and it returned true, you must call this method when you&#39;re done loading...">EndSubObject</a>. This property is zero if BeginSubObject was never called to start a subobject.</p>
 <p>If you use a helper method designed to write a single object, such as SyncJson.Write{T, SyncObject}(T, SyncObject, SyncJson.Options?) or SyncBinary.Write{T, SyncObject}(T, SyncObject, SyncBinary.Options?), these helper methods call BeginSubObject so the Depth will be 1 inside the synchronizer for your root object. </p>
 <p>Typically it is allowed, but not recommended, to write fields at depth 0. For example, this code writes two JSON primitives at depth 0: </p><pre>&lt;![CDATA[
-    var writer = SyncJson.NewWriter();
+    var writer = <a class="el" href="classSyncJson.html#ac33f3bb4f4169f792e11a8d7dd998d94" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncJson.Write.">SyncJson.NewWriter()</a>;
     writer.Sync("a", 1234.5);
     writer.Sync("b", "Hello\t!");</pre><pre>    var output = (ArrayBufferWriter&lt;byte&gt;) writer.Flush();
     Console.WriteLine(Encoding.UTF8.GetString(output.WrittenSpan));
@@ -1989,7 +1989,7 @@ In Merge mode... this needs some thought; TODO </li>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:05 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:24 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -93,7 +93,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Convenience methods and shared definitions for a pair of ISyncManager implementations (<a class="el" href="structSyncProtobuf_1_1Reader.html" title="The ISyncManager implementation that reads the Protocol Buffers wire format (see SyncProtobuf). Because fields are keyed by integer ID, this reader supports reordering (SupportsReordering) and skips unknown fields. Call Read{T}(ReadOnlyMemory{byte}, SyncObjectFunc{Reader, T}, Options?) to deserialize, or NewReader(ReadOnlyMemory{byte}, Options?) to construct one directly. ">Reader</a> and <a class="el" href="structSyncProtobuf_1_1Writer.html" title="The ISyncManager implementation that writes the Protocol Buffers wire format (see SyncProtobuf for th...">Writer</a>) that read and write the <a href="https://protobuf.dev/programming-guides/encoding/">Protocol Buffers</a> wire format. Call Write{T}(T, SyncObjectFunc{Writer, T}, Options?) or Read{T}(ReadOnlyMemory{byte}, SyncObjectFunc{Reader, T}, Options?) to (de)serialize an object, NewWriter / NewReader(ReadOnlyMemory{byte}, Options?) to obtain a low-level (de)serializer, or WriteSchema{T}(SyncObjectFunc{SchemaWriter, T}, Options?) to generate a <code>.proto</code> schema describing the output.  
+<p>Convenience methods and shared definitions for a pair of ISyncManager implementations (<a class="el" href="structSyncProtobuf_1_1Reader.html" title="The ISyncManager implementation that reads the Protocol Buffers wire format (see SyncProtobuf). Because fields are keyed by integer ID, this reader supports reordering (SupportsReordering) and skips unknown fields. Call Read{T}(ReadOnlyMemory{byte}, SyncObjectFunc{Reader, T}, Options?) to deserialize, or NewReader(ReadOnlyMemory{byte}, Options?) to construct one directly. ">Reader</a> and <a class="el" href="structSyncProtobuf_1_1Writer.html" title="The ISyncManager implementation that writes the Protocol Buffers wire format (see SyncProtobuf for th...">Writer</a>) that read and write the <a href="https://protobuf.dev/programming-guides/encoding/">Protocol Buffers</a> wire format. Call Write{T}(T, SyncObjectFunc{Writer, T}, Options?) or Read{T}(ReadOnlyMemory{byte}, SyncObjectFunc{Reader, T}, Options?) to (de)serialize an object, <a class="el" href="classSyncProtobuf.html#a89aa8c6c7d6faa67fd7971bd31ee757f" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncProtobuf.Write.">NewWriter</a> / NewReader(ReadOnlyMemory{byte}, Options?) to obtain a low-level (de)serializer, or WriteSchema{T}(SyncObjectFunc{SchemaWriter, T}, Options?) to generate a <code>.proto</code> schema describing the output.  
  <a href="classSyncProtobuf.html#details">More...</a></p>
 <hr/><b>Source file</b>s:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.SyncLib.SyncProtobuf/SyncProtobuf.cs'>/Core/Loyc.SyncLib.SyncProtobuf/SyncProtobuf.cs</a></li>
@@ -103,7 +103,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.SyncLib.SyncProtobuf/SyncProtobuf.Writer.cs'>/Core/Loyc.SyncLib.SyncProtobuf/SyncProtobuf.Writer.cs</a></li>
 </ul>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>Convenience methods and shared definitions for a pair of ISyncManager implementations (<a class="el" href="structSyncProtobuf_1_1Reader.html" title="The ISyncManager implementation that reads the Protocol Buffers wire format (see SyncProtobuf). Because fields are keyed by integer ID, this reader supports reordering (SupportsReordering) and skips unknown fields. Call Read{T}(ReadOnlyMemory{byte}, SyncObjectFunc{Reader, T}, Options?) to deserialize, or NewReader(ReadOnlyMemory{byte}, Options?) to construct one directly. ">Reader</a> and <a class="el" href="structSyncProtobuf_1_1Writer.html" title="The ISyncManager implementation that writes the Protocol Buffers wire format (see SyncProtobuf for th...">Writer</a>) that read and write the <a href="https://protobuf.dev/programming-guides/encoding/">Protocol Buffers</a> wire format. Call Write{T}(T, SyncObjectFunc{Writer, T}, Options?) or Read{T}(ReadOnlyMemory{byte}, SyncObjectFunc{Reader, T}, Options?) to (de)serialize an object, NewWriter / NewReader(ReadOnlyMemory{byte}, Options?) to obtain a low-level (de)serializer, or WriteSchema{T}(SyncObjectFunc{SchemaWriter, T}, Options?) to generate a <code>.proto</code> schema describing the output. </p>
+<div class="textblock"><p>Convenience methods and shared definitions for a pair of ISyncManager implementations (<a class="el" href="structSyncProtobuf_1_1Reader.html" title="The ISyncManager implementation that reads the Protocol Buffers wire format (see SyncProtobuf). Because fields are keyed by integer ID, this reader supports reordering (SupportsReordering) and skips unknown fields. Call Read{T}(ReadOnlyMemory{byte}, SyncObjectFunc{Reader, T}, Options?) to deserialize, or NewReader(ReadOnlyMemory{byte}, Options?) to construct one directly. ">Reader</a> and <a class="el" href="structSyncProtobuf_1_1Writer.html" title="The ISyncManager implementation that writes the Protocol Buffers wire format (see SyncProtobuf for th...">Writer</a>) that read and write the <a href="https://protobuf.dev/programming-guides/encoding/">Protocol Buffers</a> wire format. Call Write{T}(T, SyncObjectFunc{Writer, T}, Options?) or Read{T}(ReadOnlyMemory{byte}, SyncObjectFunc{Reader, T}, Options?) to (de)serialize an object, <a class="el" href="classSyncProtobuf.html#a89aa8c6c7d6faa67fd7971bd31ee757f" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncProtobuf.Write.">NewWriter</a> / NewReader(ReadOnlyMemory{byte}, Options?) to obtain a low-level (de)serializer, or WriteSchema{T}(SyncObjectFunc{SchemaWriter, T}, Options?) to generate a <code>.proto</code> schema describing the output. </p>
 <p>The output is standard, valid Protocol Buffers: any Protobuf implementation (such as protoc-generated code or protobuf-net) can parse it using the proto3 schema produced by <a class="el" href="structSyncProtobuf_1_1SchemaWriter.html" title="An implementation of ISyncManager that produces a Protocol Buffers proto3 .proto definition describin...">SyncProtobuf.SchemaWriter</a>, and <a class="el" href="structSyncProtobuf_1_1Reader.html" title="The ISyncManager implementation that reads the Protocol Buffers wire format (see SyncProtobuf). Because fields are keyed by integer ID, this reader supports reordering (SupportsReordering) and skips unknown fields. Call Read{T}(ReadOnlyMemory{byte}, SyncObjectFunc{Reader, T}, Options?) to deserialize, or NewReader(ReadOnlyMemory{byte}, Options?) to construct one directly. ">Reader</a> can parse messages produced by other Protobuf implementations from the same schema. </p>
 <p>Unlike <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a>, this format identifies every field by an integer ID. Therefore <a class="el" href="structSyncProtobuf_1_1Reader.html" title="The ISyncManager implementation that reads the Protocol Buffers wire format (see SyncProtobuf). Because fields are keyed by integer ID, this reader supports reordering (SupportsReordering) and skips unknown fields. Call Read{T}(ReadOnlyMemory{byte}, SyncObjectFunc{Reader, T}, Options?) to deserialize, or NewReader(ReadOnlyMemory{byte}, Options?) to construct one directly. ">Reader</a> and <a class="el" href="structSyncProtobuf_1_1Writer.html" title="The ISyncManager implementation that writes the Protocol Buffers wire format (see SyncProtobuf for th...">Writer</a> report ISyncManager.NeedsIntegerIds = true and ISyncManager.SupportsReordering = true: fields may be read in any order, and unknown fields are skipped.</p>
 <h3>Field numbers</h3>
@@ -153,7 +153,7 @@ Nested classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An implementation of ISyncManager that produces a Protocol Buffers proto3 <code>.proto</code> definition describing the output of <a class="el" href="structSyncProtobuf_1_1Writer.html" title="The ISyncManager implementation that writes the Protocol Buffers wire format (see SyncProtobuf for th...">SyncProtobuf.Writer</a>.  <a href="structSyncProtobuf_1_1SchemaWriter.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSyncProtobuf_1_1Writer.html">Writer</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The ISyncManager implementation that writes the Protocol Buffers wire format (see <a class="el" href="classSyncProtobuf.html" title="Convenience methods and shared definitions for a pair of ISyncManager implementations (Reader and Wri...">SyncProtobuf</a> for the format and guidelines). Call Write{T}(T, SyncObjectFunc{Writer, T}, Options?) to serialize an object, or NewWriter to construct one of these directly.  <a href="structSyncProtobuf_1_1Writer.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The ISyncManager implementation that writes the Protocol Buffers wire format (see <a class="el" href="classSyncProtobuf.html" title="Convenience methods and shared definitions for a pair of ISyncManager implementations (Reader and Wri...">SyncProtobuf</a> for the format and guidelines). Call Write{T}(T, SyncObjectFunc{Writer, T}, Options?) to serialize an object, or <a class="el" href="classSyncProtobuf.html#a89aa8c6c7d6faa67fd7971bd31ee757f" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncProtobuf.Write.">NewWriter</a> to construct one of these directly.  <a href="structSyncProtobuf_1_1Writer.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
@@ -215,8 +215,8 @@ static ReadOnlyMemory&lt; byte &gt;&#160;</td><td class="memItemRight" valign="b
 <tr class="memitem:afb76536f3d52006492f3c49efb61fc18"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afb76536f3d52006492f3c49efb61fc18"></a>
 static ReadOnlyMemory&lt; byte &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Write&lt; T, SyncObject &gt;</b> (T value, SyncObject sync, <a class="el" href="classSyncProtobuf_1_1Options.html">Options</a>?options=null)</td></tr>
 <tr class="separator:afb76536f3d52006492f3c49efb61fc18"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a89aa8c6c7d6faa67fd7971bd31ee757f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a89aa8c6c7d6faa67fd7971bd31ee757f"></a>
-static <a class="el" href="structSyncProtobuf_1_1Writer.html">SyncProtobuf.Writer</a>&#160;</td><td class="memItemRight" valign="bottom"><b>NewWriter</b> (IBufferWriter&lt; byte &gt;?output=null, <a class="el" href="classSyncProtobuf_1_1Options.html">Options</a>?options=null)</td></tr>
+<tr class="memitem:a89aa8c6c7d6faa67fd7971bd31ee757f"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structSyncProtobuf_1_1Writer.html">SyncProtobuf.Writer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncProtobuf.html#a89aa8c6c7d6faa67fd7971bd31ee757f">NewWriter</a> (IBufferWriter&lt; byte &gt;?output=null, <a class="el" href="classSyncProtobuf_1_1Options.html">Options</a>?options=null)</td></tr>
+<tr class="memdesc:a89aa8c6c7d6faa67fd7971bd31ee757f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a writer that writes to <em>output</em>  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncProtobuf.Write. <a href="#a89aa8c6c7d6faa67fd7971bd31ee757f">More...</a><br /></td></tr>
 <tr class="separator:a89aa8c6c7d6faa67fd7971bd31ee757f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
@@ -245,6 +245,43 @@ static <a class="el" href="structSyncProtobuf_1_1Writer.html">SyncProtobuf.Write
 <p>Creates a <a class="el" href="structSyncProtobuf_1_1SchemaWriter.html" title="An implementation of ISyncManager that produces a Protocol Buffers proto3 .proto definition describin...">SyncProtobuf.SchemaWriter</a>, an object that produces a Protocol Buffers <code>.proto</code> (proto3) definition describing the messages that <a class="el" href="structSyncProtobuf_1_1Writer.html" title="The ISyncManager implementation that writes the Protocol Buffers wire format (see SyncProtobuf for th...">SyncProtobuf.Writer</a> would produce. After using it to "synchronize" one root object, call <a class="el" href="structSyncProtobuf_1_1SchemaWriter.html#aca7362ec87a7eb004290c7594eddfd11" title="Renders the recorded schema as a proto3 .proto document (UTF-8).">SchemaWriter.Finish</a> (or ToString) to get the schema document.</p>
 
 <p>Referenced by <a class="el" href="classSyncProtobuf.html#a11fdd914e37cabbd24b52735d860b276">WriteSchema&lt; T &gt;()</a>, <a class="el" href="classSyncProtobuf.html#a58b08fb66690e91149e254fa9aa99b13">WriteSchema&lt; T, SyncObject &gt;()</a>, and <a class="el" href="classSyncProtobuf.html#a1d4d1f5b08c728d1939cd2b85c46985d">WriteSchemaI&lt; T &gt;()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="a89aa8c6c7d6faa67fd7971bd31ee757f"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structSyncProtobuf_1_1Writer.html">SyncProtobuf.Writer</a> SyncProtobuf.NewWriter </td>
+          <td>(</td>
+          <td class="paramtype">IBufferWriter&lt; byte &gt;?&#160;</td>
+          <td class="paramname"><em>output</em> = <code>null</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classSyncProtobuf_1_1Options.html">Options</a>?&#160;</td>
+          <td class="paramname"><em>options</em> = <code>null</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Creates a writer that writes to <em>output</em>  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncProtobuf.Write.</p>
+<p>Since Protobuf messages are length-prefixed, the whole output is kept in memory until the root object or list is finished (by Writer.EndSubObject), and then it is written to <em>output</em> . So you only need to call Writer.Flush if the root value is not an object or list. Don't call it before the root object or list is finished; that would corrupt the output.</p>
 
 </div>
 </div>
@@ -291,7 +328,7 @@ static <a class="el" href="structSyncProtobuf_1_1Writer.html">SyncProtobuf.Write
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:01 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:19 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

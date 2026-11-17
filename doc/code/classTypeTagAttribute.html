@@ -111,7 +111,7 @@ Inheritance diagram for TypeTagAttribute:</div>
 <p>Place this attribute on a synchronizer method (preferred), or on a synchronizer struct/class that implements ISyncObject{SM, T}. Do not put it on the data types being synchronized, as SyncLib does not expect business objects to be concerned with serialization. </p>
 <p>This attribute is merely data; it is read and interpreted by <a class="el" href="classTypeTagRegistry.html" title="The module that registers and resolves type tags: it encapsulates (1) the bidirectional dictionary be...">TypeTagRegistry</a>, whose virtual <code>AttributeTagOf</code> methods define the convention (and can be overridden to change it). In brief: </p><ul>
 <li>
-When a synchronizer has a type tag, the tag is written whether the object appears in a statically-typed context (an explicit synchronizer was given) or a dynamically-typed one (SyncDynamicExt.SyncDynamic{SM, T}), so data written statically can be read back dynamically and vice versa. </li>
+When a synchronizer has a type tag, the tag is written whether the object appears in a statically-typed context (an explicit synchronizer was given) or a dynamically-typed one (SyncDynamicExt.SyncDyn{SM, T}(SM, FieldId, T, ObjectMode)), so data written statically can be read back dynamically and vice versa. </li>
 <li>
 When reading statically, the tag in the data stream is checked against the expected tag; a mismatch is reported to <a class="el" href="classTypeTagRegistry.html#a5835cfe2d953cd5c257dd99e48e3f312" title="Called when a statically-typed read encounters a tag that differs from the tag of the synchronizer be...">TypeTagRegistry.TagMismatchError</a>, which throws by default. </li>
 <li>
@@ -137,7 +137,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:01 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:19 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

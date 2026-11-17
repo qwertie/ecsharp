@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['lcext',['LCExt',['../classLoyc_1_1Collections_1_1LCExt.html',1,'Loyc::Collections']]],
   ['lcext',['LCExt',['../classLoyc_1_1Collections_1_1MutableListExtensionMethods_1_1LCExt.html',1,'Loyc::Collections::MutableListExtensionMethods']]],
+  ['lcext',['LCExt',['../classLoyc_1_1Collections_1_1LCExt.html',1,'Loyc::Collections']]],
   ['lcinterfaces',['LCInterfaces',['../classLoyc_1_1Collections_1_1LCInterfaces.html',1,'Loyc::Collections']]],
   ['les2languageservice',['Les2LanguageService',['../classLoyc_1_1Syntax_1_1Les_1_1Les2LanguageService.html',1,'Loyc::Syntax::Les']]],
   ['les2lexer',['Les2Lexer',['../classLoyc_1_1Syntax_1_1Les_1_1Les2Lexer.html',1,'Loyc::Syntax::Les']]],
@@ -39,6 +39,7 @@ var searchData=
   ['listchangeinfo_3c_20t_20_3e',['ListChangeInfo&lt; T &gt;',['../structLoyc_1_1Collections_1_1ListChangeInfo_3_01T_01_4.html',1,'Loyc::Collections']]],
   ['listexbase_3c_20t_20_3e',['ListExBase&lt; T &gt;',['../classLoyc_1_1Collections_1_1Impl_1_1ListExBase_3_01T_01_4.html',1,'Loyc::Collections::Impl']]],
   ['listext',['ListExt',['../classLoyc_1_1Collections_1_1ListExt.html',1,'Loyc::Collections']]],
+  ['listloader',['ListLoader',['../classLoyc_1_1SyncLib_1_1Impl_1_1ListLoader.html',1,'Loyc::SyncLib::Impl']]],
   ['listloader_3c_20syncmanager_2c_20tlist_2c_20t_2c_20listbuilder_2c_20syncitem_20_3e',['ListLoader&lt; SyncManager, TList, T, ListBuilder, SyncItem &gt;',['../structLoyc_1_1SyncLib_1_1Impl_1_1ListLoader_3_01SyncManager_00_01TList_00_01T_00_01ListBuilder_00_01SyncItem_01_4.html',1,'Loyc::SyncLib::Impl']]],
   ['listsaver_3c_20syncmanager_2c_20list_2c_20t_2c_20syncitem_20_3e',['ListSaver&lt; SyncManager, List, T, SyncItem &gt;',['../structLoyc_1_1SyncLib_1_1Impl_1_1ListSaver_3_01SyncManager_00_01List_00_01T_00_01SyncItem_01_4.html',1,'Loyc::SyncLib::Impl']]],
   ['listsaverc_3c_20syncmanager_2c_20list_2c_20t_2c_20syncitem_20_3e',['ListSaverC&lt; SyncManager, List, T, SyncItem &gt;',['../structLoyc_1_1SyncLib_1_1Impl_1_1ListSaverC_3_01SyncManager_00_01List_00_01T_00_01SyncItem_01_4.html',1,'Loyc::SyncLib::Impl']]],

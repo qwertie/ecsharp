@@ -133,11 +133,34 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a85eb5a5be16e81e2f46210df29b25f88"><td class="memItemLeft" align="right" valign="top">object&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1SyncLib_1_1Impl_1_1IListBuilder_3_01out_01TList_00_01T_01_4.html#a85eb5a5be16e81e2f46210df29b25f88">Alloc</a> (int minLength)</td></tr>
 <tr class="memdesc:a85eb5a5be16e81e2f46210df29b25f88"><td class="mdescLeft">&#160;</td><td class="mdescRight">A method that is always called once when loading a list. <a href="#a85eb5a5be16e81e2f46210df29b25f88">More...</a><br /></td></tr>
 <tr class="separator:a85eb5a5be16e81e2f46210df29b25f88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91e76ee0c0427f1c354dcd89aa973294"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1SyncLib_1_1Impl_1_1IListBuilder_3_01out_01TList_00_01T_01_4.html#a91e76ee0c0427f1c354dcd89aa973294">AddRange</a> (ReadOnlySpan&lt; T &gt; items)</td></tr>
+<tr class="memdesc:a91e76ee0c0427f1c354dcd89aa973294"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds several items at once (equivalent to calling Add() on each). <a href="#a91e76ee0c0427f1c354dcd89aa973294">More...</a><br /></td></tr>
+<tr class="separator:a91e76ee0c0427f1c354dcd89aa973294"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac4b0eb610c561be57d4796a5efa0a1d8"><td class="memItemLeft" align="right" valign="top">TList&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfaceLoyc_1_1SyncLib_1_1Impl_1_1IListBuilder_3_01out_01TList_00_01T_01_4.html#ac4b0eb610c561be57d4796a5efa0a1d8">CastList</a> (object value)</td></tr>
 <tr class="memdesc:ac4b0eb610c561be57d4796a5efa0a1d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">When the list being loaded was already read from the data stream earlier, this property is called to convert that existing object to the target list type, skipping the usual calls to <a class="el" href="interfaceLoyc_1_1SyncLib_1_1Impl_1_1IListBuilder_3_01out_01TList_00_01T_01_4.html#a85eb5a5be16e81e2f46210df29b25f88" title="A method that is always called once when loading a list.">Alloc()</a>, Add(T) and List. <a href="#ac4b0eb610c561be57d4796a5efa0a1d8">More...</a><br /></td></tr>
 <tr class="separator:ac4b0eb610c561be57d4796a5efa0a1d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a91e76ee0c0427f1c354dcd89aa973294"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structLoyc_1_1void.html">void</a> Loyc.SyncLib.Impl.IListBuilder&lt; out TList, T &gt;.AddRange </td>
+          <td>(</td>
+          <td class="paramtype">ReadOnlySpan&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>items</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Adds several items at once (equivalent to calling Add() on each).</p>
+
+<p>Implemented in <a class="el" href="structLoyc_1_1SyncLib_1_1Impl_1_1CollectionBuilder_3_01TList_00_01T_01_4.html#ae9d79edb574a80340c00df4226226eaa">Loyc.SyncLib.Impl.CollectionBuilder&lt; TList, T &gt;</a>, <a class="el" href="structLoyc_1_1SyncLib_1_1Impl_1_1MemoryBuilder_3_01T_01_4.html#a2e63a11c533fc6766bf1510e046ed39d">Loyc.SyncLib.Impl.MemoryBuilder&lt; T &gt;</a>, <a class="el" href="structLoyc_1_1SyncLib_1_1Impl_1_1ArrayBuilder_3_01T_01_4.html#ab1074967806e64574767f41d7a3b01cb">Loyc.SyncLib.Impl.ArrayBuilder&lt; T &gt;</a>, and <a class="el" href="structLoyc_1_1SyncLib_1_1Impl_1_1ListBuilder_3_01T_01_4.html#a4f65d236261dcdfaa01c1cf4c6753553">Loyc.SyncLib.Impl.ListBuilder&lt; T &gt;</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="a85eb5a5be16e81e2f46210df29b25f88"></a>
 <div class="memitem">
 <div class="memproto">
@@ -234,7 +257,7 @@ Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:06 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:24 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

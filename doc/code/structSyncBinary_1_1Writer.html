@@ -98,7 +98,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>The ISyncManager implementation for writing SyncLib's compact, high-performance binary data format (see <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a> for details and guidelines). Please call WriteI or Write if you just want to serialize something, or NewWriter to create one of these.  
+<p>The ISyncManager implementation for writing SyncLib's compact, high-performance binary data format (see <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a> for details and guidelines). Please call WriteI or Write if you just want to serialize something, or <a class="el" href="classSyncBinary.html#a80622269c573f651171f046a6805a057" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncBinary.Write.">NewWriter</a> to create one of these.  
  <a href="structSyncBinary_1_1Writer.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/SyncLib/Binary/SyncBinary.Writer.cs'>/Core/Loyc.Essentials/SyncLib/Binary/SyncBinary.Writer.cs</a></li>
@@ -112,7 +112,7 @@ Inheritance diagram for SyncBinary.Writer:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>The ISyncManager implementation for writing SyncLib's compact, high-performance binary data format (see <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a> for details and guidelines). Please call WriteI or Write if you just want to serialize something, or NewWriter to create one of these. </p>
+<div class="textblock"><p>The ISyncManager implementation for writing SyncLib's compact, high-performance binary data format (see <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a> for details and guidelines). Please call WriteI or Write if you just want to serialize something, or <a class="el" href="classSyncBinary.html#a80622269c573f651171f046a6805a057" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncBinary.Write.">NewWriter</a> to create one of these. </p>
 <p>This is a struct rather than a class for performance reasons. Don't try to use a <code>default(Writer)</code>; it'll just throw NullReferenceException. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
@@ -291,6 +291,9 @@ List&#160;</td><td class="memItemRight" valign="bottom"><b>SyncListByteImpl&lt; 
 <tr class="memitem:a96f3f8007eac417048ac2021abe12bc1"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a96f3f8007eac417048ac2021abe12bc1"></a>
 List&#160;</td><td class="memItemRight" valign="bottom"><b>SyncListCharImpl&lt; Scanner, List, ListBuilder &gt;</b> (FieldId name, Scanner scanner, List?saving, ListBuilder builder, ObjectMode mode, int tupleLength=-1)</td></tr>
 <tr class="separator:a96f3f8007eac417048ac2021abe12bc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a082591343955a6e46b29db6c3ea41379"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a082591343955a6e46b29db6c3ea41379"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>WriteByteOrBoolList&lt; Scanner, T &gt;</b> (FieldId name, Scanner scanner, object?saving, ObjectMode mode, int tupleLength)</td></tr>
+<tr class="separator:a082591343955a6e46b29db6c3ea41379"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acdf36396cd365f5863d8da05c7ffc4b6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acdf36396cd365f5863d8da05c7ffc4b6"></a>
 IBufferWriter&lt; byte &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Flush</b> ()</td></tr>
 <tr class="separator:acdf36396cd365f5863d8da05c7ffc4b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -299,7 +302,7 @@ IBufferWriter&lt; byte &gt;&#160;</td><td class="memItemRight" valign="bottom"><
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:00 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:19 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -88,6 +88,7 @@ var searchData=
   ['listexbase_3c_20t_20_3e',['ListExBase&lt; T &gt;',['../classLoyc_1_1Collections_1_1Impl_1_1ListExBase_3_01T_01_4.html',1,'Loyc::Collections::Impl']]],
   ['listext',['ListExt',['../classLoyc_1_1Collections_1_1ListExt.html',1,'Loyc::Collections']]],
   ['listinitializer',['ListInitializer',['../classLoyc_1_1LLParserGenerator_1_1CodeGenHelperBase.html#a543c98c95bf8df0fa811b8bded3d0800',1,'Loyc::LLParserGenerator::CodeGenHelperBase']]],
+  ['listloader',['ListLoader',['../classLoyc_1_1SyncLib_1_1Impl_1_1ListLoader.html',1,'Loyc::SyncLib::Impl']]],
   ['listloader_3c_20syncmanager_2c_20tlist_2c_20t_2c_20listbuilder_2c_20syncitem_20_3e',['ListLoader&lt; SyncManager, TList, T, ListBuilder, SyncItem &gt;',['../structLoyc_1_1SyncLib_1_1Impl_1_1ListLoader_3_01SyncManager_00_01TList_00_01T_00_01ListBuilder_00_01SyncItem_01_4.html',1,'Loyc::SyncLib::Impl']]],
   ['listoperators',['ListOperators',['../classLoyc_1_1Ecs_1_1EcsFacts.html#ac396f74b368ab8d72e9fee61ec0c5dd7',1,'Loyc::Ecs::EcsFacts']]],
   ['listsaver_3c_20syncmanager_2c_20list_2c_20t_2c_20syncitem_20_3e',['ListSaver&lt; SyncManager, List, T, SyncItem &gt;',['../structLoyc_1_1SyncLib_1_1Impl_1_1ListSaver_3_01SyncManager_00_01List_00_01T_00_01SyncItem_01_4.html',1,'Loyc::SyncLib::Impl']]],
@@ -159,8 +160,8 @@ var searchData=
   ['prelude',['Prelude',['../namespaceLeMP_1_1Prelude.html',1,'LeMP']]],
   ['synclib',['SyncLib',['../namespaceLoyc_1_1SyncLib.html',1,'Loyc']]],
   ['syntax',['Syntax',['../namespaceLoyc_1_1Syntax.html',1,'Loyc']]],
-  ['tests',['Tests',['../namespaceLoyc_1_1Ecs_1_1Tests.html',1,'Loyc::Ecs']]],
   ['tests',['Tests',['../namespaceLeMP_1_1Tests.html',1,'LeMP']]],
+  ['tests',['Tests',['../namespaceLoyc_1_1Ecs_1_1Tests.html',1,'Loyc::Ecs']]],
   ['threading',['Threading',['../namespaceLoyc_1_1Threading.html',1,'Loyc']]],
   ['utilities',['Utilities',['../namespaceLoyc_1_1Utilities.html',1,'Loyc']]]
 ];

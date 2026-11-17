@@ -103,6 +103,8 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1SyncLib_1_1ExtraSynchronizers_3_01SyncManager_01_4.html">ExtraSynchronizers&lt; SyncManager &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structLoyc_1_1SyncLib_1_1FieldId.html">FieldId</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The data type of a field name in <a class="el" href="namespaceLoyc_1_1SyncLib.html">SyncLib</a>, which can be implicitly converted from a string. It includes both a Name string and an Id integer, in order to support both string-keyed fields (e.g. JSON) and int-keyed fields (e.g. Protocol Buffers). By convention, an Id of int.MinValue indicates that int-keyed implementations of <a class="el" href="interfaceLoyc_1_1SyncLib_1_1ISyncManager.html" title="This is the central interface of Loyc.SyncLib. To learn more, please visit the web site: http://syncl...">ISyncManager</a> should choose an ID automatically based on the field order.  <a href="structLoyc_1_1SyncLib_1_1FieldId.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -284,7 +286,7 @@ delegate T&#160;</td><td class="memItemRight" valign="bottom"><b>SyncFieldFunc&l
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="a6a3a27d76e7374cef746533127bdda59a03d719b74c6ab422dfc254b6255f4709"></a>NoTypeTag&#160;</td><td class="fielddoc">
 <p>Requests that no type tag be read or written for this object, even if its synchronizer has a <a class="el" href="classTypeTagAttribute.html" title="Assigns a &quot;type tag&quot; to a synchronizer, which identifies the type of object it reads/writes within a ...">TypeTagAttribute</a> or was registered with a tag in a <a class="el" href="classTypeSyncRegistry.html" title="A registry that maps data types to synchronizers, to support dynamic typing (polymorphic serializatio...">TypeSyncRegistry</a>. This is useful for compactness when the object's type is known statically, or for interoperability with data formats that lack type tags.</p>
-<p>Since most data formats are not self-describing (e.g. <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a>), the same flag must be used when writing an object and when reading it back; otherwise the data cannot be read correctly. Note: an object written with this flag cannot be read dynamically unless its static type is registered, because without a tag, the reader cannot choose a synchronizer based on the data alone.</p>
+<p>Since most some formats are not self-describing (e.g. <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a>), the same flag must be used when writing an object and when reading it back; otherwise the data cannot be read correctly. Note: an object written with this flag cannot be read dynamically unless its static type is registered, because without a tag, the reader cannot choose a synchronizer based on the data alone.</p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="a6a3a27d76e7374cef746533127bdda59ab1fe2c2a59e883740e7ea87667e44a24"></a>Compact&#160;</td><td class="fielddoc">
 <p>Requests that compact formatting be used when writing this object. When using <a class="el" href="structLoyc_1_1SyncLib_1_1SyncJson_1_1Writer.html">SyncJson.Writer</a>, this mode suppresses newlines. When using <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a>, this mode flag is ignored.</p>
@@ -392,7 +394,7 @@ delegate T&#160;</td><td class="memItemRight" valign="bottom"><b>SyncFieldFunc&l
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:05 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:24 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

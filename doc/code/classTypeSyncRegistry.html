@@ -111,9 +111,9 @@ public static methods of the form <code>T Sync(SM sync, T? value)</code> (the Sy
 implementations of ISyncObject{SM, T}. </li>
 </ul>
 <p>Reflection runs only during registration and once per (registry, SyncManager type) pair to build dispatch tables of delegates; there is no reflection and no runtime code generation on the per-object path, which is one dictionary lookup plus a delegate call. </p>
-<p><b>Ambient Service Pattern</b>: the registry used by DynamicSync{SM, T} is <a class="el" href="classTypeSyncRegistry.html#a86426666dbb46bd0b26dc089f2142c0d" title="The ambient registry used by DynamicSync{SM, T} and DefaultSynchronizer: the current execution contex...">Default</a>, an async-local value that can be swapped temporarily: </p><div class="fragment"><div class="line"><span class="keyword">using</span> (SyncTypeRegistry.SetDefault(myRegistry))</div>
+<p><b>Ambient Service Pattern</b>: the registry used by DynamicSync{SM, T} is <a class="el" href="classTypeSyncRegistry.html#a86426666dbb46bd0b26dc089f2142c0d" title="The ambient registry used by DynamicSync{SM, T} and DefaultSynchronizer: the current execution contex...">Default</a>, an async-local value that can be swapped temporarily: </p><div class="fragment"><div class="line"><span class="keyword">using</span> (TypeSyncRegistry.SetDefault(myRegistry))</div>
 <div class="line">    SyncJson.Write(drawing, Drawing.Sync&amp;lt;<a class="code" href="structSyncJson_1_1Writer.html">SyncJson.Writer</a>&gt;);</div>
-</div><!-- fragment --><p> This also means multiple synchronizers can exist for one type: register each in a different registry and swap (usually together with a paired <a class="el" href="classTypeTagRegistry.html" title="The module that registers and resolves type tags: it encapsulates (1) the bidirectional dictionary be...">TypeTagRegistry</a>). Alternatively, pass a specific registry to the SyncDynamicExt.SyncDynamic{SM, T}(SM, FieldId, T, TypeSyncRegistry, TypeTagRegistry?, ObjectMode) overloads to bypass the ambient service entirely. Registration is expected to happen at startup, but late registration is supported and thread-safe. </p>
+</div><!-- fragment --><p> This also means multiple synchronizers can exist for one type: register each in a different registry and swap (usually together with a paired <a class="el" href="classTypeTagRegistry.html" title="The module that registers and resolves type tags: it encapsulates (1) the bidirectional dictionary be...">TypeTagRegistry</a>). Alternatively, pass a specific registry to the SyncDynamicExt.SyncDyn{SM, T}(SM, FieldId, T, TypeSyncRegistry, TypeTagRegistry?, ObjectMode) overloads to bypass the ambient service entirely. Registration is expected to happen at startup, but late registration is supported and thread-safe. </p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Public static fields</h2></td></tr>
@@ -382,7 +382,7 @@ Static Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:01 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:19 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

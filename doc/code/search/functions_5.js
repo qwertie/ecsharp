@@ -21,6 +21,7 @@ var searchData=
   ['flushindent',['FlushIndent',['../interfaceLoyc_1_1Syntax_1_1Impl_1_1IPrinterHelper_3_01out_01Self_01_4.html#a26654c1f99671242f26a75eba6f5767d',1,'Loyc.Syntax.Impl.IPrinterHelper&lt; out Self &gt;.FlushIndent()'],['../classLoyc_1_1Syntax_1_1Impl_1_1LNodePrinterHelper.html#a1b795eaf8eb047ff243fb4be8d0577c5',1,'Loyc.Syntax.Impl.LNodePrinterHelper.FlushIndent()']]],
   ['for',['For',['../classLoyc_1_1Symbol.html#aa2cf31d831892273afda6a55bed20981',1,'Loyc::Symbol']]],
   ['forcefrom',['ForceFrom',['../classLoyc_1_1Utilities_1_1GoInterface_3_01Interface_00_01T_01_4.html#a3437263edfbe5916b2767b78f7b58449',1,'Loyc::Utilities::GoInterface&lt; Interface, T &gt;']]],
+  ['foreach_3c_20t_20_3e',['ForEach&lt; T &gt;',['../classLoyc_1_1Collections_1_1EnumerableExt.html#acb744ff4fb67da3a239866452d66b188',1,'Loyc.Collections.EnumerableExt.ForEach&lt; T &gt;(this IEnumerable&lt; T &gt; list, Action&lt; T &gt; action)'],['../classLoyc_1_1Collections_1_1EnumerableExt.html#a16d8993923185d49c1b91e9677a24d69',1,'Loyc.Collections.EnumerableExt.ForEach&lt; T &gt;(this IEnumerable&lt; T &gt; list, Action&lt; T, int &gt; action)']]],
   ['formatcore',['FormatCore',['../classLoyc_1_1StringExt.html#ae410b7ab7ff9abec19c76b3c7b512d45',1,'Loyc::StringExt']]],
   ['formatmessage',['FormatMessage',['../classLoyc_1_1MessageSink.html#ad80832c7ce134ae309a1665fbcaa4443',1,'Loyc::MessageSink']]],
   ['freeze',['Freeze',['../classLoyc_1_1Collections_1_1AListBase_3_01K_00_01T_01_4.html#aa239cb09ae589f3f5d90ce00df3f60ab',1,'Loyc::Collections::AListBase&lt; K, T &gt;']]],

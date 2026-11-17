@@ -167,8 +167,8 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" h
 <tr class="memitem:a931aae0525354d2f7e7d8465c819498c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a931aae0525354d2f7e7d8465c819498c"></a>
 static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncJson.html#a931aae0525354d2f7e7d8465c819498c">WriteSchemaString&lt; T, SyncObject &gt;</a> (SyncObject sync, <a class="el" href="classSyncJson_1_1Options.html">Options</a>?options=null)</td></tr>
 <tr class="separator:a931aae0525354d2f7e7d8465c819498c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac33f3bb4f4169f792e11a8d7dd998d94"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac33f3bb4f4169f792e11a8d7dd998d94"></a>
-static <a class="el" href="structSyncJson_1_1Writer.html">SyncJson.Writer</a>&#160;</td><td class="memItemRight" valign="bottom"><b>NewWriter</b> (IBufferWriter&lt; byte &gt;?output=null, <a class="el" href="classSyncJson_1_1Options.html">Options</a>?options=null)</td></tr>
+<tr class="memitem:ac33f3bb4f4169f792e11a8d7dd998d94"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structSyncJson_1_1Writer.html">SyncJson.Writer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncJson.html#ac33f3bb4f4169f792e11a8d7dd998d94">NewWriter</a> (IBufferWriter&lt; byte &gt;?output=null, <a class="el" href="classSyncJson_1_1Options.html">Options</a>?options=null)</td></tr>
+<tr class="memdesc:ac33f3bb4f4169f792e11a8d7dd998d94"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a writer that writes to <em>output</em>  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncJson.Write. <a href="#ac33f3bb4f4169f792e11a8d7dd998d94">More...</a><br /></td></tr>
 <tr class="separator:ac33f3bb4f4169f792e11a8d7dd998d94"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab22bd805a8d5ef9ab8f8e382cfb299d4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab22bd805a8d5ef9ab8f8e382cfb299d4"></a>
 static ReadOnlyMemory&lt; byte &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Write&lt; T &gt;</b> (T value, SyncObjectFunc&lt; <a class="el" href="structSyncJson_1_1Writer.html">Writer</a>, T &gt; sync, <a class="el" href="classSyncJson_1_1Options.html">Options</a>?options=null)</td></tr>
@@ -215,6 +215,43 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>WriteString&
 <p>Creates a <a class="el" href="structSyncJson_1_1SchemaWriter.html" title="An implementation of ISyncManager that produces a JSON Schema (draft 2020-12) describing the JSON tha...">SyncJson.SchemaWriter</a>, an object for saving a JSON Schema that describes the JSON produced by <a class="el" href="structSyncJson_1_1Writer.html" title="An optimized implementation of ISyncManager for writing JSON objects. SupportsReordering and Supports...">SyncJson.Writer</a>. After using it to "synchronize" one root object, call <a class="el" href="structSyncJson_1_1SchemaWriter.html#a8d51516a223fc847ea84a2019bd903ce" title="Renders the recorded schema as a JSON Schema (draft 2020-12) document in UTF-8 format.">SchemaWriter.Finish</a> (or ToString) to get the schema document.</p>
 
 <p>Referenced by <a class="el" href="classSyncJson.html#a12644384d4fbc087696582df7f3ea864">WriteSchema&lt; T &gt;()</a>, <a class="el" href="classSyncJson.html#ae8ff27f92f62e199226ed3cc8d3fc7e6">WriteSchema&lt; T, SyncObject &gt;()</a>, and <a class="el" href="classSyncJson.html#a45a24d4015bbe0dd0758cfb51859d368">WriteSchemaI&lt; T &gt;()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ac33f3bb4f4169f792e11a8d7dd998d94"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structSyncJson_1_1Writer.html">SyncJson.Writer</a> SyncJson.NewWriter </td>
+          <td>(</td>
+          <td class="paramtype">IBufferWriter&lt; byte &gt;?&#160;</td>
+          <td class="paramname"><em>output</em> = <code>null</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classSyncJson_1_1Options.html">Options</a>?&#160;</td>
+          <td class="paramname"><em>options</em> = <code>null</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Creates a writer that writes to <em>output</em>  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncJson.Write.</p>
+<p>Output is buffered. It reaches <em>output</em>  (via IBufferWriter{T}.Advance) when the writer's buffer fills up, and when the root object or list is finished (by Writer.EndSubObject). So you only need to call <a class="el" href="structSyncJson_1_1Writer.html#a418a2bd65eaaf64a4547b1f5c9608cc2" title="Ensures that all written output has been registered with the IBufferWriter{byte} object with which th...">Writer.Flush</a> if the root value is a primitive (e.g. a number or string), or if you want to see the output before the root object or list is finished.</p>
 
 </div>
 </div>
@@ -287,7 +324,7 @@ static string&#160;</td><td class="memItemRight" valign="bottom"><b>WriteString&
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:00 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:19 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

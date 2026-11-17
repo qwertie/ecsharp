@@ -128,11 +128,11 @@ Properties</h2></td></tr>
 <tr class="memitem:a7ce4caf7198f6669ec8a1e32ecad90a3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncJson_1_1Options.html#a7ce4caf7198f6669ec8a1e32ecad90a3">NewtonsoftCompatibility</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:a7ce4caf7198f6669ec8a1e32ecad90a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">If true, Newtonsoft-style special fields "$id" and "$ref" will be used for deduplication and resolution of circular references, and byte arrays are encoded in Base64. If false, more compact SyncLib-style references and BAIS encoding are used instead. <a href="#a7ce4caf7198f6669ec8a1e32ecad90a3">More...</a><br /></td></tr>
 <tr class="separator:a7ce4caf7198f6669ec8a1e32ecad90a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab1333773247f0ca432d54bf934084c5a"><td class="memItemLeft" align="right" valign="top">Func&lt; string, string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncJson_1_1Options.html#ab1333773247f0ca432d54bf934084c5a">NameConverter</a> = true<code> [get, set]</code></td></tr>
+<tr class="memitem:ab1333773247f0ca432d54bf934084c5a"><td class="memItemLeft" align="right" valign="top">Func&lt; string, string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncJson_1_1Options.html#ab1333773247f0ca432d54bf934084c5a">NameConverter</a><code> [get, set]</code></td></tr>
 <tr class="memdesc:ab1333773247f0ca432d54bf934084c5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">A function for altering names used in the first argument of ISyncManager.Sync. To use camelCase, set this to <a class="el" href="classSyncJson.html#a391bbcec612004e7d35a661261e62d86" title="Converts a string to camelCase format, e.g. &quot;FileSize&quot; => &quot;fileSize&quot; and &quot;SQLQuery&quot; => &quot;sqlQuery&quot;...">SyncJson.ToCamelCase</a>. <a href="#ab1333773247f0ca432d54bf934084c5a">More...</a><br /></td></tr>
 <tr class="separator:ab1333773247f0ca432d54bf934084c5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae34b4d0a05b0c46de670caa0eed39c3"><td class="memItemLeft" align="right" valign="top">ObjectMode&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncJson_1_1Options.html#aae34b4d0a05b0c46de670caa0eed39c3">RootMode</a><code> [get, set]</code></td></tr>
-<tr class="memdesc:aae34b4d0a05b0c46de670caa0eed39c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">The ObjectMode used to read/write the root object. This option has no effect if you are using NewWriter or NewReader. <a href="#aae34b4d0a05b0c46de670caa0eed39c3">More...</a><br /></td></tr>
+<tr class="memdesc:aae34b4d0a05b0c46de670caa0eed39c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">The ObjectMode used to read/write the root object. This option has no effect if you are using <a class="el" href="classSyncJson.html#ac33f3bb4f4169f792e11a8d7dd998d94" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncJson.Write.">NewWriter</a> or NewReader. <a href="#aae34b4d0a05b0c46de670caa0eed39c3">More...</a><br /></td></tr>
 <tr class="separator:aae34b4d0a05b0c46de670caa0eed39c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa39c9286c8b50fec905466d06279f68b"><td class="memItemLeft" align="right" valign="top">JsonByteArrayMode&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncJson_1_1Options.html#aa39c9286c8b50fec905466d06279f68b">ByteArrayMode</a> = ObjectMode.Normal<code> [get, set]</code></td></tr>
 <tr class="memdesc:aa39c9286c8b50fec905466d06279f68b"><td class="mdescLeft">&#160;</td><td class="mdescRight">When NewtonsoftCompatibility is off, this property controls the way byte arrays and byte lists are written. In special cases it can also affect the way reading happens (see Remarks). When writing with NewtonsoftCompatibility enabled, Base64 is written instead of BAIS. <a href="#aa39c9286c8b50fec905466d06279f68b">More...</a><br /></td></tr>
@@ -327,7 +327,7 @@ Static Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">Func&lt;string, string&gt; SyncJson.Options.NameConverter = true</td>
+          <td class="memname">Func&lt;string, string&gt; SyncJson.Options.NameConverter</td>
         </tr>
       </table>
   </td>
@@ -360,6 +360,7 @@ Static Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>If true, Newtonsoft-style special fields "$id" and "$ref" will be used for deduplication and resolution of circular references, and byte arrays are encoded in Base64. If false, more compact SyncLib-style references and BAIS encoding are used instead.</p>
+<p>Like Json.NET, this mode does not deduplicate a byte or char list that is written as a string (e.g. a Base64 byte array): even with ObjectMode.Deduplicate, each reference to the list is written in full and read back as a separate copy. Otherwise, a deduplicated list that is written as a string is wrapped in an object, e.g. <code>{"\f": 1, "": "..."}</code>.</p>
 
 </div>
 </div>
@@ -381,7 +382,7 @@ Static Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>The ObjectMode used to read/write the root object. This option has no effect if you are using NewWriter or NewReader.</p>
+<p>The ObjectMode used to read/write the root object. This option has no effect if you are using <a class="el" href="classSyncJson.html#ac33f3bb4f4169f792e11a8d7dd998d94" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncJson.Write.">NewWriter</a> or NewReader.</p>
 
 </div>
 </div>
@@ -389,7 +390,7 @@ Static Public Member Functions</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:00 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:19 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -126,7 +126,7 @@ Properties</h2></td></tr>
 <tr class="memdesc:ad09e98ceca9853ec02ccdb183cd59c54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum size, in bytes, of a length-delimited payload (string, byte array, sub-message, list, etc.) that the reader will accept. This guards against corrupt or malicious inputs that claim an enormous length. The default is 64 MB. <a href="#ad09e98ceca9853ec02ccdb183cd59c54">More...</a><br /></td></tr>
 <tr class="separator:ad09e98ceca9853ec02ccdb183cd59c54"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a144a10d0f450c1aefa070ed6af489868"><td class="memItemLeft" align="right" valign="top">ObjectMode&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncProtobuf_1_1Options.html#a144a10d0f450c1aefa070ed6af489868">RootMode</a> = 64 * 1024 * 1024<code> [get, set]</code></td></tr>
-<tr class="memdesc:a144a10d0f450c1aefa070ed6af489868"><td class="mdescLeft">&#160;</td><td class="mdescRight">The ObjectMode used to read/write the root object. This option has no effect if you use NewWriter or NewReader(ReadOnlyMemory{byte}, Options?) directly. <a href="#a144a10d0f450c1aefa070ed6af489868">More...</a><br /></td></tr>
+<tr class="memdesc:a144a10d0f450c1aefa070ed6af489868"><td class="mdescLeft">&#160;</td><td class="mdescRight">The ObjectMode used to read/write the root object. This option has no effect if you use <a class="el" href="classSyncProtobuf.html#a89aa8c6c7d6faa67fd7971bd31ee757f" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncProtobuf.Write.">NewWriter</a> or NewReader(ReadOnlyMemory{byte}, Options?) directly. <a href="#a144a10d0f450c1aefa070ed6af489868">More...</a><br /></td></tr>
 <tr class="separator:a144a10d0f450c1aefa070ed6af489868"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a340ca31f8bfb92329ca515c9eb3365db"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a340ca31f8bfb92329ca515c9eb3365db"></a>
 <a class="el" href="classSyncProtobuf_1_1Options_1_1ForWriter.html">ForWriter</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Write</b> = ObjectMode.Normal<code> [get, set]</code></td></tr>
@@ -173,7 +173,7 @@ Properties</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>The ObjectMode used to read/write the root object. This option has no effect if you use NewWriter or NewReader(ReadOnlyMemory{byte}, Options?) directly.</p>
+<p>The ObjectMode used to read/write the root object. This option has no effect if you use <a class="el" href="classSyncProtobuf.html#a89aa8c6c7d6faa67fd7971bd31ee757f" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncProtobuf.Write.">NewWriter</a> or NewReader(ReadOnlyMemory{byte}, Options?) directly.</p>
 <p>The same mode must be used when writing and when reading; in particular, toggling ObjectMode.Deduplicate changes the wire format of the root object (see <a class="el" href="classSyncProtobuf.html" title="Convenience methods and shared definitions for a pair of ISyncManager implementations (Reader and Wri...">SyncProtobuf</a>).</p>
 
 </div>
@@ -182,7 +182,7 @@ Properties</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:01 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:19 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

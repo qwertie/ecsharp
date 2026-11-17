@@ -82,5 +82,6 @@ var searchData=
   ['expression',['Expression',['../namespaceLoyc_1_1Syntax.html#abc3eedb6b204244ecdfdfeacb1d433b8aa1a6657be79cc0fc1e9b23b9e108f043',1,'Loyc::Syntax']]],
   ['expressions',['Expressions',['../classLoyc_1_1Syntax_1_1ParsingMode.html#a40013bbb56f07bc204cd2c85f6a673ff',1,'Loyc::Syntax::ParsingMode']]],
   ['extrasynchronizers_3c_20syncmanager_20_3e',['ExtraSynchronizers&lt; SyncManager &gt;',['../classExtraSynchronizers_3_01SyncManager_01_4.html',1,'']]],
+  ['extrasynchronizers_3c_20syncmanager_20_3e',['ExtraSynchronizers&lt; SyncManager &gt;',['../classLoyc_1_1SyncLib_1_1ExtraSynchronizers_3_01SyncManager_01_4.html',1,'Loyc::SyncLib']]],
   ['ezstopwatch',['EzStopwatch',['../structLoyc_1_1EzStopwatch.html',1,'Loyc']]]
 ];

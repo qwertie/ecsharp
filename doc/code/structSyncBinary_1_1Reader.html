@@ -98,7 +98,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>An implementation of ISyncManager for reading SyncLib's compact, high-performance data format. Note that while SupportsDeduplication is true, SupportsReordering and SupportsNextField are false, the binary format is <b>not</b> self-describing, and field names/IDs are not stored in the data stream, so you must be careful to read the data in the same order and with compatible types as what was written (for details and guidelines, see <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a>). Please call SyncBinary.Read or SyncBinary.ReadI if you just want to serialize something, or NewWriter to create one of these.  
+<p>An implementation of ISyncManager for reading SyncLib's compact, high-performance data format. Note that while SupportsDeduplication is true, SupportsReordering and SupportsNextField are false, the binary format is <b>not</b> self-describing, and field names/IDs are not stored in the data stream, so you must be careful to read the data in the same order and with compatible types as what was written (for details and guidelines, see <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a>). Please call SyncBinary.Read or SyncBinary.ReadI if you just want to serialize something, or <a class="el" href="classSyncBinary.html#a80622269c573f651171f046a6805a057" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncBinary.Write.">NewWriter</a> to create one of these.  
  <a href="structSyncBinary_1_1Reader.html#details">More...</a></p>
 <hr/><b>Source file</b>:<ul>
 <li><a href='https://github.com/qwertie/ecsharp/tree/master/Core/Loyc.Essentials/SyncLib/Binary/SyncBinary.Reader.cs'>/Core/Loyc.Essentials/SyncLib/Binary/SyncBinary.Reader.cs</a></li>
@@ -112,7 +112,7 @@ Inheritance diagram for SyncBinary.Reader:</div>
 </map>
  </div></div>
 <a name="details" id="details"></a><h2 class="groupheader">Remarks</h2>
-<div class="textblock"><p>An implementation of ISyncManager for reading SyncLib's compact, high-performance data format. Note that while SupportsDeduplication is true, SupportsReordering and SupportsNextField are false, the binary format is <b>not</b> self-describing, and field names/IDs are not stored in the data stream, so you must be careful to read the data in the same order and with compatible types as what was written (for details and guidelines, see <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a>). Please call SyncBinary.Read or SyncBinary.ReadI if you just want to serialize something, or NewWriter to create one of these. </p>
+<div class="textblock"><p>An implementation of ISyncManager for reading SyncLib's compact, high-performance data format. Note that while SupportsDeduplication is true, SupportsReordering and SupportsNextField are false, the binary format is <b>not</b> self-describing, and field names/IDs are not stored in the data stream, so you must be careful to read the data in the same order and with compatible types as what was written (for details and guidelines, see <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a>). Please call SyncBinary.Read or SyncBinary.ReadI if you just want to serialize something, or <a class="el" href="classSyncBinary.html#a80622269c573f651171f046a6805a057" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncBinary.Write.">NewWriter</a> to create one of these. </p>
 <p><a class="el" href="structSyncBinary_1_1Reader.html" title="An implementation of ISyncManager for reading SyncLib&#39;s compact, high-performance data format...">Reader</a> can read files of unlimited size. </p>
 <p>This is a struct rather than a class for performance reasons. Don't try to use a <code>default(Reader)</code>; it'll just throw NullReferenceException. </p>
 </div><table class="memberdecls">
@@ -149,7 +149,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInsideList</b> =&gt
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>ReachedEndOfList</b> =&gt; null</td></tr>
 <tr class="separator:ae9f87bd555fb4c786d038775443f7804"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2d00ebbfccacd0ea4c6a3f99decfdd06"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2d00ebbfccacd0ea4c6a3f99decfdd06"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>MinimumListLength</b> =&gt; 0</td></tr>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>MinimumListLength</b> =&gt; _s.MinimumListLength</td></tr>
 <tr class="separator:a2d00ebbfccacd0ea4c6a3f99decfdd06"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a408bdec0ab54cea551b36de64a0e8a58"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a408bdec0ab54cea551b36de64a0e8a58"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>Depth</b> =&gt; _s.Depth</td></tr>
@@ -297,7 +297,7 @@ string&#160;</td><td class="memItemRight" valign="bottom"><b>SyncTypeTag</b> (st
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:00 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:19 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

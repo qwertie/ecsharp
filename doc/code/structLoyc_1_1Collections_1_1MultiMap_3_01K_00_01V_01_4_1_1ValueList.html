@@ -105,15 +105,14 @@ Inheritance diagram for Loyc.Collections.MultiMap&lt; K, V &gt;.ValueList:</div>
  <div class="center">
   <img src="structLoyc_1_1Collections_1_1MultiMap_3_01K_00_01V_01_4_1_1ValueList.png" usemap="#Loyc.Collections.MultiMap&lt; K, V &gt;.ValueList_map" alt=""/>
   <map id="Loyc.Collections.MultiMap&lt; K, V &gt;.ValueList_map" name="Loyc.Collections.MultiMap&lt; K, V &gt;.ValueList_map">
-<area href="classLoyc_1_1Collections_1_1MultiMap_3_01K_00_01V_01_4.html" title="A multimap is a dictionary that allows more than one value to be associated with each key..." alt="Loyc.Collections.MultiMap&lt; K, V &gt;" shape="rect" coords="1098,168,1426,192"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICollectionImpl_3_01T_01_4.html" title="This interface is intended to be implemented by editable collection classes that are not indexable li..." alt="Loyc.Collections.ICollectionImpl&lt; T &gt;" shape="rect" coords="591,112,919,136"/>
-<area href="interfaceLoyc_1_1Collections_1_1IIndexed_3_01in_01K_00_01out_01V_01_4.html" title="Represents the essence of a dictionary, which returns a value given a key." alt="Loyc.Collections.IIndexed&lt; in K, out V &gt;" shape="rect" coords="1267,112,1595,136"/>
-<area href="interfaceLoyc_1_1ICloneable_3_01out_01T_01_4.html" title="Interface for types that can duplicate themselves." alt="Loyc.ICloneable&lt; out T &gt;" shape="rect" coords="1605,112,1933,136"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICollectionSource_3_01T_01_4.html" title="A variation of IReadOnlyCollection that provides the Contains() and CopyTo() methods from ICollection..." alt="Loyc.Collections.ICollectionSource&lt; T &gt;" shape="rect" coords="338,56,666,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICollectionSink_3_01in_01T_01_4.html" title="Represents a write-only collection: you can modify it, but you cannot learn what it contains..." alt="Loyc.Collections.ICollectionSink&lt; in T &gt;" shape="rect" coords="845,56,1173,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1ICollectionAndReadOnly_3_01T_01_4.html" title="This interface is meant to be implemented by read-only sequence types that originally implemented ICo..." alt="Loyc.Collections.ICollectionAndReadOnly&lt; T &gt;" shape="rect" coords="1352,56,1680,80"/>
-<area href="interfaceLoyc_1_1Collections_1_1IContains_3_01in_01T_01_4.html" alt="Loyc.Collections.IContains&lt; in T &gt;" shape="rect" coords="169,0,497,24"/>
-<area href="interfaceLoyc_1_1Collections_1_1IAdd_3_01in_01T_01_4.html" title="An interface for depositing items. Includes only an Add(T) method." alt="Loyc.Collections.IAdd&lt; in T &gt;" shape="rect" coords="845,0,1173,24"/>
+<area href="classLoyc_1_1Collections_1_1MultiMap_3_01K_00_01V_01_4.html" title="A multimap is a dictionary that allows more than one value to be associated with each key..." alt="Loyc.Collections.MultiMap&lt; K, V &gt;" shape="rect" coords="0,224,328,248"/>
+<area href="classLoyc_1_1Collections_1_1MultiMap_3_01K_00_01V_01_4.html" title="A multimap is a dictionary that allows more than one value to be associated with each key..." alt="Loyc.Collections.MultiMap&lt; K, V &gt;" shape="rect" coords="676,224,1004,248"/>
+<area href="interfaceLoyc_1_1ICloneable_3_01out_01T_01_4.html" title="Interface for types that can duplicate themselves." alt="Loyc.ICloneable&lt; out T &gt;" shape="rect" coords="1014,168,1342,192"/>
+<area href="interfaceLoyc_1_1Collections_1_1IIndexed_3_01in_01K_00_01out_01V_01_4.html" title="Represents the essence of a dictionary, which returns a value given a key." alt="Loyc.Collections.IIndexed&lt; in K, out V &gt;" shape="rect" coords="1014,112,1342,136"/>
+<area href="interfaceLoyc_1_1Collections_1_1ICollectionImpl_3_01T_01_4.html" title="This interface is intended to be implemented by editable collection classes that are not indexable li..." alt="Loyc.Collections.ICollectionImpl&lt; T &gt;" shape="rect" coords="1014,0,1342,24"/>
+<area href="interfaceLoyc_1_1ICloneable_3_01out_01T_01_4.html" title="Interface for types that can duplicate themselves." alt="Loyc.ICloneable&lt; out T &gt;" shape="rect" coords="338,168,666,192"/>
+<area href="interfaceLoyc_1_1Collections_1_1IIndexed_3_01in_01K_00_01out_01V_01_4.html" title="Represents the essence of a dictionary, which returns a value given a key." alt="Loyc.Collections.IIndexed&lt; in K, out V &gt;" shape="rect" coords="338,112,666,136"/>
+<area href="interfaceLoyc_1_1Collections_1_1ICollectionImpl_3_01T_01_4.html" title="This interface is intended to be implemented by editable collection classes that are not indexable li..." alt="Loyc.Collections.ICollectionImpl&lt; T &gt;" shape="rect" coords="338,0,666,24"/>
 </map>
  </div></div>
 <table class="memberdecls">
@@ -126,12 +125,15 @@ MultiMap&lt; K, V &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_ma
 K&#160;</td><td class="memItemRight" valign="bottom"><b>_key</b></td></tr>
 <tr class="separator:a896668e4e8fb3730159b92330c23e095"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac096b28863246203d9e47a0857aceac7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac096b28863246203d9e47a0857aceac7"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>Count</b> =&gt; GetValues()?.Count ?? 0</td></tr>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>Count</b> =&gt; GetList()?.Count ?? 0</td></tr>
 <tr class="separator:ac096b28863246203d9e47a0857aceac7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9fabba1fc86e99dfb8ebc57551040c27"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9fabba1fc86e99dfb8ebc57551040c27"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsReadOnly</b> =&gt; false</td></tr>
 <tr class="separator:a9fabba1fc86e99dfb8ebc57551040c27"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_attribs_classLoyc_1_1Collections_1_1MultiMap_3_01K_00_01V_01_4"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_classLoyc_1_1Collections_1_1MultiMap_3_01K_00_01V_01_4')"><img src="closed.png" alt="-"/>&#160;Public fields inherited from <a class="el" href="classLoyc_1_1Collections_1_1MultiMap_3_01K_00_01V_01_4.html">Loyc.Collections.MultiMap&lt; K, V &gt;</a></td></tr>
+<tr class="memitem:a7652ae3cd155225dc73553c09112cdc6 inherit pub_attribs_classLoyc_1_1Collections_1_1MultiMap_3_01K_00_01V_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7652ae3cd155225dc73553c09112cdc6"></a>
+IReadOnlyDictionary&lt; K, ValueList &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Groups</b> =&gt; this</td></tr>
+<tr class="separator:a7652ae3cd155225dc73553c09112cdc6 inherit pub_attribs_classLoyc_1_1Collections_1_1MultiMap_3_01K_00_01V_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a85cfca713b3d7fdfe39dc8d812290729 inherit pub_attribs_classLoyc_1_1Collections_1_1MultiMap_3_01K_00_01V_01_4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a85cfca713b3d7fdfe39dc8d812290729"></a>
 IEnumerable&lt; K &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Keys</b> =&gt; _dict.Keys</td></tr>
 <tr class="separator:a85cfca713b3d7fdfe39dc8d812290729 inherit pub_attribs_classLoyc_1_1Collections_1_1MultiMap_3_01K_00_01V_01_4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -150,9 +152,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a9b11174d2258409aa113dde574229006"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9b11174d2258409aa113dde574229006"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>ValueList</b> (MultiMap&lt; K, V &gt; map, K key)</td></tr>
 <tr class="separator:a9b11174d2258409aa113dde574229006"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aad49d0c7cfd77b86cd32561196540240"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aad49d0c7cfd77b86cd32561196540240"></a>
-List&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetValues</b> ()</td></tr>
-<tr class="separator:aad49d0c7cfd77b86cd32561196540240"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a839342e5b1052e576d0de8419b860c70"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a839342e5b1052e576d0de8419b860c70"></a>
+List&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetList</b> ()</td></tr>
+<tr class="separator:a839342e5b1052e576d0de8419b860c70"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a22e4f465060fb531b9e8931844655032"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a22e4f465060fb531b9e8931844655032"></a>
 List&lt; V &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetOrMakeValues</b> ()</td></tr>
 <tr class="separator:a22e4f465060fb531b9e8931844655032"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -255,7 +257,7 @@ MultiMap&lt; K, V &gt;.ValueList&#160;</td><td class="memItemRight" valign="bott
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:03 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:22 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

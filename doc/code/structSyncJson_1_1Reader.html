@@ -152,7 +152,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>IsInsideList</b> =&gt
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>ReachedEndOfList</b> =&gt; _s.IsInsideList ? _s.ReachedEndOfList : null</td></tr>
 <tr class="separator:a1aa52b84cfbaf976a32ca84f7063bc2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0dd50328fde921dfdc8d6ebd708d8bc3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0dd50328fde921dfdc8d6ebd708d8bc3"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>MinimumListLength</b> =&gt; 0</td></tr>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>MinimumListLength</b> =&gt; _s.IsInsideList &amp;&amp; _s.Depth &gt; 0 ? 0 : null</td></tr>
 <tr class="separator:a0dd50328fde921dfdc8d6ebd708d8bc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8f272950c9b3cbe0461b3c614a7f5655"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8f272950c9b3cbe0461b3c614a7f5655"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>Depth</b> =&gt; _s.Depth</td></tr>
@@ -300,7 +300,7 @@ string&#160;</td><td class="memItemRight" valign="bottom"><b>Sync</b> (FieldId n
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:00 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:19 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

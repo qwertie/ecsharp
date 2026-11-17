@@ -125,9 +125,12 @@ static IListSource&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"
 <tr class="memitem:a0cef6fa52ed53850f7fcbd891088bdaa"><td class="memItemLeft" align="right" valign="top">static IReadOnlyDictionary&lt; K, V &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#a0cef6fa52ed53850f7fcbd891088bdaa">AsReadOnlyDictionary&lt; K, V &gt;</a> (this IReadOnlyCollection&lt; K &gt; keys, Func&lt; K, <a class="el" href="classLoyc_1_1Maybe.html">Maybe</a>&lt; V &gt;&gt; tryGetValue, Func&lt; K, V &gt;?getValue=null)</td></tr>
 <tr class="memdesc:a0cef6fa52ed53850f7fcbd891088bdaa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a collection of keys to an IReadOnlyDictionary, based on a function that can obtain a value for a given key. <a href="#a0cef6fa52ed53850f7fcbd891088bdaa">More...</a><br /></td></tr>
 <tr class="separator:a0cef6fa52ed53850f7fcbd891088bdaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acb744ff4fb67da3a239866452d66b188"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acb744ff4fb67da3a239866452d66b188"></a>
-static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ForEach&lt; T &gt;</b> (this IEnumerable&lt; T &gt; list, Action&lt; T &gt; action)</td></tr>
+<tr class="memitem:acb744ff4fb67da3a239866452d66b188"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#acb744ff4fb67da3a239866452d66b188">ForEach&lt; T &gt;</a> (this IEnumerable&lt; T &gt; list, Action&lt; T &gt; action)</td></tr>
+<tr class="memdesc:acb744ff4fb67da3a239866452d66b188"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs an foreach loop on the list, calling the given action for each element. <a href="#acb744ff4fb67da3a239866452d66b188">More...</a><br /></td></tr>
 <tr class="separator:acb744ff4fb67da3a239866452d66b188"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a16d8993923185d49c1b91e9677a24d69"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Collections_1_1EnumerableExt.html#a16d8993923185d49c1b91e9677a24d69">ForEach&lt; T &gt;</a> (this IEnumerable&lt; T &gt; list, Action&lt; T, int &gt; action)</td></tr>
+<tr class="memdesc:a16d8993923185d49c1b91e9677a24d69"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs an foreach loop on the list, calling the given action for each element. <a href="#a16d8993923185d49c1b91e9677a24d69">More...</a><br /></td></tr>
+<tr class="separator:a16d8993923185d49c1b91e9677a24d69"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0d638746d1107bbfa00d1320f50b5133"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0d638746d1107bbfa00d1320f50b5133"></a>
 static IEnumerable<br class="typebreak" />
 &lt; KeyValuePair&lt; int, T &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>WithIndexes&lt; T &gt;</b> (this IEnumerable&lt; T &gt; c)</td></tr>
@@ -409,6 +412,79 @@ static List&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ToL
 </div><div class="memdoc">
 
 <p>Gets the lowest index at which a condition is true, or null if nowhere.</p>
+
+</div>
+</div>
+<a class="anchor" id="acb744ff4fb67da3a239866452d66b188"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.Collections.EnumerableExt.ForEach&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IEnumerable&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Action&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>action</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Runs an foreach loop on the list, calling the given action for each element.</p>
+
+</div>
+</div>
+<a class="anchor" id="a16d8993923185d49c1b91e9677a24d69"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structLoyc_1_1void.html">void</a> Loyc.Collections.EnumerableExt.ForEach&lt; T &gt; </td>
+          <td>(</td>
+          <td class="paramtype">this IEnumerable&lt; T &gt;&#160;</td>
+          <td class="paramname"><em>list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Action&lt; T, int &gt;&#160;</td>
+          <td class="paramname"><em>action</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Runs an foreach loop on the list, calling the given action for each element.</p>
+<p>The second argument of the Action is the index (zero for the first element)</p>
 
 </div>
 </div>
@@ -1256,7 +1332,7 @@ static List&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ToL
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:02 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:21 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

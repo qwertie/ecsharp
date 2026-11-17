@@ -328,7 +328,8 @@ A CPU can read numbers in this format faster than it can read numbers in the tra
 <p>If the total number of bits in a series of bitfields is not a multiple of 8, then the high bits of the final byte are zero, and these high bits are ignored when the stream is read. For example, if your code says </p><div class="fragment"><div class="line">sm.Sync(<span class="stringliteral">&quot;...&quot;</span>, 259, 10, <span class="keyword">true</span>); <span class="comment">// 259 = 0b0001_00000011</span></div>
 <div class="line">sm.Sync(<span class="stringliteral">&quot;...&quot;</span>,  -1,  4, <span class="keyword">true</span>); <span class="comment">// -1 (as 4 bits) = 0b1111</span></div>
 <div class="line">sm.Sync(<span class="stringliteral">&quot;...&quot;</span>,   7);           <span class="comment">// 7 = 0b111</span></div>
-</div><!-- fragment --><p> Then these three bytes are written: 0b00000011, 0b00111101, 0b00000111. When reading these fields, the top two bits of the second byte are ignored.</p>
+</div><!-- fragment --><p> Then these three bytes are written: 0b00000011, 0b00111101, 0b00000111. When reading these fields, the top two bits of the second byte are ignored. </p>
+<p>A series of bitfields also ends when the root object or list ends, because the writer flushes its output at that point. For the same reason, don't call Writer.Flush in the middle of a series of bitfields: the next bitfield would start a new byte, so the reader would misread it.</p>
 <h4>Strings</h4>
 <p>Strings are stored in length-prefixed WTF-8 format (this means UTF-8 format, but highlights that any .NET string can be stored, even if it contains unpaired surrogate code units). The length is stored in the same format as integers (above). A length prefix of null represents the string being null. The length is expressed in bytes, not codepoints. This is essentially the same format as a byte array, so you could change the type of a string to a byte array while retaining backward compatibility. </p>
 <p>If list markers are enabled, '[' is written before the string and ']' after. However, if the string is null, the markers are omitted (only 0xFF is written). </p>
@@ -358,7 +359,9 @@ A CPU can read numbers in this format faster than it can read numbers in the tra
 <p>The null value of <code>decimal?</code> is represented by 16 bytes that are all 0xFF. When reading a <code>decimal?</code>, the 13th and 14th bytes are checked to see if they are 0xFF, and if so, the value is treated as null. If they are neither 0xFF nor 0x00, an exception is thrown.</p>
 <h4>Arrays/lists/Memory&lt;T&gt;</h4>
 <p>If list markers are enabled, '[' is written before a list and ']' afterward. </p>
-<p>Arrays/lists are length-prefixed, and the length itself uses the standard integer format laid out above. For example, <code>new[] { 1, 10, 100, 1000 }</code> is encoded in seven bytes if markers are disabled (<code>4, 1, 10, 0x80, 100, 0b10000011, 0b11101000</code>) and eight bytes with a start marker (<code>'[', 4, 1, 10, 0x80, 100, 0b10000011, 0b11101000</code>). Null is encoded in a single byte (255). An empty array is also a single byte (0). </p>
+<p>Arrays/lists are length-prefixed, and the length itself uses the standard integer format laid out above (unsigned, as for strings, so lengths below 128 take one byte). For example, <code>new[] { 1, 10, 100, 1000 }</code> is encoded in seven bytes if markers are disabled (<code>4, 1, 10, 0x80, 100, 0b10000011, 0b11101000</code>) and eight bytes with a start marker (<code>'[', 4, 1, 10, 0x80, 100, 0b10000011, 0b11101000</code>). Null is encoded in a single byte (255). An empty array is also a single byte (0). </p>
+<p>Lists of bytes (e.g. <code>byte[]</code> and <code>Memory&lt;byte&gt;</code>) are an exception: each item is a raw byte rather than an integer in the standard format, so <code>new byte[] { 1, 200 }</code> is encoded as <code>'[', 2, 1, 200</code>. This is the same format as a string. </p>
+<p>Lists of chars are not an exception: each char is stored like a <code>ushort</code>, so a <code>char[]</code> can be changed to a <code>ushort[]</code> or vice versa, but not to a string. </p>
 <p>When writing null, list markers are omitted (only 0xFF is written).</p>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
@@ -367,10 +370,10 @@ Nested classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classSyncBinary_1_1Options.html" title="Options that control general behavior of SyncBinary.Reader and SyncBinary.Writer. Note: some behavior...">Options</a> that control general behavior of <a class="el" href="structSyncBinary_1_1Reader.html" title="An implementation of ISyncManager for reading SyncLib&#39;s compact, high-performance data format...">SyncBinary.Reader</a> and <a class="el" href="structSyncBinary_1_1Writer.html" title="The ISyncManager implementation for writing SyncLib&#39;s compact, high-performance binary data format (s...">SyncBinary.Writer</a>. Note: some behaviors such as deduplication (including support for cyclic references) are controlled at the level of individual fields, and such options are not duplicated here.  <a href="classSyncBinary_1_1Options.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSyncBinary_1_1Reader.html">Reader</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An implementation of ISyncManager for reading SyncLib's compact, high-performance data format. Note that while SupportsDeduplication is true, SupportsReordering and SupportsNextField are false, the binary format is <b>not</b> self-describing, and field names/IDs are not stored in the data stream, so you must be careful to read the data in the same order and with compatible types as what was written (for details and guidelines, see <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a>). Please call SyncBinary.Read or SyncBinary.ReadI if you just want to serialize something, or NewWriter to create one of these.  <a href="structSyncBinary_1_1Reader.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An implementation of ISyncManager for reading SyncLib's compact, high-performance data format. Note that while SupportsDeduplication is true, SupportsReordering and SupportsNextField are false, the binary format is <b>not</b> self-describing, and field names/IDs are not stored in the data stream, so you must be careful to read the data in the same order and with compatible types as what was written (for details and guidelines, see <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a>). Please call SyncBinary.Read or SyncBinary.ReadI if you just want to serialize something, or <a class="el" href="classSyncBinary.html#a80622269c573f651171f046a6805a057" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncBinary.Write.">NewWriter</a> to create one of these.  <a href="structSyncBinary_1_1Reader.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSyncBinary_1_1Writer.html">Writer</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The ISyncManager implementation for writing SyncLib's compact, high-performance binary data format (see <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a> for details and guidelines). Please call WriteI or Write if you just want to serialize something, or NewWriter to create one of these.  <a href="structSyncBinary_1_1Writer.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The ISyncManager implementation for writing SyncLib's compact, high-performance binary data format (see <a class="el" href="classSyncBinary.html" title="f Convenience methods for a fast pair of ISyncManager implementations intended for binary files/strea...">SyncBinary</a> for details and guidelines). Please call WriteI or Write if you just want to serialize something, or <a class="el" href="classSyncBinary.html#a80622269c573f651171f046a6805a057" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncBinary.Write.">NewWriter</a> to create one of these.  <a href="structSyncBinary_1_1Writer.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
@@ -442,8 +445,8 @@ static ReadOnlyMemory&lt; byte &gt;&#160;</td><td class="memItemRight" valign="b
 <tr class="memitem:a6bf3acfbeb03cdf0e1e4147156e5b550"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6bf3acfbeb03cdf0e1e4147156e5b550"></a>
 static ReadOnlyMemory&lt; byte &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Write&lt; T, SyncObject &gt;</b> (T value, SyncObject sync, <a class="el" href="classSyncBinary_1_1Options.html">Options</a>?options=null)</td></tr>
 <tr class="separator:a6bf3acfbeb03cdf0e1e4147156e5b550"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a80622269c573f651171f046a6805a057"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a80622269c573f651171f046a6805a057"></a>
-static <a class="el" href="structSyncBinary_1_1Writer.html">SyncBinary.Writer</a>&#160;</td><td class="memItemRight" valign="bottom"><b>NewWriter</b> (IBufferWriter&lt; byte &gt;?output=null, <a class="el" href="classSyncBinary_1_1Options.html">Options</a>?options=null)</td></tr>
+<tr class="memitem:a80622269c573f651171f046a6805a057"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structSyncBinary_1_1Writer.html">SyncBinary.Writer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSyncBinary.html#a80622269c573f651171f046a6805a057">NewWriter</a> (IBufferWriter&lt; byte &gt;?output=null, <a class="el" href="classSyncBinary_1_1Options.html">Options</a>?options=null)</td></tr>
+<tr class="memdesc:a80622269c573f651171f046a6805a057"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a writer that writes to <em>output</em>  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncBinary.Write. <a href="#a80622269c573f651171f046a6805a057">More...</a><br /></td></tr>
 <tr class="separator:a80622269c573f651171f046a6805a057"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Enumeration Documentation</h2>
@@ -501,11 +504,49 @@ static <a class="el" href="structSyncBinary_1_1Writer.html">SyncBinary.Writer</a
 
 </div>
 </div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a class="anchor" id="a80622269c573f651171f046a6805a057"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="structSyncBinary_1_1Writer.html">SyncBinary.Writer</a> SyncBinary.NewWriter </td>
+          <td>(</td>
+          <td class="paramtype">IBufferWriter&lt; byte &gt;?&#160;</td>
+          <td class="paramname"><em>output</em> = <code>null</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classSyncBinary_1_1Options.html">Options</a>?&#160;</td>
+          <td class="paramname"><em>options</em> = <code>null</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Creates a writer that writes to <em>output</em>  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncBinary.Write.</p>
+<p>Output is buffered. It reaches <em>output</em>  (via IBufferWriter{T}.Advance) when the writer's buffer fills up, and when the root object or list is finished (by Writer.EndSubObject). So you only need to call Writer.Flush if the root value is a primitive (e.g. a number or string), or if you want to see the output before the root object or list is finished (but not in the middle of a series of bitfields).</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:00 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:19 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>

@@ -202,7 +202,7 @@ BigInteger&#160;</td><td class="memItemRight" valign="bottom"><b>Sync</b> (Field
 string&#160;</td><td class="memItemRight" valign="bottom"><b>Sync</b> (FieldId name, string?savable, ObjectMode mode=ObjectMode.Normal)</td></tr>
 <tr class="separator:a6f192d70a0b52d040d523a55aba43a1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a418a2bd65eaaf64a4547b1f5c9608cc2"><td class="memItemLeft" align="right" valign="top">IBufferWriter&lt; byte &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSyncJson_1_1Writer.html#a418a2bd65eaaf64a4547b1f5c9608cc2">Flush</a> ()</td></tr>
-<tr class="memdesc:a418a2bd65eaaf64a4547b1f5c9608cc2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensures that all written output has been registered with the IBufferWriter{byte} object with which this writer was initialized, and then returns it. If you called NewWriter without arguments, this function returns a ArrayBufferWriter{T} (see example below). <a href="#a418a2bd65eaaf64a4547b1f5c9608cc2">More...</a><br /></td></tr>
+<tr class="memdesc:a418a2bd65eaaf64a4547b1f5c9608cc2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensures that all written output has been registered with the IBufferWriter{byte} object with which this writer was initialized, and then returns it. If you called <a class="el" href="classSyncJson.html#ac33f3bb4f4169f792e11a8d7dd998d94" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncJson.Write.">NewWriter</a> without arguments, this function returns a ArrayBufferWriter{T} (see example below). <a href="#a418a2bd65eaaf64a4547b1f5c9608cc2">More...</a><br /></td></tr>
 <tr class="separator:a418a2bd65eaaf64a4547b1f5c9608cc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6f1ff6c3097a09dbd84eb94fde7ffeea"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6f1ff6c3097a09dbd84eb94fde7ffeea"></a>
 List&#160;</td><td class="memItemRight" valign="bottom"><b>SyncListBoolImpl&lt; Scanner, List, ListBuilder &gt;</b> (FieldId name, Scanner scanner, List?saving, ListBuilder builder, ObjectMode mode, int tupleLength=-1)</td></tr>
@@ -213,6 +213,12 @@ List&#160;</td><td class="memItemRight" valign="bottom"><b>SyncListCharImpl&lt; 
 <tr class="memitem:a70b33adf38c43a5a5ea965ac91f45b25"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a70b33adf38c43a5a5ea965ac91f45b25"></a>
 List&#160;</td><td class="memItemRight" valign="bottom"><b>SyncListByteImpl&lt; Scanner, List, ListBuilder &gt;</b> (FieldId name, Scanner scanner, List?saving, ListBuilder builder, ObjectMode mode, int tupleLength=-1)</td></tr>
 <tr class="separator:a70b33adf38c43a5a5ea965ac91f45b25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d92667b9cd1a2a0a819e3bf571224cc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0d92667b9cd1a2a0a819e3bf571224cc"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>BeginStringList</b> (ref FieldId name, object?saving, ObjectMode mode)</td></tr>
+<tr class="separator:a0d92667b9cd1a2a0a819e3bf571224cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a734547bf27dc8999370b9000d3578d84"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a734547bf27dc8999370b9000d3578d84"></a>
+<a class="el" href="structLoyc_1_1void.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>EndStringList</b> (ObjectMode mode)</td></tr>
+<tr class="separator:a734547bf27dc8999370b9000d3578d84"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a418a2bd65eaaf64a4547b1f5c9608cc2"></a>
@@ -228,10 +234,10 @@ List&#160;</td><td class="memItemRight" valign="bottom"><b>SyncListByteImpl&lt; 
       </table>
 </div><div class="memdoc">
 
-<p>Ensures that all written output has been registered with the IBufferWriter{byte} object with which this writer was initialized, and then returns it. If you called NewWriter without arguments, this function returns a ArrayBufferWriter{T} (see example below).</p>
-<p>It is only necessary to call this method just after writing a primitive (e.g. number or string), because flushing happens automatically when ISyncManager.EndSubObject is used to finish writing an object or list. </p>
+<p>Ensures that all written output has been registered with the IBufferWriter{byte} object with which this writer was initialized, and then returns it. If you called <a class="el" href="classSyncJson.html#ac33f3bb4f4169f792e11a8d7dd998d94" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncJson.Write.">NewWriter</a> without arguments, this function returns a ArrayBufferWriter{T} (see example below).</p>
+<p>It is only necessary to call this method if the root value is a primitive (e.g. number or string), or if you want to see the output before the root object or list is finished, because flushing happens automatically when ISyncManager.EndSubObject finishes the root object or list. </p>
 <p>Here's an example that uses this method to write a primitive: </p><pre>&lt;![CDATA[
-    var writer = SyncJson.NewWriter();
+    var writer = <a class="el" href="classSyncJson.html#ac33f3bb4f4169f792e11a8d7dd998d94" title="Creates a writer that writes to output  (a new ArrayBufferWriter{T} if it is null). To write a single value, it is simpler to call SyncJson.Write.">SyncJson.NewWriter()</a>;
     writer.Sync(null, 1234.5);
     var output = (ArrayBufferWriter&lt;byte&gt;) writer.Flush();</pre><pre>    // Output: 1234.5
     Console.WriteLine("Output: " + Encoding.UTF8.GetString(output.WrittenSpan));
@@ -242,7 +248,7 @@ List&#160;</td><td class="memItemRight" valign="bottom"><b>SyncListByteImpl&lt; 
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:00 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Nov 16 2026 19:29:19 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>
