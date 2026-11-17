@@ -61,70 +61,29 @@ namespace Samples
 		static void FavoriteNumberGame()
 		{
 			Console.Write("What's your favorite number? ");
-			do {
-				var tmp_10 = int.Parse(Console.ReadLine());
-				if (7.Equals(tmp_10)) { Console.WriteLine("You lucky bastard!");
-					break;
-				}
-				if (777.Equals(tmp_10)) { Console.WriteLine("You lucky bastard!");
-					break;
-				}
-				if (5.Equals(tmp_10)) { Console.WriteLine("I have that many fingers too!");
-					break;
-				}
-				if (10.Equals(tmp_10)) { Console.WriteLine("I have that many fingers too!");
-					break;
-				}
-				if (0.Equals(tmp_10)) { Console.WriteLine("What? Nobody picks that!");
-					break;
-				}
-				if (1.Equals(tmp_10)) { Console.WriteLine("What? Nobody picks that!");
-					break;
-				}
-				if (2.Equals(tmp_10)) { Console.WriteLine("Yeah, I guess you deal with those a lot.");
-					break;
-				}
-				if (3.Equals(tmp_10)) { Console.WriteLine("Yeah, I guess you deal with those a lot.");
-					break;
-				}
-				if (12.Equals(tmp_10)) { Console.WriteLine("I prefer a baker's dozen.");
-					break;
-				}
-				if (666.Equals(tmp_10)) { Console.WriteLine("Isn't that bad luck though?");
-					break;
-				}
-				if (13.Equals(tmp_10)) { Console.WriteLine("Isn't that bad luck though?");
-					break;
-				}
-				if (tmp_10.IsInRangeExcludeHi(1, 10)) { Console.WriteLine("Kind of boring, don't you think?");
-					break;
-				}
-				if (11.Equals(tmp_10)) { Console.WriteLine("A prime choice.");
-					break;
-				}
-				if (13.Equals(tmp_10)) { Console.WriteLine("A prime choice.");
-					break;
-				}
-				if (17.Equals(tmp_10)) { Console.WriteLine("A prime choice.");
-					break;
-				}
-				if (19.Equals(tmp_10)) { Console.WriteLine("A prime choice.");
-					break;
-				}
-				if (23.Equals(tmp_10)) { Console.WriteLine("A prime choice.");
-					break;
-				}
-				if (29.Equals(tmp_10)) { Console.WriteLine("A prime choice.");
-					break;
-				}
-				if (tmp_10.IsInRange(10, 99)) { Console.WriteLine("Well... it's got two digits, I'll give you that much.");
-					break;
-				}
-				if (tmp_10 <= -1) { Console.WriteLine("Oh, don't be so negative.");
-					break;
-				}
-				{ Console.WriteLine("What are you, high? Like that number?"); }
-			} while (false);
+			int n = int.Parse(Console.ReadLine());
+			if (n == 7 || n == 777)
+				Console.WriteLine("You lucky bastard!");
+			else if (n == 5 || n == 10)
+				Console.WriteLine("I have that many fingers too!");
+			else if (n == 0 || n == 1)
+				Console.WriteLine("What? Nobody picks that!");
+			else if (n == 2 || n == 3)
+				Console.WriteLine("Yeah, I guess you deal with those a lot.");
+			else if (n == 12)
+				Console.WriteLine("I prefer a baker's dozen.");
+			else if (n == 666 || n == 13)
+				Console.WriteLine("Isn't that bad luck though?");
+			else if (n >= 1 && n < 10)
+				Console.WriteLine("Kind of boring, don't you think?");
+			else if (n == 11 || n == 17 || n == 19 || n == 23 || n == 29)
+				Console.WriteLine("A prime choice.");
+			else if (n >= 10 && n <= 99)
+				Console.WriteLine("Well... it's got two digits, I'll give you that much.");
+			else if (n <= -1)
+				Console.WriteLine("Oh, don't be so negative.");
+			else
+				Console.WriteLine("What are you, high? Like that number?");
 		}
 	}
 }
@@ -419,7 +378,7 @@ struct EmailAddress
 	{
 		int la0;
 		src.Match(UsernameChars_set0);
-		// Line 143: ([!#-'*+\-/-9=?A-Z^-~])*
+		// Line 153: ([!#-'*+\-/-9=?A-Z^-~])*
 		for (;;) {
 			la0 = src.LA0;
 			if (UsernameChars_set0.Contains(la0))
@@ -435,11 +394,11 @@ struct EmailAddress
 	{
 		int la0;
 		src.Match(DomainCharSeq_set0);
-		// Line 148: (([\-])? [0-9A-Za-z])*
+		// Line 158: (([\-])? [0-9A-Za-z])*
 		for (;;) {
 			la0 = src.LA0;
 			if (DomainCharSeq_set1.Contains(la0)) {
-				// Line 148: ([\-])?
+				// Line 158: ([\-])?
 				la0 = src.LA0;
 				if (la0 == '-')
 					src.Skip();
@@ -455,13 +414,13 @@ struct EmailAddress
 	public static EmailAddress Parse(UString email)
 	{
 		int la0;
-		// line 156
+		// line 166
 		if (src == null)
 			src = new LexerSource<UString>(email, "", 0, false);
 		else
 			src.Reset(email, "", 0, false);	// re-use old object
 		UsernameChars(src);
-		// Line 161: ([.] UsernameChars)*
+		// Line 171: ([.] UsernameChars)*
 		for (;;) {
 			la0 = src.LA0;
 			if (la0 == '.') {
@@ -470,13 +429,13 @@ struct EmailAddress
 			} else
 				break;
 		}
-		// line 162
+		// line 172
 		int at = src.InputPosition;
-		// line 163
+		// line 173
 		UString userName = email.Substring(0, at);
 		src.Match('@');
 		DomainCharSeq(src);
-		// Line 165: ([.] DomainCharSeq)*
+		// Line 175: ([.] DomainCharSeq)*
 		for (;;) {
 			la0 = src.LA0;
 			if (la0 == '.') {
@@ -486,9 +445,9 @@ struct EmailAddress
 				break;
 		}
 		src.Match(-1);
-		// line 166
+		// line 176
 		UString domain = email.Substring(at + 1);
-		// line 167
+		// line 177
 		return new EmailAddress(userName, domain);
 	}
 	
@@ -527,7 +486,7 @@ public partial class SExprParser : BaseParserForList<Token, int>
 	{
 		LNode result = default(LNode);
 		Token t = default(Token);
-		// Line 207: ( List | (TT.Assignment|TT.BQId|TT.BQOperator|TT.Dot|TT.Id|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) | TT.Literal )
+		// Line 217: ( List | (TT.Assignment|TT.BQId|TT.BQOperator|TT.Dot|TT.Id|TT.NormalOp|TT.Not|TT.PrefixOp|TT.PreOrSufOp) | TT.Literal )
 		switch ((TT) LA0) {
 		case TT.LParen: case TT.SpaceLParen:
 			result = List();
@@ -537,14 +496,14 @@ public partial class SExprParser : BaseParserForList<Token, int>
 		case TT.PreOrSufOp:
 			{
 				t = MatchAny();
-				// line 209
+				// line 219
 				result = F.Id((Symbol) t.Value, t.StartIndex, t.EndIndex);
 			}
 			break;
 		default:
 			{
 				t = Match((int) TT.Literal);
-				// line 210
+				// line 220
 				result = F.Literal(t.Value, t.StartIndex, t.EndIndex);
 			}
 			break;
@@ -558,19 +517,19 @@ public partial class SExprParser : BaseParserForList<Token, int>
 		Token lit_lpar = default(Token);
 		Token lit_rpar = default(Token);
 		LNode target = default(LNode);
-		// Line 213: ((TT.LParen|TT.SpaceLParen) TT.RParen | (TT.LParen|TT.SpaceLParen) Atom (Atom)* TT.RParen)
+		// Line 223: ((TT.LParen|TT.SpaceLParen) TT.RParen | (TT.LParen|TT.SpaceLParen) Atom (Atom)* TT.RParen)
 		la1 = (TT) LA(1);
 		if (la1 == TT.RParen) {
 			lit_lpar = Match((int) TT.LParen, (int) TT.SpaceLParen);
 			lit_rpar = MatchAny();
-			// line 214
+			// line 224
 			return F.AltList(LNode.List(), lit_lpar.StartIndex, lit_rpar.EndIndex);
 		} else {
-			// line 215
+			// line 225
 			var parts = LNode.List();
 			lit_lpar = Match((int) TT.LParen, (int) TT.SpaceLParen);
 			target = Atom();
-			// Line 216: (Atom)*
+			// Line 226: (Atom)*
 			for (;;) {
 				switch ((TT) LA0) {
 				case TT.Assignment: case TT.BQId: case TT.BQOperator: case TT.Dot:
@@ -584,7 +543,7 @@ public partial class SExprParser : BaseParserForList<Token, int>
 			}
 		stop:;
 			lit_rpar = Match((int) TT.RParen);
-			// line 217
+			// line 227
 			return F.Call(target, parts, lit_lpar.StartIndex, lit_rpar.EndIndex);
 		}
 	}

@@ -141,11 +141,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="ecs\deprecated\MatchMacro.out.cs">
-      <DependentUpon>MatchMacro.ecs</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="ecs\OnFinallyThrowCatch.cs" />
     <Compile Include="ecs\OnReturn.out.cs">
       <AutoGen>True</AutoGen>
@@ -218,10 +213,6 @@
     <None Include="ecs\MatchCode.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>MatchCode.out.cs</LastGenOutput>
-    </None>
-    <None Include="ecs\deprecated\MatchMacro.ecs">
-      <Generator>LeMP</Generator>
-      <LastGenOutput>MatchMacro.out.cs</LastGenOutput>
     </None>
     <None Include="OpenSourceKey.snk" />
     <None Include="ecs\UseSequenceExpressions.ecs">

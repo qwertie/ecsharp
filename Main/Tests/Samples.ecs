@@ -46,19 +46,29 @@ namespace Samples
 		static void FavoriteNumberGame()
 		{
 			Console.Write("What's your favorite number? ");
-			match(int.Parse(Console.ReadLine())) {
-				case 7, 777: Console.WriteLine("You lucky bastard!");
-				case 5, 10: Console.WriteLine("I have that many fingers too!");
-				case 0, 1: Console.WriteLine("What? Nobody picks that!");
-				case 2, 3: Console.WriteLine("Yeah, I guess you deal with those a lot.");
-				case 12: Console.WriteLine("I prefer a baker's dozen.");
-				case 666, 13: Console.WriteLine("Isn't that bad luck though?");
-				case 1..<10: Console.WriteLine("Kind of boring, don't you think?");
-				case 11, 13, 17, 19, 23, 29: Console.WriteLine("A prime choice.");
-				case 10...99: Console.WriteLine("Well... it's got two digits, I'll give you that much.");
-				case ...-1: Console.WriteLine("Oh, don't be so negative.");
-				default: Console.WriteLine("What are you, high? Like that number?");
-			}
+			int n = int.Parse(Console.ReadLine());
+			if (n == 7 || n == 777)
+				Console.WriteLine("You lucky bastard!");
+			else if (n == 5 || n == 10)
+				Console.WriteLine("I have that many fingers too!");
+			else if (n == 0 || n == 1)
+				Console.WriteLine("What? Nobody picks that!");
+			else if (n == 2 || n == 3)
+				Console.WriteLine("Yeah, I guess you deal with those a lot.");
+			else if (n == 12)
+				Console.WriteLine("I prefer a baker's dozen.");
+			else if (n == 666 || n == 13)
+				Console.WriteLine("Isn't that bad luck though?");
+			else if (n >= 1 && n < 10)
+				Console.WriteLine("Kind of boring, don't you think?");
+			else if (n == 11 || n == 17 || n == 19 || n == 23 || n == 29)
+				Console.WriteLine("A prime choice.");
+			else if (n >= 10 && n <= 99)
+				Console.WriteLine("Well... it's got two digits, I'll give you that much.");
+			else if (n <= -1)
+				Console.WriteLine("Oh, don't be so negative.");
+			else
+				Console.WriteLine("What are you, high? Like that number?");
 		}
 	}
 }

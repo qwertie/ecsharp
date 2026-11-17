@@ -85,7 +85,6 @@
     <Compile Include="Tests\TestCodeContractMacros.cs" />
     <Compile Include="Tests\TestCodeQuoteMacro.cs" />
     <Compile Include="Tests\TestMatchCodeMacro.cs" />
-    <Compile Include="Tests\TestMatchMacro.cs" />
     <Compile Include="Tests\TestUnrollMacro.cs" />
     <Compile Include="Tests\TestUseSymbolsMacro.cs" />
   </ItemGroup>

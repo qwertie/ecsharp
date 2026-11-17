@@ -84,15 +84,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Update="ecs\MatchMacro.ecs">
-      <Generator>LeMP</Generator>
-      <LastGenOutput>MatchMacro.out.cs</LastGenOutput>
-    </None>
-    <Compile Update="ecs\MatchMacro.out.cs">
-      <DependentUpon>MatchMacro.ecs</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <None Update="ecs\OnReturn.ecs">
       <Generator>LeMP</Generator>
       <LastGenOutput>OnReturn.out.cs</LastGenOutput>
