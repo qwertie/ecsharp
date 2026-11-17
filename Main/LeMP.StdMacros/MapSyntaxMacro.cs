@@ -165,6 +165,8 @@ namespace LeMP
 			                Math.Min(range.Value.stop, input.Max + 1));
 		}
 
+		/// <returns>The output items, and the index of the first input item that didn't match
+		/// any of the <c>cases</c> (or -1 if all items matched).</returns>
 		static (List<LNode> output, int failIndex) DoMapping(LNode input, int start, int stop, List<(LNodeList Pattern, LNodeList Replacement)> cases)
 		{
 			List<LNode> output = new List<LNode>();
@@ -193,7 +195,8 @@ namespace LeMP
 
 					not_matched: continue;
 				}
-				failIndex = i;
+				if (failIndex == -1)
+					failIndex = i;
 				matched: continue;
 			}
 

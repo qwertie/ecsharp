@@ -110,6 +110,14 @@ namespace LeMP.Tests
 						"##unroll (@in($X, Foo(X; Y))) { $X; }");
 				Assert.AreEqual(1, _msgHolder.List.Count(msg => msg.Severity == Severity.Error));
 			}
+
+			// The first item that doesn't match the pattern is reported
+			_msgHolder.List.Clear();
+			using (MessageSink.SetDefault(_msgHolder)) {
+				TestEcs("##unroll (($X + 1) in (a + 1, b, c)) { $X; }", "a;");
+				var error = _msgHolder.List.Single(msg => msg.Severity == Severity.Error);
+				Assert.That(error.Formatted.Contains("#2"), error.Formatted);
+			}
 		}
 		
 		[Test]
