@@ -681,6 +681,9 @@ namespace Loyc.Ecs.Tests
 			Stmt("case Foo x:", F.Call(S.Case, F.Var(Foo, x)));
 			Stmt("case Foo $x:", F.Call(S.Case, F.Var(Foo, Operator(F.Call(S.Substitute, x)))));
 			Stmt("case { Foo $x; }:", F.Call(S.Case, BracesOnOneLine(F.Var(Foo, Operator(F.Call(S.Substitute, x))))));
+			// Bug fix: `a ? b : c` was parsed as a variable `b` of type `a?`, followed by a label `c:`
+			Stmt("case a ? b : c:", F.Call(S.Case, F.Call(S.QuestionMark, a, b, c)));
+			Stmt("case $x ? b : c:", F.Call(S.Case, F.Call(S.QuestionMark, Operator(F.Call(S.Substitute, x)), b, c)));
 		}
 
 		[Test]

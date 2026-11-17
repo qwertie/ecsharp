@@ -369,8 +369,14 @@ namespace Loyc.Ecs.Parser
 										// Use MethodOrPropertyName to detect all possible method, property, 
 										// and variable declarations (this incidentally matches some invalid 
 										// things like `bool operator true { get {} }`.)
-				if (Scan_DataType() && Scan_MethodOrPropertyName(true) && ExpectedAfterTypeAndName[(int)mode].Contains(LA0))
-					return StmtCat.MethodOrPropOrVar;
+				if (Scan_DataType()) {
+					// `case a ? b : c:` is not a declaration of `b` with type `a?` followed by a
+					// label `c:`. C# forbids nullable types in patterns, so `case T? x:` is invalid.
+					bool isNullableType = LA(-1) == TT.QuestionMark;
+					if (Scan_MethodOrPropertyName(true) && ExpectedAfterTypeAndName[(int)mode].Contains(LA0)
+						&& !(isNullableType && LA0 == TT.Colon))
+						return StmtCat.MethodOrPropOrVar;
+				}
 			}
 			if (haveNew)
 			{
