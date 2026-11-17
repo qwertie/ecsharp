@@ -146,6 +146,13 @@ public class SyncBinaryGoldenTests : TestHelpers
 				return new object?[] { sm.SyncArray("a", hi, mode), sm.SyncArray("b", hi, mode) };
 			},
 			new object?[] { B('h', 'i'), B('h', 'i') }),
+		// The writer assigns IDs 1, 2, 3..., but the reader accepts any IDs
+		new Golden("deduplication IDs need not be 1, 2, 3...",
+			B('#', 0x81, 0x2C, 2, 'h', 'i', '#', 2, 2, 'y', 'o', '#', 0x7F, 2, 'o', 'k',
+			  '@', 0x81, 0x2C, '@', 2, '@', 0x7F),
+			sm => "abcdef".Select(c => (object?)sm.Sync(c.ToString(), "", ObjectMode.Deduplicate)).ToArray(),
+			new object?[] { "hi", "yo", "ok", "hi", "yo", "ok" },
+			writerCheck: false),
 
 		// ---- BigInteger via the length-prefixed format ----
 		new Golden("BigInteger 2^64 uses 0xFE format", B(0xFE, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0),

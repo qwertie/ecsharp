@@ -41,9 +41,50 @@ partial class SyncBinary
 		public int Depth => _stack.Count;
 		public int? MinimumListLength => _stack.Count != 0 && _stack.Last.Type == ObjType.List ? _stack.Last.Length : null;
 		
-		// This is only created if an object with an ID (marked with '#') is encountered.
-		// It maps previously-encountered object IDs to objects.
-		private Dictionary<long, object>? _objects { get; set; }
+		// Objects that have IDs (marked with '#'), so that back-references ('@') can find
+		// them. These are only created if an object with an ID is encountered. The writer
+		// assigns IDs 1, 2, 3... in order, so an object is normally stored in _objectList
+		// at index id-1, which is much cheaper than a dictionary, especially when there
+		// are thousands of objects: a dictionary's arrays are 3 times larger, and arrays
+		// of 85,000 bytes or more are allocated on the large object heap, where they are
+		// only freed by full (gen2) collections. Until then, such an array keeps all of
+		// its objects alive, so gen0/gen1 collections must scan and promote them, even
+		// after the Read is finished. IDs far beyond the end of the list go in _otherObjects
+		// instead, so that a malicious ID can't cause a huge allocation. The two can
+		// overlap: if the list later grows past an ID in _otherObjects, the list has a
+		// null at that index, and if the same ID is stored again (as when CurrentObject
+		// is set twice), the new value goes in the list while the old one stays in
+		// _otherObjects. So TryGetObject checks the list first, and uses _otherObjects
+		// only when the list has no object at that index.
+		private List<object?>? _objectList;
+		private Dictionary<long, object>? _otherObjects;
+		const int MaxObjectListGap = 16;
+
+		private void StoreObject(long id, object value)
+		{
+			long index = id - 1;
+			int count = _objectList?.Count ?? 0;
+			if (index >= 0 && index < count + MaxObjectListGap) {
+				_objectList ??= new List<object?>();
+				while (_objectList.Count <= index)
+					_objectList.Add(null);
+				_objectList[(int)index] = value;
+			} else {
+				(_otherObjects ??= new Dictionary<long, object>())[id] = value;
+			}
+		}
+
+		private bool TryGetObject(long id, out object? obj)
+		{
+			long index = id - 1;
+			if (_objectList != null && (ulong)index < (ulong)_objectList.Count) {
+				obj = _objectList[(int)index];
+				if (obj != null)
+					return true;
+			}
+			obj = null;
+			return _otherObjects != null && _otherObjects.TryGetValue(id, out obj);
+		}
 
 		// An error that left the stream unreadable
 		protected Exception? _fatalError;
@@ -207,8 +248,7 @@ partial class SyncBinary
 				// Return back-reference
 				if (isPossibleBackRef)
 				{
-					if (_objects is not null && 
-						_objects.TryGetValue(refId.Value, out var obj)) 
+					if (TryGetObject(refId.Value, out var obj))
 					{
 						Commit(cur);
 						return (false, 0, obj);
@@ -1091,10 +1131,8 @@ partial class SyncBinary
 		{
 			if (_stack.Count != 0) {
 				var topOfStack = _stack.Last;
-				if (topOfStack.HasId) {
-					_objects ??= new Dictionary<long, object>();
-					_objects[topOfStack.Id] = value;
-				}
+				if (topOfStack.HasId)
+					StoreObject(topOfStack.Id, value);
 			}
 		}
 	}
