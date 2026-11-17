@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/qwertie/LoycCore.git
 	branch = master
-	commit = 3e7889e64941ddbec0a8e5d3587bafd98b772389
-	parent = 29449ef849cfaa107891dd40cf538d96ee6c8e3e
+	commit = effbc14bb82c240aa38a9216f77092ddb7f614c6
+	parent = 43984cc4782db76451b7da76f357f79ccf1b2f48
 	method = merge
 	cmdver = 0.4.9
