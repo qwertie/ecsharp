@@ -302,50 +302,6 @@ Creates a scope for local macros and local $variables to be defined. The call it
 
 See also: `reset_macros`
 
-### match ###
-
-~~~csharp
-match (var) { case pattern: handler }; // EC# syntax
-match (var) { pattern => { handler }; }; // LES syntax (also works in EC#)
-~~~
-
-**Deprecated**: this macro is in the `LeMP.ecs.deprecated` namespace, and since C# itself now has pattern matching, you should use C# `switch` and `is` patterns instead. Its support for nested `is` patterns (such as `$p is Point<int>($x, $y)` below) broke when the EC# parser gained support for C# 9 patterns, so the output shown here is from an older version of LeMP.
-
-Attempts to match and deconstruct an object against a "pattern", such as a tuple or an algebraic data type. There can be multiple 'case' blocks, and a `default`. Example:
-
-<div class='sbs' markdown='1'>
-~~~csharp
-#importMacros(LeMP.ecs.deprecated);
-match (obj) {  
-  case is Shape(ShapeType.Circle, $size, 
-       Location: $p is Point<int>($x, $y)): 
-    DrawCircle(size, x, y); 
-}
-~~~
-
-~~~csharp
-// Output of LeMP v2.x (match is deprecated)
-do
-  if (obj is Shape) {
-    Shape tmp_10 = (Shape) obj;
-    if (ShapeType.Circle.Equals(tmp_10.Item1)) {
-      var size = tmp_10.Item2;
-      var tmp_11 = tmp_10.Location;
-      if (tmp_11 is Point<int>) {
-        Point<int> p = (Point<int>) tmp_11;
-        var x = p.Item1;
-        var y = p.Item2;
-        DrawCircle(size, x, y);
-        break;
-      }
-    }
-  }
-while (false);
-~~~
-</div>
-
-`break` is not expected at the end of each handler (`case` code block), but it can be used to exit early from a `case`. You can associate multiple patterns with the same handler using `case pattern1, pattern2:` in EC#, but please note that (due to a limitation of plain C#) this causes code duplication since the handler will be repeated for each pattern.
-
 ### matchCode ###
 
 ~~~csharp
@@ -358,7 +314,7 @@ matchCode (var) {
 
 Attempts to match and deconstruct a Loyc tree against a series of cases with patterns, e.g. `case $a + $b:` expects a tree that calls `+` with two parameters, placed in new variables called a and b. `break` is not required or recognized at the end of each case's handler (code block). Use `$(...x)` to gather zero or more parameters into a list `x`. Use `case pattern1, pattern2:` in EC# to handle multiple cases with the same handler.
 
-**Note**: Currently there is an inconsistency where you can use `break` to exit `match` but you cannot use `break` to exit `matchCode`, because the latter produces a simple `if-else` chain as its output. It is likely that in the future `matchCode`'s output will be wrapped in `do { } while (false)` so that the `break;` statement works the same way as it does in `match` and `switch`.
+**Note**: you cannot use `break` to exit `matchCode`, because it produces a simple `if-else` chain as its output.
 
 Example:
 

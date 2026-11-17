@@ -765,7 +765,7 @@ public alt class Point {
 
 This creates an immutable type (in this case `Point`) with the public properties you asked for (in this case `X` and `Y`). The syntax may seem a bit mysterious at first - "what's `alt this` supposed to mean?" you may ask. Well, "alt class" is really designed to produce entire class hierarchies rather than simple types; the latter is an afterthought (and as a consequence, it currently only builds classes, not structs, though it would be straightforward to remove this limitation.) So `this` refers to the _current_ class, as opposed to a _subclass_. A [section](http://ecsharp.net/lemp/pattern-matching.html#algebraic-data-types) of my previous article explains this in more detail.
 
-Enhanced C# also has a pattern matching construct called `match`, which is just like `switch`, but the `case`s are "patterns" rather than constants. You can read all about pattern matching and `alt class` in my older article, ["C# Gets Pattern Matching, Algebraic Data Types, Tuples and Ranges"](http://ecsharp.net/lemp/pattern-matching.html).
+Enhanced C# used to have a pattern matching construct called `match`, which was removed after C# gained its own pattern matching. You can read more about `alt class` in my older article, ["C# Gets Pattern Matching, Algebraic Data Types, Tuples and Ranges"](http://ecsharp.net/lemp/pattern-matching.html).
 
 `quote` and `matchCode` for code generation and analysis
 --------------------------------------------------------

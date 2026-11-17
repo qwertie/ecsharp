@@ -30,8 +30,6 @@ Look up by category
     - [`quoteWithTrivia`, `rawQuoteWithTrivia`](ref-other.html#quotewithtrivia-rawquotewithtrivia)
 - Pattern matching (at runtime)
     - [`matchCode`](ref-other.html#matchcode): Syntax tree matching ([see article](lemp-code-gen-and-analysis.html#pattern-matching-using-matchcode))
-    - [`match`](ref-other.html#match): Object pattern matching (obsolete) ([see
- article](pattern-matching.html#pattern-matching))
 - [Code Contracts](ref-code-contracts.html)
     - [notnull](ref-code-contracts.html#notnull--notnull)
     - [[requires] & [assert]](ref-code-contracts.html#requires--assert)

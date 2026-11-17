@@ -8,6 +8,8 @@ toc: true
 
 _March 7, 2016_
 
+**Note**: the `match` macro described in this article was removed after LeMP v30.4, because C# itself now has pattern matching (`switch` and `is` patterns).
+
 Introduction
 ------------
 
