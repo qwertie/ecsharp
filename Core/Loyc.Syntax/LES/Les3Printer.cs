@@ -611,7 +611,7 @@ namespace Loyc.Syntax.Les
 			Space(spacesInside);
 			_out.Indent();
 			if (style == ArgListStyle.BracedBlock) {
-				if (PrintStmtList(args, initialNewline: true)) {
+				if (PrintStmtList(args, initialNewline: true, leftBracket)) {
 					// There were newlines in the block
 					_out.Dedent();
 					Newline();
@@ -636,19 +636,19 @@ namespace Loyc.Syntax.Les
 			_inParensOrBracks = outerInParensOrBracks;
 		}
 
-		bool ShouldAppendStmt(ILNode node)
+		bool ShouldAppendStmt(ILNode node, ILNode? predecessor)
 		{
-			return (!_o.PrintTriviaExplicitly && node.AttrNamed(S.TriviaAppendStatement) != null) &&
+			return (!_o.PrintTriviaExplicitly && node.IsAppendStatement(predecessor)) &&
 				_out.IndexInCurrentLine < _o.ForcedLineBreakThreshold;
 		}
 
 		// For printing at the top level, or in a braced block where newlines are significant
-		bool PrintStmtList(NegListSlice<ILNode> args, bool initialNewline)
+		bool PrintStmtList(NegListSlice<ILNode> args, bool initialNewline, ILNode? leftBracket = null)
 		{
 			bool anyNewlines = false;
 			if (args.Count > 0) {
 				ILNode? next = args[0];
-				bool append = ShouldAppendStmt(next);
+				bool append = ShouldAppendStmt(next, leftBracket);
 				for (int i = 0; next != null; i++) {
 					if (initialNewline || i != 0) {
 						if (append)
@@ -660,7 +660,7 @@ namespace Loyc.Syntax.Les
 					}
 					var stmt = next;
 					next = args[i + 1, null!]; // null default means "past the end"
-					append = next != null ? ShouldAppendStmt(next) : false;
+					append = next != null ? ShouldAppendStmt(next, stmt) : false;
 					bool semicolon = append || _o.UseRedundantSemicolons || NeedSemicolonBetween(stmt, next);
 					Print(stmt, Precedence.MinValue, semicolon ? ";" : null, NewlineContext.StatementLevel);
 				}

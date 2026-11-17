@@ -62,17 +62,18 @@ namespace Loyc.Syntax
 		/// <summary>Converts a sequences of LNodes to strings, adding a line separator between each.</summary>
 		/// <param name="printer">Printer to be used for each single LNode.</param>
 		/// <remarks>The newline between two nodes is suppressed if the second 
-		/// node has a <c>%appendStatement</c> attribute.</remarks>
+		/// node has a <c>%appendStatement</c> attribute (see
+		/// <see cref="LNodeExt.IsAppendStatement(ILNode, ILNode?)"/>).</remarks>
 		public static StringBuilder PrintMultiple(ILNodePrinter printer, IEnumerable<LNode> nodes, StringBuilder? sb, IMessageSink? sink, ParsingMode? mode, ILNodePrinterOptions? options)
 		{
 			sb = sb ?? new StringBuilder();
 			var lineSeparator = (options != null ? options.NewlineString : null) ?? "\n";
-			bool first = true;
+			LNode? predecessor = null;
 			foreach (LNode node in nodes) {
-				if (!first)
-					sb.Append(node.AttrNamed(CodeSymbols.TriviaAppendStatement) == null ? lineSeparator : " ");
+				if (predecessor != null)
+					sb.Append(node.IsAppendStatement(predecessor) ? " " : lineSeparator);
 				printer.Print(node, sb, sink, mode, options);
-				first = false;
+				predecessor = node;
 			}
 			return sb;
 		}

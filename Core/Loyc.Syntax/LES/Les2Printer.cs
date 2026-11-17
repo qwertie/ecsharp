@@ -235,13 +235,15 @@ namespace Loyc.Syntax.Les
 				bool anyNewlines = false;
 				var  childContext = rightDelim == '}' ? StartStmt : StartSubexpr;
 				separator = separator ?? ";";
+				ILNode? predecessor = target;
 				foreach (var stmt in args) {
-					if ((_o.PrintTriviaExplicitly || stmt.AttrNamed(S.TriviaAppendStatement) == null)) {
+					if (_o.PrintTriviaExplicitly || !stmt.IsAppendStatement(predecessor)) {
 						_out.Newline();
 						anyNewlines = true;
 					} else
 						SpaceIf(_o.SpacesBetweenAppendedStatements);
 					Print(stmt, childContext, separator);
+					predecessor = stmt;
 				}
 				_out.Dedent();
 				if (anyNewlines)

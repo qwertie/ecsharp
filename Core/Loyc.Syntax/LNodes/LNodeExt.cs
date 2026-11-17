@@ -705,6 +705,22 @@ namespace Loyc.Syntax
 		{
 			return node.Attrs().NodeNamed(name);
 		}
+
+		/// <summary>Returns true if a printer should suppress the newline that normally
+		/// precedes <c>stmt</c> in a list of statements, because <c>stmt</c> has a
+		/// <c>%appendStatement</c> attribute (<see cref="CodeSymbols.TriviaAppendStatement"/>).</summary>
+		/// <param name="predecessor">The node printed just before <c>stmt</c> (the previous
+		/// statement, or the Target of the braced block if <c>stmt</c> is the first statement),
+		/// or null if there is none. A trivia injector creates <c>%appendStatement</c> to
+		/// describe how <c>stmt</c> was positioned relative to its predecessor in the original
+		/// source file. If a macro has since placed a node from a different source file before
+		/// <c>stmt</c> (e.g. a generated node), the attribute no longer applies, so this
+		/// method ignores it.</param>
+		public static bool IsAppendStatement(this ILNode stmt, ILNode? predecessor)
+		{
+			ILNode? append = stmt.AttrNamed(CodeSymbols.TriviaAppendStatement);
+			return append != null && (predecessor == null || append.Range.Source == predecessor.Range.Source);
+		}
 		public static ILNode? NodeNamed(this NegListSlice<ILNode> self, Symbol name)
 		{
 			foreach (var node in self)
