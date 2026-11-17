@@ -75,13 +75,19 @@ namespace LeMP.ecs
 						sink.Error(formalArg, "'field' macro expected a variable declaration here"));
 					fieldAccessExpr = F.Call(S.IndexBracks, argList.Insert(0, fieldName));
 				}
-				var attrs = stmt.Attrs;
-				if (stmt.IsIdNamed(S.get)) {
-					stmt = F.Call(stmt.WithoutAttrs(), F.Braces(F.Call(S.Return, fieldAccessExpr))).WithAttrs(attrs);
-					stmt.BaseStyle = NodeStyle.Special;
-				}
-				if (stmt.IsIdNamed(S.set)) {
-					stmt = F.Call(stmt.WithoutAttrs(), F.Braces(F.Call(S.Assign, fieldAccessExpr, F.Id(S.value)))).WithAttrs(attrs);
+				LNode accessorBody = null;
+				if (stmt.IsIdNamed(S.get))
+					accessorBody = F.Call(S.Return, fieldAccessExpr);
+				else if (stmt.IsIdNamed(S.set))
+					accessorBody = F.Call(S.Assign, fieldAccessExpr, F.Id(S.value));
+				if (accessorBody != null) {
+					// If the user wrote `{ get; set; }` on one line, keep the output on one line:
+					// `{ get { return _x; } set { _x = value; } }`. The new accessor keeps the
+					// SourceRange of the old one so that the printer still honors the
+					// %appendStatement attribute of the accessor that follows it.
+					if (stmt.AttrNamed(S.TriviaAppendStatement) != null)
+						accessorBody = accessorBody.PlusAttr(F.Id(S.TriviaAppendStatement));
+					stmt = LNode.Call(stmt.Attrs, stmt.WithoutAttrs(), LNode.List(F.Braces(accessorBody)), stmt);
 					stmt.BaseStyle = NodeStyle.Special;
 				}
 				return stmt;

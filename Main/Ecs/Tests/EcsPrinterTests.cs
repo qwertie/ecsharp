@@ -97,6 +97,19 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
+		public void AppendStatementAfterNodeFromAnotherSourceFile()
+		{
+			// %appendStatement describes a statement's position relative to its original
+			// predecessor, so the printer ignores it after a node from another source file
+			// (e.g. a node that a macro inserted). The predecessor of the first statement in
+			// a braced block is the block's Target (the opening brace).
+			var F2 = new LNodeFactory(new EmptySourceFile("Macro.ecs"));
+			Stmt("{ a(); b(); }", F.Braces(AppendStmt(F.Call(a)), AppendStmt(F.Call(b))));
+			Stmt("{\n  a(); b();\n}", F2.Braces(AppendStmt(F.Call(a)), AppendStmt(F.Call(b))));
+			Stmt("{ a();\n  c();\n  b();\n}", F.Braces(AppendStmt(F.Call(a)), F2.Call(c), AppendStmt(F.Call(b))));
+		}
+
+		[Test]
 		public void PrintEmptySpliceWithTrivia()
 		{
 			// Note (2020/09): normal parsing won't produce code like {/*comment*/} (using an 

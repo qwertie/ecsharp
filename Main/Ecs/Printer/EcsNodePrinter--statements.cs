@@ -419,10 +419,11 @@ namespace Loyc.Ecs
 			using (Indented)
 				for (int i = (skipFirstStmt ? 1 : 0), c = braces.ArgCount; i < c; i++) {
 					var stmt = braces.Args[i];
+					var predecessor = i == 0 ? braces.Target : braces.Args[i - 1];
 					// Bug fix: check if '\n' was just written to avoid a space before 'g' in
 					// @`%trailing`(`%newline`) f();
 					// @`%appendStatement` g();
-					if (!newlinesByDefault || IsDefaultNewlineSuppressed(stmt) || !Newline(NewlineOpt.Default)) {
+					if (!newlinesByDefault || IsDefaultNewlineSuppressed(stmt, predecessor) || !Newline(NewlineOpt.Default)) {
 						if (!_out.IsAtStartOfLine)
 							Space(SpaceOpt.Default);
 						else
@@ -445,11 +446,12 @@ namespace Loyc.Ecs
 				for (int i = 0, c = body.ArgCount; i < c; i++)
 				{
 					var stmt = body.Args[i];
+					var predecessor = i == 0 ? body.Target : body.Args[i - 1];
 					if (i != 0) {
 						_out.Write(',');
 						nlo = next_nlo;
 					}
-					if (NewlineOrSpace(nlo, IsDefaultNewlineSuppressed(stmt), SpaceOpt.AfterComma))
+					if (NewlineOrSpace(nlo, IsDefaultNewlineSuppressed(stmt, predecessor), SpaceOpt.AfterComma))
 						anyNewlines = true;
 					PrintExpr(stmt, StartExpr, flags);
 				}
@@ -523,9 +525,9 @@ namespace Loyc.Ecs
 			return AutoPrintBodyOfMethodOrProperty(body, firstStmt != null);
 		}
 
-		private bool IsDefaultNewlineSuppressed(LNode node)
+		private bool IsDefaultNewlineSuppressed(LNode node, LNode predecessor = null)
 		{
-			return node.AttrNamed(S.TriviaAppendStatement) != null;
+			return node.IsAppendStatement(predecessor);
 		}
 
 		// e.g. given the method void f() {...}, prints "void f"
