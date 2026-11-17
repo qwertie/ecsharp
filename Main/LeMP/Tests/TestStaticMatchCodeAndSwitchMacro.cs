@@ -86,6 +86,17 @@ namespace LeMP.Tests
 		}
 
 		[Test]
+		public void WrongArgumentCount()
+		{
+			// Bug fix: zero arguments caused a NullReferenceException
+			using (MessageSink.SetDefault(_msgHolder)) {
+				TestEcs("##switch() { case 1: x; }", "##switch() { case 1: x; }");
+				Assert.That(!_msgHolder.List.Any(msg => msg.Formatted.Contains("Exception")));
+				Assert.That(_msgHolder.List.Any(msg => msg.Formatted.Contains("Expected one expression")));
+			}
+		}
+
+		[Test]
 		public void TestSwitch()
 		{
 			// Suppress "Warning: LeMP.StandardMacros.switch: None of the cases matched."

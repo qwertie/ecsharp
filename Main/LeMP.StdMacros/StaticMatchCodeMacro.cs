@@ -77,7 +77,7 @@ namespace LeMP
 			var args_body = context.GetArgsAndBody(false);
 			LNodeList args = args_body.Item1, body = args_body.Item2;
 			if (args.Count != 1)
-				return Reject(context, args[1], "Expected only one expression to match");
+				return Reject(context, args.Count > 1 ? args[1] : node, "Expected one expression to match");
 
 			var expression = context.PreProcess(UnwrapBraces(args[0]));
 
