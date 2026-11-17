@@ -86,7 +86,7 @@ namespace Loyc.Ecs
 			P(S._Negate, EP.Prefix), P(S._UnaryPlus, EP.Prefix), P(S.NotBits, EP.Prefix),
 			P(S.Not, EP.Prefix), P(S.PreInc, EP.Prefix), P(S.PreDec, EP.Prefix),
 			P(S._AddressOf, EP.Prefix), P(S._Dereference, EP.Prefix), P(S.Forward, EP.Forward),
-			P(S.DotDot, EP.Prefix), P(S.DotDotDot, EP.Prefix),
+			P(S.DotDot, EP.Prefix), P(S.DotDotDot, EP.Prefix), P(S.XorBits, EP.Prefix), // ^1 (index from end)
 			P(S.Dot, EP.Substitute), P(S.Substitute, EP.Substitute),
 			P(S.LT, EP.Compare), P(S.GT, EP.Compare),
 			P(S.LE, EP.Compare), P(S.GE, EP.Compare),

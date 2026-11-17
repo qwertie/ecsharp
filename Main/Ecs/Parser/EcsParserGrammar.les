@@ -653,7 +653,7 @@ namespace Loyc.Ecs.Parser
 		// Prefix expressions, atoms, and high-precedence expressions like f(x) and List<T>
 		@[LL(3)] // to distinguish (cast) expr from (parens)
 		@[private] rule PrefixExpr()::LNode
-		@{	op:=("+"|"-"|"!"|"~"|"++,--"|"*"|"&"|".."|"==>") e:=PrefixExpr
+		@{	op:=("+"|"-"|"!"|"~"|"^"|"++,--"|"*"|"&"|".."|"==>") e:=PrefixExpr
 			{return F.CallPrefixOp(op, e);}
 		|	op:="**"
 			e:=PrefixExpr
@@ -663,7 +663,7 @@ namespace Loyc.Ecs.Parser
 		|	// C-style cast
 			&{@[Hoist] Down($LI) && Up(Scan_DataType() && LA0 == EOF)}
 			lp:="(" ")"
-			&!("+"|"-"|"*"|"&"|"."|TT.BQString|TT.Switch | ("++,--" "(") | &{_insideLinqExpr} TT.LinqKeyword)
+			&!("+"|"-"|"*"|"&"|"^"|"."|TT.BQString|TT.Switch | ("++,--" "(") | &{_insideLinqExpr} TT.LinqKeyword)
 			e:=PrefixExpr
 			{Down(lp); return F.Call(S.Cast, e, Up(DataType()), lp.StartIndex, e.Range.EndIndex, lp.StartIndex, lp.EndIndex, NodeStyle.Operator);}
 		/	e:=KeywordOrPrimaryExpr {return e;}

@@ -1002,6 +1002,13 @@ namespace Loyc.Ecs.Tests
 			Expr("a..b * ..c", F.Call(S.Mul, F.Call(S.DotDot, a, b), F.Call(S.DotDot, c)));
 			Expr("..a + b && c", F.Call(S.And, F.Call(S.Add, F.Call(S.DotDot, a), b), c));
 			Expr("a..*b", F.Call(S.DotDot, a, F.Call(S._Dereference, b)));
+			// Index from end (^)
+			Expr("^a",      F.Call(S.XorBits, a));
+			Expr("Foo[^1]", F.Call(S.IndexBracks, Foo, F.Call(S.XorBits, one)));
+			Expr("a..^b",   F.Call(S.DotDot, a, F.Call(S.XorBits, b)));
+			Expr("..^a",    F.Call(S.DotDot, F.Call(S.XorBits, a)));
+			Expr("a ^ ^b",  F.Call(S.XorBits, a, F.Call(S.XorBits, b)));
+			Expr("(a) ^ b", F.Call(S.XorBits, F.InParens(a), b)); // not a cast
 			// TODO: .. suffix operator
 			//Expr("a..", F.Call(S.DotDot, a));
 			//Expr("Foo[x..]", F.Call(S.IndexBracks, Foo, F.Call(S.DotDot, x)));
