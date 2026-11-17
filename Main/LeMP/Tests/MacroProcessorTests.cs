@@ -372,10 +372,11 @@ namespace LeMP
 										   "priorityTest(1, hi);");
 			Test("{ import_macros LeMP.Tests; foo0(); priorityTest(0, 2); foo(); }",
 				 "{                           foo0(); priorityTest(2, hi); foo(); }");
+			// The plain C# printer expresses the variable declaration `int x = 3` as an `is var` pattern
 			Test("{ import_macros LeMP.Tests; priorityTest(0, x::int = 3); foo(); }",
-				 "{                           priorityTest(int x = 3, hi); foo(); }");
+				 "{                           priorityTest((int) 3 is var x ? x : default, hi); foo(); }");
 			Test("{ import_macros LeMP.Tests; priorityTestPCB(0, x::int = 4); foo2(); }",
-				 "{                           priorityTestPCB(int x = 4, hi); foo2(); }");
+				 "{                           priorityTestPCB((int) 4 is var x ? x : default, hi); foo2(); }");
 		}
 
 		[Test]

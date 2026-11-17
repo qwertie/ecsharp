@@ -256,8 +256,12 @@ namespace LeMP.ecs
 			return F.Assign(x, F.Call(S.NullCoalesce, x, y));
 		}
 
+		const string DeclarationExpressionNote = "C# does not allow a variable declaration inside an expression, " +
+			"so the C# printer prints it as an `is var` pattern, e.g. `int.Parse(text) is var num ? num : default`. " +
+			"Alternatively, `#useSequenceExpressions` moves the declaration into a separate statement.";
+
 		[LexicalMacro("A=:B; A:::B", "Declare a variable B and set it to the value A. Typically used within a larger expression, "+
-			"e.g. if (int.Parse(text):::num > 0) positives += num;", "'=:", "':::")]
+			"e.g. `if (int.Parse(text)=:num > 0) positives += num;`. " + DeclarationExpressionNote, "'=:", "':::")]
 		public static LNode QuickBind(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;
@@ -268,7 +272,8 @@ namespace LeMP.ecs
 			return null;
 		}
 		
-		[LexicalMacro("A := B", "Declare a variable A and set it to the value of B. Equivalent to \"var A = B\".", "':=")]
+		[LexicalMacro("A := B", "Declare a variable A and set it to the value of B. Equivalent to \"var A = B\". " +
+			DeclarationExpressionNote, "':=")]
 		public static LNode ColonEquals(LNode node, IMessageSink sink)
 		{
 			var a = node.Args;

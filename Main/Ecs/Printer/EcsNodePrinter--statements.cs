@@ -814,9 +814,12 @@ namespace Loyc.Ecs
 			else
 			{
 				WriteOperatorName(_name);
+				// `using` and `fixed` allow a variable declaration, e.g. `using (var x = f())`
 				Ambiguity argFlags = 0;
 				if (_name == S.Fixed)
-					argFlags |= Ambiguity.AllowPointer;
+					argFlags |= Ambiguity.AllowPointer | Ambiguity.AllowUnassignedVarDecl;
+				else if (_name == S.UsingStmt)
+					argFlags |= Ambiguity.AllowUnassignedVarDecl;
 				PrintWithinParens(ParenFor.KeywordCall, _n.Args[0], argFlags);
 				PrintBracedBlockOrStmt(_n.Args[1]);
 				return SPResult.NeedSuffixTrivia;

@@ -129,7 +129,13 @@ namespace Loyc.Ecs
 				NodeStyle style = _n.BaseStyle;
 				if (style == NodeStyle.PrefixNotation && !_o.PreferPlainCSharp)
 					PrintInPrefixNotation(skipAttrs: false);
-				else {
+				else if (_name == S.Var && _o.DropNonDeclarationAttributes && IsVariableDecl(false, false) && !Flagged(
+					Ambiguity.AllowUnassignedVarDecl | Ambiguity.TypeContext | Ambiguity.ForEachInitializer | Ambiguity.IsPattern)) {
+					// Plain C# has no declaration expressions such as `(var x = f()) > 0` (which
+					// LeMP's `=:` and `:=` macros produce), so print `(f() is var x ? x : default) > 0`
+					PrintTrivia(trailingTrivia: false);
+					PrintExpr(GetIsVarEquivalent(_n), _context);
+				} else {
 					int inParens = 0;
 					if (_name == S.Var && IsVariableDecl(false, true)) {
 						if (!_o.DropNonDeclarationAttributes) {
@@ -993,7 +999,11 @@ namespace Loyc.Ecs
 						if (!first) WriteThenSpace(',', SpaceOpt.MissingAfterComma);
 					} else {
 						if (!first) WriteThenSpace(',', SpaceOpt.AfterComma);
-						PrintExpr(arg, StartExpr);
+						// In `Foo(int x = 0) => ...` (a constructor), the arguments are declarations,
+						// so they must not be printed as `is var` patterns in plain C#. (EC# mode
+						// ignores the flag here so that it prints `Foo([] int? x) => ...`.)
+						var argFlags = _o.DropNonDeclarationAttributes ? _flags & Ambiguity.AllowUnassignedVarDecl : 0;
+						PrintExpr(arg, StartExpr, argFlags);
 					}
 					first = false;
 				}
@@ -1027,6 +1037,18 @@ namespace Loyc.Ecs
 			if (_n.BaseStyle == NodeStyle.VerbatimId)
 				mode = IdPrintMode.Verbatim;
 			PrintSimpleIdent(_name, _flags, mode);
+		}
+
+		/// <summary>Converts the variable declaration `#var(@``, x = value)` to the expression
+		/// `value is var x ? x : default`, or `#var(T, x = value)` to `(T) value is var x ? x : default`.</summary>
+		static LNode GetIsVarEquivalent(LNode varDecl)
+		{
+			LNode type = varDecl.Args[0], assignment = varDecl.Args[1];
+			LNode name = assignment.Args[0], value = assignment.Args[1];
+			if (!type.IsIdNamed(S.Missing))
+				value = LNode.Call(S.Cast, LNode.List(value, type));
+			var isVar = LNode.Call(S.Is, LNode.List(value, LNode.Call(S.Var, LNode.List(LNode.Missing, name))));
+			return LNode.Call(S.QuestionMark, LNode.List(isVar, name, LNode.Id(S.Default)));
 		}
 
 		private void PrintVariableDecl(bool printAttrs, LNode skipClause = null)

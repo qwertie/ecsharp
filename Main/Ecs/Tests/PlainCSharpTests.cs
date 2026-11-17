@@ -996,6 +996,27 @@ namespace Loyc.Ecs.Tests
 		}
 
 		[Test]
+		public void DeclarationExpressionsInPlainCSharp()
+		{
+			// Plain C# has no declaration expressions (which EC#'s `=:` and `:=` macros produce),
+			// so the printer uses an equivalent `is var` pattern.
+			Action<EcsPrinterOptions> plain = p => p.SetPlainCSharpMode();
+			Option(Mode.PrintBothParseFirst, "([] var x = Foo(a)) > 0;", "(Foo(a) is var x ? x : default) > 0;",
+				F.Call(S.GT, F.Var(F.Missing, x, F.Call(Foo, a)), zero), plain);
+			Option(Mode.PrintBothParseFirst, "Foo(int x = a);", "Foo((int) a is var x ? x : default);",
+				F.Call(Foo, F.Var(F.Int32, x, a)), plain);
+
+			// Declarations that plain C# allows are unchanged
+			Stmt("using (var x = Foo)\n  x.a();",
+				F.Call(S.UsingStmt, F.Var(F.Missing, x, Foo), ChildStmt(F.Call(F.Dot(x, a)))), plain);
+			Stmt("fixed (int* a = &b)\n  Foo(a);",
+				F.Call(S.Fixed, F.Var(F.Of(_(S._Pointer), F.Int32), a, F.Call(S._AddressOf, b)), ChildStmt(F.Call(Foo, a))), plain);
+			Stmt("for (int x = 0; x < 10; x++) { }", F.Call(S.For, F.AltList(F.Var(F.Int32, x, zero)),
+				F.Call(S.LT, x, Number(10)), F.AltList(F.Call(S.PostInc, x)), F.Braces()), plain);
+			Stmt("void Foo(int x = 0) { }", F.Fn(F.Void, Foo, F.AltList(F.Var(F.Int32, x, zero)), F.Braces()), plain);
+		}
+
+		[Test]
 		public void CSharp8RangeOps()
 		{
 			Expr("a >= b..c", F.Call(S.GE, a, F.Call(S.DotDot, b, c)));
