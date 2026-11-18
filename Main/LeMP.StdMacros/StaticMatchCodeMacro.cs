@@ -56,7 +56,7 @@ namespace LeMP
 			"This example's output is `length = x.Count`. " +
 			"\n\n"+
 			"If `expr` is a single statement inside braces, the braces are stripped. Then, macros are executed "+
-			"on `expr` to produce a new syntax tree which is then matched."+
+			"on `expr` to produce a new syntax tree which is then matched. "+
 			"`matchCode` then scans the cases to find one that matches. Finally, the entire `static matchCode` "+
 			"construct is replaced with the handler associated with the matching `case`. "+
 			"If none of the cases match and there is no `default:` case, the entire `static matchCode` "+

@@ -20,8 +20,8 @@ namespace LeMP
 			"Defines a local macro that matches the specified pattern and is replaced with another pattern from within the braces. " +
 			"This works differently than the replace(...) macro: it doesn't perform a find-and-replace operation; instead it creates a macro that the macro processor can use later. " +
 			"Example: `define ($x = $y + $z) { $x = Add($y, $z); }` would replace an assignment, involving adding two things, with an assignment that involves calling a method called `Add()`. " +
-			"MacroMode enum values can be attached as attributes. For example, the [PriorityOverride] attribute will cause this macro to supercede other macros that use default priority." +
-			"Inside the body, identifiers are searched for the substring `unique#`, which is replaced with a fresh number each time the macro is invoked." +
+			"MacroMode enum values can be attached as attributes. For example, the [PriorityOverride] attribute will cause this macro to supercede other macros that use default priority. " +
+			"Inside the body, identifiers are searched for the substring `unique#`, which is replaced with a fresh number each time the macro is invoked. " +
 			"Similarly, variables whose name starts with `temp#` are uniquely numbered.",
 			"define", "#define")]
 		public static LNode define(LNode node, IMacroContext context)
@@ -39,8 +39,8 @@ namespace LeMP
 			"Defines a local macro with the specified name that matches the specified patterns and is replaced with the output code within the braces. " +
 			"This works differently than the replace(...) macro: it doesn't perform a find-and-replace operation; instead it creates a macro that the macro processor can match later. " +
 			"The macro's arguments can be patterns; for example `define Foo($x = $y) {...}` would match `Foo(Bar = Math.Abs(-123))`. " +
-			"MacroMode enum values can be attached as attributes. For example, the [PriorityOverride] attribute will cause this macro to supercede other macros that use default priority." +
-			"Inside the body, identifiers are searched for the substring `unique#`, which is replaced with a fresh number each time the macro is invoked." +
+			"MacroMode enum values can be attached as attributes. For example, the [PriorityOverride] attribute will cause this macro to supercede other macros that use default priority. " +
+			"Inside the body, identifiers are searched for the substring `unique#`, which is replaced with a fresh number each time the macro is invoked. " +
 			"Similarly, variables whose name starts with `temp#` are uniquely numbered.",
 			"#fn", Mode = MacroMode.Passive)]
 		public static LNode methodStyleDefine(LNode node, IMacroContext context)
@@ -54,7 +54,7 @@ namespace LeMP
 		}
 
 		[LexicalMacro(@"define Name {...} // EC# syntax",
-			"Defines a local macro with the specified name that causes the specified identifier to be replaced with the specified syntax tree." +
+			"Defines a local macro with the specified name that causes the specified identifier to be replaced with the specified syntax tree. " +
 			"This works differently than the replace(...) macro: it doesn't perform a find-and-replace operation; instead it creates a macro that the macro processor can match later. ",
 			"#property", Mode = MacroMode.Passive)]
 		public static LNode defineId(LNode node, IMacroContext context)

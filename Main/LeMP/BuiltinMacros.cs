@@ -123,7 +123,7 @@ namespace LeMP.Prelude
 			"This macro preprocesses one or more specific subtrees of its second argument, " +
 			"to work around issues with macro evaluation order. `paths` is either (1) an " +
 			"integer indicating which child to preprocess, where 0 is the first argument, (2) " +
-			"the Name of a child to preprocess (only the first matching name is processed)," +
+			"the Name of a child to preprocess (only the first matching name is processed), " +
 			"(3) a tuple containing a list of children to preprocess, or (4) a 'path' to a " +
 			"subchild to preprocess, represented by paths separated by the / operator. A " +
 			"single path can be a mixture of these four things; for example, if you write " +

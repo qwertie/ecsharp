@@ -51,8 +51,8 @@ namespace LeMP
 		static readonly Symbol @in = GSymbol.Get("in");
 
 		[LexicalMacro(@"/* LES syntax */ unroll ((X, Y) `in` ((X, Y), (Y, X))) {...}; /* EC#/LES3 syntax */ unroll ((X, Y) in ((X, Y), (Y, X))) {...}",
-			 "This is obsolete. Please use ##unroll instead, which accepts arbitrary patterns" +
-			 "on the left but expects the `$` operator to mark all uses of each variable." +
+			 "This is obsolete. Please use ##unroll instead, which accepts arbitrary patterns " +
+			 "on the left but expects the `$` operator to mark all uses of each variable. " +
 			 "For example, `unroll (f in (F,G)) { f(f); }` should be changed to " +
 			 "`##unroll ($f in (F,G)) { $f($f); }`.\n\n"
 			+"Produces variations of a block of code, by replacing an identifier left of `in` "

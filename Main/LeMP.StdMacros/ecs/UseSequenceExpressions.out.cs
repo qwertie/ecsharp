@@ -1,4 +1,4 @@
-// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 30.1.0.0
+// Generated from UseSequenceExpressions.ecs by LeMP custom tool. LeMP version: 30.4.0.0
 // Note: you can give command-line arguments to the tool via 'Custom Tool Namespace':
 // --no-out-header       Suppress this message
 // --verbose             Allow verbose messages (shown by VS as 'warnings')
@@ -44,7 +44,7 @@ namespace LeMP.ecs
 		}
 
 		[LexicalMacro("#useSequenceExpressions; ... if (Foo.Bar()::b.Baz != null) b.Baz.Method(); ...", 
-		"Enables the use of variable-declaration and #runSequence expressions, including the quick-binding operator `::` and the `with` expression, in the code that follows." 
+		"Enables the use of variable-declaration and #runSequence expressions, including the quick-binding operator `::` and the `with` expression, in the code that follows. " 
 		+ "Technically this allows any executable code in an expression context, such as while and for-loops, " 
 		+ "but its name comes from the fact that it is usually used to allow variable declarations. " 
 		+ "#useSequenceExpressions expects to be used in a declaration context, " 

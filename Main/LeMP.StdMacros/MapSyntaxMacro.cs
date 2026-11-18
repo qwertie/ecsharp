@@ -33,14 +33,14 @@ namespace LeMP
 			"`skipSpec` can also be a range such as `1 .. 3` (to process the second and " +
 			"third arguments only) or `0 .. ^1` (to process all arguments except the last). " +
 			"Neither of the integers is required to be in range; for example, " +
-			"`##map((a, b), 2..5, $x => -$x)` is valid but has no effect (output: `(a, b)`)." +
+			"`##map((a, b), 2..5, $x => -$x)` is valid but has no effect (output: `(a, b)`). " +
 			"The skipSpec can also be used to cause the Target and/or attributes to be " +
 			"processed; the Target has index -1 and attributes have more negative indexes, so " +
 			"the value `-1` would transform the Target and all arguments, while `-999_999_999..-1` " +
 			"processes only the attributes. If the skipSpec range ends at -1 or earlier, the normal " +
 			"requirement that `inputList` be a call node is waived." +
 			"\n\n" +
-			"If an argument doesn't match any of the patterns, `##map` copies it to the output" +
+			"If an argument doesn't match any of the patterns, `##map` copies it to the output " +
 			"unchanged. If you'd like to remove such arguments, use `##mapWithFilter` instead." +
 			"\n\n" +
 			"##map also has the notable ability to perform matching operations against multiple " +
@@ -48,8 +48,8 @@ namespace LeMP
 			"produces `(1 + 2, 3 + 4)`." +
 			"\n\n" +
 			"Keep in mind that the `=>` operator has a high precedence on the left side. For " +
-			"example, `$a + $b => $b + $a` is invalid because it means `$a + ($b => $b + $a)`." +
-			"Each of the other arguments to ##map should have the form `pattern => replacement`," +
+			"example, `$a + $b => $b + $a` is invalid because it means `$a + ($b => $b + $a)`. " +
+			"Each of the other arguments to ##map should have the form `pattern => replacement`, " +
 			"and this example does not, so ##map will print an error.",
 			"##map")]
 		public static LNode map(LNode node, IMacroContext context) => map(node, context, true);

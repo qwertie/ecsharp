@@ -184,7 +184,7 @@ namespace LeMP.ecs
 			 "The `static_if` statement is replaced with the 'then' clause or the 'otherwise' clause according "
 			+"to whether the first argument - a boolean expression - evaluates to true or false. "
 			+"The `otherwise` clause is optional; if it is omitted and the boolean expression evaluates to false, "
-			+"the entire `static_if` statement disappears from the output."
+			+"the entire `static_if` statement disappears from the output. "
 			+"Currently, the condition supports only boolean math (e.g. `!true || false` can be evaluated but "
 			+"not `5 > 4`). `static_if` is often used in conjunction with the `staticMatches` operator.",
 			Mode = MacroMode.Passive | MacroMode.Normal)]
@@ -334,7 +334,7 @@ namespace LeMP.ecs
 		}
 
 		[LexicalMacro(@"includeFileText(""Filename"")", 
-			 "Reads a UTF-8 text file into a string literal. Newlines become '\\n'."
+			 "Reads a UTF-8 text file into a string literal. Newlines become '\\n'. "
 			+"The single argument is macro-preprocessed.")]
 		public static LNode includeFileText(LNode node, IMacroContext context)
 		{
