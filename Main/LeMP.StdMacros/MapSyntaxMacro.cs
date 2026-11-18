@@ -21,7 +21,7 @@ namespace LeMP
 			"performed using the other arguments." +
 			"\n\n" +
 			"Example: `##map(foo(var, 5 + 5), $x => stringify($x))` produces `foo(\"var\", \"5 + 5\")`.\n" +
-			"Example: `##map(Print(x, y, -3), $x => Abs($x), 1)` produces `Print(x, Abs(y), Abs(-3))`." +
+			"Example: `##map(Print(x, y, -3), 1, $x => Abs($x))` produces `Print(x, Abs(y), Abs(-3))`." +
 			"\n\n" +
 			"The optional `skipSpec` parameter specifies which arguments of `inputList` " +
 			"to process; if it is an integer literal, it specifies a number of arguments to " +
@@ -37,7 +37,7 @@ namespace LeMP
 			"The skipSpec can also be used to cause the Target and/or attributes to be " +
 			"processed; the Target has index -1 and attributes have more negative indexes, so " +
 			"the value `-1` would transform the Target and all arguments, while `-999_999_999..-1` " +
-			"processes only the attributes. If the final argument is -1 or less, the normal " +
+			"processes only the attributes. If the skipSpec range ends at -1 or earlier, the normal " +
 			"requirement that `inputList` be a call node is waived." +
 			"\n\n" +
 			"If an argument doesn't match any of the patterns, `##map` copies it to the output" +
