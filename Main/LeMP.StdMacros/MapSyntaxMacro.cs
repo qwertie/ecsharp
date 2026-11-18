@@ -60,7 +60,9 @@ namespace LeMP
 			"the patterns you provided." +
 			"\n\n" +
 			"Unlike ##map, ##mapWithFilter filters out any items that don't match a pattern. For example, " +
-			"`##map((1+2, 3, 4*5), ($a+$b) => $a+$b, ($a*$b) => $a*$b)` produces `(1+2, 4*5)`.",
+			"`##mapWithFilter((1+2, 3, 4*5), ($a+$b) => $a+$b, (($a*$b)) => $a*$b)` produces `(1+2, 4*5)`. " +
+			"(The extra parentheses in `(($a*$b))` are needed because `($a*$b) => ...` would be parsed " +
+			"as a lambda with a pointer-type parameter.)",
 			"##mapWithFilter")]
 		public static LNode mapWithFilter(LNode node, IMacroContext context) => map(node, context, false);
 
