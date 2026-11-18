@@ -287,6 +287,9 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><b>HasPAttrs</b> 
 <tr class="memitem:a373754aa325a02f98587f2f24dd8a02e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a373754aa325a02f98587f2f24dd8a02e"></a>
 static <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>AttrNamed</b> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> node, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
 <tr class="separator:a373754aa325a02f98587f2f24dd8a02e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac596deb27cc0c70475a160e904308341"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLoyc_1_1Syntax_1_1LNodeExt.html#ac596deb27cc0c70475a160e904308341">IsAppendStatement</a> (this <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> stmt, <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a>?predecessor)</td></tr>
+<tr class="memdesc:ac596deb27cc0c70475a160e904308341"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true if a printer should suppress the newline that normally precedes <code>stmt</code> in a list of statements, because <code>stmt</code> has a <code>appendStatement</code> attribute (CodeSymbols.TriviaAppendStatement). <a href="#ac596deb27cc0c70475a160e904308341">More...</a><br /></td></tr>
+<tr class="separator:ac596deb27cc0c70475a160e904308341"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2f7f2b47e77c371de8e29285267b9e5d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2f7f2b47e77c371de8e29285267b9e5d"></a>
 static <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>NodeNamed</b> (this NegListSlice&lt; <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a> &gt; self, <a class="el" href="classLoyc_1_1Symbol.html">Symbol</a> name)</td></tr>
 <tr class="separator:a2f7f2b47e77c371de8e29285267b9e5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -677,6 +680,48 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 </div><div class="memdoc">
 
 <p>Returns the same node with a parentheses attribute added.</p>
+
+</div>
+</div>
+<a class="anchor" id="ac596deb27cc0c70475a160e904308341"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool Loyc.Syntax.LNodeExt.IsAppendStatement </td>
+          <td>(</td>
+          <td class="paramtype">this <a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a>&#160;</td>
+          <td class="paramname"><em>stmt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="interfaceLoyc_1_1Syntax_1_1ILNode.html">ILNode</a>?&#160;</td>
+          <td class="paramname"><em>predecessor</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns true if a printer should suppress the newline that normally precedes <code>stmt</code> in a list of statements, because <code>stmt</code> has a <code>appendStatement</code> attribute (CodeSymbols.TriviaAppendStatement).</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">predecessor</td><td>The node printed just before <code>stmt</code> (the previous statement, or the Target of the braced block if <code>stmt</code> is the first statement), or null if there is none. A trivia injector creates <code>appendStatement</code> to describe how <code>stmt</code> was positioned relative to its predecessor in the original source file. If a macro has since placed a node from a different source file before <code>stmt</code> (e.g. a generated node), the attribute no longer applies, so this method ignores it.</td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1192,7 +1237,7 @@ static <a class="el" href="classLoyc_1_1Syntax_1_1LNode.html">LNode</a>&#160;</t
 <!-- HTML footer for doxygen 1.8.7-->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jul 27 2026 06:54:06 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Nov 18 2026 02:05:27 for Enhanced C# by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.7
 </small></address>
