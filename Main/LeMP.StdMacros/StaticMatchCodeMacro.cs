@@ -19,17 +19,17 @@ namespace LeMP
 			"You can use `case pattern1, pattern2:` to handle multiple cases with the same handler, "+
 			"and each case can optionally be enclosed in braces, as you can see in this example:" +
 			"\n\n" +
-			"    #set varDecl = List<int> list;\n"+
-			"    static matchCode($varDecl) {\n"+
+			"    #snippet varDecl = { List<int> list; };\n"+
+			"    ##switch($varDecl) {\n"+
 			"        case { $T[] $x; }, { $T[,] $x; }: length = $x.Length;\n"+
-			"        default:                          length = $x.Count;\n"+
+			"        case { $T $x; }:                  length = $x.Count;\n"+
 			"    }" +
 			"\n\n"+
 			"This example's output is `length = list.Count`. " +
 			"If none of the cases match and there is no `default:` case, the input syntaxTree " +
 			"is used as the output, and a warning is printed. For example, " +
 			"`##switch(x*y) { case $a+$b: Add($a,$b) }` produces `x*y`. If instead you'd like the entire " +
-			"`static matchCode` construct and all its cases to be deleted from the output in that case, "+
+			"`##switch` construct and all its cases to be deleted from the output in that case, "+
 			"you can use a default case, e.g. `##switch(x*y) { case $a+$b: Add($a,$b); default: }`." +
 			"\n\n"+
 			"Unlike C# `switch`, `##switch` does not expect `break` at the end of each case. If `break` "+
@@ -47,11 +47,13 @@ namespace LeMP
 			"expects a tree that calls `+` with two parameters, placed in compile-time variables called $a and $b. "+
 			"Example:" +
 			"\n\n"+
-			"    #set varDecl = List<int> x;\n"+
+			"    #snippet varDecl = { List<int> x; };\n"+
 			"    static matchCode($varDecl) {\n"+
 			"        case $T[] $x, $T[,] $x: length = $x.Length;\n"+
-			"        default:                length = $x.Count;\n"+
+			"        case $T $x:             length = $x.Count;\n"+
 			"    }" +
+			"\n\n"+
+			"This example's output is `length = x.Count`. " +
 			"\n\n"+
 			"If `expr` is a single statement inside braces, the braces are stripped. Then, macros are executed "+
 			"on `expr` to produce a new syntax tree which is then matched."+
