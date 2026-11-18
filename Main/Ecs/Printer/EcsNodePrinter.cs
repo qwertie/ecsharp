@@ -744,19 +744,21 @@ namespace Loyc.Ecs
 			return true;
 		}
 
-		private void PrintTrivia(bool trailingTrivia, bool needSemicolon = false)
+		/// <returns>The number of open parentheses written for %inParens trivia, which the
+		/// caller must close.</returns>
+		private int PrintTrivia(bool trailingTrivia, bool needSemicolon = false)
 		{
-			PrintTrivia(_n, trailingTrivia, needSemicolon);
+			return PrintTrivia(_n, trailingTrivia, needSemicolon);
 		}
-		private void PrintTrivia(LNode node, bool trailingTrivia, bool needSemicolon = false)
+		private int PrintTrivia(LNode node, bool trailingTrivia, bool needSemicolon = false)
 		{
 			if (needSemicolon)
 				_out.Write(';');
 			var attrs = trailingTrivia ? node.GetTrailingTrivia() : node.Attrs;
-			foreach (var attr in attrs) {
-				int _ = 0;
-				DetectAndMaybePrintTrivia(attr, trailingTrivia, ref _);
-			}
+			int parenCount = 0;
+			foreach (var attr in attrs)
+				DetectAndMaybePrintTrivia(attr, trailingTrivia, ref parenCount);
+			return parenCount;
 		}
 
 		private void WriteRawText(string text, bool isPreprocessorText)

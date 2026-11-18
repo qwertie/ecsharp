@@ -1005,6 +1005,10 @@ namespace Loyc.Ecs.Tests
 				F.Call(S.GT, F.Var(F.Missing, x, F.Call(Foo, a)), zero), plain);
 			Option(Mode.PrintBothParseFirst, "Foo(int x = a);", "Foo((int) a is var x ? x : default);",
 				F.Call(Foo, F.Var(F.Int32, x, a)), plain);
+			// Bug fix: the closing parenthesis was missing
+			Stmt("Foo((a is var x ? x : default));", F.Call(Foo, F.InParens(F.Var(F.Missing, x, a))), plain, Mode.PrinterTest);
+			// Bug fix: a declaration without an initializer caused IndexOutOfRangeException
+			Stmt("Foo(var $x);", F.Call(Foo, F.Var(F.Missing, F.Call(S.Substitute, x))), plain, Mode.PrinterTest);
 
 			// Declarations that plain C# allows are unchanged
 			Stmt("using (var x = Foo)\n  x.a();",

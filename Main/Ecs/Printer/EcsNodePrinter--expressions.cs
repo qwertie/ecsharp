@@ -129,12 +129,14 @@ namespace Loyc.Ecs
 				NodeStyle style = _n.BaseStyle;
 				if (style == NodeStyle.PrefixNotation && !_o.PreferPlainCSharp)
 					PrintInPrefixNotation(skipAttrs: false);
-				else if (_name == S.Var && _o.DropNonDeclarationAttributes && IsVariableDecl(false, false) && !Flagged(
+				else if (_name == S.Var && _o.DropNonDeclarationAttributes && IsVariableDecl(false, false)
+					&& _n.Args[1].Calls(S.Assign, 2) && !Flagged(
 					Ambiguity.AllowUnassignedVarDecl | Ambiguity.TypeContext | Ambiguity.ForEachInitializer | Ambiguity.IsPattern)) {
 					// Plain C# has no declaration expressions such as `(var x = f()) > 0` (which
 					// LeMP's `=:` and `:=` macros produce), so print `(f() is var x ? x : default) > 0`
-					PrintTrivia(trailingTrivia: false);
-					PrintExpr(GetIsVarEquivalent(_n), _context);
+					int inParens = PrintTrivia(trailingTrivia: false);
+					PrintExpr(GetIsVarEquivalent(_n), inParens != 0 ? StartExpr : _context);
+					WriteCloseParens(inParens);
 				} else {
 					int inParens = 0;
 					if (_name == S.Var && IsVariableDecl(false, true)) {
